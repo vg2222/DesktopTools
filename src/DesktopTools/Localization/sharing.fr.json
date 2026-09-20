@@ -1,0 +1,13 @@
+{
+  "Screen sharing and DesktopTools": "Partage d’écran et DesktopTools",
+  "Your tools are visible by default": "Vos outils sont visibles par défaut",
+  "DesktopTools windows, the screen ruler and floating controls can appear in screen shares and recordings. If you turn on hiding in Settings → Privacy, supported capture apps may omit those windows. Check the viewer's screen before sharing private content.": "Les fenêtres DesktopTools, la règle d’écran et les commandes flottantes peuvent apparaître dans les partages et les enregistrements. Si vous activez leur masquage dans Paramètres → Confidentialité, les applications de capture compatibles peuvent les exclure. Vérifiez l’écran du spectateur avant de partager un contenu privé.",
+  "This installation currently has hiding enabled. Keep that choice or show your tools now.": "Le masquage est actuellement activé pour cette installation. Conservez ce choix ou affichez vos outils maintenant.",
+  "Keep current settings": "Conserver les réglages",
+  "Show my windows": "Afficher mes fenêtres",
+  "Reset all app data": "Réinitialiser toutes les données",
+  "Deletes local settings, profiles and notes after DesktopTools closes. Exported files stay where you saved them.": "Supprime les réglages, profils et notes locaux après la fermeture de DesktopTools. Les fichiers exportés restent à leur emplacement.",
+  "Delete app data": "Supprimer les données",
+  "Delete all local DesktopTools settings, profiles and notes? This cannot be undone. Files you exported elsewhere will remain.": "Supprimer tous les réglages, profils et notes locaux de DesktopTools ? Cette action est irréversible. Les fichiers exportés ailleurs seront conservés.",
+  "Could not remove all app data: ": "Impossible de supprimer toutes les données : "
+}

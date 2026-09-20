@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "Насыщенность и яркость цвета. Настраивайте стрелками.",
+  "This application's audio session ended. Refresh the list.": "Аудиосеанс приложения завершён. Обновите список.",
+  "System sounds": "Системные звуки",
+  "Application ({0})": "Приложение ({0})",
+  "No displays are connected.": "Нет подключённых мониторов.",
+  "Could not locate the pointer.": "Не удалось определить положение указателя.",
+  "Could not read connected monitors.": "Не удалось получить данные мониторов.",
+  "Could not enumerate monitors.": "Не удалось получить список мониторов.",
+  "Show the window before placing it on a monitor.": "Покажите окно перед размещением на мониторе.",
+  "Could not position the overlay.": "Не удалось разместить слой рисования.",
+  "Monitor dimensions must be positive.": "Размеры монитора должны быть положительными.",
+  "Could not access the desktop.": "Не удалось получить доступ к рабочему столу.",
+  "Could not allocate a capture context.": "Не удалось выделить ресурсы для захвата.",
+  "Could not allocate a screenshot.": "Не удалось выделить память для снимка.",
+  "Could not prepare the screenshot.": "Не удалось подготовить снимок.",
+  "Windows could not capture this desktop.": "Windows не удалось снять этот рабочий стол.",
+  "Could not update overlay input mode.": "Не удалось изменить режим ввода слоя рисования.",
+  "The drawing control does not have a valid native window yet.": "Окно управления рисованием ещё не готово.",
+  "Windows could not update capture exclusion: {0}": "Windows не удалось изменить исключение из захвата: {0}"
+}

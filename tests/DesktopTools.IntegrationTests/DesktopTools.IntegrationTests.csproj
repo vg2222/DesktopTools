@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings><ApplicationManifest>../../src/DesktopTools/app.manifest</ApplicationManifest><NoWarn>$(NoWarn);WFO0003</NoWarn></PropertyGroup>
+ <ItemGroup><ProjectReference Include="../../src/DesktopTools/DesktopTools.csproj" /></ItemGroup>
+<ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>../../src/DesktopTools/bin/$(Configuration)/net10.0-windows10.0.19041.0/ScreenRecorderLib.dll</HintPath><Private>true</Private></Reference></ItemGroup></Project>

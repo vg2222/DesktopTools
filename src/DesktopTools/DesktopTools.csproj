@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.0.0</Version><RootNamespace>DesktopTools</RootNamespace>
+    <ApplicationIcon>Assets/DesktopTools.ico</ApplicationIcon>
+    <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+  <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /></ItemGroup>
+  <ItemGroup><Content Include="Assets/Translation/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Assets/Models/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><EmbeddedResource WithCulture="false" Include="Localization/*.json" /></ItemGroup>
+  <ItemGroup><Compile Include="../../shared/GitHubReleaseClient.cs" Link="Updates/GitHubReleaseClient.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../shared/WindowDismissal.cs" Link="UI/WindowDismissal.cs" /></ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/Icons/geometry.json" LogicalName="DesktopTools.Icons" />
+    <Resource Include="Assets/DesktopTools.ico" />
+    <Resource Include="Assets/Icons/AppIcon.png" />
+    <Content Include="Assets/Icons/LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../LICENSE" LogicalName="DesktopTools.License" />
+    <EmbeddedResource Include="../../THIRD-PARTY-NOTICES.md" LogicalName="DesktopTools.ThirdPartyNotices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets/Fonts/*.otf" />
+    <Content Include="Assets/Fonts/Inter-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+<ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>$(PkgScreenRecorderLib)/build/x64/ScreenRecorderLib.dll</HintPath><Private>true</Private></Reference></ItemGroup></Project>

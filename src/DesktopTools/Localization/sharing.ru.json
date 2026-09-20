@@ -1,0 +1,13 @@
+{
+  "Screen sharing and DesktopTools": "Демонстрация экрана и DesktopTools",
+  "Your tools are visible by default": "По умолчанию инструменты видны",
+  "DesktopTools windows, the screen ruler and floating controls can appear in screen shares and recordings. If you turn on hiding in Settings → Privacy, supported capture apps may omit those windows. Check the viewer's screen before sharing private content.": "Окна DesktopTools, экранная линейка и плавающие элементы управления могут быть видны при демонстрации и записи экрана. Если включить скрытие в разделе «Настройки → Приватность», поддерживаемые программы захвата могут не показывать эти окна. Перед показом личных данных проверьте изображение у зрителя.",
+  "This installation currently has hiding enabled. Keep that choice or show your tools now.": "Сейчас для этой установки включено скрытие. Сохраните настройку или покажите инструменты.",
+  "Keep current settings": "Оставить как есть",
+  "Show my windows": "Показывать мои окна",
+  "Reset all app data": "Сбросить все данные приложения",
+  "Deletes local settings, profiles and notes after DesktopTools closes. Exported files stay where you saved them.": "После закрытия DesktopTools будут удалены локальные настройки, профили и заметки. Экспортированные файлы останутся на месте.",
+  "Delete app data": "Удалить данные приложения",
+  "Delete all local DesktopTools settings, profiles and notes? This cannot be undone. Files you exported elsewhere will remain.": "Удалить все локальные настройки, профили и заметки DesktopTools? Это действие нельзя отменить. Экспортированные в другие места файлы останутся.",
+  "Could not remove all app data: ": "Не удалось удалить все данные приложения: "
+}

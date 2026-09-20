@@ -1,0 +1,43 @@
+# Build, test, and local release output
+**/bin/
+**/obj/
+**/TestResults/
+**/coverage/
+**/__pycache__/
+*.pyc
+*.log
+/artifacts/
+/App release/
+/output/
+/tmp/
+/.dotnet/
+
+# Local workspace, editor, and private handoff state
+/.codex-handoff/
+/.codex/
+/.agents/
+/.superpowers/
+/.vs/
+/.idea/
+*.user
+*.suo
+
+# Secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+*.crt
+*.snk
+
+# Downloaded translation weights
+/src/DesktopTools/Assets/Translation/**/*.onnx
+/src/DesktopTools/Assets/Translation/**/*.download
+
+# Existing published media stays tracked; new working exports stay local
+/assets/
+/docs/screenshots/gallery/

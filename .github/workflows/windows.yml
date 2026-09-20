@@ -1,0 +1,28 @@
+name: Windows build and checks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Fetch checksum-pinned translation models
+        shell: pwsh
+        run: ./scripts/fetch-translation-models.ps1
+      - name: Restore and build
+        shell: pwsh
+        run: ./scripts/build.ps1
+      - name: Run automated harnesses
+        shell: pwsh
+        run: ./scripts/test.ps1
+
+# Visible desktop, hardware, other-process input, and remote viewer checks remain manual.

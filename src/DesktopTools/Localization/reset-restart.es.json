@@ -1,0 +1,6 @@
+{
+  "Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.": "Elimina los ajustes, perfiles y notas locales y reinicia DesktopTools con la configuración inicial. Los archivos exportados permanecen donde los guardaste.",
+  "Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.": "¿Eliminar todos los ajustes, perfiles y notas locales de DesktopTools y reiniciar la aplicación? Esta acción no se puede deshacer. Los archivos exportados en otras ubicaciones se conservarán.",
+  "DesktopTools could not finish restarting after the data reset. Please open it again.": "DesktopTools no pudo terminar de reiniciarse después de restablecer los datos. Vuelve a abrir la aplicación.",
+  "DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.": "Se restablecieron los datos de DesktopTools, pero la aplicación no pudo abrirse automáticamente. Abre DesktopTools desde el menú Inicio."
+}

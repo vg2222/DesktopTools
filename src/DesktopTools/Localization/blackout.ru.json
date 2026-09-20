@@ -1,0 +1,8 @@
+{
+  "Only hide from screen sharing (experimental)": "Скрывать только в трансляции (экспериментально)",
+  "Keep your desktop visible locally. Off: cover all displays in black for you too. Changing this stops active blackout.": "Рабочий стол остаётся виден тебе. Если выключено, экраны затемняются и для тебя. Изменение останавливает активное скрытие.",
+  "Warning: your screen may still be visible in screen-sharing apps. We recommend checking the viewer's output before use. Sharing an individual application window may bypass this mode.": "Предупреждение: экран всё ещё может быть виден в приложениях демонстрации экрана. Рекомендуем сначала проверить результат со стороны зрителя. При трансляции отдельного окна этот режим может не работать.",
+  "Applies to all connected displays. Press Escape to stop. This is not a security guarantee.": "Для всех подключённых мониторов. Escape отключает скрытие. Это не гарантия защиты.",
+  "Windows could not activate sharing blackout. Your screen may still be visible.": "Windows не удалось включить скрытие в трансляции. Экран может оставаться видимым.",
+  "Warning: your screen may still be visible in screen-sharing apps. Check the viewer's output before using this mode. Press Escape to stop.": "Предупреждение: экран может оставаться видимым в приложениях трансляции. Сначала проверьте результат со стороны зрителя. Escape отключает скрытие."
+}

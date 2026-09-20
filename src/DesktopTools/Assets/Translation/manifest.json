@@ -1,0 +1,74 @@
+[
+  {
+    "File": "en-ru/encoder_model_quantized.onnx",
+    "Sha256": "97F28D8295D231B7DA721DED06FA8C034787DF2122CD8F85B904ABDC4D15BD53",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/onnx/encoder_model_quantized.onnx",
+    "Bytes": 51628446
+  },
+  {
+    "File": "en-ru/decoder_model_merged_quantized.onnx",
+    "Sha256": "7EFEFCD793A5663BC204224A92A123524F3DFE2FFAD59E5F73D6734D1B11AD04",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/onnx/decoder_model_merged_quantized.onnx",
+    "Bytes": 58931576
+  },
+  {
+    "File": "en-ru/source.spm",
+    "Sha256": "16BEBEF1389A0B8AB452772C4E35B9E605E5713F8AC7BAA71CA701394EAA086D",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/source.spm",
+    "Bytes": 802781
+  },
+  {
+    "File": "en-ru/vocab.json",
+    "Sha256": "5CF0D95D930D8D3E783C9E2F46A72F08B43A18060DAB4DDEFBCB66A733EFEDCB",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/vocab.json",
+    "Bytes": 2726796
+  },
+  {
+    "File": "en-ru/config.json",
+    "Sha256": "DB16BF0EA7BAC239273214C3B9AB44577884227371A9A25E0191B7BAF8D6F167",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/config.json",
+    "Bytes": 1376
+  },
+  {
+    "File": "en-ru/README.md",
+    "Sha256": "C0299A4627E3CA84AB9D4FAE027B62FD2C846F8B7804D14368A3977DE8DC8C2A",
+    "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/README.md",
+    "Bytes": 571
+  },
+  {
+    "File": "ru-en/encoder_model_quantized.onnx",
+    "Sha256": "C10DF0466540534BB70C4402D539C349B8BFA9968184CAD89F51408CF13E7EB7",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/onnx/encoder_model_quantized.onnx",
+    "Bytes": 51628446
+  },
+  {
+    "File": "ru-en/decoder_model_merged_quantized.onnx",
+    "Sha256": "25E7FF97B201BCE64AB9C39749761D657B70B8602BCBC1CE01C67F713E90FFDF",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/onnx/decoder_model_merged_quantized.onnx",
+    "Bytes": 58931576
+  },
+  {
+    "File": "ru-en/source.spm",
+    "Sha256": "745998E51BA5B058E38B7AC7765C25C43ED5C1C39CC92B27163B9B2E323C9D7C",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/source.spm",
+    "Bytes": 1080169
+  },
+  {
+    "File": "ru-en/vocab.json",
+    "Sha256": "5CF0D95D930D8D3E783C9E2F46A72F08B43A18060DAB4DDEFBCB66A733EFEDCB",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/vocab.json",
+    "Bytes": 2726796
+  },
+  {
+    "File": "ru-en/config.json",
+    "Sha256": "60DC7D0906DBE42A1D740CDD7E84CE1534685B81FBE16005A0301ADAC69086CE",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/config.json",
+    "Bytes": 1376
+  },
+  {
+    "File": "ru-en/README.md",
+    "Sha256": "1E1C206311D158F485FC1C4BE8D9E9AB2629D37979289A39F232C6665C32EE55",
+    "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/README.md",
+    "Bytes": 571
+  }
+]

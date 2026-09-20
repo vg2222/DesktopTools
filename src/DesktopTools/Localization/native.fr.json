@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "Saturation et luminosité. Réglez avec les flèches.",
+  "This application's audio session ended. Refresh the list.": "La session audio de cette application est terminée. Actualisez la liste.",
+  "System sounds": "Sons système",
+  "Application ({0})": "Application ({0})",
+  "No displays are connected.": "Aucun écran connecté.",
+  "Could not locate the pointer.": "Impossible de localiser le pointeur.",
+  "Could not read connected monitors.": "Impossible de lire les écrans connectés.",
+  "Could not enumerate monitors.": "Impossible de répertorier les écrans.",
+  "Show the window before placing it on a monitor.": "Affichez la fenêtre avant de la placer sur un écran.",
+  "Could not position the overlay.": "Impossible de positionner la couche de dessin.",
+  "Monitor dimensions must be positive.": "Les dimensions de l’écran doivent être positives.",
+  "Could not access the desktop.": "Impossible d’accéder au bureau.",
+  "Could not allocate a capture context.": "Impossible de créer le contexte de capture.",
+  "Could not allocate a screenshot.": "Impossible d’allouer de la mémoire pour la capture.",
+  "Could not prepare the screenshot.": "Impossible de préparer la capture.",
+  "Windows could not capture this desktop.": "Windows n’a pas pu capturer ce bureau.",
+  "Could not update overlay input mode.": "Impossible de modifier le mode de saisie de la couche de dessin.",
+  "The drawing control does not have a valid native window yet.": "Le contrôle de dessin n’a pas encore de fenêtre native valide.",
+  "Windows could not update capture exclusion: {0}": "Windows n’a pas pu modifier l’exclusion de capture : {0}"
+}

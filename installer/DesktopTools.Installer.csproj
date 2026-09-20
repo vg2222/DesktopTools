@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <ApplicationIcon>../src/DesktopTools/Assets/DesktopTools.ico</ApplicationIcon>
+    <AssemblyName>DesktopTools.Installer</AssemblyName>
+    <DefineConstants Condition="'$(InstallerMode)' == 'Setup'">$(DefineConstants);SETUP</DefineConstants>
+    <DefineConstants Condition="'$(InstallerMode)' != 'Setup'">$(DefineConstants);UNINSTALL</DefineConstants>
+    <Version Condition="'$(InstallerVersion)' != ''">$(InstallerVersion)</Version>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(InstallerMode)' == 'Setup'">
+    <EmbeddedResource Include="$(PayloadZip)" LogicalName="DesktopTools.Payload.zip" />
+    <EmbeddedResource Include="$(UninstallerExe)" LogicalName="DesktopTools.Uninstall.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../shared/GitHubReleaseClient.cs" Link="Updates/GitHubReleaseClient.cs" />
+    <Compile Include="../shared/WindowDismissal.cs" Link="UI/WindowDismissal.cs" />
+    <Resource Include="../src/DesktopTools/Assets/DesktopTools.ico" Link="Assets/DesktopTools.ico" />
+    <Resource Include="../src/DesktopTools/Assets/Icons/AppIcon.png" Link="Assets/Icons/AppIcon.png" />
+    <Resource Include="../src/DesktopTools/Assets/Icons/*_24_regular.svg" Link="Assets/Icons/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

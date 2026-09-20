@@ -1,0 +1,8 @@
+{
+  "Only hide from screen sharing (experimental)": "Nur in Bildschirmfreigaben ausblenden (experimentell)",
+  "Keep your desktop visible locally. Off: cover all displays in black for you too. Changing this stops active blackout.": "Der Desktop bleibt lokal sichtbar. Aus: Alle Bildschirme werden auch lokal schwarz. Eine Änderung beendet die aktive Abdeckung.",
+  "Warning: your screen may still be visible in screen-sharing apps. We recommend checking the viewer's output before use. Sharing an individual application window may bypass this mode.": "Warnung: Ihr Bildschirm kann in Freigabe-Apps weiterhin sichtbar sein. Prüfen Sie zuerst die Ansicht beim Zuschauer. Die Freigabe eines einzelnen Fensters kann diesen Modus umgehen.",
+  "Applies to all connected displays. Press Escape to stop. This is not a security guarantee.": "Gilt für alle angeschlossenen Bildschirme. Escape beendet den Modus. Keine Sicherheitsgarantie.",
+  "Windows could not activate sharing blackout. Your screen may still be visible.": "Windows konnte die Freigabe-Abdeckung nicht aktivieren. Ihr Bildschirm kann weiterhin sichtbar sein.",
+  "Warning: your screen may still be visible in screen-sharing apps. Check the viewer's output before using this mode. Press Escape to stop.": "Warnung: Ihr Bildschirm kann in Freigabe-Apps weiterhin sichtbar sein. Prüfen Sie die Zuschaueransicht. Escape beendet den Modus."
+}

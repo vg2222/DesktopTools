@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible problem in DesktopTools.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Search existing issues first. Use disposable test content and remove private desktop data from screenshots and logs. Report security vulnerabilities privately as described in SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: DesktopTools version
+      placeholder: "For example, 1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version, monitor count and scaling, and any relevant recording or screen-sharing software.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the action that triggers the problem and how often it happens.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or additional context
+      description: Optional. Redact private content before attaching anything.

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>../../src/DesktopTools/app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/DesktopTools/Native/*.cs" Link="Native/%(Filename)%(Extension)" />
+    <Compile Include="../../src/DesktopTools/Core/AppSettings.cs" Link="Core/AppSettings.cs" />
+    <Compile Include="../../src/DesktopTools/Core/DrawingBindings.cs" Link="Core/DrawingBindings.cs" />
+    <Compile Include="../../src/DesktopTools/Core/SettingsStore.cs" Link="Core/SettingsStore.cs" />
+    <Compile Include="../../src/DesktopTools/Core/FeatureAvailability.cs" Link="Core/FeatureAvailability.cs" />
+    <Compile Include="../../src/DesktopTools/Core/FeatureShortcutCatalog.cs" Link="Core/FeatureShortcutCatalog.cs" />
+    <Compile Include="../../src/DesktopTools/GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="../../shared/WindowDismissal.cs" Link="Presentation/WindowDismissal.cs" />
+  </ItemGroup>
+<ItemGroup><Compile Include="../../src/DesktopTools/Core/QuickWheelActions.cs" Link="Core/QuickWheelActions.cs" /></ItemGroup><ItemGroup><Compile Include="../../src/DesktopTools/Localization/L.cs" Link="Localization/L.cs" /><EmbeddedResource WithCulture="false" Include="../../src/DesktopTools/Localization/*.json" Link="Localization/%(Filename)%(Extension)" /></ItemGroup><ItemGroup><Compile Include="../../src/DesktopTools/Core/OnboardingProgress.cs" Link="Core/OnboardingProgress.cs" /></ItemGroup></Project>

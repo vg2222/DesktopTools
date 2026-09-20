@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "Choisissez un PNG, JPEG ou BMP pour modifier une copie.",
+  "Choose a video to trim, crop and save a copy.": "Choisissez une vidéo à couper, recadrer et enregistrer en copie.",
+  "Click to choose a display, window or region.": "Cliquez pour choisir un écran, une fenêtre ou une zone.",
+  "Choose recording source": "Choisir la source d’enregistrement",
+  "Translate text": "Traduire du texte",
+  "Text from screenshot": "Texte d’une capture",
+  "Select an area of your screen, then copy the recognized text.": "Sélectionnez une zone de l’écran, puis copiez le texte reconnu.",
+  "Type or paste text, choose the languages, then translate.": "Saisissez ou collez du texte, choisissez les langues, puis traduisez.",
+  "Update preview": "Actualiser l’aperçu",
+  "Original loaded. The preview updates automatically after you edit.": "Original chargé. L’aperçu s’actualise automatiquement après vos modifications.",
+  "Preview pending": "Aperçu en attente",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "L’original s’affiche pendant la préparation des modifications. L’aperçu s’actualise automatiquement.",
+  "Updating preview…": "Actualisation de l’aperçu…",
+  "Selection controls": "Sélection de zone et d’écran",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "Le masquage dépend de l’application de capture ou de partage. Ces fenêtres peuvent rester visibles. Vérifiez ce que voient les spectateurs.",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "Les dessins et effets pour le public restent visibles. Les commandes d’enregistrement et de dessin, notes, notifications et prompteur sont masqués par défaut. Modifiez chaque choix dans Paramètres → Confidentialité."
+}

@@ -1,0 +1,10 @@
+{
+  "Remove background": "Eliminar fondo",
+  "Local AI · review edges before saving PNG.": "IA local · revisa los bordes antes de guardar PNG.",
+  "Removing background locally…": "Eliminando fondo localmente…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "Fondo eliminado. Revisa los bordes finos; Deshacer restaura la imagen. PNG conserva la transparencia.",
+  "Background removal canceled. The image is unchanged.": "Eliminación cancelada. La imagen no ha cambiado.",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "Falta el modelo. Extrae el paquete completo de DesktopTools.",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "El modelo está dañado. Extrae una copia nueva de DesktopTools.",
+  "The background-removal model returned an invalid mask.": "El modelo devolvió una máscara no válida."
+}

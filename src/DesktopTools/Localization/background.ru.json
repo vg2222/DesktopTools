@@ -1,0 +1,10 @@
+{
+  "Remove background": "Удалить фон",
+  "Local AI · review edges before saving PNG.": "Локальный ИИ · проверьте края перед сохранением PNG.",
+  "Removing background locally…": "Удаление фона на компьютере…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "Фон удалён. Проверьте тонкие края; «Отменить» вернёт изображение. PNG сохраняет прозрачность.",
+  "Background removal canceled. The image is unchanged.": "Удаление фона отменено. Изображение не изменено.",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "Модель удаления фона отсутствует. Распакуйте DesktopTools полностью.",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "Модель удаления фона повреждена. Распакуйте новую копию DesktopTools.",
+  "The background-removal model returned an invalid mask.": "Модель удаления фона вернула некорректную маску."
+}

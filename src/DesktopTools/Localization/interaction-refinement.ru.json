@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "Выберите PNG, JPEG или BMP, чтобы изменить копию.",
+  "Choose a video to trim, crop and save a copy.": "Выберите видео, чтобы обрезать его и сохранить копию.",
+  "Click to choose a display, window or region.": "Нажмите, чтобы выбрать экран, окно или область.",
+  "Choose recording source": "Выбрать источник записи",
+  "Translate text": "Перевод текста",
+  "Text from screenshot": "Текст со скриншота",
+  "Select an area of your screen, then copy the recognized text.": "Выделите область экрана и скопируйте распознанный текст.",
+  "Type or paste text, choose the languages, then translate.": "Введите или вставьте текст, выберите языки и переведите.",
+  "Update preview": "Обновить предпросмотр",
+  "Original loaded. The preview updates automatically after you edit.": "Оригинал загружен. Предпросмотр обновляется автоматически после изменений.",
+  "Preview pending": "Предпросмотр ожидает обновления",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "Пока изменения обрабатываются, показан оригинал. Предпросмотр обновится автоматически.",
+  "Updating preview…": "Обновление предпросмотра…",
+  "Selection controls": "Выбор области и экрана",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "Скрытие зависит от приложения для записи или демонстрации. Эти окна могут остаться видимыми. Проверьте, что видят зрители.",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "Рисунки и эффекты для зрителей остаются видимыми. Панели записи и рисования, заметки, уведомления и телесуфлёр по умолчанию скрыты. Измените каждый параметр в Настройки → Конфиденциальность."
+}
