@@ -1,10 +1,10 @@
 # Roadmap
 
-DesktopTools 1.0.0 includes the drawing, capture, presentation, image, video, recording, OCR, translation, notes, file shelf, audio, profile, and localization features described in the README.
+DesktopTools 1.1.0 includes the drawing, capture, presentation, image, video, recording, OCR, translation, notes, file shelf, audio, profile, and localization features described in the README.
 
 ## Release readiness
 
-The remaining 1.0 acceptance work is environmental rather than missing product scope:
+The remaining release acceptance work is environmental rather than missing product scope:
 
 - Observe rendering and pointer behavior on physical mixed-DPI 100%, 150%, and 200% displays, including monitor disconnects.
 - Reproduce the profile-specific Chrome pointer-drag/topmost report on the affected setup.

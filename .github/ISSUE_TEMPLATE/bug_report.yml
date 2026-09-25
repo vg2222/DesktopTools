@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: DesktopTools version
-      placeholder: "For example, 1.0.0"
+      placeholder: "For example, 1.1.0"
     validations:
       required: true
   - type: textarea

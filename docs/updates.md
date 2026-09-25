@@ -1,6 +1,6 @@
 # Updates and installer maintenance
 
-DesktopTools checks the latest stable release in [vg2222/DesktopTools](https://github.com/vg2222/DesktopTools/releases). Checks run shortly after startup and every hour by default. **Settings → Updates** offers startup-only, hourly, 6-hour, 12-hour, daily and weekly intervals, or disables background checks. Manual checking is also available in About. Drafts and prereleases are ignored; an unpublished repository or missing public release is reported without blocking the app.
+DesktopTools checks the latest stable release in [vg2222/DesktopTools](https://github.com/vg2222/DesktopTools/releases). Checks run shortly after startup and every hour by default. **Settings → Updates** offers startup-only, 15-minute, 30-minute, hourly, 2-hour, 3-hour, 6-hour, 12-hour, daily and weekly intervals, or disables background checks. Manual checking is also available in About. Drafts and prereleases are ignored; an unpublished repository or missing public release is reported without blocking the app.
 
 An available update appears in a DesktopTools notification and stays accessible from the sidebar and Updates settings after the notification is dismissed. **Release notes** opens that release on GitHub, keeps the notification open, updates its message and extends its duration. Notifications wait for mouse or keyboard activity after appearing before their dismissal timer starts; hovering pauses the timer.
 
