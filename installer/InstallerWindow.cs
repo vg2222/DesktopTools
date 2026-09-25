@@ -42,7 +42,8 @@ internal sealed partial class InstallerWindow : Window
     private Button? moreOptions;
     private Border? advancedOptions;
     private Button? githubUpdate;
-    private ComboBox? languageChoice;
+    private Button? languageChoice;
+    private Popup? languageMenu;
     private CheckBox launch = null!;
     private RadioButton? keepData;
     private RadioButton? deleteData;
@@ -86,6 +87,7 @@ internal sealed partial class InstallerWindow : Window
         Closing += (_, e) =>
         {
             if (busy && !cancellableBusy) { e.Cancel = true; return; }
+            if (languageMenu is not null) languageMenu.IsOpen = false;
             closed = true;
             lifetime.Cancel();
         };
@@ -283,6 +285,8 @@ internal sealed partial class InstallerWindow : Window
     {
         busy = true;
         cancellableBusy = cancellable;
+        if (languageMenu is not null) languageMenu.IsOpen = false;
+        if (languageChoice is not null) languageChoice.IsEnabled = false;
         primary.IsEnabled = cancel.IsEnabled = false;
         if (browse is not null) browse.IsEnabled = false;
         if (repair is not null) repair.IsEnabled = false;
@@ -297,6 +301,7 @@ internal sealed partial class InstallerWindow : Window
 
     private void RestoreActionState()
     {
+        if (languageChoice is not null) languageChoice.IsEnabled = !finished;
         cancel.IsEnabled = !finished;
         primary.IsEnabled = finished || setupMode != Program.SetupMode.OlderSetup || latestRelease is not null;
         if (browse is not null) browse.IsEnabled = !finished;

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -68,20 +69,7 @@ internal sealed partial class InstallerWindow
         var caption = new Grid();
         caption.Children.Add(Text(uninstall ? "Uninstall" : setupMode == Program.SetupMode.Install ? "Welcome to setup" : "Manage DesktopTools", 12, FontWeights.Medium, MutedBrush));
         var captionActions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        languageChoice = new ComboBox { ItemsSource = L.LanguageNames, SelectedIndex = Array.IndexOf(L.Languages, L.Language),
-            MinWidth = 128, Height = 34, Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(8, 3, 8, 3),
-            Foreground = Brush("#17202B"), Background = Brush("#F2F4F7"), BorderBrush = StrokeBrush, Tag = "installer-language" };
-        AutomationProperties.SetName(languageChoice, L.T("Interface language"));
-        languageChoice.SelectionChanged += (_, _) =>
-        {
-            if (busy || finished || languageChoice.SelectedIndex < 0) return;
-            string language = L.Languages[languageChoice.SelectedIndex];
-            if (language == L.Language) return;
-            L.Use(language);
-            Title = L.T(uninstall ? "Remove DesktopTools" : "DesktopTools Setup");
-            BuildLayout();
-            if (!uninstall && !checkingLatest) _ = CheckLatestAsync();
-        };
+        languageChoice = CreateLanguageChoice();
         captionActions.Children.Add(languageChoice);
         var close = Button("", false, Close, 34); close.Content = FluentIcon("dismiss", TextBrush, 16);
         close.Height = 34; close.HorizontalAlignment = HorizontalAlignment.Right;
@@ -193,6 +181,112 @@ internal sealed partial class InstallerWindow
         primary = Button(uninstall ? "Uninstall" : setupMode == Program.SetupMode.Update ? "Update DesktopTools" : "Install DesktopTools", true, async () => await ExecuteAsync(forceLocal: true), 164);
         primary.Visibility = !uninstall && setupMode is Program.SetupMode.Maintenance or Program.SetupMode.OlderSetup ? Visibility.Collapsed : Visibility.Visible;
         Grid.SetColumn(primary, 2); footer.Children.Add(primary); Grid.SetRow(footer, 2); main.Children.Add(footer);
+    }
+
+    private Button CreateLanguageChoice()
+    {
+        var button = Button("", false, () =>
+        {
+            if (!busy && !finished && languageMenu is not null) languageMenu.IsOpen = !languageMenu.IsOpen;
+        }, 158);
+        button.Height = 34; button.Margin = new Thickness(0, 0, 8, 0);
+        button.Tag = "installer-language";
+        button.ToolTip = L.T("Interface language");
+        AutomationProperties.SetName(button, L.T("Interface language") + ": " + L.LanguageNames[Array.IndexOf(L.Languages, L.Language)]);
+        var label = new Grid { Margin = new Thickness(10, 0, 8, 0) };
+        label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        label.ColumnDefinitions.Add(new ColumnDefinition());
+        label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        label.Children.Add(FluentIcon("translate", MutedBrush, 17));
+        var name = Text(L.LanguageNames[Array.IndexOf(L.Languages, L.Language)], 12, FontWeights.SemiBold, TextBrush, new Thickness(9, 0, 0, 0));
+        Grid.SetColumn(name, 1); label.Children.Add(name);
+        var chevron = FluentIcon("chevron_right", MutedBrush, 14);
+        chevron.RenderTransformOrigin = new Point(.5, .5); chevron.RenderTransform = new RotateTransform(90);
+        Grid.SetColumn(chevron, 2); label.Children.Add(chevron);
+        button.Content = label;
+        button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+
+        var options = new StackPanel { Margin = new Thickness(5) };
+        for (int index = 0; index < L.Languages.Length; index++)
+        {
+            string language = L.Languages[index];
+            string nativeName = L.LanguageNames[index];
+            var option = new Button
+            {
+                Content = LanguageOptionContent(nativeName, language == L.Language),
+                Tag = "installer-language-" + language,
+                Height = 38,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Padding = new Thickness(10, 0, 10, 0),
+                Foreground = TextBrush,
+                Background = language == L.Language ? Brush("#2D415F") : Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand
+            };
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
+            border.Name = "OptionSurface";
+            border.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+            border.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
+            border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(System.Windows.Controls.Button.Background))
+                { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            presenter.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            presenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(presenter);
+            var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
+            var focus = new Trigger { Property = IsKeyboardFocusWithinProperty, Value = true };
+            focus.Setters.Add(new Setter(Border.BorderBrushProperty, AccentHoverBrush, "OptionSurface"));
+            template.Triggers.Add(focus);
+            option.Template = template;
+            option.MouseEnter += (_, _) => option.Background = Brush("#303845");
+            option.MouseLeave += (_, _) => option.Background = language == L.Language ? Brush("#2D415F") : Brushes.Transparent;
+            AutomationProperties.SetName(option, nativeName);
+            option.Click += (_, _) =>
+            {
+                languageMenu!.IsOpen = false;
+                if (busy || finished || language == L.Language) return;
+                L.Use(language);
+                Title = L.T(uninstall ? "Remove DesktopTools" : "DesktopTools Setup");
+                BuildLayout();
+                if (!uninstall && !checkingLatest) _ = CheckLatestAsync();
+            };
+            options.Children.Add(option);
+        }
+        var menu = new Border
+        {
+            Child = options, Width = 206, Background = CardBrush, BorderBrush = StrokeBrush,
+            BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(11)
+        };
+        languageMenu = new Popup
+        {
+            PlacementTarget = button, Placement = PlacementMode.Bottom, HorizontalOffset = -48,
+            VerticalOffset = 6, AllowsTransparency = true, StaysOpen = false,
+            PopupAnimation = PopupAnimation.Fade, Child = menu
+        };
+        menu.PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { languageMenu.IsOpen = false; e.Handled = true; } };
+        button.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key != Key.Down) return;
+            languageMenu.IsOpen = true;
+            options.Children.OfType<Button>().FirstOrDefault()?.Focus();
+            e.Handled = true;
+        };
+        return button;
+    }
+
+    private static Grid LanguageOptionContent(string nativeName, bool selected)
+    {
+        var row = new Grid();
+        row.ColumnDefinitions.Add(new ColumnDefinition());
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.Children.Add(Text(nativeName, 12, FontWeights.Medium, TextBrush));
+        if (selected)
+        {
+            var check = FluentIcon("checkmark", AccentHoverBrush, 16);
+            Grid.SetColumn(check, 1); row.Children.Add(check);
+        }
+        return row;
     }
 
     private Border CreateRuntimeCard()

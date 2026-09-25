@@ -392,8 +392,18 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 encoder.Save(stream);
                 if (name == "install")
                 {
-                    var selector = VisualDescendants((DependencyObject)window.Content).OfType<ComboBox>().Single(c => Equals(c.Tag, "installer-language"));
-                    selector.SelectedItem = "Русский";
+                    var selector = VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"));
+                    selector.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    var menu = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;
+                    Check(menu.IsOpen && VisualDescendants(menu.Child).OfType<Button>().Count(b => (b.Tag as string)?.StartsWith("installer-language-") == true) == 5,
+                        "Installer language menu does not show all supported languages");
+                    menu.Child.Measure(new Size(206, 230)); menu.Child.Arrange(new Rect(0, 0, 206, menu.Child.DesiredSize.Height));
+                    var menuBitmap = new RenderTargetBitmap(206, (int)Math.Ceiling(menu.Child.RenderSize.Height), 96, 96, PixelFormats.Pbgra32);
+                    menuBitmap.Render(menu.Child);
+                    var menuEncoder = new PngBitmapEncoder(); menuEncoder.Frames.Add(BitmapFrame.Create(menuBitmap));
+                    using (FileStream menuStream = File.Create(Path.Combine(output, "installer-language-menu.png"))) menuEncoder.Save(menuStream);
+                    VisualDescendants(menu.Child).OfType<Button>().Single(b => Equals(b.Tag, "installer-language-ru"))
+                        .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Check(((TextBlock)Field("headline")!).Text == "Установить DesktopTools", "Installer language selector did not update the first screen");
                 }
                 window.Close();
