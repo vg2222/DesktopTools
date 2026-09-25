@@ -207,8 +207,22 @@ internal static class Program
                 if (installedVersion is null || DecideSetupMode(installedVersion, Version) != SetupMode.Update)
                     throw new InvalidOperationException("This update is not newer than the installed DesktopTools version.");
             }
+            ReleaseInstallerWorkingDirectory(installed, Environment.ProcessPath
+                ?? throw new InvalidOperationException("Setup executable path is unavailable."));
             SignalAndWaitForExit(arguments, process, onReady);
         }
+    }
+
+    private static void ReleaseInstallerWorkingDirectory(string installed, string setupExecutable)
+    {
+        string setupDirectory = Path.GetDirectoryName(Path.GetFullPath(setupExecutable))
+            ?? throw new InvalidOperationException("Setup executable path is invalid.");
+        if (SameOrWithin(setupDirectory, installed))
+            throw new InvalidOperationException("Move the setup file outside the DesktopTools installation folder and try again.");
+        // The app's shortcuts launch it with the installation folder as its working
+        // directory. A child setup inherits that directory and would hold it open
+        // even after the app exits, preventing the folder swap on Windows.
+        Environment.CurrentDirectory = setupDirectory;
     }
 
     private static void WaitForPortableApplication(SetupArguments arguments)

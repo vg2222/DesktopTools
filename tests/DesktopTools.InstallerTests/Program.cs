@@ -245,6 +245,30 @@ finally { if (Directory.Exists(partialInstall)) Directory.Delete(partialInstall,
 
 // A just-exited app, indexer, or scanner can briefly retain a file handle. The
 // installer must complete the folder swap once that handle closes.
+var releaseWorkingDirectory = program.GetMethod("ReleaseInstallerWorkingDirectory", BindingFlags.Static | BindingFlags.NonPublic)
+    ?? throw new Exception("Background setup does not release the installed app's inherited working directory.");
+string cwdFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
+string currentInstallation = Path.Combine(cwdFixture, "installed");
+string downloadedSetup = Path.Combine(cwdFixture, "updates", "DesktopTools-setup.exe");
+Directory.CreateDirectory(currentInstallation);
+Directory.CreateDirectory(Path.GetDirectoryName(downloadedSetup)!);
+string originalWorkingDirectory = Environment.CurrentDirectory;
+try
+{
+    Environment.CurrentDirectory = currentInstallation;
+    releaseWorkingDirectory.Invoke(null, [currentInstallation, downloadedSetup]);
+    Check(Path.GetFullPath(Environment.CurrentDirectory) == Path.GetDirectoryName(downloadedSetup),
+        "Background setup kept the installation folder as its working directory");
+    Directory.Move(currentInstallation, Path.Combine(cwdFixture, "previous"));
+}
+finally
+{
+    Environment.CurrentDirectory = originalWorkingDirectory;
+    string tempRoot = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+    if (!Path.GetFullPath(cwdFixture).StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase)) throw new Exception("Unsafe test cleanup path");
+    if (Directory.Exists(cwdFixture)) Directory.Delete(cwdFixture, true);
+}
+
 var moveAfterExit = program.GetMethod("MoveDirectoryAfterExit", BindingFlags.Static | BindingFlags.NonPublic)
     ?? throw new Exception("Installer has no bounded retry for the update folder swap.");
 string swapFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
