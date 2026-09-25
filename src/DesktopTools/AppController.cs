@@ -19,6 +19,8 @@ internal sealed partial class AppController : IDisposable
 {
     private readonly SettingsStore store;
     private readonly HotkeyService hotkeys = new();
+    private IReadOnlyDictionary<string, string> unavailableShortcuts = new Dictionary<string, string>();
+    internal IReadOnlyDictionary<string, string> UnavailableShortcuts => unavailableShortcuts;
     private readonly EscapeKeyService escape = new();
     private QuickWheelWindow? quickWheel;
     public void OpenQuickWheel(bool held = false)
@@ -175,7 +177,12 @@ internal sealed partial class AppController : IDisposable
         escape.Pressed += CancelActiveTool;
         ApplyTheme();
         hotkeys.Pressed += HandleHotkey;
-        if (!smoke && !hotkeys.TryReplace(Bindings(Settings), out string? error)) Report(error ?? L.T("A shortcut is unavailable. Open Shortcuts to choose another binding."));
+        if (!smoke)
+        {
+            unavailableShortcuts = hotkeys.RegisterAvailable(Bindings(Settings));
+            if (unavailableShortcuts.Count > 0)
+                Report(L.T("A shortcut is unavailable. Open Shortcuts to choose another binding."), NotificationKind.Warning);
+        }
         if (store.RecoveryMessage != null) Report(store.RecoveryMessage);
         if (!smoke)
         {
@@ -200,6 +207,16 @@ internal sealed partial class AppController : IDisposable
         }
     }
     private static Dictionary<string, string> Bindings(AppSettings s) => FeatureShortcutCatalog.Bindings(s);
+    internal void RetryShortcuts()
+    {
+        if (smoke || disposed) return;
+        unavailableShortcuts = hotkeys.RegisterAvailable(Bindings(Settings));
+        Report(L.T(unavailableShortcuts.Count == 0
+            ? "All enabled shortcuts are ready."
+            : "A shortcut is unavailable. Open Shortcuts to choose another binding."),
+            unavailableShortcuts.Count == 0 ? NotificationKind.Info : NotificationKind.Warning);
+        SettingsChanged?.Invoke();
+    }
     private void HandleHotkey(string action)
     {
         if (IsBusy || main?.HasModal == true) return;
@@ -231,7 +248,30 @@ internal sealed partial class AppController : IDisposable
             if (!FeatureShortcutCatalog.TryValidate(candidate, out var shortcutError)) { Report(shortcutError!, NotificationKind.Warning); return false; }
             var oldBindings = Bindings(Settings); var newBindings = Bindings(candidate);
             bool bindingsChanged = oldBindings.Count != newBindings.Count || oldBindings.Any(pair => !newBindings.TryGetValue(pair.Key, out var value) || value != pair.Value);
-            if (!smoke && bindingsChanged && !hotkeys.TryReplace(newBindings, out string? error)) { Report(error ?? L.T("Shortcut conflict. Previous bindings kept.")); return false; }
+            var previousFailures = unavailableShortcuts;
+            IReadOnlyDictionary<string, string>? nextFailures = null;
+            if (!smoke && bindingsChanged)
+            {
+                if (previousFailures.Count == 0)
+                {
+                    if (!hotkeys.TryReplace(newBindings, out string? error)) { Report(error ?? L.T("Shortcut conflict. Previous bindings kept.")); return false; }
+                    nextFailures = new Dictionary<string, string>();
+                }
+                else
+                {
+                    nextFailures = hotkeys.RegisterAvailable(newBindings);
+                    string? newlyFailed = nextFailures.Keys.FirstOrDefault(action =>
+                        !previousFailures.ContainsKey(action) ||
+                        !oldBindings.TryGetValue(action, out string? previous) ||
+                        !newBindings.TryGetValue(action, out string? current) || previous != current);
+                    if (newlyFailed is not null)
+                    {
+                        unavailableShortcuts = hotkeys.RegisterAvailable(oldBindings);
+                        Report(L.F($"{newBindings[newlyFailed]}: shortcut is unavailable. {nextFailures[newlyFailed]} Your previous shortcuts are unchanged."), NotificationKind.Warning);
+                        return false;
+                    }
+                }
+            }
             try
             {
                 if (!smoke && candidate.StartAtLogin != Settings.StartAtLogin) StartupService.SetEnabled(candidate.StartAtLogin);
@@ -240,10 +280,15 @@ internal sealed partial class AppController : IDisposable
             }
             catch
             {
-                if (!smoke && bindingsChanged) hotkeys.TryReplace(oldBindings, out _);
+                if (!smoke && bindingsChanged)
+                {
+                    if (previousFailures.Count == 0) hotkeys.TryReplace(oldBindings, out _);
+                    else unavailableShortcuts = hotkeys.RegisterAvailable(oldBindings);
+                }
                 if (!smoke && candidate.StartAtLogin != Settings.StartAtLogin) StartupService.SetEnabled(Settings.StartAtLogin);
                 throw;
             }
+            if (nextFailures is not null) unavailableShortcuts = nextFailures;
             bool textFeatureDisabled = (Settings.TranslationEnabled && !candidate.TranslationEnabled) || (Settings.ScreenTextEnabled && !candidate.ScreenTextEnabled);
             bool monitorChanged = candidate.MonitorMode != Settings.MonitorMode;
             bool themeChanged = candidate.Theme != Settings.Theme || candidate.Transparency != Settings.Transparency || candidate.ThemePreset != Settings.ThemePreset || candidate.PrimaryColor != Settings.PrimaryColor || candidate.BackgroundColor != Settings.BackgroundColor || candidate.UseCustomBackground != Settings.UseCustomBackground || candidate.Animations != Settings.Animations;
@@ -316,7 +361,9 @@ internal sealed partial class AppController : IDisposable
                 foreach (var binding in Bindings(candidate).Values)
                     if (DrawingBindings.TryParse(binding, out var key, out var modifiers, out _) && DrawingBindings.Find(candidate.DrawingShortcuts, key, modifiers) is { } action)
                         return L.F($"Shortcut conflict: {binding} is already used by drawing action {action}.");
-                return smoke || hotkeys.TryValidate(Bindings(candidate), out error) ? null : error;
+                // An existing unavailable binding must not prevent changing a different one.
+                // ReplaceSettings checks newly requested bindings when the user saves.
+                return smoke || unavailableShortcuts.Count > 0 || hotkeys.TryValidate(Bindings(candidate), out error) ? null : error;
             }) { Owner = main };
             dialog.SourceInitialized += (_, _) => NativeWindowService.TryExcludeFromCapture(dialog, Settings.HideControlsFromCapture, out _);
             if (main == null) OpenMain();
@@ -325,7 +372,15 @@ internal sealed partial class AppController : IDisposable
         }
         finally
         {
-            if (!smoke && !hotkeys.TryReplace(Bindings(Settings), out var error)) Report(error ?? L.T("Could not restore shortcuts."));
+            if (!smoke)
+            {
+                if (unavailableShortcuts.Count > 0) unavailableShortcuts = hotkeys.RegisterAvailable(Bindings(Settings));
+                else if (!hotkeys.TryReplace(Bindings(Settings), out var error))
+                {
+                    unavailableShortcuts = hotkeys.RegisterAvailable(Bindings(Settings));
+                    Report(error ?? L.T("Could not restore shortcuts."));
+                }
+            }
             hotkeys.DispatchSuspended = false;
             IsBusy = wasBusy; UpdateEscape();
         }

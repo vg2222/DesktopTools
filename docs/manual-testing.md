@@ -10,6 +10,7 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 4. Escape during a shape/text edit cancels it first. Escape again hides drawing. Repeat from palette focus and after Alt+Tab. Text entry must not invoke ordinary drawing-tool shortcuts.
 5. Hide and restore annotations. They stay attached to their original monitor. Explicitly start a new monitor session and confirm old drawings do not silently move onto unrelated content.
 6. Assign an occupied shortcut, including a transaction with another available replacement. Expect an error and all old shortcuts still functioning. Test swaps, disable/re-enable each feature, and Quit.
+7. On a fresh settings file, reserve one default global shortcut in another process before starting DesktopTools. The Shortcuts page and first-run setup must identify the conflict; all other enabled shortcuts still work. Release the reservation and select Retry shortcuts; the blocked shortcut should then work without restarting DesktopTools.
 
 ## Capture and displays
 

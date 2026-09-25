@@ -130,7 +130,9 @@ internal sealed class SetupWindow : Window
         }
         else if (step == 2)
         {
-            foreach (var entry in FeatureShortcutCatalog.All) content.Children.Add(ShortcutCatalogView.Row(controller, entry));
+            var availability = ShortcutCatalogView.AvailabilityNotice(controller, () => RenderStep());
+            if (availability is not null) content.Children.Add(availability);
+            foreach (var entry in FeatureShortcutCatalog.All) content.Children.Add(ShortcutCatalogView.Row(controller, entry, () => RenderStep()));
             var drawing = new StackPanel();
             foreach (var action in s.DrawingShortcuts.Keys)
             {

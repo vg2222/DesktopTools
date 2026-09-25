@@ -1,6 +1,6 @@
 # Compatibility
 
-DesktopTools 1.2.3 targets Windows 11 x64. The app is self-contained; screen recording additionally requires Microsoft Visual C++ x64 Redistributable and Windows Media Foundation.
+DesktopTools 1.2.4 targets Windows 11 x64. The app is self-contained; screen recording additionally requires Microsoft Visual C++ x64 Redistributable and Windows Media Foundation.
 
 ## Verified locally
 

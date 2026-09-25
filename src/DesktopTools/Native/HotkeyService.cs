@@ -24,6 +24,55 @@ public sealed class HotkeyService : IDisposable
 
     public bool DispatchSuspended { get; set; }
 
+    /// <summary>Register each requested shortcut independently during startup or a retry.</summary>
+    public IReadOnlyDictionary<string, string> RegisterAvailable(IReadOnlyDictionary<string, string> requestedBindings)
+    {
+        source.Dispatcher.VerifyAccess();
+        ObjectDisposedException.ThrowIf(disposed, this);
+        var unavailable = new Dictionary<string, string>();
+        var next = new Dictionary<HotkeyGesture, int>();
+        var nextActions = new Dictionary<int, string>();
+        var nextBindings = new Dictionary<string, string>();
+        foreach (var pair in requestedBindings)
+        {
+            if (!HotkeyGesture.TryParse(pair.Value, out var gesture, out string? error))
+            {
+                unavailable[pair.Key] = error ?? "Invalid shortcut";
+                continue;
+            }
+            if (next.ContainsKey(gesture))
+            {
+                unavailable[pair.Key] = "Another DesktopTools action uses this shortcut.";
+                continue;
+            }
+            int id;
+            if (!registrations.TryGetValue(gesture, out id))
+            {
+                id = 1;
+                while (registrations.ContainsValue(id) || next.ContainsValue(id)) id++;
+                if (id > 0xBFFF)
+                {
+                    unavailable[pair.Key] = "Windows has no available hotkey IDs.";
+                    continue;
+                }
+                if (!NativeMethods.RegisterHotKey(source.Handle, id, gesture.Modifiers | 0x4000, gesture.VirtualKey))
+                {
+                    unavailable[pair.Key] = new Win32Exception(Marshal.GetLastWin32Error()).Message;
+                    continue;
+                }
+            }
+            next.Add(gesture, id);
+            nextActions.Add(id, pair.Key);
+            nextBindings.Add(pair.Key, pair.Value);
+        }
+        foreach (var pair in registrations)
+            if (!next.ContainsKey(pair.Key)) NativeMethods.UnregisterHotKey(source.Handle, pair.Value);
+        registrations = next;
+        actions = nextActions;
+        bindings = nextBindings;
+        return unavailable;
+    }
+
     public bool TryValidate(IReadOnlyDictionary<string, string> replacement, out string? error)
     {
         source.Dispatcher.VerifyAccess();

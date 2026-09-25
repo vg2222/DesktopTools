@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings>
-    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.3</Version><RootNamespace>DesktopTools</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.4</Version><RootNamespace>DesktopTools</RootNamespace>
     <ApplicationIcon>Assets/DesktopTools.ico</ApplicationIcon>
     <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>

@@ -6,5 +6,9 @@
   "Tools available": "Verfügbare Werkzeuge",
   "Using the wheel": "Aktionsrad verwenden",
   "How it works": "So funktioniert es",
-  "Original state is restored when DesktopTools closes.": "Beim Beenden von DesktopTools wird der ursprüngliche Zustand wiederhergestellt."
+  "Original state is restored when DesktopTools closes.": "Beim Beenden von DesktopTools wird der ursprüngliche Zustand wiederhergestellt.",
+  "Some shortcuts could not start": "Einige Tastenkombinationen konnten nicht aktiviert werden",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "Die übrigen Tastenkombinationen funktionieren. Schließen Sie die App, die diese Tasten verwendet, und versuchen Sie es erneut oder wählen Sie unten andere Tasten.",
+  "Retry shortcuts": "Tastenkombinationen erneut versuchen",
+  "All enabled shortcuts are ready.": "Alle aktivierten Tastenkombinationen sind bereit."
 }

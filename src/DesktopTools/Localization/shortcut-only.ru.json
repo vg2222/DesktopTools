@@ -6,5 +6,9 @@
   "Tools available": "Доступно инструментов",
   "Using the wheel": "Колесо быстрых действий",
   "How it works": "Как это работает",
-  "Original state is restored when DesktopTools closes.": "При закрытии DesktopTools исходное состояние будет восстановлено."
+  "Original state is restored when DesktopTools closes.": "При закрытии DesktopTools исходное состояние будет восстановлено.",
+  "Some shortcuts could not start": "Некоторые сочетания клавиш не запустились",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "Остальные сочетания работают. Закройте приложение, которое использует эти клавиши, и повторите попытку либо выберите другие клавиши ниже.",
+  "Retry shortcuts": "Повторить подключение сочетаний",
+  "All enabled shortcuts are ready.": "Все включённые сочетания клавиш работают."
 }

@@ -79,6 +79,7 @@ DesktopTools stays in the notification area when you close its main window. Clic
 | Freeze frame | Ctrl + Alt + F |
 
 The **Shortcuts** page lists all feature bindings. Default bindings are enabled; optional bindings start disabled. Every binding has its own switch.
+If shortcuts do not respond, check that DesktopTools is running in the tray and that the shortcut's switch is on. If the Shortcuts page reports a conflict, choose another combination or close the app using it, then select **Retry shortcuts**. To test which enabled combinations Windows will accept, quit DesktopTools from the tray and run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\diagnose-shortcuts.ps1` from a repository checkout. The script reads only shortcut preferences and changes nothing.
 
 ## 💡 A few details
 

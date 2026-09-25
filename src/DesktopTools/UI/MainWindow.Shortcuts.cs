@@ -10,6 +10,8 @@ internal sealed partial class MainWindow
     private void ShortcutsCatalog()
     {
         var settings = controller.Settings;
+        var availability = ShortcutCatalogView.AvailabilityNotice(controller, () => Navigate("Shortcuts"));
+        if (availability is not null) page.Children.Add(availability);
         var search = new TextBox { Tag = "shortcut-search", Margin = new Thickness(0, 0, 0, 12) };
         System.Windows.Automation.AutomationProperties.SetName(search, L.T("Find a shortcut"));
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 12) };
@@ -33,7 +35,7 @@ internal sealed partial class MainWindow
         var global = new StackPanel();
         foreach (FeatureShortcutCatalog.Entry entry in FeatureShortcutCatalog.All)
         {
-            var row = ShortcutCatalogView.Row(controller, entry);
+            var row = ShortcutCatalogView.Row(controller, entry, () => Navigate("Shortcuts"));
             searchable.Add(row, L.T(entry.Title));
             global.Children.Add(row);
         }

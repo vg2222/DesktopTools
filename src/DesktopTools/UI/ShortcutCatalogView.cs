@@ -8,7 +8,29 @@ namespace DesktopTools.UI;
 
 internal static class ShortcutCatalogView
 {
-    internal static Grid Row(AppController controller, FeatureShortcutCatalog.Entry entry)
+    internal static Border? AvailabilityNotice(AppController controller, Action refresh)
+    {
+        if (controller.UnavailableShortcuts.Count == 0) return null;
+        var content = new StackPanel();
+        content.Children.Add(Ui.Text(L.T("Some shortcuts could not start"), 15, true));
+        var explanation = Ui.Text(L.T("The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below."), 12, muted: true);
+        explanation.Margin = new Thickness(0, 6, 0, 8);
+        content.Children.Add(explanation);
+        foreach (var failure in controller.UnavailableShortcuts)
+        {
+            var entry = FeatureShortcutCatalog.All.FirstOrDefault(item => item.Action == failure.Key);
+            string name = entry is null ? failure.Key : L.T(entry.Title);
+            string gesture = entry?.Read(controller.Settings) ?? "";
+            content.Children.Add(Ui.Text($"{name} · {gesture}", 12));
+        }
+        var retry = Ui.Button(L.T("Retry shortcuts"), () => { controller.RetryShortcuts(); refresh(); });
+        retry.Margin = new Thickness(0, 12, 0, 0);
+        retry.HorizontalAlignment = HorizontalAlignment.Left;
+        content.Children.Add(retry);
+        return Ui.Card(content, 16);
+    }
+
+    internal static Grid Row(AppController controller, FeatureShortcutCatalog.Entry entry, Action? refreshPage = null)
     {
         var controls = new StackPanel { Orientation = Orientation.Horizontal };
         var change = Ui.Button(L.T("Change shortcut"), () => { });
@@ -19,7 +41,7 @@ internal static class ShortcutCatalogView
             string value = entry.Read(controller.Settings);
             change.Content = string.IsNullOrWhiteSpace(value) ? Ui.Text(L.T("Unassigned"), 12, muted: true) : Ui.Shortcut(value);
         }
-        change.Click += (_, _) => { controller.RecordFeatureShortcut(entry); Refresh(); };
+        change.Click += (_, _) => { controller.RecordFeatureShortcut(entry); Refresh(); refreshPage?.Invoke(); };
         Refresh(); controls.Children.Add(change);
         CheckBox? toggle = null;
         bool updating = false;
@@ -31,6 +53,7 @@ internal static class ShortcutCatalogView
                 updating = true; toggle!.IsChecked = FeatureShortcutCatalog.IsEnabled(controller.Settings, entry); updating = false;
             }
             Refresh();
+            refreshPage?.Invoke();
         });
         toggle.Margin = new Thickness(12, 0, 0, 0);
         toggle.Tag = "shortcut-enabled-" + entry.Action;

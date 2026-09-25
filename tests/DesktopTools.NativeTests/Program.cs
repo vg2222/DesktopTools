@@ -51,6 +51,25 @@ internal static class Program
         Check(!rival.TryReplace(new Dictionary<string, string> { ["Occupied"] = "Ctrl+Alt+Shift+F22" }, out _), "previous OS registration preserved");
         Check(rival.TryReplace(new Dictionary<string, string> { ["Occupied"] = "Ctrl+Alt+Shift+F24" }, out _), "new tentative registration rolled back");
         Check(original.TryReplace(new Dictionary<string, string>(), out _), "release disabled bindings");
+        using (var occupied = new HotkeyService())
+        using (var fresh = new HotkeyService())
+        {
+            Check(occupied.TryReplace(new Dictionary<string, string> { ["OtherApp"] = "Ctrl+Alt+Shift+F23" }, out _),
+                "reserve one shortcut for startup conflict test");
+            var requested = new Dictionary<string, string>
+            {
+                ["Draw"] = "Ctrl+Alt+Shift+F21",
+                ["Capture"] = "Ctrl+Alt+Shift+F23",
+                ["Freeze"] = "Ctrl+Alt+Shift+F22"
+            };
+            var unavailable = fresh.RegisterAvailable(requested);
+            Check(unavailable.Count == 1 && unavailable.ContainsKey("Capture"), "only occupied startup shortcut is reported");
+            Check(fresh.RegisteredHotkeys.Count == 2 && fresh.RegisteredHotkeys.ContainsKey("Draw") && fresh.RegisteredHotkeys.ContainsKey("Freeze"),
+                "available startup shortcuts remain registered");
+            Check(occupied.TryReplace(new Dictionary<string, string>(), out _), "release occupied shortcut");
+            Check(fresh.RegisterAvailable(requested).Count == 0 && fresh.RegisteredHotkeys.Count == 3,
+                "retry activates the formerly occupied shortcut");
+        }
         Check(!NativeWindowService.RestoreForeground(IntPtr.Zero), "invalid foreground handle rejected");
         string profileDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, "artifacts", "native-check", "profiles-" + Guid.NewGuid().ToString("N"));
         var profiles = new ProfileStore(profileDirectory);
