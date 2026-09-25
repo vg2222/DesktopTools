@@ -9,3 +9,5 @@
 *.mp4 binary
 *.ico binary
 *.zip binary
+src/DesktopTools/Assets/Translation/*.json text eol=lf
+src/DesktopTools/Assets/Translation/*/*.json text eol=lf
