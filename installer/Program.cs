@@ -501,6 +501,22 @@ internal static class Program
         }
     }
 
+    private static void MoveDirectoryAfterExit(string source, string destination)
+    {
+        var wait = Stopwatch.StartNew();
+        while (true)
+        {
+            try { Directory.Move(source, destination); return; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException &&
+                (uint)ex.HResult is 0x80070005 or 0x80070020 or 0x80070021)
+            {
+                if (wait.Elapsed >= TimeSpan.FromSeconds(6))
+                    throw new IOException("DesktopTools installation files are still in use. Close any other DesktopTools windows and try the update again.", ex);
+                Thread.Sleep(125);
+            }
+        }
+    }
+
     internal static void Install(string requestedPath, IProgress<(int, string)> progress) =>
         RunExclusiveTransaction(() => InstallCore(requestedPath, progress));
 
@@ -542,7 +558,7 @@ internal static class Program
             string payload = Path.Combine(extracted, "DesktopTools-win-x64");
             if (!File.Exists(Path.Combine(payload, "DesktopTools.exe"))) payload = extracted;
             if (!File.Exists(Path.Combine(payload, "DesktopTools.exe"))) throw new InvalidDataException("Setup payload is missing DesktopTools.exe.");
-            Directory.Move(payload, staged);
+            MoveDirectoryAfterExit(payload, staged);
             CopyResource("DesktopTools.Uninstall.exe", Path.Combine(staged, "Uninstall.exe"));
             File.WriteAllText(Path.Combine(staged, "VERSION.txt"), Version);
             progress.Report((65, "Updating application files…"));
@@ -550,11 +566,11 @@ internal static class Program
             if (previous is not null && Directory.Exists(previous))
             {
                 backup = Path.Combine(Path.GetDirectoryName(previous)!, ".DesktopTools-backup-" + Guid.NewGuid().ToString("N"));
-                Directory.Move(previous, backup);
+                MoveDirectoryAfterExit(previous, backup);
             }
             try
             {
-                Directory.Move(staged, target);
+                MoveDirectoryAfterExit(staged, target);
                 installedNew = true;
                 progress.Report((82, "Creating shortcuts and uninstall entry…"));
                 string? previouslyOwnedExecutable = previous is null ? null : Path.Combine(previous, "DesktopTools.exe");

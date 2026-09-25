@@ -230,6 +230,32 @@ try
 }
 finally { if (Directory.Exists(partialInstall)) Directory.Delete(partialInstall, true); }
 
+// A just-exited app, indexer, or scanner can briefly retain a file handle. The
+// installer must complete the folder swap once that handle closes.
+var moveAfterExit = program.GetMethod("MoveDirectoryAfterExit", BindingFlags.Static | BindingFlags.NonPublic)
+    ?? throw new Exception("Installer has no bounded retry for the update folder swap.");
+string swapFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
+string swapSource = Path.Combine(swapFixture, "current");
+string swapTarget = Path.Combine(swapFixture, "previous");
+Directory.CreateDirectory(swapSource);
+string lockedFile = Path.Combine(swapSource, "DesktopTools.dll");
+File.WriteAllText(lockedFile, "existing application");
+try
+{
+    using var held = new FileStream(lockedFile, FileMode.Open, FileAccess.Read, FileShare.None);
+    var releaseHandle = Task.Run(async () => { await Task.Delay(300); held.Dispose(); });
+    moveAfterExit.Invoke(null, [swapSource, swapTarget]);
+    releaseHandle.GetAwaiter().GetResult();
+    Check(!Directory.Exists(swapSource) && File.ReadAllText(Path.Combine(swapTarget, "DesktopTools.dll")) == "existing application",
+        "Installer could not finish the update folder swap after a transient lock cleared");
+}
+finally
+{
+    string tempRoot = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+    if (!Path.GetFullPath(swapFixture).StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase)) throw new Exception("Unsafe test cleanup path");
+    if (Directory.Exists(swapFixture)) Directory.Delete(swapFixture, true);
+}
+
 string deleteFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
 string managed = Path.Combine(deleteFixture, "DesktopTools");
 string external = Path.Combine(deleteFixture, "original.png");
