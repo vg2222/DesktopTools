@@ -113,7 +113,7 @@ public static class Motion
         button.KeyUp += (_, _) => button.Dispatcher.BeginInvoke(Respond, DispatcherPriority.Input);
         button.LostMouseCapture += (_, _) => Respond();
     }
-    public static Action<TimeSpan> AutoDismiss(Window window, TimeSpan duration, Func<bool>? held = null, Func<uint?>? activitySource = null)
+    public static Action<TimeSpan> AutoDismiss(Window window, TimeSpan duration, Func<bool>? held = null, Func<uint?>? activitySource = null, Func<bool>? hoverSource = null)
     {
         // Pause while hidden for capture or while the user is interacting with an action.
         var dismissDuration = duration;
@@ -129,7 +129,7 @@ public static class Motion
         {
             var now = clock.Elapsed; var elapsed = now - lastTick; lastTick = now;
             if (!lifetime.Advance(elapsed, activitySource(),
-                !window.IsVisible || window.IsMouseOver || window.IsKeyboardFocusWithin || held?.Invoke() == true)) return;
+                !window.IsVisible || window.IsMouseOver || window.IsKeyboardFocusWithin || hoverSource?.Invoke() == true || held?.Invoke() == true)) return;
             timer.Stop();
             window.Close();
         };

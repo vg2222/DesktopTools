@@ -80,8 +80,12 @@ public sealed class GitHubReleaseClient : IDisposable
         if (matches.Count != 1) throw new InvalidDataException("The release is missing a unique installer SHA-256 checksum.");
         string expectedHash = matches[0].Groups[1].Value;
         string root = Path.GetFullPath(directory); Directory.CreateDirectory(root);
-        string destination = Path.Combine(root, release.InstallerName);
+        // A previous setup may still be running from this cache. Never replace its executable.
+        string downloadDirectory = Path.Combine(root, "download-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(downloadDirectory);
+        string destination = Path.Combine(downloadDirectory, release.InstallerName);
         string partial = destination + "." + Guid.NewGuid().ToString("N") + ".partial";
+        bool completed = false;
         try
         {
             using var response = await GetAsync(release.InstallerUrl, timeout.Token).ConfigureAwait(false); response.EnsureSuccessStatusCode();
@@ -104,9 +108,13 @@ public sealed class GitHubReleaseClient : IDisposable
                 if (total != release.InstallerSize || !Convert.ToHexString(hash.GetHashAndReset()).Equals(expectedHash, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Installer verification failed. Please try downloading again.");
             }
-            token.ThrowIfCancellationRequested(); File.Move(partial, destination, overwrite: true); return destination;
+            token.ThrowIfCancellationRequested(); File.Move(partial, destination); completed = true; return destination;
         }
-        finally { if (File.Exists(partial)) File.Delete(partial); }
+        finally
+        {
+            if (File.Exists(partial)) File.Delete(partial);
+            if (!completed) Directory.Delete(downloadDirectory, recursive: true);
+        }
     }
     private async Task<HttpResponseMessage> GetAsync(Uri uri, CancellationToken token)
     {

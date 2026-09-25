@@ -62,6 +62,17 @@ await Test("Verified download, corruption, cancellation and original preservatio
     await Reject(async () => await client.DownloadInstallerAsync(release with { InstallerName = "../evil.exe" }, root));
     await Reject(async () => await client.DownloadInstallerAsync(release with { InstallerSize = installer.Length - 1 }, root));
 });
+await Test("A locked earlier setup does not block a verified update retry", async () =>
+{
+    var release = Release(); string expectedHash = Convert.ToHexString(SHA256.HashData(installer));
+    using var http = new HttpClient(new Handler(request => new HttpResponseMessage(HttpStatusCode.OK)
+    { Content = request.RequestUri!.AbsoluteUri.EndsWith("SHA256SUMS.txt") ? new StringContent(expectedHash + "  " + name + "\n") : new ByteArrayContent(installer) }));
+    using var client = new GitHubReleaseClient(http);
+    string earlier = await client.DownloadInstallerAsync(release, root);
+    using var runningSetup = new FileStream(earlier, FileMode.Open, FileAccess.Read, FileShare.None);
+    string retry = await client.DownloadInstallerAsync(release, root);
+    Check(retry != earlier && File.ReadAllBytes(retry).SequenceEqual(installer), "Retry reused or could not save a locked setup");
+});
 await Test("Redirect and metadata size limits", async () =>
 {
     using var http = new HttpClient(new Handler(_ => { var r = new HttpResponseMessage(HttpStatusCode.Redirect); r.Headers.Location = new Uri("https://example.com/download.exe"); return r; }));

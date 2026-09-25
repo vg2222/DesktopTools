@@ -22,6 +22,19 @@ internal static class NotificationLifecycleChecks
     }
     internal static async Task RunAsync()
     {
+        uint activityTick = 100;
+        bool hovering = true;
+        var hoverNotice = new Window { Content = new TextBlock { Text = "Hover pause" }, Width = 180, Height = 80, ShowActivated = false };
+        Motion.AutoDismiss(hoverNotice, TimeSpan.FromMilliseconds(400), activitySource: () => activityTick, hoverSource: () => hovering);
+        try
+        {
+            hoverNotice.Show(); await Task.Delay(80); activityTick++;
+            await Task.Delay(750);
+            if (!hoverNotice.IsVisible) throw new Exception("Notification expired while the cursor was over its window");
+            hovering = false; await Task.Delay(750);
+            if (hoverNotice.IsVisible) throw new Exception("Notification failed to resume its timer after hover ended");
+        }
+        finally { hoverNotice.Close(); }
         using var controller = new AppController(true);
         controller.UpdateSettings(s => s.Animations = false);
         controller.OpenMain();
@@ -51,8 +64,8 @@ internal static class NotificationLifecycleChecks
                 try
                 {
                     dialog.Show(); dialog.UpdateLayout();
-                    if (dialog.WindowStyle != WindowStyle.None || dialog.Background != Brushes.Transparent)
-                        throw new Exception("Confirmation kept native frame");
+                    if (dialog.WindowStyle != WindowStyle.None || dialog.Background == null)
+                        throw new Exception("Confirmation kept native frame or lost its background");
                     var buttons = Descendants(dialog).OfType<Button>().ToArray();
                     var cancel = buttons.Single(b => b.Name == "CancelConfirmation");
                     if (!cancel.IsDefault || !cancel.IsCancel || dialog.Accepted) throw new Exception("Confirmation has unsafe default");

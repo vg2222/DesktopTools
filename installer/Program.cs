@@ -13,7 +13,7 @@ namespace DesktopTools.Installer;
 internal static class Program
 {
     internal enum SetupMode { Install, Maintenance, Update, OlderSetup }
-    internal enum SetupCommand { None, Update, BackgroundUpdate }
+    internal enum SetupCommand { None, Update, BackgroundUpdate, PortableUpdate }
     internal readonly record struct SetupArguments(SetupCommand Command, int ProcessId, string? ReadyEventName);
     private const int MoveFileDelayUntilReboot = 0x4;
     [DllImport("kernel32.dll", EntryPoint = "MoveFileExW", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -47,6 +47,7 @@ internal static class Program
             }
             bool automaticUpdate = setupArguments.Command == SetupCommand.Update;
             if (automaticUpdate) WaitForRegisteredApplication(setupArguments, requireNewerVersion: true);
+            if (setupArguments.Command == SetupCommand.PortableUpdate) WaitForPortableApplication(setupArguments);
             return new Application().Run(new InstallerWindow(false, automaticUpdate));
 #else
             if (args.Length == 0 || args[0] != "--uninstall-worker")
@@ -72,7 +73,7 @@ internal static class Program
         {
 #if SETUP
             if (args.Length >= 4 && args.Contains("--ready-event", StringComparer.Ordinal) &&
-                args[0] is "--background-update" or "--update")
+                args[0] is "--background-update" or "--update" or "--portable-update")
             {
                 Console.Error.WriteLine(ex.GetBaseException().Message);
                 return 1;
@@ -130,6 +131,7 @@ internal static class Program
         {
             "--update" => SetupCommand.Update,
             "--background-update" => SetupCommand.BackgroundUpdate,
+            "--portable-update" => SetupCommand.PortableUpdate,
             _ => throw new InvalidOperationException("Setup command-line arguments are invalid.")
         };
         string? readyEventName = null;
@@ -202,15 +204,36 @@ internal static class Program
                 if (installedVersion is null || DecideSetupMode(installedVersion, Version) != SetupMode.Update)
                     throw new InvalidOperationException("This update is not newer than the installed DesktopTools version.");
             }
-            if (arguments.ReadyEventName is not null)
-            {
-                using EventWaitHandle ready = EventWaitHandle.OpenExisting(arguments.ReadyEventName);
-                ready.Set();
-            }
-            onReady?.Invoke();
-            if (!process.WaitForExit(60_000))
-                throw new UpdateSourceStillRunningException("DesktopTools did not exit in time. Close it and start the update again.");
+            SignalAndWaitForExit(arguments, process, onReady);
         }
+    }
+
+    private static void WaitForPortableApplication(SetupArguments arguments)
+    {
+        Process process;
+        try { process = Process.GetProcessById(arguments.ProcessId); }
+        catch (ArgumentException) { throw new InvalidOperationException("The DesktopTools update handoff has expired. Start the update again from the app."); }
+        using (process)
+        {
+            string? executable;
+            try { executable = process.MainModule?.FileName; }
+            catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception) { executable = null; }
+            if (!string.Equals(Path.GetFileName(executable), "DesktopTools.exe", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Portable update handoff was not started by DesktopTools.");
+            SignalAndWaitForExit(arguments, process);
+        }
+    }
+
+    private static void SignalAndWaitForExit(SetupArguments arguments, Process process, Action? onReady = null)
+    {
+        if (arguments.ReadyEventName is not null)
+        {
+            using EventWaitHandle ready = EventWaitHandle.OpenExisting(arguments.ReadyEventName);
+            ready.Set();
+        }
+        onReady?.Invoke();
+        if (!process.WaitForExit(60_000))
+            throw new UpdateSourceStillRunningException("DesktopTools did not exit in time. Close it and start the update again.");
     }
 
     private static void RunBackgroundUpdate(SetupArguments arguments)

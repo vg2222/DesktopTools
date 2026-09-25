@@ -49,7 +49,10 @@ internal sealed partial class AppController
     internal async Task CheckForUpdatesAsync(bool manual = true)
     {
         if (disposed || CheckingUpdate || DownloadingUpdate) return;
-        CheckingUpdate = true; lastUpdateAttempt = DateTimeOffset.UtcNow; UpdateStatus = L.T("Checking GitHub…"); UpdateChanged?.Invoke();
+        string previousStatus = UpdateStatus;
+        CheckingUpdate = true; lastUpdateAttempt = DateTimeOffset.UtcNow;
+        if (manual) UpdateStatus = L.T("Checking GitHub…");
+        UpdateChanged?.Invoke();
         try
         {
             var release = await UpdateClient.GetLatestAsync(updateLifetime.Token);
@@ -59,8 +62,12 @@ internal sealed partial class AppController
         catch (OperationCanceledException) when (disposed) { }
         catch (Exception ex)
         {
-            UpdateStatus = L.T("Could not check for updates. Try again later.");
-            if (manual && !disposed) Report(UpdateStatus + " " + ex.Message, NotificationKind.Warning);
+            if (manual)
+            {
+                UpdateStatus = L.T("Could not check for updates. Try again later.");
+                if (!disposed) Report(UpdateStatus + " " + ex.Message, NotificationKind.Warning);
+            }
+            else UpdateStatus = previousStatus;
         }
         finally { CheckingUpdate = false; if (!disposed) UpdateChanged?.Invoke(); }
     }
@@ -80,7 +87,8 @@ internal sealed partial class AppController
         updateNotice?.Close();
         var notice = new NotificationWindow(UpdateStatus, NotificationKind.Info, main, Settings.MessageNotificationStyle,
             actions: [("Update in background", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())], seconds: Settings.NotificationSeconds);
-        updateNotice = notice; notice.Closed += (_, _) => { if (ReferenceEquals(updateNotice, notice)) updateNotice = null; }; notice.Show();
+        notice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
+        updateNotice = notice; notice.Closed += (_, _) => { if (ReferenceEquals(updateNotice, notice)) { updateNotice = null; updatePromptOpen = false; } }; notice.Show();
     }
     internal void OpenUpdateNotes()
     {
@@ -93,21 +101,40 @@ internal sealed partial class AppController
         try { UpdateLinkLauncher(uri); return true; }
         catch (Exception ex) { Report(L.T("Could not open the browser.") + " " + ex.Message, NotificationKind.Warning); return false; }
     }
-    internal async Task BeginBackgroundUpdateAsync()
+    internal Task BeginBackgroundUpdateAsync()
     {
-        if (AvailableUpdate == null || DownloadingUpdate || disposed || updatePromptOpen) return;
+        if (AvailableUpdate == null || DownloadingUpdate || disposed || updatePromptOpen) return Task.CompletedTask;
         bool installed;
-        updatePromptOpen = true;
         try
         {
-            OpenMain(); installed = IsRunningInstalledCopy();
+            installed = IsRunningInstalledCopy();
             string warning = installed
                 ? "DesktopTools will download the update, close and restart. Unsaved edits and current drawings will be lost. Saved notes and settings will be kept."
                 : "This portable copy will close after downloading. Setup will open so you can install DesktopTools. Unsaved edits and current drawings will be lost; saved notes and settings will be kept.";
-            if (!ConfirmationDialog.Ask(main!, L.T("Update DesktopTools"), L.T(warning), L.T("Download and update"))) return;
+            if (updateNotice == null) ShowUpdateNotice();
+            updatePromptOpen = true;
+            updateNotice!.HoldOpen = true;
+            updateNotice.ClickAction = null;
+            updateNotice.UpdateMessage(L.T(warning), seconds: 30,
+                actions: [("Download and update", () => _ = ConfirmBackgroundUpdateAsync(installed)), ("Cancel", CancelUpdatePrompt)]);
         }
-        catch (Exception ex) { ShowUpdateFailure(ex.Message, minimized: false); return; }
-        finally { updatePromptOpen = false; }
+        catch (Exception ex) { updatePromptOpen = false; ShowUpdateFailure(ex.Message, minimized: false); }
+        return Task.CompletedTask;
+    }
+    private void CancelUpdatePrompt()
+    {
+        if (!updatePromptOpen) return;
+        updatePromptOpen = false;
+        if (updateNotice == null) return;
+        updateNotice.HoldOpen = false;
+        updateNotice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
+        updateNotice.UpdateMessage(UpdateStatus,
+            actions: [("Update in background", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())]);
+    }
+    private async Task ConfirmBackgroundUpdateAsync(bool installed)
+    {
+        if (!updatePromptOpen || DownloadingUpdate || disposed) return;
+        updatePromptOpen = false;
         await DownloadAndInstallUpdateAsync(installed);
     }
     private async Task DownloadAndInstallUpdateAsync(bool installed)
@@ -136,20 +163,15 @@ internal sealed partial class AppController
             // Keep the app alive until that validation succeeds; the installer then waits for this app to exit.
             string readyName = "Local\\DesktopTools.Update." + Guid.NewGuid().ToString("N");
             using var handoffReady = new EventWaitHandle(false, EventResetMode.ManualReset, readyName);
-            if (installed)
-            {
-                start.ArgumentList.Add("--background-update"); start.ArgumentList.Add("--wait-for-exit"); start.ArgumentList.Add(Environment.ProcessId.ToString());
-                start.ArgumentList.Add("--ready-event"); start.ArgumentList.Add(readyName);
-            }
+            start.ArgumentList.Add(installed ? "--background-update" : "--portable-update");
+            start.ArgumentList.Add("--wait-for-exit"); start.ArgumentList.Add(Environment.ProcessId.ToString());
+            start.ArgumentList.Add("--ready-event"); start.ArgumentList.Add(readyName);
             using var process = Process.Start(start) ?? throw new InvalidOperationException(L.T("Could not start the update installer."));
-            if (installed)
+            var deadline = DateTime.UtcNow.AddSeconds(60);
+            while (!handoffReady.WaitOne(0))
             {
-                var deadline = DateTime.UtcNow.AddSeconds(60);
-                while (!handoffReady.WaitOne(0))
-                {
-                    if (process.HasExited || DateTime.UtcNow >= deadline) throw new InvalidOperationException(L.T("Setup could not prepare the update. DesktopTools is still running."));
-                    await Task.Delay(100, updateLifetime.Token);
-                }
+                if (process.HasExited || DateTime.UtcNow >= deadline) throw new InvalidOperationException(L.T("Setup could not prepare the update. DesktopTools is still running."));
+                await Task.Delay(100, updateLifetime.Token);
             }
             Application.Current.Shutdown();
         }

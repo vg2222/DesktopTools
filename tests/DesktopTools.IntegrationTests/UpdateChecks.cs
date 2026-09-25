@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -47,6 +48,16 @@ internal static class UpdateChecks
             Check(controller.AvailableUpdate?.Version == "2.0.0" && !controller.CheckingUpdate, "Manual update check did not finish");
             var indicator = Walk(main).OfType<Button>().Single(b => Equals(b.Tag, "update-indicator")); Check(indicator.IsVisible, "Update missing from main navigation");
             var notice = Application.Current.Windows.OfType<NotificationWindow>().Single(); notice.UpdateLayout();
+            notice.ActivateBody();
+            await Task.Delay(30);
+            Check(notice.IsVisible && Application.Current.Windows.OfType<ConfirmationDialog>().Count() == 0,
+                "Update click opened a separate app dialog instead of confirming in the notification");
+            Check(Walk(notice).OfType<Button>().Any(button => AutomationProperties.GetName(button) == "Download and update"),
+                "Update notification did not show its confirmation action");
+            Render(notice, Path.Combine(original, "update-confirmation.png"));
+            Walk(notice).OfType<Button>().Single(button => AutomationProperties.GetName(button) == "Cancel")
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(notice.IsVisible, "Cancelling notification confirmation dismissed the update offer");
             Render(notice, Path.Combine(original, "update-available.png"));
             Uri? opened = null; controller.UpdateLinkLauncher = uri => opened = uri;
             controller.OpenUpdateNotes(); notice.UpdateLayout();
@@ -79,6 +90,12 @@ internal static class UpdateChecks
             }
             var absent = new GitHubReleaseClient(new HttpClient(new FixtureHandler(null))); controller.UpdateClient.Dispose(); controller.UpdateClient = absent;
             await controller.CheckForUpdatesAsync(); Check(controller.AvailableUpdate == null, "Unavailable public release leaves obsolete update state");
+            string quietStatus = controller.UpdateStatus;
+            var seenStatuses = new List<string>(); controller.UpdateChanged += () => seenStatuses.Add(controller.UpdateStatus);
+            controller.UpdateClient.Dispose(); controller.UpdateClient = new GitHubReleaseClient(new HttpClient(new FixtureHandler("invalid json")));
+            await controller.CheckForUpdatesAsync(manual: false);
+            Check(seenStatuses.All(status => status == quietStatus) && controller.UpdateStatus == quietStatus && !Application.Current.Windows.OfType<NotificationWindow>().Any(),
+                "Failed automatic update check interrupted the user");
             string result = Path.Combine(isolated, "artifacts", "smoke-settings", "Updates", "update-error.txt"); Directory.CreateDirectory(Path.GetDirectoryName(result)!);
             File.WriteAllText(result, "Fixture install failed; previous app preserved."); controller.ShowBackgroundUpdateError();
             Check(main.WindowState == WindowState.Minimized && !File.Exists(result), "Installer error did not reopen minimized or consume its result");

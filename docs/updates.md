@@ -4,7 +4,11 @@ DesktopTools checks the latest stable release in [vg2222/DesktopTools](https://g
 
 An available update appears in a DesktopTools notification and stays accessible from the sidebar and Updates settings after the notification is dismissed. **Release notes** opens that release on GitHub, keeps the notification open, updates its message and extends its duration. Notifications wait for mouse or keyboard activity after appearing before their dismissal timer starts; hovering pauses the timer.
 
+Clicking the update notification or its update action shows the restart and unsaved-work confirmation inside the notification. Confirming downloads the verified setup without opening a separate app dialog. Failed automatic checks remain quiet and leave the previous update status unchanged; a failed manual check reports the error.
+
 **Update in background** first asks you to confirm that the app will close and restart, losing unsaved edits and current drawings. Saved notes and settings are retained. The installer downloads with notification progress; its expected size and SHA-256 from the same release are checked before launch. Installed copies pass control to the installer only after it validates the running app, then a compact progress notification remains during file replacement. Active recordings are finalized before restart. Portable copies open the regular installer instead of silently replacing their portable directory.
+
+Each verified installer download uses a separate staging directory so a setup still running from an earlier attempt cannot block a retry. Portable copies also wait for their app process to exit before the installer UI opens.
 
 If download or handoff fails, DesktopTools remains running and shows an error notification with a sound and taskbar flash. If installation fails, setup attempts to restore the previous installation and relaunches it minimized with the error. If relaunch is impossible, setup displays the error itself. Update files are under `%LocalAppData%\DesktopTools\Updates`. These checks use GitHub's public HTTPS API and downloads; no token, account or telemetry is required. Release checks disclose the normal network request information to GitHub, but no notes, settings, media or document contents are uploaded.
 

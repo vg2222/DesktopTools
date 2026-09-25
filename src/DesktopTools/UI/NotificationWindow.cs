@@ -2,7 +2,9 @@ using DesktopTools.Localization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using DesktopTools.Native;
 using DesktopTools.Core;
@@ -21,6 +23,7 @@ public sealed class NotificationWindow : Window
     private (string Label, Action Run)[]? noticeActions;
     private readonly Action<TimeSpan> resetDismissal;
     public bool HoldOpen { get; set; }
+    internal Action? ClickAction { get; set; }
     internal double AutoDismissSeconds { get; private set; }
     public NotificationWindow(string message, NotificationKind kind, Window? owner = null, string style = "Capsule",
         BitmapSource? image = null, (string Label, Action Run)[]? actions = null, double seconds = 6)
@@ -35,6 +38,13 @@ public sealed class NotificationWindow : Window
         ShowActivated = false; ShowInTaskbar = false; Focusable = false;
 
         Content = NotificationSurface.Create(message, kind, style, Close, image, actions);
+        PreviewMouseLeftButtonUp += (_, e) =>
+        {
+            for (DependencyObject? item = e.OriginalSource as DependencyObject; item != null;
+                 item = item is Visual ? VisualTreeHelper.GetParent(item) : LogicalTreeHelper.GetParent(item))
+                if (item is ButtonBase) return;
+            ActivateBody();
+        };
         AutomationProperties.SetName(this, L.T(kind.ToString()) + ": " + message);
         SourceInitialized += (_, _) =>
         {
@@ -46,7 +56,18 @@ public sealed class NotificationWindow : Window
         Loaded += (_, _) => PositionAll();
         Closed += (_, _) => PositionAll();
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(PositionAll));
-        resetDismissal = Motion.AutoDismiss(this, TimeSpan.FromSeconds(double.IsFinite(seconds) ? Math.Clamp(seconds, 3, 30) : 6), () => HoldOpen);
+        resetDismissal = Motion.AutoDismiss(this, TimeSpan.FromSeconds(double.IsFinite(seconds) ? Math.Clamp(seconds, 3, 30) : 6), () => HoldOpen,
+            hoverSource: IsCursorWithinWindow);
+    }
+
+    internal void ActivateBody() => ClickAction?.Invoke();
+
+    private bool IsCursorWithinWindow()
+    {
+        if (!IsVisible || !IsLoaded) return false;
+        nint handle = new WindowInteropHelper(this).Handle;
+        return handle != 0 && NativeMethods.GetCursorPos(out var cursor) && NativeMethods.GetWindowRect(handle, out var bounds) &&
+            cursor.X >= bounds.Left && cursor.X < bounds.Right && cursor.Y >= bounds.Top && cursor.Y < bounds.Bottom;
     }
 
     public void UpdateMessage(string message, double? progress = null, NotificationKind? kind = null, double? seconds = null, (string Label, Action Run)[]? actions = null)

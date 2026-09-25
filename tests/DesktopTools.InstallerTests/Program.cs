@@ -182,6 +182,8 @@ Check(Parse("--background-update", "--wait-for-exit", "42", "--ready-event", eve
     "background handoff arguments were not parsed");
 Check(Parse("--update", "--wait-for-exit", "42", "--ready-event", eventName).ToString()!.Contains("Update", StringComparison.Ordinal),
     "interactive handoff arguments were not parsed");
+Check(Parse("--portable-update", "--wait-for-exit", "42", "--ready-event", eventName).ToString()!.Contains("PortableUpdate", StringComparison.Ordinal),
+    "portable update cannot wait for its running source before setup opens");
 ExpectInvocationFailure(() => Parse("--background-update", "--wait-for-exit", "42", "--ready-event", "bad"), "malformed ready event was accepted by argument parser");
 ExpectInvocationFailure(() => Parse("--update", "--wait-for-exit", "42", "--ready-event", eventName, "extra"), "extra setup argument was accepted");
 
