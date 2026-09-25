@@ -1,14 +1,16 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using DesktopTools.Localization;
 namespace DesktopTools.UI;
 
 internal static class NotificationSurface
 {
-    internal static Border Create(string message, NotificationKind kind, string style, Action dismiss, BitmapSource? image = null, (string Label, Action Run)[]? actions = null, double? progress = null)
+    internal static Border Create(string message, NotificationKind kind, string style, Action dismiss, BitmapSource? image = null, (string Label, Action Run)[]? actions = null, double? progress = null, double? previousProgress = null)
     {
         bool capsule = style == "Capsule";
         var layout = new Grid();
@@ -37,7 +39,7 @@ internal static class NotificationSurface
         var text = Ui.Text(message, 13, true);
         text.Name = "NotificationMessage";
         var scroll = new ScrollViewer { Content = text, MaxHeight = 210, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }; body.Children.Add(scroll);
-        if (progress.HasValue) body.Children.Add(new ProgressBar { Name = "UpdateProgress", Minimum = 0, Maximum = 1, Value = Math.Clamp(progress.Value, 0, 1), Height = 5, Margin = new Thickness(0, 10, 0, 2) });
+        if (progress.HasValue) body.Children.Add(CreateProgressBar(progress.Value, previousProgress));
         if (actions?.Length > 0)
         {
             var buttons = new WrapPanel { Margin = new Thickness(0,10,0,0) };
@@ -53,6 +55,39 @@ internal static class NotificationSurface
         var surface = new Border { Child = layout, CornerRadius = new CornerRadius(capsule ? 28 : 22), Padding = new Thickness(18,14,14,14), Margin = new Thickness(0), BorderThickness = new Thickness(1) };
         surface.SetResourceReference(Border.BackgroundProperty,"GlassSurface");
         surface.SetResourceReference(Border.BorderBrushProperty,"GlassRim"); return surface;
+    }
+    internal static ProgressBar CreateProgressBar(double value, double? previous)
+    {
+        double target = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0;
+        var bar = new ProgressBar { Name = "UpdateProgress", Minimum = 0, Maximum = 1, Value = target,
+            Height = 8, Margin = new Thickness(0, 11, 0, 3), BorderThickness = new Thickness(0) };
+        bar.SetResourceReference(Control.ForegroundProperty, "Accent");
+        bar.SetResourceReference(Control.BackgroundProperty, "Field");
+        var track = new FrameworkElementFactory(typeof(Grid)); track.Name = "PART_Track";
+        track.SetValue(UIElement.ClipToBoundsProperty, true);
+        var background = new FrameworkElementFactory(typeof(Border));
+        background.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+        background.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Control.Background))
+            { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+        track.AppendChild(background);
+        var indicator = new FrameworkElementFactory(typeof(Border)); indicator.Name = "PART_Indicator";
+        indicator.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+        indicator.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+        indicator.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Control.Foreground))
+            { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+        track.AppendChild(indicator);
+        bar.Template = new ControlTemplate(typeof(ProgressBar)) { VisualTree = track };
+        AutomationProperties.SetName(bar, L.T("Downloading update…"));
+        AutomationProperties.SetHelpText(bar, $"{Math.Round(target * 100)}%");
+        if (previous.HasValue && Motion.Enabled)
+        {
+            double start = double.IsFinite(previous.Value) ? Math.Clamp(previous.Value, 0, 1) : target;
+            if (Math.Abs(start - target) > .001)
+                bar.Loaded += (_, _) => bar.BeginAnimation(RangeBase.ValueProperty,
+                    new DoubleAnimation(start, target, TimeSpan.FromMilliseconds(200))
+                    { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        }
+        return bar;
     }
     private static Button RoundedButton(string label, Action action, bool close)
     {

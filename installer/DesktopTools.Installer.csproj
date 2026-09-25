@@ -29,6 +29,7 @@
     <Compile Include="../shared/WindowDismissal.cs" Link="UI/WindowDismissal.cs" />
     <Resource Include="../src/DesktopTools/Assets/DesktopTools.ico" Link="Assets/DesktopTools.ico" />
     <Resource Include="../src/DesktopTools/Assets/Icons/AppIcon.png" Link="Assets/Icons/AppIcon.png" />
-    <Resource Include="../src/DesktopTools/Assets/Icons/*_24_regular.svg" Link="Assets/Icons/%(Filename)%(Extension)" />
+    <Resource Include="../src/DesktopTools/Assets/Flags/*.png" Link="Assets/Flags/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../src/DesktopTools/Assets/Icons/*_24_regular.svg" LogicalName="DesktopTools.Installer.Icons.%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

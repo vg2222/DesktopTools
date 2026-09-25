@@ -56,6 +56,27 @@ public static class Motion
         element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(opacity, 1, TimeSpan.FromMilliseconds(180)) { FillBehavior = FillBehavior.Stop });
         translation.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(startY, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
     }
+    internal static void PrepareNoticeEntrance(FrameworkElement element)
+    {
+        element.BeginAnimation(UIElement.OpacityProperty, null);
+        element.Opacity = Enabled ? 0 : 1;
+        element.RenderTransform = new TranslateTransform(0, Enabled ? 8 : 0);
+    }
+
+    private static void CompleteNoticeEntrance(FrameworkElement element)
+    {
+        var translation = element.RenderTransform as TranslateTransform ?? new TranslateTransform();
+        element.RenderTransform = translation;
+        element.Opacity = 1;
+        translation.Y = 0;
+        if (!Enabled) return;
+        var duration = TimeSpan.FromMilliseconds(210);
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        element.BeginAnimation(UIElement.OpacityProperty,
+            new DoubleAnimation(0, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        translation.BeginAnimation(TranslateTransform.YProperty,
+            new DoubleAnimation(8, 0, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+    }
     public static void PageTransition(FrameworkElement element) => PageTransition(element, Enabled && element.IsLoaded);
 
     internal static void PageTransition(FrameworkElement element, bool animate)
@@ -118,7 +139,8 @@ public static class Motion
         // Pause while hidden for capture or while the user is interacting with an action.
         var dismissDuration = duration;
         activitySource ??= DesktopTools.Native.UserActivity.LastInputTick;
-        WindowEntrance(window);
+        if (window.Content is FrameworkElement initialContent) PrepareNoticeEntrance(initialContent);
+        window.Loaded += (_, _) => DesktopTools.Presentation.WindowDismissal.Attach(window, () => Enabled);
         var lifetime = new DesktopTools.Core.NotificationLifetime(dismissDuration, activitySource());
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var lastTick = clock.Elapsed;
@@ -133,14 +155,14 @@ public static class Motion
             timer.Stop();
             window.Close();
         };
-        window.ContentRendered += (_, _) => { if (appeared) return; appeared = true; if (window.Content is FrameworkElement content) Transition(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
+        window.ContentRendered += (_, _) => { if (appeared) return; appeared = true; if (window.Content is FrameworkElement content) CompleteNoticeEntrance(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
         window.Closed += (_, _) => { closed = true; timer.Stop(); };
         return extended =>
         {
             if (closed) return;
             DesktopTools.Presentation.WindowDismissal.Cancel(window);
             dismissDuration = extended;
-            if (window.Content is FrameworkElement content) { content.BeginAnimation(UIElement.OpacityProperty, null); content.Opacity = 1; }
+            if (appeared && window.Content is FrameworkElement content) { content.BeginAnimation(UIElement.OpacityProperty, null); content.Opacity = 1; }
             lifetime.Reset(extended, activitySource()); lastTick = clock.Elapsed; timer.Start();
         };
     }

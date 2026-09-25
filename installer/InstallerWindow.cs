@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -41,6 +42,8 @@ internal sealed partial class InstallerWindow : Window
     private Button? remove;
     private Button? moreOptions;
     private Border? advancedOptions;
+    private Button? downgrade;
+    private Border? downgradeOptions;
     private Button? githubUpdate;
     private Button? languageChoice;
     private Popup? languageMenu;
@@ -57,6 +60,7 @@ internal sealed partial class InstallerWindow : Window
     private bool cancellableBusy;
     private bool finished;
     private bool closed;
+    private bool shellConfigured;
     private int progressValue;
 
     internal InstallerWindow(bool uninstall) : this(uninstall, false) { }
@@ -132,7 +136,7 @@ internal sealed partial class InstallerWindow : Window
             {
                 SetStatus("No newer public release found");
                 statusHint.Text = L.T(setupMode == Program.SetupMode.OlderSetup
-                    ? "Repair requires a setup matching or newer than the installed version."
+                    ? "To install this older version, open Advanced options. Your notes and settings will be kept."
                     : "You're ready to continue with this setup.");
                 if (updateDescription is not null && setupMode != Program.SetupMode.Update)
                     updateDescription.Text = L.T("No newer public release found. Select to check again.");
@@ -195,7 +199,7 @@ internal sealed partial class InstallerWindow : Window
         catch (Exception ex) { MessageBox.Show(this, ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 
-    private async Task ExecuteAsync(bool forceLocal = false)
+    private async Task ExecuteAsync(bool forceLocal = false, bool allowDowngrade = false)
     {
         if (busy || closed) return;
         if (finished) { Close(); return; }
@@ -204,7 +208,7 @@ internal sealed partial class InstallerWindow : Window
             await DownloadUpdateAsync();
             return;
         }
-        if (!uninstall && setupMode == Program.SetupMode.OlderSetup)
+        if (!uninstall && setupMode == Program.SetupMode.OlderSetup && !allowDowngrade)
             throw new InvalidOperationException(L.T("This setup cannot downgrade DesktopTools. Download a matching or newer setup to repair it."));
         bool deleteManagedData = uninstall && deleteData?.IsChecked == true;
         if (deleteManagedData && MessageBox.Show(this,
@@ -222,7 +226,7 @@ internal sealed partial class InstallerWindow : Window
         try
         {
             if (uninstall) await Task.Run(() => Program.Remove(reporter, deleteManagedData));
-            else await Task.Run(() => Program.Install(installDir, reporter));
+            else await Task.Run(() => Program.Install(installDir, reporter, allowDowngrade));
             if (!uninstall && setupMode == Program.SetupMode.Install)
             {
                 try { Program.SaveInitialLanguage(L.Language); }
@@ -240,6 +244,7 @@ internal sealed partial class InstallerWindow : Window
             primary.Content = L.T("Close");
             primary.Visibility = Visibility.Visible;
             if (advancedOptions is not null) advancedOptions.Visibility = Visibility.Collapsed;
+            if (downgradeOptions is not null) downgradeOptions.Visibility = Visibility.Collapsed;
             if (githubUpdate is not null) githubUpdate.Visibility = Visibility.Collapsed;
             if (moreOptions is not null) moreOptions.Visibility = Visibility.Collapsed;
             if (!uninstall && launch.IsChecked == true)
@@ -281,6 +286,35 @@ internal sealed partial class InstallerWindow : Window
         }, 106);
     }
 
+    private Button CreateAdvancedOptionsLink()
+    {
+        var link = new Button
+        {
+            Content = new TextBlock { Text = L.T("Advanced options"), TextDecorations = TextDecorations.Underline },
+            Foreground = AccentHoverBrush, Background = Brushes.Transparent, BorderThickness = new Thickness(0),
+            Padding = new Thickness(0, 6, 8, 6), FontSize = 13, Cursor = Cursors.Hand,
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center
+        };
+        var surface = new FrameworkElementFactory(typeof(Border));
+        surface.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+        surface.AppendChild(presenter);
+        link.Template = new ControlTemplate(typeof(Button)) { VisualTree = surface };
+        link.MouseEnter += (_, _) => link.Opacity = .76;
+        link.MouseLeave += (_, _) => link.Opacity = 1;
+        link.Click += (_, _) =>
+        {
+            if (!busy && !finished && !closed && downgradeOptions is not null)
+            {
+                downgradeOptions.Visibility = downgradeOptions.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                if (downgradeOptions.Visibility == Visibility.Visible)
+                    Dispatcher.BeginInvoke(new Action(() => downgrade?.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+        };
+        AutomationProperties.SetName(link, L.T("Advanced options"));
+        return link;
+    }
+
     private void SetBusy(bool cancellable)
     {
         busy = true;
@@ -293,6 +327,8 @@ internal sealed partial class InstallerWindow : Window
         if (remove is not null) remove.IsEnabled = false;
         if (moreOptions is not null) moreOptions.IsEnabled = false;
         if (advancedOptions is not null) advancedOptions.IsEnabled = false;
+        if (downgradeOptions is not null) downgradeOptions.IsEnabled = false;
+        if (downgrade is not null) downgrade.IsEnabled = false;
         if (githubUpdate is not null) githubUpdate.IsEnabled = false;
         if (runtimeDownload is not null) runtimeDownload.IsEnabled = false;
         if (runtimeRecheck is not null) runtimeRecheck.IsEnabled = false;
@@ -309,6 +345,8 @@ internal sealed partial class InstallerWindow : Window
         if (remove is not null) remove.IsEnabled = !finished;
         if (moreOptions is not null) moreOptions.IsEnabled = !finished;
         if (advancedOptions is not null) advancedOptions.IsEnabled = !finished;
+        if (downgradeOptions is not null) downgradeOptions.IsEnabled = !finished;
+        if (downgrade is not null) downgrade.IsEnabled = !finished;
         if (githubUpdate is not null) githubUpdate.IsEnabled = !finished && !checkingLatest;
         if (runtimeDownload is not null) runtimeDownload.IsEnabled = true;
         if (runtimeRecheck is not null) runtimeRecheck.IsEnabled = true;

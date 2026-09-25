@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media.Animation;
 using DesktopTools.Localization;
 using DesktopTools.Updates;
 
@@ -39,7 +41,9 @@ internal sealed partial class MainWindow
 
         updateStatusText = Ui.Text("", 13, true); updateStatusText.Tag = "update-status";
         updateStatusText.Margin = new Thickness(0, 0, 0, 10); body.Children.Add(updateStatusText);
-        updateProgressBar = new ProgressBar { Minimum = 0, Maximum = 1, Height = 5, Margin = new Thickness(0, 0, 0, 14) }; body.Children.Add(updateProgressBar);
+        updateProgressBar = NotificationSurface.CreateProgressBar(0, null);
+        updateProgressBar.Margin = new Thickness(0, 0, 0, 14);
+        body.Children.Add(updateProgressBar);
         var actions = new WrapPanel();
         updateCheckButton = Ui.Button(L.T("Check for updates"), async () => await controller.CheckForUpdatesAsync()); updateCheckButton.Tag = "check-updates";
         updateDownloadButton = Ui.Button(L.T("Update in background"), async () => await controller.BeginBackgroundUpdateAsync(), true); updateDownloadButton.Tag = "download-update";
@@ -70,7 +74,18 @@ internal sealed partial class MainWindow
         }
         if (updateStatusText != null) updateStatusText.Text = L.T(controller.UpdateStatus);
         if (updateVersionText != null) updateVersionText.Text = controller.AvailableUpdate?.Version ?? "—";
-        if (updateProgressBar != null) { updateProgressBar.Visibility = controller.DownloadingUpdate ? Visibility.Visible : Visibility.Collapsed; updateProgressBar.Value = controller.UpdateDownloadProgress; }
+        if (updateProgressBar != null)
+        {
+            updateProgressBar.Visibility = controller.DownloadingUpdate ? Visibility.Visible : Visibility.Collapsed;
+            double from = updateProgressBar.Value;
+            double target = Math.Clamp(controller.UpdateDownloadProgress, 0, 1);
+            updateProgressBar.BeginAnimation(RangeBase.ValueProperty, null);
+            updateProgressBar.Value = target;
+            if (Motion.Enabled && controller.DownloadingUpdate && Math.Abs(target - from) > .001)
+                updateProgressBar.BeginAnimation(RangeBase.ValueProperty,
+                    new DoubleAnimation(from, target, TimeSpan.FromMilliseconds(200))
+                    { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        }
         if (updateCheckButton != null) updateCheckButton.IsEnabled = !controller.CheckingUpdate && !controller.DownloadingUpdate;
         if (updateDownloadButton != null) { updateDownloadButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed; updateDownloadButton.IsEnabled = !controller.DownloadingUpdate; }
         if (updateNotesButton != null) updateNotesButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed;

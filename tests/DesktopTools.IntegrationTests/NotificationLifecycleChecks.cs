@@ -22,17 +22,62 @@ internal static class NotificationLifecycleChecks
     }
     internal static async Task RunAsync()
     {
+        if (SystemParameters.ClientAreaAnimation && !SystemParameters.HighContrast)
+        {
+            Motion.AppEnabled = true;
+            var entrance = new NotificationWindow("Entrance animation", NotificationKind.Info, seconds: 30);
+            try
+            {
+                if (((FrameworkElement)entrance.Content).Opacity != 0)
+                    throw new Exception("Notification was not prepared for a visible entrance before Show");
+                entrance.UpdateMessage("Updated before first render");
+                if (((FrameworkElement)entrance.Content).Opacity != 0)
+                    throw new Exception("Replacing an unrendered notification lost its entrance state");
+                entrance.Show();
+                await Task.Delay(350);
+                if (Math.Abs(((FrameworkElement)entrance.Content).Opacity - 1) > .01)
+                    throw new Exception("Notification entrance did not finish fully visible");
+                double compactHeight = entrance.ActualHeight;
+                string downloadDetails = string.Join(" ", Enumerable.Repeat("Downloading and verifying the new DesktopTools version.", 10));
+                entrance.UpdateMessage(downloadDetails,
+                    progress: .45, seconds: 30, actions: [("Cancel", () => { }), ("Show details", () => { })]);
+                if (entrance.SizeToContent != SizeToContent.Manual || !entrance.HasAnimatedProperties)
+                    throw new Exception("Updating a visible notification did not animate its height");
+                await Task.Delay(50);
+                entrance.UpdateMessage(downloadDetails, progress: .55, actions: [("Cancel", () => { }), ("Show details", () => { })]);
+                await Task.Delay(350);
+                double expandedHeight = entrance.ActualHeight;
+                if (expandedHeight <= compactHeight + 30)
+                    throw new Exception("Notification did not grow for update details");
+                var progressBar = Descendants((DependencyObject)entrance.Content).OfType<ProgressBar>().Single();
+                progressBar.ApplyTemplate();
+                var indicator = progressBar.Template.FindName("PART_Indicator", progressBar) as Border;
+                if (indicator is null || Math.Abs(progressBar.Value - .55) > .001 || indicator.CornerRadius.TopLeft < 3 ||
+                    !Equals(progressBar.Foreground, Application.Current.Resources["Accent"]) ||
+                    indicator.ActualWidth < 8 || indicator.ActualWidth >= progressBar.ActualWidth)
+                    throw new Exception("Update progress lacks a rounded indicator in the app accent color");
+                entrance.UpdateMessage("Update ready", actions: []);
+                if (entrance.SizeToContent != SizeToContent.Manual || !entrance.HasAnimatedProperties)
+                    throw new Exception("Notification did not animate back to compact size");
+                await Task.Delay(350);
+                if (entrance.ActualHeight >= expandedHeight - 30)
+                    throw new Exception("Notification did not shrink after update details closed");
+            }
+            finally { entrance.Close(); }
+        }
         uint activityTick = 100;
         bool hovering = true;
-        var hoverNotice = new Window { Content = new TextBlock { Text = "Hover pause" }, Width = 180, Height = 80, ShowActivated = false };
+        var hoverNotice = new Window { Content = new TextBlock { Text = "Hover pause" }, Width = 180, Height = 80, ShowActivated = false, IsHitTestVisible = false, Left = -10000, Top = -10000 };
+        bool hoverRendered = false;
+        hoverNotice.ContentRendered += (_, _) => hoverRendered = true;
         Motion.AutoDismiss(hoverNotice, TimeSpan.FromMilliseconds(400), activitySource: () => activityTick, hoverSource: () => hovering);
         try
         {
             hoverNotice.Show(); await Task.Delay(80); activityTick++;
             await Task.Delay(750);
             if (!hoverNotice.IsVisible) throw new Exception("Notification expired while the cursor was over its window");
-            hovering = false; await Task.Delay(750);
-            if (hoverNotice.IsVisible) throw new Exception("Notification failed to resume its timer after hover ended");
+            hovering = false; await Task.Delay(1250);
+            if (hoverNotice.IsVisible) throw new Exception($"Notification failed to resume its timer after hover ended; content rendered={hoverRendered}, mouse over={hoverNotice.IsMouseOver}, focus={hoverNotice.IsKeyboardFocusWithin}");
         }
         finally { hoverNotice.Close(); }
         using var controller = new AppController(true);

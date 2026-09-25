@@ -17,7 +17,7 @@ If download or handoff fails, DesktopTools remains running and shows an error no
 - No installed copy: Install and a destination picker.
 - Matching version: a vertical list of **Update**, **Repair**, and **Uninstall**, each with an icon and explanation. Update checks GitHub or downloads an available newer setup.
 - Newer setup: Update is the primary action; additional maintenance choices are under More options.
-- Older setup: download a newer setup or uninstall; a downgrade is blocked.
+- Older setup: download a newer setup or uninstall; **Advanced options** offers an explicit older-version install after a warning. Notes and settings are kept, but newer settings may not work in the older app.
 
 Every setup checks for a newer GitHub release. Failure to connect does not block a valid local install, update or repair.
 

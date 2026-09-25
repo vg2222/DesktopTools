@@ -9,6 +9,8 @@ using System.Windows.Media;
 using DesktopTools.Native;
 using DesktopTools.Core;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace DesktopTools.UI;
 
@@ -22,6 +24,12 @@ public sealed class NotificationWindow : Window
     private readonly BitmapSource? noticeImage;
     private (string Label, Action Run)[]? noticeActions;
     private readonly Action<TimeSpan> resetDismissal;
+    private bool noticeRendered;
+    private bool resizeRunning;
+    private bool placementQueued;
+    private int resizeGeneration;
+    private double pendingHeight = double.NaN;
+    private double? previousProgress;
     public bool HoldOpen { get; set; }
     internal Action? ClickAction { get; set; }
     internal double AutoDismissSeconds { get; private set; }
@@ -54,7 +62,9 @@ public sealed class NotificationWindow : Window
             NativeWindowService.TryExcludeFromCapture(this, true, out _);
         };
         Loaded += (_, _) => PositionAll();
+        ContentRendered += (_, _) => noticeRendered = true;
         Closed += (_, _) => PositionAll();
+        SizeChanged += (_, _) => { if (resizeRunning) QueuePositionAll(); };
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(PositionAll));
         resetDismissal = Motion.AutoDismiss(this, TimeSpan.FromSeconds(double.IsFinite(seconds) ? Math.Clamp(seconds, 3, 30) : 6), () => HoldOpen,
             hoverSource: IsCursorWithinWindow);
@@ -72,10 +82,19 @@ public sealed class NotificationWindow : Window
 
     public void UpdateMessage(string message, double? progress = null, NotificationKind? kind = null, double? seconds = null, (string Label, Action Run)[]? actions = null)
     {
+        double oldHeight = ActualHeight;
+        bool animateResize = noticeRendered && IsVisible && Motion.Enabled && double.IsFinite(oldHeight) && oldHeight > 0;
+        if (animateResize && SizeToContent != SizeToContent.Manual)
+        {
+            SizeToContent = SizeToContent.Manual;
+            Height = oldHeight;
+        }
         bool animateTint = kind.HasValue && kind != Kind;
         if (kind.HasValue) Kind = kind.Value;
         if (actions != null) noticeActions = actions;
-        var surface = NotificationSurface.Create(message, Kind, noticeStyle, Close, noticeImage, noticeActions, progress);
+        var surface = NotificationSurface.Create(message, Kind, noticeStyle, Close, noticeImage, noticeActions, progress, previousProgress);
+        previousProgress = progress;
+        if (!noticeRendered) Motion.PrepareNoticeEntrance(surface);
         Content = surface; AutomationProperties.SetName(this, L.T(Kind.ToString()) + ": " + message);
         if (Kind is NotificationKind.Error or NotificationKind.Warning && !SystemParameters.HighContrast)
         {
@@ -88,7 +107,55 @@ public sealed class NotificationWindow : Window
             else brush.Color = tintColor;
         }
         if (seconds.HasValue) resetDismissal(TimeSpan.FromSeconds(Math.Clamp(seconds.Value, 3, 120)));
-        Dispatcher.BeginInvoke(new Action(PositionAll));
+        if (animateResize) AnimateUpdatedHeight(surface, oldHeight);
+        else
+        {
+            if (resizeRunning) { resizeGeneration++; resizeRunning = false; BeginAnimation(HeightProperty, null); SizeToContent = SizeToContent.Height; }
+            QueuePositionAll();
+        }
+    }
+
+    private void AnimateUpdatedHeight(FrameworkElement surface, double oldHeight)
+    {
+        surface.Measure(new Size(Width, double.PositiveInfinity));
+        double target = surface.DesiredSize.Height;
+        if (!double.IsFinite(target) || target <= 0) { SizeToContent = SizeToContent.Height; QueuePositionAll(); return; }
+        if (resizeRunning && Math.Abs(target - pendingHeight) < 1) { QueuePositionAll(); return; }
+        if (Math.Abs(target - oldHeight) < 1)
+        {
+            resizeGeneration++; resizeRunning = false;
+            BeginAnimation(HeightProperty, null); Height = target; SizeToContent = SizeToContent.Height;
+            QueuePositionAll(); return;
+        }
+        int generation = ++resizeGeneration;
+        resizeRunning = true; pendingHeight = target;
+        Height = target;
+        var animation = new DoubleAnimation(oldHeight, target, TimeSpan.FromMilliseconds(240))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop
+        };
+        animation.Completed += (_, _) =>
+        {
+            if (generation != resizeGeneration || !IsLoaded) return;
+            resizeRunning = false;
+            BeginAnimation(HeightProperty, null);
+            Height = target;
+            SizeToContent = SizeToContent.Height;
+            QueuePositionAll();
+        };
+        BeginAnimation(HeightProperty, animation);
+        QueuePositionAll();
+    }
+
+    private void QueuePositionAll()
+    {
+        if (placementQueued) return;
+        placementQueued = true;
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            placementQueued = false;
+            if (IsVisible) PositionAll();
+        }), DispatcherPriority.Render);
     }
 
     private static void PositionAll()

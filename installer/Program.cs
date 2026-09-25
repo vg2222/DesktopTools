@@ -182,6 +182,9 @@ internal static class Program
         return comparison > 0 ? SetupMode.Update : comparison < 0 ? SetupMode.OlderSetup : SetupMode.Maintenance;
     }
 
+    private static bool CanReplaceInstalledVersion(string? installedVersion, bool allowDowngrade) =>
+        allowDowngrade || DecideSetupMode(installedVersion, Version) != SetupMode.OlderSetup;
+
     internal static bool IsRegisteredApplicationProcess(string? executablePath, string installDir) =>
         executablePath is not null && SamePath(executablePath, Path.Combine(installDir, "DesktopTools.exe"));
 
@@ -254,7 +257,7 @@ internal static class Program
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(errorFile)!);
-                string text = ex.GetBaseException().Message;
+                string text = ex.Message;
                 File.WriteAllText(errorFile, text[..Math.Min(text.Length, 4096)]);
             }
             catch { /* The relaunch or fallback dialog still reports the original error. */ }
@@ -264,7 +267,7 @@ internal static class Program
             }
             catch
             {
-                MessageBox.Show("DesktopTools could not be updated or restarted. " + ex.GetBaseException().Message,
+                MessageBox.Show("DesktopTools could not be updated or restarted. " + ex.Message,
                     "DesktopTools Update", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -517,17 +520,17 @@ internal static class Program
         }
     }
 
-    internal static void Install(string requestedPath, IProgress<(int, string)> progress) =>
-        RunExclusiveTransaction(() => InstallCore(requestedPath, progress));
+    internal static void Install(string requestedPath, IProgress<(int, string)> progress, bool allowDowngrade = false) =>
+        RunExclusiveTransaction(() => InstallCore(requestedPath, progress, allowDowngrade));
 
-    private static void InstallCore(string requestedPath, IProgress<(int, string)> progress)
+    private static void InstallCore(string requestedPath, IProgress<(int, string)> progress, bool allowDowngrade)
     {
         string target = ValidatePath(requestedPath);
         CheckTarget(target);
         string? previous = GetRegisteredInstallDir();
         string? previousVersion = InstalledVersion;
-        if (DecideSetupMode(previousVersion, Version) == SetupMode.OlderSetup)
-            throw new InvalidOperationException("This setup cannot replace a newer DesktopTools installation. Download the latest setup from GitHub.");
+        if (!CanReplaceInstalledVersion(previousVersion, allowDowngrade))
+            throw new InvalidOperationException("This setup is older than the installed DesktopTools version. Choose Advanced options to install it explicitly.");
         // A registered installation may be incomplete; replacing it is the repair path.
         RegistryValueSnapshot startupBefore = ReadStartupValue();
         if (previous is not null && !SamePath(previous, target) &&
@@ -592,11 +595,11 @@ internal static class Program
                 if (startupChanged) rollback.Add(("Restore startup entry", () => RestoreStartupRegistry(startupBefore)));
                 if (installedNew) rollback.Add(("Remove failed update", () =>
                 {
-                    if (Directory.Exists(target)) Directory.Move(target, staged);
+                    if (Directory.Exists(target)) MoveDirectoryAfterExit(target, staged);
                 }));
                 if (backup is not null) rollback.Add(("Restore previous application files", () =>
                 {
-                    if (Directory.Exists(backup)) Directory.Move(backup, previous!);
+                    if (Directory.Exists(backup)) MoveDirectoryAfterExit(backup, previous!);
                 }));
                 if (startShortcutChanged) rollback.Add(("Restore Start menu shortcut", () =>
                     RestoreFileSnapshot(StartShortcut, startShortcutExisted, startShortcutBefore)));

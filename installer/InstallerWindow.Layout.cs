@@ -24,14 +24,18 @@ internal sealed partial class InstallerWindow
 
     private void BuildLayout()
     {
-        Width = 860; Height = 680;
-        MaxHeight = Math.Max(360, SystemParameters.WorkArea.Height - 16);
-        MaxWidth = Math.Max(600, SystemParameters.WorkArea.Width - 16);
-        WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
-        AllowsTransparency = true; Background = Brushes.Transparent;
-        WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI");
-        UseLayoutRounding = true; SnapsToDevicePixels = true;
+        if (!shellConfigured)
+        {
+            Width = 860; Height = 680;
+            MaxHeight = Math.Max(360, SystemParameters.WorkArea.Height - 16);
+            MaxWidth = Math.Max(600, SystemParameters.WorkArea.Width - 16);
+            WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
+            AllowsTransparency = true; Background = Brushes.Transparent;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI");
+            UseLayoutRounding = true; SnapsToDevicePixels = true;
+            shellConfigured = true;
+        }
         var surface = new Border { CornerRadius = new CornerRadius(16), BorderThickness = new Thickness(1), BorderBrush = StrokeBrush, Background = BackgroundBrush };
         surface.SizeChanged += (_, _) => surface.Clip = new RectangleGeometry(new Rect(0, 0, surface.ActualWidth, surface.ActualHeight), 16, 16);
         Content = surface;
@@ -137,6 +141,18 @@ internal sealed partial class InstallerWindow
                 var choices = new StackPanel(); choices.Children.Add(githubUpdate); choices.Children.Add(repair); choices.Children.Add(remove);
                 advancedOptions = new Border { Child = choices, Visibility = setupMode == Program.SetupMode.Update ? Visibility.Collapsed : Visibility.Visible, Margin = new Thickness(0, 0, 0, 10) };
                 content.Children.Add(advancedOptions);
+                if (setupMode == Program.SetupMode.OlderSetup)
+                {
+                    downgrade = ActionRow("info", "Install older version", "Install this setup version. Keep notes and settings; newer settings may not work in the older app.", async () =>
+                    {
+                        if (MessageBox.Show(this,
+                            L.F($"Install version {displayedSetupVersion} over version {displayedInstalledVersion}? Your notes and settings will be kept, but some newer settings may not work in the older app."),
+                            L.T("Install older version"), MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
+                            await ExecuteAsync(forceLocal: true, allowDowngrade: true);
+                    }, out _);
+                    downgradeOptions = new Border { Child = downgrade, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 2, 0, 10) };
+                    content.Children.Add(downgradeOptions);
+                }
             }
             else { githubUpdate.Visibility = Visibility.Collapsed; content.Children.Add(githubUpdate); }
             runtimeCard = CreateRuntimeCard(); content.Children.Add(runtimeCard);
@@ -175,6 +191,11 @@ internal sealed partial class InstallerWindow
             moreOptions = CreateMoreOptionsButton(); moreOptions.Background = Brushes.Transparent;
             moreOptions.HorizontalAlignment = HorizontalAlignment.Left; footer.Children.Add(moreOptions);
         }
+        else if (setupMode == Program.SetupMode.OlderSetup && !uninstall)
+        {
+            moreOptions = CreateAdvancedOptionsLink();
+            footer.Children.Add(moreOptions);
+        }
         else footer.Children.Add(launch);
         cancel = Button(!uninstall && setupMode is Program.SetupMode.Maintenance or Program.SetupMode.OlderSetup ? "Close" : "Cancel", false, Close, 82);
         cancel.Margin = new Thickness(8, 0, 10, 0); Grid.SetColumn(cancel, 1); footer.Children.Add(cancel);
@@ -188,17 +209,17 @@ internal sealed partial class InstallerWindow
         var button = Button("", false, () =>
         {
             if (!busy && !finished && languageMenu is not null) languageMenu.IsOpen = !languageMenu.IsOpen;
-        }, 158);
+        }, 176);
         button.Height = 34; button.Margin = new Thickness(0, 0, 8, 0);
         button.Tag = "installer-language";
         button.ToolTip = L.T("Interface language");
         AutomationProperties.SetName(button, L.T("Interface language") + ": " + L.LanguageNames[Array.IndexOf(L.Languages, L.Language)]);
-        var label = new Grid { Margin = new Thickness(10, 0, 8, 0) };
+        var label = new Grid { Margin = new Thickness(16, 0, 12, 0) };
         label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         label.ColumnDefinitions.Add(new ColumnDefinition());
         label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        label.Children.Add(FluentIcon("translate", MutedBrush, 17));
-        var name = Text(L.LanguageNames[Array.IndexOf(L.Languages, L.Language)], 12, FontWeights.SemiBold, TextBrush, new Thickness(9, 0, 0, 0));
+        label.Children.Add(LanguageFlag(L.Language));
+        var name = Text(L.LanguageNames[Array.IndexOf(L.Languages, L.Language)], 12, FontWeights.SemiBold, TextBrush, new Thickness(11, 0, 0, 0));
         Grid.SetColumn(name, 1); label.Children.Add(name);
         var chevron = FluentIcon("chevron_right", MutedBrush, 14);
         chevron.RenderTransformOrigin = new Point(.5, .5); chevron.RenderTransform = new RotateTransform(90);
@@ -213,11 +234,11 @@ internal sealed partial class InstallerWindow
             string nativeName = L.LanguageNames[index];
             var option = new Button
             {
-                Content = LanguageOptionContent(nativeName, language == L.Language),
+                Content = LanguageOptionContent(language, nativeName, language == L.Language),
                 Tag = "installer-language-" + language,
                 Height = 38,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                Padding = new Thickness(10, 0, 10, 0),
+                Padding = new Thickness(12, 0, 12, 0),
                 Foreground = TextBrush,
                 Background = language == L.Language ? Brush("#2D415F") : Brushes.Transparent,
                 BorderThickness = new Thickness(0),
@@ -246,21 +267,29 @@ internal sealed partial class InstallerWindow
             {
                 languageMenu!.IsOpen = false;
                 if (busy || finished || language == L.Language) return;
+                bool? launchAfterSetup = launch.IsChecked;
+                bool deleteManagedData = deleteData?.IsChecked == true;
+                bool advancedVisible = advancedOptions?.Visibility == Visibility.Visible;
+                bool downgradeVisible = downgradeOptions?.Visibility == Visibility.Visible;
                 L.Use(language);
                 Title = L.T(uninstall ? "Remove DesktopTools" : "DesktopTools Setup");
                 BuildLayout();
+                launch.IsChecked = launchAfterSetup;
+                if (deleteManagedData && deleteData is not null) deleteData.IsChecked = true;
+                if (advancedVisible && advancedOptions is not null) advancedOptions.Visibility = Visibility.Visible;
+                if (downgradeVisible && downgradeOptions is not null) downgradeOptions.Visibility = Visibility.Visible;
                 if (!uninstall && !checkingLatest) _ = CheckLatestAsync();
             };
             options.Children.Add(option);
         }
         var menu = new Border
         {
-            Child = options, Width = 206, Background = CardBrush, BorderBrush = StrokeBrush,
+            Child = options, Width = 220, Background = CardBrush, BorderBrush = StrokeBrush,
             BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(11)
         };
         languageMenu = new Popup
         {
-            PlacementTarget = button, Placement = PlacementMode.Bottom, HorizontalOffset = -48,
+            PlacementTarget = button, Placement = PlacementMode.Bottom, HorizontalOffset = -36,
             VerticalOffset = 6, AllowsTransparency = true, StaysOpen = false,
             PopupAnimation = PopupAnimation.Fade, Child = menu
         };
@@ -275,18 +304,41 @@ internal sealed partial class InstallerWindow
         return button;
     }
 
-    private static Grid LanguageOptionContent(string nativeName, bool selected)
+    private static Grid LanguageOptionContent(string language, string nativeName, bool selected)
     {
-        var row = new Grid();
+        var row = new Grid { Margin = new Thickness(8, 0, 4, 0) };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition());
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.Children.Add(Text(nativeName, 12, FontWeights.Medium, TextBrush));
+        row.Children.Add(LanguageFlag(language));
+        var name = Text(nativeName, 12, FontWeights.Medium, TextBrush, new Thickness(12, 0, 0, 0));
+        Grid.SetColumn(name, 1); row.Children.Add(name);
         if (selected)
         {
             var check = FluentIcon("checkmark", AccentHoverBrush, 16);
             Grid.SetColumn(check, 1); row.Children.Add(check);
         }
         return row;
+    }
+
+    private static Border LanguageFlag(string language)
+    {
+        string country = language switch { "ru" => "ru", "de" => "de", "fr" => "fr", "es" => "es", _ => "gb" };
+        const double width = 22;
+        const double height = 16.5;
+        var flag = new Image
+        {
+            Source = new BitmapImage(new Uri($"pack://application:,,,/DesktopTools.Installer;component/Assets/Flags/{country}.png")),
+            Width = width, Height = height, Stretch = Stretch.Fill,
+            Clip = new RectangleGeometry(new Rect(0, 0, width, height), 2.5, 2.5)
+        };
+        RenderOptions.SetBitmapScalingMode(flag, BitmapScalingMode.HighQuality);
+        return new Border
+        {
+            Tag = "installer-language-flag", Child = flag, Width = width, Height = height,
+            CornerRadius = new CornerRadius(2.5), BorderBrush = Brush("#59616B"), BorderThickness = new Thickness(.5),
+            VerticalAlignment = VerticalAlignment.Center, SnapsToDevicePixels = true
+        };
     }
 
     private Border CreateRuntimeCard()
@@ -353,8 +405,8 @@ internal sealed partial class InstallerWindow
     private static FrameworkElement FluentIcon(string name, Brush fill, double size)
     {
         // Existing Microsoft Fluent System Icons assets, covered by THIRD-PARTY-NOTICES.
-        var resource = Application.GetResourceStream(new Uri($"pack://application:,,,/DesktopTools.Installer;component/Assets/Icons/{name}_24_regular.svg"))!;
-        using var stream = resource.Stream;
+        using var stream = typeof(InstallerWindow).Assembly.GetManifestResourceStream($"DesktopTools.Installer.Icons.{name}_24_regular.svg")
+            ?? throw new InvalidOperationException($"Setup icon is missing: {name}");
         var svg = XDocument.Load(stream);
         var canvas = new Canvas { Width = 24, Height = 24 };
         foreach (var path in svg.Descendants().Where(node => node.Name.LocalName == "path"))

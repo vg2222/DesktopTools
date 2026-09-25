@@ -7,7 +7,7 @@ Download DesktopTools from the project's [GitHub Releases](https://github.com/vg
 Each release includes `SHA256SUMS.txt`. Compare the entry for your downloaded file with its hash:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath ".\DesktopTools-1.2.1-win-x64-setup.exe"
+Get-FileHash -Algorithm SHA256 -LiteralPath ".\DesktopTools-1.2.2-win-x64-setup.exe"
 ```
 
 Use the filename for the version you downloaded. Matching hashes verify that the file matches the release asset; they do not replace publisher signing.

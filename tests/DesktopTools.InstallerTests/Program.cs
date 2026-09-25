@@ -7,6 +7,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 var installer = Assembly.Load("DesktopTools.Installer");
+foreach (string icon in new[] { "screenshot", "pen", "presenter", "dismiss", "translate", "chevron_right", "checkmark", "arrow_up_right", "arrow_clockwise", "desktop_toolbox", "delete", "info" })
+{
+    using var resource = installer.GetManifestResourceStream($"DesktopTools.Installer.Icons.{icon}_24_regular.svg");
+    if (resource is null) throw new Exception("Installer package is missing the " + icon + " icon");
+}
 var program = installer.GetType("DesktopTools.Installer.Program", throwOnError: true)!;
 var installerLanguage = installer.GetType("DesktopTools.Localization.L", throwOnError: true)!;
 var systemLanguage = installerLanguage.GetMethod("SystemLanguage", BindingFlags.Public | BindingFlags.Static)!;
@@ -168,6 +173,14 @@ Check(Decide(null, "1.2.0") == "Install", "fresh setup was not classified as ins
 Check(Decide("1.2.0", "1.2.0") == "Maintenance", "matching setup was not classified as maintenance");
 Check(Decide("1.1.0", "1.2.0") == "Update", "newer setup was not classified as update");
 Check(Decide("1.3.0", "1.2.0") == "OlderSetup", "older setup was allowed to downgrade");
+var canReplaceVersion = program.GetMethod("CanReplaceInstalledVersion", BindingFlags.Static | BindingFlags.NonPublic)
+    ?? throw new Exception("Installer has no explicit-consent downgrade guard");
+bool CanReplace(string? installedVersion, bool allowDowngrade) => (bool)canReplaceVersion.Invoke(null, [installedVersion, allowDowngrade])!;
+string setupVersion = (string)program.GetField("Version", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+string futureVersion = new Version(Version.Parse(setupVersion).Major + 1, 0, 0).ToString();
+Check(!CanReplace(futureVersion, false), "older setup can downgrade without explicit consent");
+Check(CanReplace(futureVersion, true), "older setup cannot downgrade after explicit consent");
+Check(CanReplace(setupVersion, false) && CanReplace(null, false), "regular repair or fresh install was blocked");
 Check(Decide("invalid", "1.2.0") == "Maintenance", "unknown installed version was treated as safe to overwrite");
 Check(Equals(normalizeVersion.Invoke(null, ["1.0"]), "1.0.0"), "two-component version was not normalized safely");
 Check(Equals(normalizeVersion.Invoke(null, ["2.4.1.9"]), "2.4.1"), "four-component version did not normalize to display version");
@@ -255,6 +268,26 @@ finally
     if (!Path.GetFullPath(swapFixture).StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase)) throw new Exception("Unsafe test cleanup path");
     if (Directory.Exists(swapFixture)) Directory.Delete(swapFixture, true);
 }
+
+// A persistent lock must fail with guidance and leave the original folder intact.
+string blockedFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
+string blockedSource = Path.Combine(blockedFixture, "current");
+string blockedTarget = Path.Combine(blockedFixture, "previous");
+Directory.CreateDirectory(blockedSource);
+string blockedFile = Path.Combine(blockedSource, "DesktopTools.dll");
+File.WriteAllText(blockedFile, "keep this installation");
+try
+{
+    using (var held = new FileStream(blockedFile, FileMode.Open, FileAccess.Read, FileShare.None))
+    {
+        try { moveAfterExit.Invoke(null, [blockedSource, blockedTarget]); throw new Exception("Persistent lock was ignored"); }
+        catch (TargetInvocationException ex) when (ex.InnerException is IOException failure &&
+            failure.Message.Contains("still in use", StringComparison.OrdinalIgnoreCase)) { }
+        Check(Directory.Exists(blockedSource) && !Directory.Exists(blockedTarget),
+            "Persistent lock moved or removed the existing application");
+    }
+}
+finally { if (Directory.Exists(blockedFixture)) Directory.Delete(blockedFixture, true); }
 
 string deleteFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
 string managed = Path.Combine(deleteFixture, "DesktopTools");
@@ -392,6 +425,17 @@ static void RenderInstallerModes(Assembly installer, Type program)
                     Check(((Button)Field("primary")!).Visibility == Visibility.Collapsed, "maintenance still shows a footer action");
                     Check(((Button)Field("repair")!).IsEnabled == (modeName != "OlderSetup"), "older setup offered an unsafe repair");
                     Check(choices.Children.OfType<Button>().All(button => VisualDescendants(button).OfType<System.Windows.Shapes.Path>().Any()), "maintenance list is missing Fluent icons");
+                    if (modeName == "OlderSetup")
+                    {
+                        var advanced = (Button)Field("moreOptions")!;
+                        var downgradePanel = (Border)Field("downgradeOptions")!;
+                        Check(advanced.Visibility == Visibility.Visible && downgradePanel.Visibility == Visibility.Collapsed,
+                            "older-version choice was not tucked behind Advanced options");
+                        advanced.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                        Check(downgradePanel.Visibility == Visibility.Visible && ((Button)Field("downgrade")!).IsEnabled,
+                            "Advanced options did not reveal the older-version choice");
+                        window.UpdateLayout(); root.UpdateLayout();
+                    }
                 }
                 if (!uninstall)
                 {
@@ -423,14 +467,45 @@ static void RenderInstallerModes(Assembly installer, Type program)
                     var menu = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;
                     Check(menu.IsOpen && VisualDescendants(menu.Child).OfType<Button>().Count(b => (b.Tag as string)?.StartsWith("installer-language-") == true) == 5,
                         "Installer language menu does not show all supported languages");
-                    menu.Child.Measure(new Size(206, 230)); menu.Child.Arrange(new Rect(0, 0, 206, menu.Child.DesiredSize.Height));
-                    var menuBitmap = new RenderTargetBitmap(206, (int)Math.Ceiling(menu.Child.RenderSize.Height), 96, 96, PixelFormats.Pbgra32);
+                    Check(VisualDescendants(menu.Child).OfType<Button>().Where(b => (b.Tag as string)?.StartsWith("installer-language-") == true)
+                        .All(b => b.Content is Grid row && row.Margin.Left >= 8 &&
+                            VisualDescendants(row).OfType<Border>().Any(flag => Equals(flag.Tag, "installer-language-flag"))),
+                        "Language options need spaced, rounded country flags");
+                    menu.Child.Measure(new Size(220, 230)); menu.Child.Arrange(new Rect(0, 0, 220, menu.Child.DesiredSize.Height));
+                    var menuBitmap = new RenderTargetBitmap(220, (int)Math.Ceiling(menu.Child.RenderSize.Height), 96, 96, PixelFormats.Pbgra32);
                     menuBitmap.Render(menu.Child);
                     var menuEncoder = new PngBitmapEncoder(); menuEncoder.Frames.Add(BitmapFrame.Create(menuBitmap));
                     using (FileStream menuStream = File.Create(Path.Combine(output, "installer-language-menu.png"))) menuEncoder.Save(menuStream);
                     VisualDescendants(menu.Child).OfType<Button>().Single(b => Equals(b.Tag, "installer-language-ru"))
                         .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Check(((TextBlock)Field("headline")!).Text == "Установить DesktopTools", "Installer language selector did not update the first screen");
+                    window.Show();
+                    VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"))
+                        .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    var visibleMenu = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;
+                    VisualDescendants(visibleMenu.Child).OfType<Button>().Single(b => Equals(b.Tag, "installer-language-en"))
+                        .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Check(((TextBlock)Field("headline")!).Text == "Install DesktopTools",
+                        "Visible installer could not switch language after its native handle existed");
+                }
+                if (name == "uninstall")
+                {
+                    window.Show();
+                    ((RadioButton)Field("deleteData")!).IsChecked = true;
+                    var selector = VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"));
+                    selector.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    var popup = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;
+                    var russian = VisualDescendants(popup.Child).OfType<Button>().Single(b => Equals(b.Tag, "installer-language-ru"));
+                    russian.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Check(window.Title == "Удалить DesktopTools" && ((TextBlock)Field("headline")!).Text == "Удалить DesktopTools",
+                        "Visible uninstaller did not change language without rebuilding native window chrome");
+                    Check(((RadioButton)Field("deleteData")!).IsChecked == true,
+                        "Changing installer language discarded the uninstall data choice");
+                    var localizedSelector = VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"));
+                    var label = (Grid)localizedSelector.Content;
+                    Check(label.Margin.Left >= 14, "Language label is too close to the left edge");
+                    Check(VisualDescendants(label).OfType<Border>().Any(b => Equals(b.Tag, "installer-language-flag")),
+                        "Selected installer language has no rounded country flag");
                 }
                 window.Close();
             }

@@ -60,3 +60,7 @@ ScreenRecorderLib 7.0.1 — Copyright (c) 2017 Sverre Skodje, MIT. Source: https
 UI icons and the application-grid icon are from Microsoft Fluent System Icons 1.1.341, licensed under MIT. Original SVGs, attribution and the full license are in `src/DesktopTools/Assets/Icons`. The application ICO is a rasterization of the original color SVG.
 
 Source: https://github.com/microsoft/fluentui-system-icons
+
+## Installer language flags
+
+The installer bundles small flag PNGs for the English, Russian, German, French and Spanish language choices from [Flagpedia / FlagCDN](https://flagpedia.net/download/api). [Flagpedia's terms](https://flagpedia.net/terms) state that its flag images are public domain. The flags are bundled locally so the language menu works offline.
