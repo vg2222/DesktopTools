@@ -8,7 +8,7 @@ namespace DesktopTools.UI;
 internal sealed partial class MainWindow
 {
     private Button? updateIndicator, updateDownloadButton, updateCheckButton, updateNotesButton;
-    private TextBlock? updateStatusText;
+    private TextBlock? updateStatusText, updateVersionText;
     private ProgressBar? updateProgressBar;
     private void AddUpdateIndicator(Panel footer)
     {
@@ -21,10 +21,25 @@ internal sealed partial class MainWindow
     private FrameworkElement UpdateCard(bool preferences)
     {
         var body = new StackPanel();
-        body.Children.Add(Ui.Text(L.T("Updates"), 18, true));
-        body.Children.Add(Ui.Text(L.T("Stable releases from GitHub. Notes and settings are kept when updating."), 12, muted: true));
-        updateStatusText = Ui.Text("", 13, true); updateStatusText.Tag = "update-status"; updateStatusText.Margin = new Thickness(0, 14, 0, 8); body.Children.Add(updateStatusText);
-        updateProgressBar = new ProgressBar { Minimum = 0, Maximum = 1, Height = 5, Margin = new Thickness(0, 0, 0, 12) }; body.Children.Add(updateProgressBar);
+        var heading = new StackPanel { Orientation = Orientation.Horizontal };
+        var icon = Ui.Icon("Refresh", 22); icon.Margin = new Thickness(0, 0, 12, 0); heading.Children.Add(icon);
+        heading.Children.Add(Ui.Text(L.T("Updates"), 20, true)); body.Children.Add(heading);
+        var intro = Ui.Text(L.T("Stable releases from GitHub. Notes and settings are kept when updating."), 12, muted: true);
+        intro.Margin = new Thickness(0, 8, 0, 20); body.Children.Add(intro);
+
+        var overview = new Grid { Margin = new Thickness(0, 0, 0, 18) };
+        overview.ColumnDefinitions.Add(new ColumnDefinition()); overview.ColumnDefinitions.Add(new ColumnDefinition());
+        var installed = new StackPanel { Margin = new Thickness(0, 0, 16, 0) };
+        installed.Children.Add(Ui.Text(L.T("Installed version"), 11, muted: true));
+        installed.Children.Add(Ui.Text(AppController.CurrentVersion, 18, true)); overview.Children.Add(installed);
+        var latest = new StackPanel(); latest.Children.Add(Ui.Text(L.T("Available version"), 11, muted: true));
+        updateVersionText = Ui.Text("—", 18, true); latest.Children.Add(updateVersionText); Grid.SetColumn(latest, 1); overview.Children.Add(latest);
+        var versionSurface = new Border { Child = overview, Padding = new Thickness(18, 15, 18, 0), CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 0, 16) };
+        versionSurface.SetResourceReference(Border.BackgroundProperty, "Field"); body.Children.Add(versionSurface);
+
+        updateStatusText = Ui.Text("", 13, true); updateStatusText.Tag = "update-status";
+        updateStatusText.Margin = new Thickness(0, 0, 0, 10); body.Children.Add(updateStatusText);
+        updateProgressBar = new ProgressBar { Minimum = 0, Maximum = 1, Height = 5, Margin = new Thickness(0, 0, 0, 14) }; body.Children.Add(updateProgressBar);
         var actions = new WrapPanel();
         updateCheckButton = Ui.Button(L.T("Check for updates"), async () => await controller.CheckForUpdatesAsync()); updateCheckButton.Tag = "check-updates";
         updateDownloadButton = Ui.Button(L.T("Update in background"), async () => await controller.BeginBackgroundUpdateAsync(), true); updateDownloadButton.Tag = "download-update";
@@ -32,10 +47,12 @@ internal sealed partial class MainWindow
         actions.Children.Add(updateCheckButton); actions.Children.Add(updateDownloadButton); actions.Children.Add(updateNotesButton); body.Children.Add(actions);
         if (preferences)
         {
+            var headingPreferences = Ui.Text(L.T("Automatic checks"), 16, true);
+            headingPreferences.Margin = new Thickness(0, 24, 0, 8); body.Children.Add(headingPreferences);
             body.Children.Add(Ui.Row(L.T("Check automatically"), L.T("Check at startup and at the selected interval while DesktopTools is running."),
                 Ui.Toggle(controller.Settings.AutomaticUpdateChecks, value => Change(s => s.AutomaticUpdateChecks = value))));
-            string[] labels = ["At startup only", "Every hour", "Every 6 hours", "Every 12 hours", "Every day", "Every week"];
-            int[] hours = [0, 1, 6, 12, 24, 168];
+            string[] labels = ["At startup only", "Every 15 minutes", "Every 30 minutes", "Every hour", "Every 2 hours", "Every 3 hours", "Every 6 hours", "Every 12 hours", "Every day", "Every week"];
+            double[] hours = [0, .25, .5, 1, 2, 3, 6, 12, 24, 168];
             int selected = Array.IndexOf(hours, controller.Settings.UpdateCheckHours);
             var interval = Ui.Choice(labels, labels[Math.Max(0, selected)], value => Change(s => s.UpdateCheckHours = hours[Array.IndexOf(labels, value)]));
             interval.Tag = "update-interval";
@@ -52,6 +69,7 @@ internal sealed partial class MainWindow
             updateIndicator.Content = Ui.IconLabel("Refresh", L.T(controller.DownloadingUpdate ? "Updating…" : "Update available"));
         }
         if (updateStatusText != null) updateStatusText.Text = L.T(controller.UpdateStatus);
+        if (updateVersionText != null) updateVersionText.Text = controller.AvailableUpdate?.Version ?? "—";
         if (updateProgressBar != null) { updateProgressBar.Visibility = controller.DownloadingUpdate ? Visibility.Visible : Visibility.Collapsed; updateProgressBar.Value = controller.UpdateDownloadProgress; }
         if (updateCheckButton != null) updateCheckButton.IsEnabled = !controller.CheckingUpdate && !controller.DownloadingUpdate;
         if (updateDownloadButton != null) { updateDownloadButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed; updateDownloadButton.IsEnabled = !controller.DownloadingUpdate; }

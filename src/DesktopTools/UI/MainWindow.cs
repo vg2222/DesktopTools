@@ -632,8 +632,11 @@ internal sealed partial class MainWindow : Window
             tabs.Children.Add(tab);
         }
         page.Children.Add(tabs);
-        if (settingsTab == "Behavior") Group(L.T("Language"), Ui.Row(L.T("Interface language"), L.T("Applies after restarting DesktopTools. Your open work stays untouched."),
-            Ui.Choice(L.LanguageNames, L.LanguageNames[Array.IndexOf(L.Languages, s.Language)], name => Change(x => x.Language = L.Languages[Array.IndexOf(L.LanguageNames, name)]))));
+        if (settingsTab == "Behavior") Group(L.T("Language"), Ui.Row(L.T("Interface language"), L.T("DesktopTools restarts automatically to apply the new language."),
+            Ui.Choice(L.LanguageNames, L.LanguageNames[Array.IndexOf(L.Languages, s.Language)], async name =>
+            {
+                if (!await controller.ChangeLanguageAsync(L.Languages[Array.IndexOf(L.LanguageNames, name)])) Navigate("Settings");
+            }, translate: false)));
         if (settingsTab == "Appearance")
         {
             ThemePreviews();

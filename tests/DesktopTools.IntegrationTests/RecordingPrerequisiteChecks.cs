@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using DesktopTools;
 using DesktopTools.Extras;
 using DesktopTools.Native;
@@ -44,6 +47,13 @@ internal static class RecordingPrerequisiteChecks
             recorder.SetSource(new RecordingSelection("Prerequisite fixture", monitor));
             recorder.UpdateLayout();
             var start = Field<Button>(recorder, "start");
+            var sourcePreview = Field<Button>(recorder, "sourcePreview");
+            Check(start.TranslatePoint(new Point(0, 0), recorder).Y > sourcePreview.TranslatePoint(new Point(0, 0), recorder).Y + 100,
+                "Recorder transport controls are not below the preview.");
+            var layout = new RenderTargetBitmap((int)recorder.ActualWidth, (int)recorder.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+            layout.Render(recorder);
+            var image = new PngBitmapEncoder(); image.Frames.Add(BitmapFrame.Create(layout));
+            using (var output = File.Create(Path.Combine(Environment.CurrentDirectory, "recorder-layout.png"))) image.Save(output);
             var runtimeHelp = Field<Button>(recorder, "runtimeHelp");
             var status = Field<TextBlock>(recorder, "status");
 

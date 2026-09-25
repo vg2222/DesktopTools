@@ -8,6 +8,21 @@ using System.Windows.Media.Imaging;
 
 var installer = Assembly.Load("DesktopTools.Installer");
 var program = installer.GetType("DesktopTools.Installer.Program", throwOnError: true)!;
+var installerLanguage = installer.GetType("DesktopTools.Localization.L", throwOnError: true)!;
+var systemLanguage = installerLanguage.GetMethod("SystemLanguage", BindingFlags.Public | BindingFlags.Static)!;
+Check((string)systemLanguage.Invoke(null, [System.Globalization.CultureInfo.GetCultureInfo("de-DE")])! == "de", "Installer did not map the Windows UI language");
+var saveInitialLanguage = program.GetMethod("SaveInitialLanguage", BindingFlags.Static | BindingFlags.NonPublic, [typeof(string), typeof(string)])!;
+string languageFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer language", Guid.NewGuid().ToString("N"));
+try
+{
+    saveInitialLanguage.Invoke(null, [languageFixture, "ru"]);
+    string settingsPath = Path.Combine(languageFixture, "settings.json");
+    Check(File.ReadAllText(settingsPath).Contains("\"ru\""), "Installer language was not passed to the app");
+    File.WriteAllText(settingsPath, "{\"Version\":1,\"Language\":\"fr\"}");
+    saveInitialLanguage.Invoke(null, [languageFixture, "de"]);
+    Check(File.ReadAllText(settingsPath).Contains("\"fr\""), "Installer overwrote an existing app language");
+}
+finally { if (Directory.Exists(languageFixture)) Directory.Delete(languageFixture, true); }
 var runtime = installer.GetType("DesktopTools.Installer.RecordingRuntime", throwOnError: true)!;
 var runtimeAvailable = runtime.GetMethod("IsAvailable", BindingFlags.Static | BindingFlags.NonPublic, [typeof(Func<string, bool>)])!;
 Check((bool)runtimeAvailable.Invoke(null, [new Func<string, bool>(_ => true)])!, "installed recording runtime was rejected");
@@ -241,6 +256,11 @@ catch (UnauthorizedAccessException)
 {
     deleteTree.Invoke(null, [deleteRoot]);
 }
+catch (IOException ex) when ((uint)ex.HResult is 0x80070522 or 0x80070005)
+{
+    // Creating directory links requires Windows Developer Mode or a privilege on some test hosts.
+    deleteTree.Invoke(null, [deleteRoot]);
+}
 finally { if (Directory.Exists(linkFixture)) Directory.Delete(linkFixture, true); }
 
 string snapshotFixture = Path.Combine(Path.GetTempPath(), "DesktopTools installer tests", Guid.NewGuid().ToString("N"));
@@ -280,6 +300,7 @@ static void RenderInstallerModes(Assembly installer, Type program)
     {
         try
         {
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             Type windowType = installer.GetType("DesktopTools.Installer.InstallerWindow", true)!;
             Type modeType = program.GetNestedType("SetupMode", BindingFlags.NonPublic)!;
             Type releaseType = installer.GetType("DesktopTools.Updates.GitHubRelease", true)!;
@@ -300,6 +321,9 @@ static void RenderInstallerModes(Assembly installer, Type program)
             Render("update-available", false, "Maintenance", false, releaseVersion: "1.2.0");
             Render("offline", false, "Maintenance", false, offline: true);
             Render("older-release", false, "OlderSetup", false, releaseVersion: "1.0.5");
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("ru-RU");
+            Render("install-ru", false, "Install", false);
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             RenderBackgroundProgress();
 
             void Render(string name, bool uninstall, string modeName, bool expand, bool runtimeReady = false, bool compact = false, string? releaseVersion = null, bool offline = false)
@@ -345,7 +369,8 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 {
                     var download = (Button)Field("runtimeDownload")!;
                     Check(download.Visibility == (runtimeReady ? Visibility.Collapsed : Visibility.Visible), "runtime guidance does not match prerequisite state");
-                    Check(((TextBlock)Field("runtimeDescription")!).Text.Contains(runtimeReady ? "ready" : "Other tools work", StringComparison.Ordinal), "runtime explanation is missing");
+                    Check(((TextBlock)Field("runtimeDescription")!).Text.Contains(
+                        Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? (runtimeReady ? "установлен" : "Остальные инструменты") : (runtimeReady ? "ready" : "Other tools work"), StringComparison.Ordinal), "runtime explanation is missing");
                     runtimeReady = !runtimeReady;
                     windowType.GetMethod("RefreshRuntime", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
                     Check(download.Visibility == (runtimeReady ? Visibility.Collapsed : Visibility.Visible), "Check again failed to refresh prerequisite state");
@@ -363,6 +388,12 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 encoder.Frames.Add(BitmapFrame.Create(bitmap));
                 using FileStream stream = File.Create(Path.Combine(output, $"installer-update-{name}.png"));
                 encoder.Save(stream);
+                if (name == "install")
+                {
+                    var selector = VisualDescendants((DependencyObject)window.Content).OfType<ComboBox>().Single(c => Equals(c.Tag, "installer-language"));
+                    selector.SelectedItem = "Русский";
+                    Check(((TextBlock)Field("headline")!).Text == "Установить DesktopTools", "Installer language selector did not update the first screen");
+                }
                 window.Close();
             }
 

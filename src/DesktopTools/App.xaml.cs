@@ -10,6 +10,7 @@ namespace DesktopTools;
 public partial class App : Application
 {
     private const string AfterResetPrefix = "--after-reset=";
+    private const string AfterLanguagePrefix = "--after-language=";
     private Mutex? mutex;
     private EventWaitHandle? activation;
     private RegisteredWaitHandle? wait;
@@ -27,18 +28,30 @@ public partial class App : Application
         start.ArgumentList.Add(AfterResetPrefix + parentPid);
         return start;
     }
+    internal static int? LanguageParentPid(string[] args)
+    {
+        string? argument = args.FirstOrDefault(value => value.StartsWith(AfterLanguagePrefix, StringComparison.Ordinal));
+        return argument != null && int.TryParse(argument[AfterLanguagePrefix.Length..], out int pid) && pid > 0 ? pid : null;
+    }
+    internal static ProcessStartInfo CreateLanguageRelaunchStartInfo(string executable, int parentPid)
+    {
+        var start = new ProcessStartInfo(executable) { UseShellExecute = true };
+        start.ArgumentList.Add(AfterLanguagePrefix + parentPid);
+        return start;
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        if (ResetParentPid(e.Args) is int parentPid)
+        int? restartParentPid = ResetParentPid(e.Args) ?? LanguageParentPid(e.Args);
+        if (restartParentPid is int parentPid)
         {
             try
             {
                 using var parent = Process.GetProcessById(parentPid);
                 if (!parent.WaitForExit(30_000))
                 {
-                    MessageBox.Show(L.T("DesktopTools could not finish restarting after the data reset. Please open it again."),
+                    MessageBox.Show(L.T("DesktopTools could not finish restarting. Please open it again."),
                         "DesktopTools", MessageBoxButton.OK, MessageBoxImage.Error);
                     Shutdown(1); return;
                 }
@@ -77,15 +90,16 @@ public partial class App : Application
     {
         Controller?.Dispose();
         bool restart = Controller?.CompleteDataReset() == true;
+        bool restartLanguage = Controller?.RestartForLanguage == true;
         wait?.Unregister(null);
         activation?.Dispose();
         mutex?.Dispose();
         base.OnExit(e);
-        if (!restart) return;
+        if (!restart && !restartLanguage) return;
         try
         {
             string executable = Environment.ProcessPath ?? throw new InvalidOperationException("DesktopTools executable path is unavailable.");
-            var start = CreateResetRelaunchStartInfo(executable, Environment.ProcessId);
+            var start = restart ? CreateResetRelaunchStartInfo(executable, Environment.ProcessId) : CreateLanguageRelaunchStartInfo(executable, Environment.ProcessId);
             if (Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
                 start.ArgumentList.Insert(0, Assembly.GetEntryAssembly()?.Location
                     ?? throw new InvalidOperationException("DesktopTools entry assembly path is unavailable."));
@@ -93,7 +107,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show(L.T("DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.") + "\n\n" + ex.Message,
+            MessageBox.Show(L.T("DesktopTools could not reopen automatically. Open it from the Start menu.") + "\n\n" + ex.Message,
                 "DesktopTools", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

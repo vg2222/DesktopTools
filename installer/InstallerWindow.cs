@@ -12,6 +12,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using DesktopTools.Updates;
+using DesktopTools.Localization;
 
 namespace DesktopTools.Installer;
 
@@ -41,6 +42,7 @@ internal sealed partial class InstallerWindow : Window
     private Button? moreOptions;
     private Border? advancedOptions;
     private Button? githubUpdate;
+    private ComboBox? languageChoice;
     private CheckBox launch = null!;
     private RadioButton? keepData;
     private RadioButton? deleteData;
@@ -72,8 +74,15 @@ internal sealed partial class InstallerWindow : Window
         latestCheck = latestCheckOverride ?? FetchLatestReleaseAsync;
         runtimeCheck = runtimeCheckOverride ?? RecordingRuntime.IsAvailable;
         selectedInstallDir = Program.InstallDir;
-        Title = uninstall ? "Remove DesktopTools" : "DesktopTools Setup";
+        L.Use(L.SystemLanguage());
+        Title = L.T(uninstall ? "Remove DesktopTools" : "DesktopTools Setup");
         BuildLayout();
+        PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            if (e.GetPosition(this).Y > 64 || IsInteractive(e.OriginalSource as DependencyObject)) return;
+            DragMove(); e.Handled = true;
+        };
+        Activated += (_, _) => { if (!busy) RefreshRuntime(); };
         Closing += (_, e) =>
         {
             if (busy && !cancellableBusy) { e.Cancel = true; return; }
@@ -108,23 +117,23 @@ internal sealed partial class InstallerWindow : Window
                 && (displayedInstalledVersion is null || GitHubReleaseClient.IsNewer(release.Version, displayedInstalledVersion)) ? release : null;
             if (latestRelease is not null)
             {
-                SetStatus($"Version {latestRelease.Version} is available on GitHub");
-                statusHint.Text = "Download is checksum-verified before the newer setup opens.";
+                SetStatus(L.F($"Version {latestRelease.Version} is available on GitHub"));
+                statusHint.Text = L.T("Download is checksum-verified before the newer setup opens.");
                 if (githubUpdate is not null)
                 {
                     githubUpdate.Visibility = Visibility.Visible;
-                    updateDescription!.Text = $"Download version {latestRelease.Version} from GitHub. Your saved data is kept.";
+                    updateDescription!.Text = L.F($"Download version {latestRelease.Version} from GitHub. Your saved data is kept.");
                     if (advancedOptions is not null) advancedOptions.Visibility = Visibility.Visible;
                 }
             }
             else
             {
                 SetStatus("No newer public release found");
-                statusHint.Text = setupMode == Program.SetupMode.OlderSetup
+                statusHint.Text = L.T(setupMode == Program.SetupMode.OlderSetup
                     ? "Repair requires a setup matching or newer than the installed version."
-                    : "You're ready to continue with this setup.";
+                    : "You're ready to continue with this setup.");
                 if (updateDescription is not null && setupMode != Program.SetupMode.Update)
-                    updateDescription.Text = "No newer public release found. Select to check again.";
+                    updateDescription.Text = L.T("No newer public release found. Select to check again.");
                 if (setupMode == Program.SetupMode.Install && githubUpdate is not null) githubUpdate.Visibility = Visibility.Collapsed;
             }
         }
@@ -133,8 +142,8 @@ internal sealed partial class InstallerWindow : Window
         {
             if (busy || finished || closed) return;
             SetStatus("Could not check GitHub");
-            statusHint.Text = "You can continue with local maintenance. " + ex.Message;
-            if (updateDescription is not null) updateDescription.Text = "Couldn't reach GitHub. Select to try again.";
+            statusHint.Text = L.T("You can continue with local maintenance. ") + ex.Message;
+            if (updateDescription is not null) updateDescription.Text = L.T("Couldn't reach GitHub. Select to try again.");
         }
         finally { checkingLatest = false; if (!busy && !closed) RestoreActionState(); }
     }
@@ -194,31 +203,39 @@ internal sealed partial class InstallerWindow : Window
             return;
         }
         if (!uninstall && setupMode == Program.SetupMode.OlderSetup)
-            throw new InvalidOperationException("This setup cannot downgrade DesktopTools. Download a matching or newer setup to repair it.");
+            throw new InvalidOperationException(L.T("This setup cannot downgrade DesktopTools. Download a matching or newer setup to repair it."));
         bool deleteManagedData = uninstall && deleteData?.IsChecked == true;
         if (deleteManagedData && MessageBox.Show(this,
-            "Delete all DesktopTools-managed settings, notes, and cached update files? Original media outside DesktopTools will remain untouched.",
-            "Delete DesktopTools data", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+            L.T("Delete all DesktopTools-managed settings, notes, and cached update files? Original media outside DesktopTools will remain untouched."),
+            L.T("Delete DesktopTools data"), MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
         string installDir = selectedInstallDir;
         SetBusy(cancellable: false);
-        statusHint.Text = "This may take a moment."; SetProgress(5);
+        statusHint.Text = L.T("This may take a moment."); SetProgress(5);
         var reporter = new Progress<(int, string)>(report =>
         {
             SetProgress(report.Item1);
             SetStatus(report.Item2);
         });
+        string? languageWarning = null;
         try
         {
             if (uninstall) await Task.Run(() => Program.Remove(reporter, deleteManagedData));
             else await Task.Run(() => Program.Install(installDir, reporter));
+            if (!uninstall && setupMode == Program.SetupMode.Install)
+            {
+                try { Program.SaveInitialLanguage(L.Language); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                { languageWarning = L.T("The app was installed, but its initial language could not be saved: ") + ex.Message; }
+            }
             SetProgress(100);
-            headline.Text = uninstall ? "DesktopTools removed" : "You're all set";
+            headline.Text = L.T(uninstall ? "DesktopTools removed" : "You're all set");
             AnimateStateChange(headline);
             SetStatus(uninstall ? "Removal complete" : "Installation complete");
-            statusHint.Text = uninstall ? (deleteManagedData ? "DesktopTools-managed data was deleted. Original external media was preserved." : "Your settings and notes were kept.")
-                : runtimeCheck() ? "DesktopTools is ready to use." : "App installed. Complete the Microsoft runtime step above to enable screen recording.";
+            statusHint.Text = L.T(uninstall ? (deleteManagedData ? "DesktopTools-managed data was deleted. Original external media was preserved." : "Your settings and notes were kept.")
+                : runtimeCheck() ? "DesktopTools is ready to use." : "App installed. Complete the Microsoft runtime step above to enable screen recording.");
+            if (languageWarning is not null) statusHint.Text += "\n" + languageWarning;
             finished = true; cancel.Visibility = Visibility.Collapsed; launch.Visibility = Visibility.Collapsed;
-            primary.Content = "Close";
+            primary.Content = L.T("Close");
             primary.Visibility = Visibility.Visible;
             if (advancedOptions is not null) advancedOptions.Visibility = Visibility.Collapsed;
             if (githubUpdate is not null) githubUpdate.Visibility = Visibility.Collapsed;
@@ -235,14 +252,14 @@ internal sealed partial class InstallerWindow : Window
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this, "DesktopTools was installed, but could not be launched: " + ex.Message,
+                    MessageBox.Show(this, L.T("DesktopTools was installed, but could not be launched: ") + ex.Message,
                         Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
         catch (Exception ex)
         {
-            SetStatus("Could not complete " + (uninstall ? "removal" : "setup"));
+            SetStatus(L.T("Could not complete ") + L.T(uninstall ? "removal" : "setup"));
             statusHint.Text = ex.Message; SetProgress(0);
             MessageBox.Show(this, ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -294,7 +311,7 @@ internal sealed partial class InstallerWindow : Window
 
     private void ChooseFolder(TextBlock path)
     {
-        var dialog = new OpenFolderDialog { Title = "Choose where to install DesktopTools", InitialDirectory = selectedInstallDir };
+        var dialog = new OpenFolderDialog { Title = L.T("Choose where to install DesktopTools"), InitialDirectory = selectedInstallDir };
         if (dialog.ShowDialog(this) != true) return;
         try
         {
@@ -312,7 +329,7 @@ internal sealed partial class InstallerWindow : Window
     {
         for (DependencyObject? node = source; node is not null;
              node = node is Visual ? VisualTreeHelper.GetParent(node) : LogicalTreeHelper.GetParent(node))
-            if (node is ButtonBase or TextBoxBase) return true;
+            if (node is ButtonBase or TextBoxBase or ComboBox) return true;
         return false;
     }
 
@@ -339,7 +356,7 @@ internal sealed partial class InstallerWindow : Window
     private void SetStatus(string value)
     {
         if (string.Equals(status.Text, value, StringComparison.Ordinal)) return;
-        status.Text = value;
+        status.Text = L.T(value);
         AnimateStateChange(status);
     }
 
@@ -366,13 +383,13 @@ internal sealed partial class InstallerWindow : Window
     }
 
     private static TextBlock Text(string value, double size, FontWeight weight, Brush color, Thickness? margin = null)
-        => new() { Text = value, FontSize = size, FontWeight = weight, Foreground = color, TextWrapping = TextWrapping.Wrap, Margin = margin ?? new Thickness(0), VerticalAlignment = VerticalAlignment.Center };
+        => new() { Text = L.T(value), FontSize = size, FontWeight = weight, Foreground = color, TextWrapping = TextWrapping.Wrap, Margin = margin ?? new Thickness(0), VerticalAlignment = VerticalAlignment.Center };
 
     private static Button Button(string label, bool accent, Action action, double width)
     {
         var button = new Button
         {
-            Content = label, Width = width, Height = 40, FontSize = 13, FontWeight = FontWeights.SemiBold,
+            Content = L.T(label), Width = width, Height = 40, FontSize = 13, FontWeight = FontWeights.SemiBold,
             Foreground = accent ? Brushes.White : TextBrush,
             Background = accent ? AccentBrush : CardBrush,
             BorderThickness = new Thickness(0), Cursor = Cursors.Hand

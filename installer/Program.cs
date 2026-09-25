@@ -6,6 +6,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using System.Windows;
+using DesktopTools.Localization;
 
 namespace DesktopTools.Installer;
 
@@ -36,6 +37,7 @@ internal static class Program
     {
         try
         {
+            L.Use(L.SystemLanguage());
 #if SETUP
             SetupArguments setupArguments = ParseSetupArguments(args);
             if (setupArguments.Command == SetupCommand.BackgroundUpdate)
@@ -80,6 +82,27 @@ internal static class Program
             return 1;
         }
     }
+
+    internal static void SaveInitialLanguage(string directory, string language)
+    {
+        string path = Path.Combine(directory, "settings.json");
+        if (File.Exists(path)) return;
+        Directory.CreateDirectory(directory);
+        string temporary = Path.Combine(directory, "settings-" + Guid.NewGuid().ToString("N") + ".tmp");
+        try
+        {
+            using (var file = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                System.Text.Json.JsonSerializer.Serialize(file, new { Version = 1, Language = L.Normalize(language) });
+                file.Flush(true);
+            }
+            File.Move(temporary, path);
+        }
+        catch (IOException) when (File.Exists(path)) { }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+    }
+
+    internal static void SaveInitialLanguage(string language) => SaveInitialLanguage(DataDir, language);
 
     internal static string? NormalizeVersion(string? value) =>
         System.Version.TryParse(value, out var parsed) ? NormalizeVersion(parsed) : null;

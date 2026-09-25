@@ -11,6 +11,10 @@ internal static class LocalizationTests
         var previous = L.Language;
         try
         {
+            Check(L.SystemLanguage(CultureInfo.GetCultureInfo("ru-RU")) == "ru", "Windows Russian language was not selected");
+            Check(L.SystemLanguage(CultureInfo.GetCultureInfo("fr-CA")) == "fr", "Windows language variant was not mapped");
+            Check(L.SystemLanguage(CultureInfo.GetCultureInfo("ja-JP")) == "en", "Unsupported Windows language did not fall back to English");
+            Check(new AppSettings().Language == L.SystemLanguage(CultureInfo.CurrentUICulture), "New settings ignored the Windows UI language");
             var expectedKeys = L.Catalog("ru").Keys.Order().ToArray();
             Check(expectedKeys.Length > 500, "Embedded translation catalog missing or incomplete");
             foreach (var language in L.Languages)

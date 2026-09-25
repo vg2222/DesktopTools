@@ -102,6 +102,12 @@ internal sealed class SetupWindow : Window
         description.Margin = new Thickness(0, 8, 0, 16); content.Children.Add(description);
         if (step == 0)
         {
+            content.Children.Add(Ui.Row(L.T("Interface language"), L.T("DesktopTools restarts automatically to apply the new language."),
+                Ui.Choice(L.LanguageNames, L.LanguageNames[Array.IndexOf(L.Languages, s.Language)],
+                    async name =>
+                    {
+                        if (!await controller.ChangeLanguageAsync(L.Languages[Array.IndexOf(L.LanguageNames, name)])) RenderStep();
+                    }, translate: false)));
             var themes = new WrapPanel();
             foreach (string theme in new[] { "System", "Light", "Dark" })
             {

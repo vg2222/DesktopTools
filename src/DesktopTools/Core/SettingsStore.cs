@@ -118,7 +118,7 @@ public sealed class SettingsStore
         s.HiddenCaptureTools = (s.HiddenCaptureTools ?? []).Where(x => x is "Teleprompter" or "Countdown" or "Stopwatch" or "Screen ruler").Distinct().ToArray();
         s.VisibleCaptureFeatures = (s.VisibleCaptureFeatures ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Take(32).ToArray();
         s.CaptureVisibilityOverrides = (s.CaptureVisibilityOverrides ?? new()).Where(p => !string.IsNullOrWhiteSpace(p.Key)).Take(32).ToDictionary(p => p.Key, p => p.Value);
-        if (s.UpdateCheckHours is not (0 or 1 or 6 or 12 or 24 or 168)) s.UpdateCheckHours = 1;
+        if (s.UpdateCheckHours is not (0 or .25 or .5 or 1 or 2 or 3 or 6 or 12 or 24 or 168)) s.UpdateCheckHours = 1;
         s.HomeFavorites = (s.HomeFavorites ?? ["capture", "draw", "record", "notes"]).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Take(8).ToArray();
         if (!DrawingBindings.Validate(s.DrawingShortcuts, out _)) s.DrawingShortcuts = DrawingBindings.Defaults;
         s.Version = 1;
