@@ -47,6 +47,7 @@ internal static class Program
                 else if (args.Contains("--record-state-only")) await Test("Recorder clock, source changes and pending-start cancellation", RecordingStateChecks.RunAsync);
                 else if (args.Contains("--record-encoding-only")) await Test("Hardware-requested and software recording, preferences and profiles", RecordingChecks.EncodingAsync);
                 else if (args.Contains("--dialog-layout-only")) await Test("Short dialog scrolling, fixed actions and monitor limits", DialogLayoutChecks.RunAsync);
+                else if (args.Contains("--recorder-tray-layout-only")) await Test("Recorder and tray layout", RecorderTrayLayoutChecks.RunAsync);
                 else if (args.Contains("--menu-only")) await Test("Menu interaction, scrolling and popup privacy", MenuInteractionChecks.RunAsync);
                 else if (args.Contains("--media-backdrop-only")) await Test("Video, translation and OCR native backdrop and opaque fallback", UtilityBackdropChecks.RunMediaAsync);
                 else if (args.Contains("--utility-backdrop-only")) await Test("Utility native backdrop and opaque fallback", UtilityBackdropChecks.RunAsync);

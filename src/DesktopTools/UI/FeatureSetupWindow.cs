@@ -33,12 +33,6 @@ internal sealed class FeatureSetupWindow : Window
             panel.Children.Add(Ui.Row(L.T("Always on top"), null, Ui.Toggle(pinned, value => pinned = value)));
             apply = s => { s.TeleprompterSpeed = speed; s.TeleprompterFontSize = font; s.TeleprompterTopmost = pinned; };
         }
-        else if (feature == "image-editor")
-        {
-            string layout = settings.ScreenshotEditorLayout;
-            panel.Children.Add(Ui.Row(L.T("Annotation toolbar"), L.T("A places tools above the canvas; B places them below."), Ui.Choice(new[] { "A", "B" }, layout, value => layout = value, translate: false)));
-            apply = s => s.ScreenshotEditorLayout = layout;
-        }
         else if (feature == "text-tools")
         {
             string direction = settings.TranslationDirection, language = settings.ScreenTextLanguage;

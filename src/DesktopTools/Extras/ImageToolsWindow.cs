@@ -214,7 +214,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             System.Windows.Automation.AutomationProperties.SetName(button, L.T(key));
             tabButtons[key] = button; tabStrip.Children.Add(button);
         }
-        var annotate = Ui.Button(L.T("Annotate"), () => { if (bitmap != null && removal == null) new ScreenshotEditorWindow(bitmap, result => Edit(() => result), report, applyToImage: true, editorLayout: (Application.Current as App)?.Controller?.Settings.ScreenshotEditorLayout ?? "B") { Owner = this }.ShowDialog(); });
+        var annotate = Ui.Button(L.T("Annotate"), () => { if (bitmap != null && removal == null) new ScreenshotEditorWindow(bitmap, result => Edit(() => result), report, applyToImage: true) { Owner = this }.ShowDialog(); });
         annotate.Content = Ui.IconLabel("Pen", L.T("Annotate")); annotate.Margin = new Thickness(0, 8, 0, 0);
         var exportActions = new StackPanel(); exportActions.Children.Add(annotate); exportActions.Children.Add(export);
         DockPanel.SetDock(exportActions, Dock.Bottom); edits.Children.Add(exportActions);

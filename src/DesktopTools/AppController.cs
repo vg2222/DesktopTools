@@ -132,6 +132,7 @@ internal sealed partial class AppController : IDisposable
     private readonly OverlayStateMachine machine = new();
     private readonly Forms.NotifyIcon? tray;
     private readonly System.Drawing.Icon? trayIcon;
+    private TrayMenuPopup? trayMenu;
     private readonly bool smoke;
     private MainWindow? main;
     private OverlayWindow? overlay;
@@ -178,15 +179,17 @@ internal sealed partial class AppController : IDisposable
         if (store.RecoveryMessage != null) Report(store.RecoveryMessage);
         if (!smoke)
         {
-            var menu = new Forms.ContextMenuStrip();
-            menu.Items.Add(L.T("Open DesktopTools"), null, (_, _) => OpenMain());
-            menu.Items.Add(L.T("Draw"), null, (_, _) => ToggleDraw()); menu.Items.Add(L.T("Capture region"), null, (_, _) => _ = CaptureAsync());
-            menu.Items.Add(L.T("Hide annotations / stop presenting"), null, (_, _) => { HideAnnotations(); StopPresentation(); });
-            menu.Items.Add(L.T("Save latest screenshot"), null, (_, _) => SaveLast()); menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add(L.T("Quit"), null, async (_, _) => await QuitAsync());
             trayIcon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!);
-            tray = new Forms.NotifyIcon { Icon = trayIcon ?? System.Drawing.SystemIcons.Application, Text = "DesktopTools", Visible = true, ContextMenuStrip = menu };
-            tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) OpenMain(); };
+            tray = new Forms.NotifyIcon { Icon = trayIcon ?? System.Drawing.SystemIcons.Application, Text = "DesktopTools", Visible = true };
+            tray.MouseClick += (_, e) =>
+            {
+                if (e.Button == Forms.MouseButtons.Left) { trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); OpenMain(); }
+                else if (e.Button == Forms.MouseButtons.Right)
+                {
+                    trayMenu ??= new TrayMenuPopup(OpenMain, OpenScreenRecorder, PinLast, () => OpenQuickWheel(), () => _ = QuitAsync());
+                    trayMenu.IsOpen = !trayMenu.IsOpen;
+                }
+            };
             tray.BalloonTipClicked += (_, _) => OpenMain();
             if (Settings.StartAtLogin && store.RecoveryMessage == null)
             {
@@ -718,6 +721,6 @@ internal sealed partial class AppController : IDisposable
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         StopUpdateChecks();
-        setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
+        trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
     }
 }

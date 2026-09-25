@@ -420,7 +420,6 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Freeze screen before selecting"), L.T("Capture a still when you start region capture, then choose from that frame."), Ui.Toggle(s.FreezeRegionBeforeSelection, v => Change(x => x.FreezeRegionBeforeSelection = v))),
 
-            Ui.Row(L.T("Editor layout"), null, Ui.Choice(new[] { "B", "A" }, s.ScreenshotEditorLayout, v => Change(x => x.ScreenshotEditorLayout = v), translate: false)),
 
             Ui.Row(L.T("Capture displays"),L.T("All spans the desktop. Selected uses your app monitor preference."), Ui.Choice(new[] { "All", "Selected" }, s.CaptureMonitorMode, v => Change(x => x.CaptureMonitorMode = v))),
 

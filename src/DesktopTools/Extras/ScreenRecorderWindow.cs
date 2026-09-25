@@ -16,12 +16,14 @@ internal sealed class ScreenRecorderWindow : Window
     private RecordingSelection? selectedSource;
     private RecordingSourcePickerWindow? sourcePicker;
     private readonly WindowThumbnail sourceThumbnail = new();
-    private readonly TextBlock qualitySummary = Ui.Text("", 12, muted: true);
-    private readonly Button qualityButton;
+    private readonly ComboBox qualityChoice, fpsChoice;
+    private readonly CheckBox hardwareAcceleration;
     private readonly Image preview = new() { Stretch = Stretch.Uniform };
     private readonly Button refreshPreview;
     private readonly Button sourcePreview;
     private readonly FrameworkElement previewHint;
+    private readonly TextBlock previewTitle, previewDescription;
+    private readonly FrameworkElement sourceKinds;
     private readonly CheckBox microphone, systemAudio;
     private readonly Button start, pause, stop, runtimeHelp;
     private readonly TextBlock status = Ui.Text(L.T("Choose a display, then start recording."), 13, muted: true);
@@ -41,53 +43,79 @@ internal sealed class ScreenRecorderWindow : Window
     {
         this.readMonitors = readMonitors ?? MonitorService.GetAll;
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
-        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 940; Height = 610; MinWidth = 820; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 970; Height = 590; MinWidth = 860; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
-        var panel = new StackPanel { Margin = new Thickness(12, 8, 0, 0) };
-        var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 14); panel.Children.Add(setupHeading);
+        var panel = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
+        var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 9); panel.Children.Add(setupHeading);
         sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         microphone = Ui.Toggle(controller.Settings.RecordingMicrophone, value => controller.UpdateSettings(s => s.RecordingMicrophone = value));
         systemAudio = Ui.Toggle(controller.Settings.RecordingSystemAudio, value => controller.UpdateSettings(s => s.RecordingSystemAudio = value));
         panel.Children.Add(Ui.Row(L.T("Microphone"), L.T("Default Windows input device."), microphone));
         panel.Children.Add(Ui.Row(L.T("System audio"), L.T("Default Windows output device."), systemAudio));
-        qualityButton = Ui.Button(L.T("Recording quality"), () => new RecordingQualityWindow(controller.Settings, (quality, fps, hardware) => { bool saved = controller.UpdateSettings(s => { s.RecordingQuality = quality; s.RecordingFramesPerSecond = fps; s.RecordingHardwareAcceleration = hardware; }); if (saved) Refresh(); return saved; }) { Owner = this }.ShowDialog());
-        qualityButton.Content = Ui.IconLabel("Settings", L.T("Recording quality")); qualityButton.HorizontalAlignment = HorizontalAlignment.Left; qualityButton.Margin = new Thickness(0, 0, 0, 6); panel.Children.Add(qualityButton);
-        qualitySummary.Margin = new Thickness(0, 0, 0, 12); panel.Children.Add(qualitySummary);
+        var outputHeading = Ui.Text(L.T("Recording quality"), 13, true); outputHeading.Margin = new Thickness(0, 10, 0, 8); panel.Children.Add(outputHeading);
+        var qualityGrid = new Grid(); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.2, GridUnitType.Star) }); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(.8, GridUnitType.Star) });
+        var qualityColumn = new StackPanel { Margin = new Thickness(0, 0, 8, 0) };
+        qualityColumn.Children.Add(Ui.Text(L.T("Quality"), 12));
+        qualityChoice = Ui.Choice(new[] { "Economy", "Balanced", "High" }, controller.Settings.RecordingQuality, value => controller.UpdateSettings(s => s.RecordingQuality = value));
+        qualityChoice.HorizontalAlignment = HorizontalAlignment.Stretch; qualityChoice.Margin = new Thickness(0, 6, 0, 0); qualityColumn.Children.Add(qualityChoice); qualityGrid.Children.Add(qualityColumn);
+        var fpsColumn = new StackPanel { Margin = new Thickness(8, 0, 0, 0) };
+        fpsColumn.Children.Add(Ui.Text("FPS", 12));
+        fpsChoice = Ui.Choice(new[] { "24", "30", "60", "90", "120", "144" }, controller.Settings.RecordingFramesPerSecond.ToString(), value => controller.UpdateSettings(s => s.RecordingFramesPerSecond = int.Parse(value)), translate: false);
+        fpsChoice.MinWidth = 100; fpsChoice.HorizontalAlignment = HorizontalAlignment.Stretch; fpsChoice.Margin = new Thickness(0, 6, 0, 0); fpsColumn.Children.Add(fpsChoice); Grid.SetColumn(fpsColumn, 1); qualityGrid.Children.Add(fpsColumn);
+        panel.Children.Add(qualityGrid);
+        var fpsHint = Ui.Text(L.T("Frame rate is a target. Actual smoothness depends on the display, source and computer."), 11, muted: true);
+        fpsHint.TextWrapping = TextWrapping.Wrap; fpsHint.Margin = new Thickness(0, 9, 0, 0); panel.Children.Add(fpsHint);
+        hardwareAcceleration = Ui.Toggle(controller.Settings.RecordingHardwareAcceleration, value => controller.UpdateSettings(s => s.RecordingHardwareAcceleration = value));
+        var hardwareRow = new DockPanel { Margin = new Thickness(0, 10, 0, 0) };
+        DockPanel.SetDock(hardwareAcceleration, Dock.Right); hardwareRow.Children.Add(hardwareAcceleration);
+        hardwareRow.Children.Add(Ui.Text(L.T("Hardware acceleration"), 13, true)); panel.Children.Add(hardwareRow);
         var guide = FeatureTourButton.Create(this, "recorder", () => new GuidedTour.Step[]
         {
             new(() => sourceChoice, "Recording source", "Choose a display, window or region. Selecting a source does not start recording."),
             new(() => microphone, "Microphone", "Enable microphone audio only when you want your voice in the recording."),
             new(() => systemAudio, "System audio", "System audio records sounds played by the computer."),
-            new(() => qualityButton, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
+            new(() => qualityGrid, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
         }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
         start = Ui.Button(L.T("Start recording"), StartRecording, true);
         start.Content = Ui.IconLabel("Record", L.T("Start recording"), primary: true);
         pause = Ui.IconButton("Pause", L.T("Pause"), TogglePause); stop = Ui.IconButton("Stop", L.T("Stop and save"), () => _ = StopAsync());
         runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenVisualCppRuntimeDownloadPage); runtimeHelp.Visibility = Visibility.Collapsed;
-        var transport = new Grid { Margin = new Thickness(0, 18, 0, 0) };
-        transport.ColumnDefinitions.Add(new ColumnDefinition()); transport.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var recordingState = new StackPanel { Margin = new Thickness(0, 0, 20, 0) };
+        var transport = new StackPanel();
+        var recordingState = new StackPanel();
         time.FontSize = 25; recordingState.Children.Add(time);
         status.TextWrapping = TextWrapping.Wrap; status.Margin = new Thickness(0, 4, 0, 0); recordingState.Children.Add(status);
         runtimeHelp.Margin = new Thickness(0, 8, 0, 0); runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left; recordingState.Children.Add(runtimeHelp);
         transport.Children.Add(recordingState);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop);
-        Grid.SetColumn(actions, 1); transport.Children.Add(actions);
-        var transportSurface = new Border { Child = transport, Padding = new Thickness(16, 0, 16, 16), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1) };
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
+        start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop); transport.Children.Add(actions);
+        var transportSurface = new Border { Child = transport, Padding = new Thickness(14), Margin = new Thickness(12, 10, 0, 0), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1) };
         transportSurface.SetResourceReference(Border.BackgroundProperty, "Field"); transportSurface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
-        DockPanel.SetDock(transportSurface, Dock.Bottom); root.Children.Add(transportSurface);
         var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350) }); root.Children.Add(columns);
-        var inspector = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; Grid.SetColumn(inspector, 1); columns.Children.Add(inspector);
+        var inspectorPanel = new DockPanel(); Grid.SetColumn(inspectorPanel, 1); columns.Children.Add(inspectorPanel);
+        DockPanel.SetDock(transportSurface, Dock.Bottom); inspectorPanel.Children.Add(transportSurface);
+        var inspector = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; inspectorPanel.Children.Add(inspector);
         var left = new DockPanel { Margin = new Thickness(0, 8, 20, 0) }; columns.Children.Add(left);
+        var sourceHeading = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
+        var formatBadge = Ui.Text("MP4", 11, true, muted: true); DockPanel.SetDock(formatBadge, Dock.Right); sourceHeading.Children.Add(formatBadge);
+        sourceHeading.Children.Add(Ui.Text(L.T("Recording source"), 17, true)); DockPanel.SetDock(sourceHeading, Dock.Top); left.Children.Add(sourceHeading);
         refreshPreview = Ui.Button(L.T("Refresh preview"), async () => await RefreshPreviewAsync()); refreshPreview.Content = Ui.IconLabel("Capture", L.T("Refresh preview"));
         var previewTools = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
         previewTools.Children.Add(sourceChoice); previewTools.Children.Add(refreshPreview);
         DockPanel.SetDock(previewTools, Dock.Bottom); left.Children.Add(previewTools);
         var stageContent = new Grid(); stageContent.Children.Add(preview);
         var hint = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        var display = Ui.Icon("Monitor", 48); display.HorizontalAlignment = HorizontalAlignment.Center; display.Margin = new Thickness(0, 0, 0, 14); hint.Children.Add(display);
-        hint.Children.Add(Ui.Text(L.T("Selected display"), 17, true)); hint.Children.Add(Ui.Text(L.T("Click to choose a display, window or region."), 12, muted: true));
+        var display = Ui.Icon("Monitor", 42); display.HorizontalAlignment = HorizontalAlignment.Center; display.Margin = new Thickness(0, 0, 0, 13); hint.Children.Add(display);
+        previewTitle = Ui.Text(L.T("Choose what to record."), 18, true); previewTitle.TextAlignment = TextAlignment.Center; hint.Children.Add(previewTitle);
+        previewDescription = Ui.Text(L.T("Click to choose a display, window or region."), 12, muted: true); previewDescription.TextAlignment = TextAlignment.Center; previewDescription.Margin = new Thickness(0, 4, 0, 0); hint.Children.Add(previewDescription);
+        var kinds = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 19, 0, 0) };
+        foreach (var (icon, label) in new[] { ("Monitor", "Display"), ("Window", "Window"), ("Crop", "Region") })
+        {
+            var item = new StackPanel { Orientation = Orientation.Horizontal }; item.Children.Add(Ui.Icon(icon, 15));
+            var text = Ui.Text(L.T(label), 11); text.Margin = new Thickness(6, 0, 0, 0); item.Children.Add(text);
+            var badge = new Border { Child = item, Padding = new Thickness(10, 7, 10, 7), Margin = new Thickness(3, 0, 3, 0), CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(1) };
+            badge.SetResourceReference(Border.BackgroundProperty, "Field"); badge.SetResourceReference(Border.BorderBrushProperty, "Stroke"); kinds.Children.Add(badge);
+        }
+        sourceKinds = kinds; hint.Children.Add(sourceKinds);
         previewHint = hint; stageContent.Children.Add(previewHint);
         sourcePreview = Ui.Button(L.T("Choose recording source"), async () => await ChooseSourceAsync()); sourcePreview.Tag = "recording-source-preview";
         sourcePreview.Content = stageContent; sourcePreview.HorizontalContentAlignment = HorizontalAlignment.Stretch; sourcePreview.VerticalContentAlignment = VerticalAlignment.Stretch;
@@ -128,6 +156,7 @@ internal sealed class ScreenRecorderWindow : Window
     {
         if (session != null) throw new InvalidOperationException("Cannot change an active recording source.");
         selectedSource = source; sourceThumbnail.Dispose(); preview.Source = bitmap; previewHint.Visibility = bitmap != null || source.Window != null ? Visibility.Collapsed : Visibility.Visible;
+        previewTitle.Text = source.Label; previewDescription.Text = L.T("Refresh preview"); sourceKinds.Visibility = Visibility.Collapsed;
         sourceChoice.Content = Ui.IconLabel(source.Window == null ? "Monitor" : "Window", L.T("Recording source")); Ui.Tip(sourceChoice, source.Label); status.Text = source.Label; Refresh();
     }
     private void StartRecording()
@@ -259,8 +288,7 @@ internal sealed class ScreenRecorderWindow : Window
     {
         bool active = IsRecording; bool busy = session != null; start.IsEnabled = !busy && selectedSource != null; pause.IsEnabled = stop.IsEnabled = active && !stopping;
         sourcePreview.IsEnabled = sourceChoice.IsEnabled = microphone.IsEnabled = systemAudio.IsEnabled = !busy;
-        qualitySummary.Text = L.T(controller.Settings.RecordingQuality) + " · " + controller.Settings.RecordingFramesPerSecond + " FPS";
-        qualityButton.IsEnabled = !busy;
+        qualityChoice.IsEnabled = fpsChoice.IsEnabled = hardwareAcceleration.IsEnabled = !busy;
         refreshPreview.IsEnabled = !busy && selectedSource != null;
         pause.Content = Ui.Icon(paused ? "Play" : "Pause");
     }
@@ -287,6 +315,7 @@ internal sealed class ScreenRecorderWindow : Window
         }
         catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         selectedSource = null; sourceThumbnail.Dispose(); preview.Source = null; previewHint.Visibility = Visibility.Visible;
+        previewTitle.Text = L.T("Choose what to record."); previewDescription.Text = L.T("Click to choose a display, window or region."); sourceKinds.Visibility = Visibility.Visible;
         sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         status.Text = L.T("Source is no longer available. Refresh the list."); Refresh();
         await StopAsync(source.Window != null ? "Source window closed. Recording stopped." : "Source display changed. Recording stopped.");

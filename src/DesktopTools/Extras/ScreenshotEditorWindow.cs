@@ -34,7 +34,7 @@ public sealed class ScreenshotEditorWindow : Window
 
     public ScreenshotEditorWindow(BitmapSource image, Action<BitmapSource> onExport, Action<string> report, bool applyToImage = false, string? editorLayout = null)
     {
-        editorLayout ??= (Application.Current as App)?.Controller?.Settings.ScreenshotEditorLayout ?? "B";
+        editorLayout ??= "B";
         _image = image; _document = new(image); _onExport = onExport; _report = report;
         Title = L.T("Edit screenshot · DesktopTools"); Width = 1060; Height = 760; MinWidth = 640; MinHeight = 480;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;

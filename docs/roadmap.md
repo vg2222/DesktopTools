@@ -1,6 +1,6 @@
 # Roadmap
 
-DesktopTools 1.1.1 includes the drawing, capture, presentation, image, video, recording, OCR, translation, notes, file shelf, audio, profile, and localization features described in the README.
+DesktopTools 1.2.0 includes the drawing, capture, presentation, image, video, recording, OCR, translation, notes, file shelf, audio, profile, and localization features described in the README.
 
 ## Release readiness
 

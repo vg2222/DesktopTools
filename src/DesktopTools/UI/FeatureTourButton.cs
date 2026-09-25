@@ -39,16 +39,17 @@ internal static class FeatureTourButton
         var button = Ui.IconButton("Help", L.T("Show guide"), () => Start(false));
         owner.SetValue(StartGuideProperty, (Action<bool>)Start);
         button.Tag = "feature-guide-" + feature;
-        if ((autoStart ?? controller != null) && settings != null && HasSetup(feature))
+        if ((autoStart ?? controller != null) && settings != null && (HasSetup(feature) || feature == "image-editor"))
             owner.Loaded += (_, _) => owner.Dispatcher.BeginInvoke(() =>
             {
-                if (owner.IsVisible && (!settings.FeatureSetup.TryGetValue(feature, out var setup) || setup.ShouldResume ||
-                    !settings.FeatureTours.TryGetValue(feature, out var progress) || progress.ShouldResume)) Start(false);
+                bool setupPending = HasSetup(feature) && (!settings.FeatureSetup.TryGetValue(feature, out var setup) || setup.ShouldResume);
+                bool guidePending = !settings.FeatureTours.TryGetValue(feature, out var progress) || progress.ShouldResume;
+                if (owner.IsVisible && (setupPending || guidePending)) Start(false);
             });
         owner.Closed += (_, _) => { tour?.Dispose(); tour = null; owner.ClearValue(CurrentTourProperty); owner.ClearValue(StartGuideProperty); };
         return button;
     }
-    private static bool HasSetup(string feature) => feature is "recorder" or "teleprompter" or "image-editor" or "text-tools" or "video-editor";
+    private static bool HasSetup(string feature) => feature is "recorder" or "teleprompter" or "text-tools" or "video-editor";
     internal static void Start(Window owner, bool repeatSetup) => (owner.GetValue(StartGuideProperty) as Action<bool>)?.Invoke(repeatSetup);
     private static readonly DependencyProperty StartGuideProperty = DependencyProperty.RegisterAttached("StartGuide", typeof(Action<bool>), typeof(FeatureTourButton));
     internal static readonly DependencyProperty CurrentTourProperty = DependencyProperty.RegisterAttached("CurrentTour", typeof(GuidedTour), typeof(FeatureTourButton));

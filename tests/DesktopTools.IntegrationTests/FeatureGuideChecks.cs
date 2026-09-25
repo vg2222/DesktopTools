@@ -23,7 +23,7 @@ internal static class FeatureGuideChecks
         var settings = new DesktopTools.Core.AppSettings { TeleprompterText = "Keep my script", RecordingFramesPerSecond = 30 };
         bool allowSave = true;
         bool Save(Action<DesktopTools.Core.AppSettings> apply) { if (!allowSave) return false; apply(settings); return true; }
-        foreach (string feature in new[] { "recorder", "teleprompter", "image-editor", "text-tools", "video-editor" })
+        foreach (string feature in new[] { "recorder", "teleprompter", "text-tools", "video-editor" })
         {
             L.Use("en"); var setup = new FeatureSetupWindow(feature, settings, Save); setup.Show(); await Task.Delay(40);
             var firstChoice = Walk(setup).OfType<ComboBox>().FirstOrDefault(); if(firstChoice != null) firstChoice.SelectedIndex = 0; setup.Close();
@@ -34,11 +34,11 @@ internal static class FeatureGuideChecks
             setup = new FeatureSetupWindow(feature, settings, Save); setup.Show(); await Task.Delay(40); Walk(setup).OfType<Button>().Single(b => b.Content as string == "Skip setup").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if (settings.FeatureSetup[feature].Status != DesktopTools.Core.SetupStatus.Skipped || !setup.ContinueToGuide) throw new Exception("Setup skip did not allow independent guide");
         }
-        foreach (string feature in new[] { "recorder", "teleprompter", "image-editor", "text-tools", "video-editor" }) controller.Settings.FeatureSetup[feature] = new DesktopTools.Core.OnboardingProgress { Status = DesktopTools.Core.SetupStatus.Completed };
+        foreach (string feature in new[] { "recorder", "teleprompter", "text-tools", "video-editor" }) controller.Settings.FeatureSetup[feature] = new DesktopTools.Core.OnboardingProgress { Status = DesktopTools.Core.SetupStatus.Completed };
         foreach(var theme in new[]{"Dark","Light"}) foreach(var language in new[]{"ru","en","de","fr","es"})
         {
             L.Use(language); controller.Settings.Theme=theme; controller.ApplyTheme();
-            foreach (string feature in new[] { "recorder", "teleprompter", "image-editor", "text-tools", "video-editor" })
+            foreach (string feature in new[] { "recorder", "teleprompter", "text-tools", "video-editor" })
             {
                 var setup = new FeatureSetupWindow(feature, settings, Save); setup.Show(); await Task.Delay(20); setup.UpdateLayout();
                 var bitmap = new RenderTargetBitmap((int)Math.Ceiling(setup.ActualWidth),(int)Math.Ceiling(setup.ActualHeight),96,96,PixelFormats.Pbgra32); bitmap.Render(setup); var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap)); using(var stream=File.Create($"feature-setup-{feature}-{language}-{theme}.png")) png.Save(stream); setup.Close();
