@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Validate release version and notes
@@ -46,7 +46,7 @@ jobs:
           [xml]$project = Get-Content src/DesktopTools/DesktopTools.csproj -Raw
           "value=$($project.Project.PropertyGroup.Version)" >> $env:GITHUB_OUTPUT
       - name: Upload release bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: DesktopTools-${{ steps.version.outputs.value }}-win-x64
           if-no-files-found: error
