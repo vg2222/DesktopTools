@@ -14,6 +14,11 @@ public static class L
     public static string Language { get; private set; } = "en";
     public static CultureInfo Culture => CultureInfo.GetCultureInfo(Language);
     public static string Normalize(string? language) => Languages.Contains(language) ? language! : "en";
+    public static string SystemLanguage(CultureInfo? culture = null)
+    {
+        string language = (culture ?? CultureInfo.CurrentUICulture).TwoLetterISOLanguageName.ToLowerInvariant();
+        return Normalize(language);
+    }
     public static void Use(string? language) => Language = Normalize(language);
     public static string T(string? english)
     {

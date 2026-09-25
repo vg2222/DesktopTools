@@ -29,6 +29,9 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 
 ## Lifecycle and appearance
 
+- On a fresh profile, launch under each supported Windows display language and confirm both the app and installer start in that language. On an unsupported Windows language, confirm English. Change language on the first setup step and in Settings → Behavior; the app should relaunch automatically and retain the choice on later launches. Change language in the installer and confirm the new app uses that choice; updating an existing install must preserve its saved language.
+- In Settings → Updates, select 15 and 30 minutes, restart, and confirm the selection persists. Check the update status, version panel, and actions at narrow window sizes in both themes. In Screen Recorder, verify source and preview actions below the preview and start, pause, and stop in the bottom bar.
+
 1. Close settings; tray remains. Launch again; existing settings opens. Quit; tray, effects, shortcuts and all owned windows disappear. Restart and confirm preferences.
 2. Enable startup at login and sign out/in. Disable it and repeat. Check only DesktopTools' current-user Run entry changes. Test from the portable executable in its final folder.
 3. Back up settings, replace JSON with malformed content and start. Expect concise recovery status, retained damaged file and defaults. Restore the backup afterward. Check future-version data is preserved.

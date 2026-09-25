@@ -23,6 +23,8 @@
     <EmbeddedResource Include="$(UninstallerExe)" LogicalName="DesktopTools.Uninstall.exe" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../src/DesktopTools/Localization/L.cs" Link="Localization/L.cs" />
+    <EmbeddedResource WithCulture="false" Include="../src/DesktopTools/Localization/*.json" Link="Localization/%(Filename)%(Extension)" />
     <Compile Include="../shared/GitHubReleaseClient.cs" Link="Updates/GitHubReleaseClient.cs" />
     <Compile Include="../shared/WindowDismissal.cs" Link="UI/WindowDismissal.cs" />
     <Resource Include="../src/DesktopTools/Assets/DesktopTools.ico" Link="Assets/DesktopTools.ico" />

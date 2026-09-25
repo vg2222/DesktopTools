@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Linq;
+using DesktopTools.Localization;
 
 namespace DesktopTools.Installer;
 
@@ -56,7 +57,7 @@ internal sealed partial class InstallerWindow
         Grid.SetRow(features, 1); brand.Children.Add(features);
         var version = new StackPanel();
         version.Children.Add(Text("Windows 11 · x64", 11, FontWeights.Medium, MutedBrush));
-        version.Children.Add(Text("Setup " + displayedSetupVersion, 11, FontWeights.Normal, MutedBrush, new Thickness(0, 5, 0, 0)));
+        version.Children.Add(Text(L.T("Setup ") + displayedSetupVersion, 11, FontWeights.Normal, MutedBrush, new Thickness(0, 5, 0, 0)));
         Grid.SetRow(version, 2); brand.Children.Add(version);
 
         var main = new Grid { Margin = new Thickness(30, 14, 28, 22) };
@@ -66,15 +67,26 @@ internal sealed partial class InstallerWindow
         Grid.SetColumn(main, 1); columns.Children.Add(main);
         var caption = new Grid();
         caption.Children.Add(Text(uninstall ? "Uninstall" : setupMode == Program.SetupMode.Install ? "Welcome to setup" : "Manage DesktopTools", 12, FontWeights.Medium, MutedBrush));
+        var captionActions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        languageChoice = new ComboBox { ItemsSource = L.LanguageNames, SelectedIndex = Array.IndexOf(L.Languages, L.Language),
+            MinWidth = 128, Height = 34, Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(8, 3, 8, 3),
+            Foreground = Brush("#17202B"), Background = Brush("#F2F4F7"), BorderBrush = StrokeBrush, Tag = "installer-language" };
+        AutomationProperties.SetName(languageChoice, L.T("Interface language"));
+        languageChoice.SelectionChanged += (_, _) =>
+        {
+            if (busy || finished || languageChoice.SelectedIndex < 0) return;
+            string language = L.Languages[languageChoice.SelectedIndex];
+            if (language == L.Language) return;
+            L.Use(language);
+            Title = L.T(uninstall ? "Remove DesktopTools" : "DesktopTools Setup");
+            BuildLayout();
+            if (!uninstall && !checkingLatest) _ = CheckLatestAsync();
+        };
+        captionActions.Children.Add(languageChoice);
         var close = Button("", false, Close, 34); close.Content = FluentIcon("dismiss", TextBrush, 16);
         close.Height = 34; close.HorizontalAlignment = HorizontalAlignment.Right;
-        AutomationProperties.SetName(close, "Close"); close.ToolTip = "Close";
-        caption.Children.Add(close); main.Children.Add(caption);
-        PreviewMouseLeftButtonDown += (_, e) =>
-        {
-            if (e.GetPosition(this).Y > 64 || IsInteractive(e.OriginalSource as DependencyObject)) return;
-            DragMove(); e.Handled = true;
-        };
+        AutomationProperties.SetName(close, L.T("Close")); close.ToolTip = L.T("Close");
+        captionActions.Children.Add(close); caption.Children.Add(captionActions); main.Children.Add(caption);
 
         var content = new StackPanel { Margin = new Thickness(0, 16, 8, 12) };
         headline = Text(uninstall ? "Remove DesktopTools" : setupMode switch
@@ -87,9 +99,9 @@ internal sealed partial class InstallerWindow
         content.Children.Add(headline);
         string description = uninstall ? "Choose what to keep before removing the app." : setupMode switch
         {
-            Program.SetupMode.Update => $"Update {displayedInstalledVersion} to {displayedSetupVersion}. Your saved notes and settings stay with you.",
-            Program.SetupMode.Maintenance => $"Version {displayedInstalledVersion} is installed. Choose what you'd like to do.",
-            Program.SetupMode.OlderSetup => $"Installed: {displayedInstalledVersion} · This setup: {displayedSetupVersion}. Use a newer setup to update or repair.",
+            Program.SetupMode.Update => L.F($"Update {displayedInstalledVersion} to {displayedSetupVersion}. Your saved notes and settings stay with you."),
+            Program.SetupMode.Maintenance => L.F($"Version {displayedInstalledVersion} is installed. Choose what you'd like to do."),
+            Program.SetupMode.OlderSetup => L.F($"Installed: {displayedInstalledVersion} · This setup: {displayedSetupVersion}. Use a newer setup to update or repair."),
             _ => "Install for your Windows account. Choose a location and we'll take care of the rest."
         };
         content.Children.Add(Text(description, 13, FontWeights.Normal, MutedBrush, new Thickness(0, 8, 0, 20)));
@@ -112,8 +124,8 @@ internal sealed partial class InstallerWindow
         }
         if (uninstall)
         {
-            keepData = new RadioButton { Content = "Keep notes and settings", IsChecked = true, Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 4, 0, 8) };
-            deleteData = new RadioButton { Content = "Delete all DesktopTools data", Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 12, 0, 8) };
+            keepData = new RadioButton { Content = L.T("Keep notes and settings"), IsChecked = true, Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 4, 0, 8) };
+            deleteData = new RadioButton { Content = L.T("Delete all DesktopTools data"), Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 12, 0, 8) };
             content.Children.Add(keepData);
             content.Children.Add(Text("Recommended if you might reinstall later.", 12, FontWeights.Normal, MutedBrush, new Thickness(22, 0, 0, 0)));
             content.Children.Add(deleteData);
@@ -131,8 +143,8 @@ internal sealed partial class InstallerWindow
             {
                 repair = ActionRow("desktop_toolbox", "Repair", "Reinstall app files. Keep your saved notes and settings.", async () => await ExecuteAsync(forceLocal: true), out var repairDescription);
                 repair.IsEnabled = setupMode != Program.SetupMode.OlderSetup;
-                if (setupMode == Program.SetupMode.OlderSetup) repairDescription.Text = "Requires a setup matching or newer than your installed version.";
-                if (setupMode == Program.SetupMode.Update) { repairDescription.Text = "Reinstall using this newer setup. Your saved data is kept."; updateDescription.Text = $"Install version {displayedSetupVersion}. Keep your saved data."; }
+                if (setupMode == Program.SetupMode.OlderSetup) repairDescription.Text = L.T("Requires a setup matching or newer than your installed version.");
+                if (setupMode == Program.SetupMode.Update) { repairDescription.Text = L.T("Reinstall using this newer setup. Your saved data is kept."); updateDescription.Text = L.F($"Install version {displayedSetupVersion}. Keep your saved data."); }
                 remove = ActionRow("delete", "Uninstall", "Remove the app. Choose whether to keep your data next.", StartBundledUninstall, out _);
                 var choices = new StackPanel(); choices.Children.Add(githubUpdate); choices.Children.Add(repair); choices.Children.Add(remove);
                 advancedOptions = new Border { Child = choices, Visibility = setupMode == Program.SetupMode.Update ? Visibility.Collapsed : Visibility.Visible, Margin = new Thickness(0, 0, 0, 10) };
@@ -141,7 +153,6 @@ internal sealed partial class InstallerWindow
             else { githubUpdate.Visibility = Visibility.Collapsed; content.Children.Add(githubUpdate); }
             runtimeCard = CreateRuntimeCard(); content.Children.Add(runtimeCard);
             RefreshRuntime();
-            Activated += (_, _) => { if (!busy) RefreshRuntime(); };
         }
 
         status = Text(uninstall ? "Ready to remove" : "Checking GitHub for updates…", 12, FontWeights.SemiBold, MutedBrush, new Thickness(0, 8, 0, 0));
@@ -169,7 +180,7 @@ internal sealed partial class InstallerWindow
 
         var footer = new Grid { Margin = new Thickness(0, 16, 0, 0) };
         footer.ColumnDefinitions.Add(new ColumnDefinition()); footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        launch = new CheckBox { Content = "Open DesktopTools after setup", IsChecked = true, Foreground = MutedBrush, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Visibility = !uninstall && setupMode is Program.SetupMode.Install or Program.SetupMode.Update ? Visibility.Visible : Visibility.Collapsed };
+        launch = new CheckBox { Content = L.T("Open DesktopTools after setup"), IsChecked = true, Foreground = MutedBrush, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Visibility = !uninstall && setupMode is Program.SetupMode.Install or Program.SetupMode.Update ? Visibility.Visible : Visibility.Collapsed };
         if (setupMode == Program.SetupMode.Update && !uninstall)
         {
             launch.Margin = new Thickness(0, 14, 0, 0); content.Children.Add(launch);
@@ -196,26 +207,26 @@ internal sealed partial class InstallerWindow
             try
             {
                 Process.Start(new ProcessStartInfo(RecordingRuntime.DownloadPage) { UseShellExecute = true });
-                runtimeDescription.Text = "Microsoft's page is open. Choose the x64 download, run it, then return here and select Check again. Microsoft's installer presents its own license terms.";
+                runtimeDescription.Text = L.T("Microsoft's page is open. Choose the x64 download, run it, then return here and select Check again. Microsoft's installer presents its own license terms.");
             }
-            catch (Exception ex) { runtimeDescription.Text = "Couldn't open the browser. Visit " + RecordingRuntime.DownloadPage + ". " + ex.Message; }
+            catch (Exception ex) { runtimeDescription.Text = L.T("Couldn't open the browser. Visit ") + RecordingRuntime.DownloadPage + ". " + ex.Message; }
         }, 200);
-        runtimeRecheck = Button("Check again", false, RefreshRuntime, 104); runtimeRecheck.Margin = new Thickness(8, 0, 0, 0);
+        runtimeRecheck = Button("Check again", false, RefreshRuntime, 150); runtimeRecheck.Margin = new Thickness(8, 0, 0, 0);
         runtimeDownload.Height = runtimeRecheck.Height = 34;
         actions.Children.Add(runtimeDownload); actions.Children.Add(runtimeRecheck); stack.Children.Add(actions);
-        return new Border { Child = stack, Padding = new Thickness(16, 13, 16, 13), Background = Brush("#23271F"), BorderBrush = Brush("#54523B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 0, 8) };
+        return new Border { Child = stack, Padding = new Thickness(16, 13, 16, 13), Background = Brush("#222B3A"), BorderBrush = Brush("#3E5778"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 0, 8) };
     }
 
     private void RefreshRuntime()
     {
         if (runtimeCard is null || runtimeTitle is null || runtimeDescription is null) return;
         bool ready = runtimeCheck();
-        runtimeTitle.Text = ready ? "Screen recording runtime is installed" : "One extra step for screen recording";
-        runtimeDescription.Text = ready ? "Microsoft Visual C++ x64 is ready on this PC." : "Install Microsoft Visual C++ x64 to record your screen. Other tools work without it. Setup can continue; recording stays unavailable until it's installed.";
-        runtimeCard.Background = ready ? CardBrush : Brush("#23271F");
-        runtimeCard.BorderBrush = ready ? StrokeBrush : Brush("#54523B");
+        runtimeTitle.Text = L.T(ready ? "Screen recording runtime is installed" : "One extra step for screen recording");
+        runtimeDescription.Text = L.T(ready ? "Microsoft Visual C++ x64 is ready on this PC." : "Install Microsoft Visual C++ x64 to record your screen. Other tools work without it. Setup can continue; recording stays unavailable until it's installed.");
+        runtimeCard.Background = ready ? CardBrush : Brush("#222B3A");
+        runtimeCard.BorderBrush = ready ? StrokeBrush : Brush("#3E5778");
         runtimeDownload!.Visibility = runtimeRecheck!.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
-        if (ready && finished) statusHint.Text = "DesktopTools is ready to use. Restart the app if it was already open.";
+        if (ready && finished) statusHint.Text = L.T("DesktopTools is ready to use. Restart the app if it was already open.");
     }
 
     private static FrameworkElement RailFeature(string icon, string title, string detail)
@@ -241,7 +252,7 @@ internal sealed partial class InstallerWindow
         var button = Button(title, false, action, double.NaN); button.Height = double.NaN; button.MinHeight = 70;
         button.Margin = new Thickness(0, 0, 0, 7); button.Content = row;
         button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-        AutomationProperties.SetName(button, title); AutomationProperties.SetHelpText(button, description);
+        AutomationProperties.SetName(button, L.T(title)); AutomationProperties.SetHelpText(button, L.T(description));
         return button;
     }
 

@@ -35,6 +35,7 @@ internal static class UpdateChecks
         {
             using var controller = new AppController(true);
             controller.UpdateSettings(s => { s.Animations = false; s.Language = "en"; s.Theme = "Dark"; });
+            DesktopTools.Localization.L.Use("en");
             Check(controller.Settings.AutomaticUpdateChecks && controller.Settings.UpdateCheckHours == 1, "Default hourly checks missing");
             controller.OpenMain(); var main = Application.Current.Windows.OfType<MainWindow>().Single();
             string repo = GitHubReleaseClient.RepositoryUrl;
@@ -55,6 +56,10 @@ internal static class UpdateChecks
             indicator.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); main.UpdateLayout();
             var interval = Walk(main).OfType<ComboBox>().Single(c => Equals(c.Tag, "update-interval")); interval.SelectedItem = "Every 6 hours";
             var store = new SettingsStore(Path.Combine(isolated, "artifacts", "smoke-settings")); Check(store.Load().UpdateCheckHours == 6, "Update interval did not persist");
+            interval.SelectedItem = "Every 15 minutes";
+            Check(store.Load().UpdateCheckHours == .25, "15-minute update interval did not persist");
+            interval.SelectedItem = "Every 30 minutes";
+            Check(store.Load().UpdateCheckHours == .5, "30-minute update interval did not persist");
             controller.UpdateSettings(s => s.AutomaticUpdateChecks = false); Check(!store.Load().AutomaticUpdateChecks, "Automatic checks cannot be disabled");
             Render(main, Path.Combine(original, "update-settings.png"));
             foreach (string theme in new[] { "Dark", "Light" })

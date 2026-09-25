@@ -3,7 +3,7 @@ namespace DesktopTools.Core;
 public sealed class AppSettings
 {
     public bool AutomaticUpdateChecks { get; set; } = true;
-    public int UpdateCheckHours { get; set; } = 1;
+    public double UpdateCheckHours { get; set; } = 1;
     public bool ClickIndicatorsEnabled { get; set; } = true;
     public bool KeystrokesEnabled { get; set; } = true;
     public bool StopwatchEnabled { get; set; } = true;
@@ -64,7 +64,7 @@ public sealed class AppSettings
     public bool UseCustomBackground { get; set; }
     public bool Animations { get; set; } = true;
     public string Theme { get; set; } = "System";
-    public string Language { get; set; } = "en";
+    public string Language { get; set; } = DesktopTools.Localization.L.SystemLanguage();
     public bool Transparency { get; set; } = true;
     public bool StartAtLogin { get; set; } = true;
     public bool TrayHintShown { get; set; }

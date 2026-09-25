@@ -43,8 +43,9 @@ internal sealed class ScreenRecorderWindow : Window
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
         this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 940; Height = 610; MinWidth = 820; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
-        var panel = new StackPanel();
-        sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source")); sourceChoice.Margin = new Thickness(0, 8, 0, 14); panel.Children.Add(sourceChoice);
+        var panel = new StackPanel { Margin = new Thickness(12, 8, 0, 0) };
+        var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 14); panel.Children.Add(setupHeading);
+        sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         microphone = Ui.Toggle(controller.Settings.RecordingMicrophone, value => controller.UpdateSettings(s => s.RecordingMicrophone = value));
         systemAudio = Ui.Toggle(controller.Settings.RecordingSystemAudio, value => controller.UpdateSettings(s => s.RecordingSystemAudio = value));
         panel.Children.Add(Ui.Row(L.T("Microphone"), L.T("Default Windows input device."), microphone));
@@ -59,16 +60,30 @@ internal sealed class ScreenRecorderWindow : Window
             new(() => systemAudio, "System audio", "System audio records sounds played by the computer."),
             new(() => qualityButton, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
         }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
-        panel.Children.Add(time); status.TextWrapping = TextWrapping.Wrap; status.Margin = new Thickness(0, 8, 0, 12); panel.Children.Add(status);
-        var actions = new WrapPanel(); start = Ui.Button(L.T("Start recording"), StartRecording, true);
+        start = Ui.Button(L.T("Start recording"), StartRecording, true);
         start.Content = Ui.IconLabel("Record", L.T("Start recording"), primary: true);
         pause = Ui.IconButton("Pause", L.T("Pause"), TogglePause); stop = Ui.IconButton("Stop", L.T("Stop and save"), () => _ = StopAsync());
         runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenVisualCppRuntimeDownloadPage); runtimeHelp.Visibility = Visibility.Collapsed;
-        actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop); actions.Children.Add(runtimeHelp); panel.Children.Add(actions);
+        var transport = new Grid { Margin = new Thickness(0, 18, 0, 0) };
+        transport.ColumnDefinitions.Add(new ColumnDefinition()); transport.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var recordingState = new StackPanel { Margin = new Thickness(0, 0, 20, 0) };
+        time.FontSize = 25; recordingState.Children.Add(time);
+        status.TextWrapping = TextWrapping.Wrap; status.Margin = new Thickness(0, 4, 0, 0); recordingState.Children.Add(status);
+        runtimeHelp.Margin = new Thickness(0, 8, 0, 0); runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left; recordingState.Children.Add(runtimeHelp);
+        transport.Children.Add(recordingState);
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop);
+        Grid.SetColumn(actions, 1); transport.Children.Add(actions);
+        var transportSurface = new Border { Child = transport, Padding = new Thickness(16, 0, 16, 16), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1) };
+        transportSurface.SetResourceReference(Border.BackgroundProperty, "Field"); transportSurface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
+        DockPanel.SetDock(transportSurface, Dock.Bottom); root.Children.Add(transportSurface);
         var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350) }); root.Children.Add(columns);
         var inspector = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; Grid.SetColumn(inspector, 1); columns.Children.Add(inspector);
         var left = new DockPanel { Margin = new Thickness(0, 8, 20, 0) }; columns.Children.Add(left);
-        refreshPreview = Ui.Button(L.T("Refresh preview"), async () => await RefreshPreviewAsync()); refreshPreview.Content = Ui.IconLabel("Capture", L.T("Refresh preview")); refreshPreview.Margin = new Thickness(0, 12, 0, 0); DockPanel.SetDock(refreshPreview, Dock.Bottom); left.Children.Add(refreshPreview);
+        refreshPreview = Ui.Button(L.T("Refresh preview"), async () => await RefreshPreviewAsync()); refreshPreview.Content = Ui.IconLabel("Capture", L.T("Refresh preview"));
+        var previewTools = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
+        previewTools.Children.Add(sourceChoice); previewTools.Children.Add(refreshPreview);
+        DockPanel.SetDock(previewTools, Dock.Bottom); left.Children.Add(previewTools);
         var stageContent = new Grid(); stageContent.Children.Add(preview);
         var hint = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         var display = Ui.Icon("Monitor", 48); display.HorizontalAlignment = HorizontalAlignment.Center; display.Margin = new Thickness(0, 0, 0, 14); hint.Children.Add(display);
