@@ -2,6 +2,8 @@
 
 Thanks for helping improve DesktopTools. Issues, documentation fixes, translations, focused bug fixes, and feature proposals are welcome. Maintainers review pull requests before merging; opening one does not grant direct write access or guarantee acceptance.
 
+Please follow the [Code of Conduct](CODE_OF_CONDUCT.md) in project discussions and reviews.
+
 ## Before you start
 
 Search [existing issues](https://github.com/vg2222/DesktopTools/issues). For a bug, use the bug-report form and include the version, Windows/display environment, steps, expected result, and actual result. For a feature, describe the user problem first. Discuss larger changes in an issue before investing substantial work. For a security issue, follow [SECURITY.md](SECURITY.md) instead of posting details publicly.
