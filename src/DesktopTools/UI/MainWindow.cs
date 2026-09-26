@@ -70,7 +70,7 @@ internal sealed partial class MainWindow : Window
 
         var navItems = new StackPanel(); var navScroll = new ScrollViewer { Content = navItems, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }; SmoothScroll.Enable(navScroll); sidebar.Children.Add(navScroll);
 
-        foreach (var item in new[] { "Home", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Help", "About" })
+        foreach (var item in new[] { "Home", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Diagnostics", "Help", "About" })
 
         {
 
@@ -78,7 +78,7 @@ internal sealed partial class MainWindow : Window
 
             var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
 
-            navigation[item] = b; (item is "Shortcuts" or "Settings" or "Help" or "About" ? footer : navItems).Children.Add(b);
+            navigation[item] = b; (item is "Shortcuts" or "Settings" or "Diagnostics" or "Help" or "About" ? footer : navItems).Children.Add(b);
 
         }
 
@@ -121,6 +121,7 @@ internal sealed partial class MainWindow : Window
             DesktopTools.Presentation.WindowDismissal.Hide(this, () => Motion.Enabled);
     }
     private readonly List<Action> stateRefreshers = [];
+    private HashSet<string>? visibleFeatureSections;
     private void RefreshState() { foreach (var refresh in stateRefreshers.ToArray()) refresh(); }
     private void OnAidChanged() => Dispatcher.BeginInvoke(RefreshState);
 
@@ -139,7 +140,7 @@ internal sealed partial class MainWindow : Window
 
         {
 
-            presentationSection = null; dashboardSearch = null;
+            presentationSection = null; visibleFeatureSections = null; dashboardSearch = null;
 
             currentPage = destination; stateRefreshers.Clear(); page.Children.Clear(); if (pageChanged) SmoothScroll.ScrollToOffset(scroller, 0);
 
@@ -171,10 +172,11 @@ internal sealed partial class MainWindow : Window
 
             if (destination == "Home") { Home(); return; }
             if (DashboardGroups.Contains(destination)) { DashboardCategory(destination); return; }
+            if (destination.StartsWith("Feature:", StringComparison.Ordinal)) { FeatureSettings(destination[8..]); return; }
 
-            PageBanner(destination, destination switch { "Draw" => "Set up your drawing tools and floating palette.", "Capture" => "Choose what to capture and what happens next.", "Utilities" => "Files, notes, and application audio in one place.", "Profiles" => "Save tool preferences for the way you work.", "Shortcuts" => "Set global shortcuts and learn the drawing controls.", "Settings" => "Appearance, startup, and display preferences.", "Help" => "Help and learning", _ => "An open-source toolkit for Windows." }, destination);
+            PageBanner(destination, destination switch { "Draw" => "Set up your drawing tools and floating palette.", "Capture" => "Choose what to capture and what happens next.", "Utilities" => "Files, notes, and application audio in one place.", "Profiles" => "Save tool preferences for the way you work.", "Shortcuts" => "Set global shortcuts and learn the drawing controls.", "Settings" => "Appearance, startup, and display preferences.", "Diagnostics" => "Check dependencies and shortcuts on this PC.", "Help" => "Help and learning", _ => "An open-source toolkit for Windows." }, destination);
 
-            switch (destination) { case "Utilities": Utilities(); break; case "Home": Home(); break; case "Draw": Draw(); break; case "Capture": Capture(); break; case "Profiles": Profiles(); break; case "Shortcuts": ShortcutsCatalog(); break; case "Settings": General(); break; case "Help": Help(); break; case "About": About(); break; }
+            switch (destination) { case "Utilities": Utilities(); break; case "Home": Home(); break; case "Draw": Draw(); break; case "Capture": Capture(); break; case "Profiles": Profiles(); break; case "Shortcuts": ShortcutsCatalog(); break; case "Settings": General(); break; case "Diagnostics": Diagnostics(); break; case "Help": Help(); break; case "About": About(); break; }
 
         }
 
@@ -225,6 +227,7 @@ internal sealed partial class MainWindow : Window
     {
 
         if (presentationSection != null && presentationSection != title) return;
+        if (visibleFeatureSections != null && !visibleFeatureSections.Contains(title)) return;
 
         var p = new StackPanel();
         var groupHeader = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
@@ -364,7 +367,8 @@ internal sealed partial class MainWindow : Window
 
         }
 
-        Group(L.T("Profiles"), Ui.Row(L.T("Save these preferences"),L.T("Profiles include presentation preferences without starting tools automatically."), Ui.Button(L.T("Open profiles"), () => Navigate("Profiles"))));
+        if (!currentPage.StartsWith("Feature:", StringComparison.Ordinal))
+            Group(L.T("Profiles"), Ui.Row(L.T("Save these preferences"),L.T("Profiles include presentation preferences without starting tools automatically."), Ui.Button(L.T("Open profiles"), () => Navigate("Profiles"))));
 
     }
 
@@ -390,7 +394,7 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Default tool"), null, Ui.Choice(new[] { "Pen", "Highlighter", "Arrow", "Line", "Rectangle", "Ellipse", "Text", "Number", "Select", "Eraser" }, s.DefaultTool, v => { Change(x => x.DefaultTool = v); controller.SetTool(v); })),
 
-            Ui.Row(L.T("Color"), null, Ui.ColorButton(s.Color, () => { controller.PickColor(); Navigate("Draw"); })),
+            Ui.Row(L.T("Color"), null, Ui.ColorButton(s.Color, () => { controller.PickColor(); Navigate(currentPage); })),
 
             Ui.Row(L.T("Arrowhead size"),L.T("Relative to the stroke width"), Slider(s.ArrowHeadSize, .5, 3, v => Change(x => x.ArrowHeadSize = v))),
 
@@ -429,7 +433,7 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("After capture"), null, Ui.Choice(new[] { "Clipboard", "Save" }, s.CaptureOutput, v => Change(x => x.CaptureOutput = v))),
 
-            Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate("Capture"); })));
+            Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
 
         Group(L.T("Latest screenshot"), Ui.Row(L.T("Pin above applications"),L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)), Ui.Row(L.T("Edit screenshot"),L.T("Annotate, crop, or cover private details before sharing."), Ui.Button(L.T("Open editor"), controller.RedactLast)), Ui.Row(L.T("Save a copy"), null, Ui.Button(L.T("Save PNG"), controller.SaveLast)));
 
@@ -620,6 +624,7 @@ internal sealed partial class MainWindow : Window
     {
 
         var s = controller.Settings;
+        FeatureSettingsSearch();
 
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 18) };
         foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates" })

@@ -1,4 +1,5 @@
 using DesktopTools.Localization;
+using DesktopTools.Native;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,9 @@ namespace DesktopTools.Extras;
 internal sealed class ImageToolsWindow : Window, IUnsavedWork
 {
     private readonly Action<string> report;
+    private readonly Func<IReadOnlyList<string>> readMissingRuntime;
+    private readonly TextBlock runtimeWarning = Ui.Text("", 12);
+    private readonly Button runtimeHelp;
     private readonly Image preview;
     private readonly ImageEditCanvas editCanvas = new() { Margin = new Thickness(12) };
     private readonly Slider previewZoom = new() { Minimum = 1, Maximum = 4, Value = 1, Width = 112, SmallChange = .1, LargeChange = .5 };
@@ -56,9 +60,9 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private readonly Button emptyImport;
 
 
-    public ImageToolsWindow(Action<string> report)
+    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null)
     {
-        this.report = report; preview = editCanvas.Image;
+        this.report = report; this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles; preview = editCanvas.Image;
         Title = L.T("Image tools"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 560;
         ResizeMode = ResizeMode.CanResizeWithGrip; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -161,6 +165,13 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         quality.ValueChanged += (_, _) => { qualityValue.Text = ((int)quality.Value).ToString(); ChangedOutput(); };
         var estimateSize = Ui.Button(L.T("Estimate size"), async () => await Estimate()); estimateSize.Content = Ui.IconLabel("Search", L.T("Estimate size")); estimateSize.Margin = new Thickness(0, 16, 0, 0); formatRow.Children.Add(estimateSize);
         var backgroundRow = new StackPanel();
+        runtimeWarning.TextWrapping = TextWrapping.Wrap;
+        runtimeWarning.Margin = new Thickness(0, 0, 0, 8);
+        backgroundRow.Children.Add(runtimeWarning);
+        runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenRuntimeHelp);
+        runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left;
+        runtimeHelp.Margin = new Thickness(0, 0, 0, 10);
+        backgroundRow.Children.Add(runtimeHelp);
         removeBackground = Ui.Button(L.T("Remove background"), async () => await RemoveBackgroundAsync());
         var removeLabel = new StackPanel { Orientation = Orientation.Horizontal }; removeLabel.Children.Add(Ui.Icon("Background", 17)); var removeText = Ui.Text(L.T("Remove background"), 12); removeText.Margin = new Thickness(8, 0, 0, 0); removeLabel.Children.Add(removeText); removeBackground.Content = removeLabel;
         backgroundRow.Children.Add(removeBackground);
@@ -199,6 +210,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         void Mode(string mode)
         {
             activeMode = mode;
+            if (mode == "Background") RefreshRuntimeWarning();
             sizeSection.Visibility = mode == "Size" ? Visibility.Visible : Visibility.Collapsed; formatSection.Visibility = mode == "Format" ? Visibility.Visible : Visibility.Collapsed;
             backgroundSection.Visibility = mode == "Background" ? Visibility.Visible : Visibility.Collapsed; cropSection.Visibility = mode == "Crop" ? Visibility.Visible : Visibility.Collapsed;
             MediaWorkspaceLayout.SelectTab(tabButtons, mode);
@@ -354,6 +366,12 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     internal async Task RemoveBackgroundAsync()
     {
         if (bitmap == null || removal != null || closed) return;
+        if (RefreshRuntimeWarning().Count > 0)
+        {
+            status.Text = L.T("Background removal is unavailable until Microsoft Visual C++ x64 is installed.");
+            report(status.Text);
+            return;
+        }
         var input = bitmap; int version = ++revision;
         var cancellation = new CancellationTokenSource(); removal = cancellation;
         edits.IsEnabled = false; openControls.IsEnabled = false; removeBackground.IsEnabled = false; cancelRemoval.Visibility = Visibility.Visible;
@@ -386,4 +404,20 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         drawing.Freeze(); var brush = new DrawingBrush(drawing) { TileMode = TileMode.Tile, ViewportUnits = BrushMappingMode.Absolute, Viewport = new Rect(0, 0, 16, 16) }; brush.Freeze(); return brush;
     }
     private void Error(Exception ex) { status.Text = L.T("Image operation failed: ") + ex.Message; }
+    private IReadOnlyList<string> RefreshRuntimeWarning()
+    {
+        var missing = readMissingRuntime();
+        bool unavailable = missing.Count > 0;
+        runtimeWarning.Text = unavailable
+            ? L.T("Background removal needs Microsoft Visual C++ x64. Other image editing tools still work.")
+                + "\n" + L.T("Missing files: ") + string.Join(", ", missing)
+            : "";
+        runtimeWarning.Visibility = runtimeHelp.Visibility = unavailable ? Visibility.Visible : Visibility.Collapsed;
+        return missing;
+    }
+    private void OpenRuntimeHelp()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(VisualCppRuntime.HelpUri.AbsoluteUri) { UseShellExecute = true }); }
+        catch (Exception ex) { status.Text = L.T("Could not open the Microsoft download page. Use this link: ") + VisualCppRuntime.HelpUri.AbsoluteUri + "\n" + ex.Message; }
+    }
 }

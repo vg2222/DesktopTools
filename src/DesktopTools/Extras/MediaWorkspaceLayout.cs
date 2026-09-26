@@ -65,7 +65,7 @@ internal static class MediaWorkspaceLayout
             Text = text,
             MinHeight = 36,
             Padding = new Thickness(8, 5, 8, 5),
-            FontSize = 12,
+            FontSize = 14,
             Template = new ControlTemplate(typeof(TextBox)) { VisualTree = border }
         };
     }

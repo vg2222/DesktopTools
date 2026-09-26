@@ -1,4 +1,5 @@
 using DesktopTools.Localization;
+using DesktopTools.Native;
 using DesktopTools.UI;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,7 @@ namespace DesktopTools.Extras;
 internal sealed class TextToolsWindow : Window
 {
     private readonly AppController controller;
+    private readonly Func<IReadOnlyList<string>> readMissingRuntime;
     private readonly TextBox source = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxLength = LocalTranslation.MaxCharacters };
     private readonly TextBox output = new() { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
     private readonly TextBlock status = Ui.Text(L.T("Select text in an app, scan an area, or paste text here."), 12, muted: true);
@@ -30,11 +32,14 @@ internal sealed class TextToolsWindow : Window
     private bool ocrMode;
     private readonly RadioButton translationTab, screenshotTab;
     private readonly TextBlock modeDescription = Ui.Text("", 12, muted: true);
+    private readonly TextBlock runtimeWarning = Ui.Text("", 12);
+    private readonly Button runtimeHelp;
     private string lastDirection;
     internal bool IsProcessing => operation != null;
-    public TextToolsWindow(AppController controller)
+    public TextToolsWindow(AppController controller, Func<IReadOnlyList<string>>? readMissingRuntime = null)
     {
         this.controller = controller;
+        this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles;
         lastDirection = controller.Settings.TranslationDirection;
         Title = L.T("Text tools"); Width = 860; Height = 560; MinWidth = 660; MinHeight = 420;
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.CanResize; Background = Brushes.Transparent;
@@ -69,6 +74,11 @@ internal sealed class TextToolsWindow : Window
         DockPanel.SetDock(settings, Dock.Top); root.Children.Add(settings);
         var footer = new StackPanel(); activity.SetResourceReference(Border.BackgroundProperty, "Accent"); footer.Children.Add(activity);
         status.TextWrapping = TextWrapping.Wrap; footer.Children.Add(status);
+        runtimeWarning.TextWrapping = TextWrapping.Wrap; runtimeWarning.Margin = new Thickness(0, 8, 0, 0);
+        footer.Children.Add(runtimeWarning);
+        runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenRuntimeHelp);
+        runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left; runtimeHelp.Margin = new Thickness(0, 8, 0, 0);
+        footer.Children.Add(runtimeHelp);
         var actions = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
         translate = Ui.Button(L.T("Translate"), async () => await TranslateAsync(), true);
         translate.Width = 150; DockPanel.SetDock(translate, Dock.Right); actions.Children.Add(translate);
@@ -117,6 +127,7 @@ internal sealed class TextToolsWindow : Window
         Grid.SetColumn(source, ocr ? 1 : 0); source.Margin = new Thickness(0, 7, ocr ? 0 : 12, 0);
         sourceHeading.Text = L.T(ocr ? "Selected area" : "Source text"); resultHeading.Text = L.T(ocr ? "Recognized text" : "Translation");
         System.Windows.Automation.AutomationProperties.SetName(source, L.T(ocr ? "Recognized text" : "Source text")); RefreshButtons();
+        RefreshRuntimeWarning();
     }
     private void Copy(string text) { try { if (!string.IsNullOrWhiteSpace(text)) { Clipboard.SetText(text); status.Text = L.T("Text copied."); } } catch (Exception ex) { controller.Report(L.T("Could not copy text: ") + ex.Message); } }
     private void SettingsChanged()
@@ -145,6 +156,12 @@ internal sealed class TextToolsWindow : Window
     {
         if (closed || !controller.Settings.TranslationEnabled || string.IsNullOrWhiteSpace(source.Text)) return;
         ShowMode(false);
+        if (RefreshRuntimeWarning().Count > 0)
+        {
+            status.Text = L.T("Local translation is unavailable until Microsoft Visual C++ x64 is installed.");
+            controller.Report(status.Text, NotificationKind.Warning);
+            return;
+        }
         var input = source.Text; string language = controller.Settings.TranslationDirection;
         var cancellation = Begin(L.T("Translating locally…"));
         try
@@ -189,6 +206,22 @@ internal sealed class TextToolsWindow : Window
     {
         translate.IsEnabled = !closed && !IsProcessing && controller.Settings.TranslationEnabled && !string.IsNullOrWhiteSpace(source.Text);
         copy.IsEnabled = !IsProcessing && !string.IsNullOrWhiteSpace(ocrMode ? source.Text : output.Text); cancel.Visibility = IsProcessing ? Visibility.Visible : Visibility.Collapsed; ocrLanguage.IsEnabled = !IsProcessing;
+    }
+    private IReadOnlyList<string> RefreshRuntimeWarning()
+    {
+        var missing = ocrMode ? Array.Empty<string>() : readMissingRuntime();
+        bool unavailable = missing.Count > 0;
+        runtimeWarning.Text = unavailable
+            ? L.T("Local translation needs Microsoft Visual C++ x64. Install it to use offline translation. Screen text scanning still works.")
+                + "\n" + L.T("Missing files: ") + string.Join(", ", missing)
+            : "";
+        runtimeWarning.Visibility = runtimeHelp.Visibility = unavailable ? Visibility.Visible : Visibility.Collapsed;
+        return missing;
+    }
+    private void OpenRuntimeHelp()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(VisualCppRuntime.HelpUri.AbsoluteUri) { UseShellExecute = true }); }
+        catch (Exception ex) { status.Text = L.T("Could not open the Microsoft download page. Use this link: ") + VisualCppRuntime.HelpUri.AbsoluteUri + "\n" + ex.Message; }
     }
     private void StopAnimation() { activity.BeginAnimation(OpacityProperty, null); activity.Opacity = IsProcessing && !closed ? .65 : 0; }
     private void UpdateAnimation()

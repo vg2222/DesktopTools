@@ -9,16 +9,19 @@ internal sealed partial class MainWindow
 {
     private void Help()
     {
-        var search = new TextBox { Padding = new Thickness(38, 10, 12, 10), Tag = "help-search" };
+        var search = new TextBox { Padding = new Thickness(40, 8, 48, 8), MinHeight = 46, Tag = "help-search" };
         System.Windows.Automation.AutomationProperties.SetName(search, L.T("Search instructions"));
         var searchField = new Grid { Margin = new Thickness(0, 0, 0, 18) }; searchField.Children.Add(search);
         var searchIcon = Ui.Icon("Search", 18); searchIcon.HorizontalAlignment = HorizontalAlignment.Left; searchIcon.Margin = new Thickness(12, 0, 0, 0); searchField.Children.Add(searchIcon);
-        var hint = Ui.Text(L.T("Search instructions"), 13, muted: true); hint.Margin = new Thickness(39, 0, 12, 0); hint.IsHitTestVisible = false; searchField.Children.Add(hint);
+        var hint = Ui.Text(L.T("Search instructions"), 14, muted: true); hint.Margin = new Thickness(42, 0, 12, 0); hint.IsHitTestVisible = false; searchField.Children.Add(hint);
+        var clearSearch = Ui.SearchClearButton(search); clearSearch.Tag = "search-clear-help"; searchField.Children.Add(clearSearch);
         search.TextChanged += (_, _) => hint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         page.Children.Add(searchField);
         var cards = new UniformGrid { Columns = 2, Margin = new Thickness(0, 0, -12, 0), Tag = "help-cards" };
         page.Children.Add(cards);
-        var empty = Ui.Text(L.T("No results"), 14, muted: true); page.Children.Add(empty);
+        var empty = Ui.SearchEmptyState(L.T("No results"), L.T("Try a different search."));
+        empty.Tag = "search-empty-help"; page.Children.Add(empty);
+        bool wasEmpty = false;
         var items = new (string Id, string Title, string Detail, string Icon, Action Launch, Func<bool> Enabled)[]
         {
             ("initial", "Initial setup", "Appearance, startup, and display preferences.", "Settings", () => controller.OpenSetup(restart: true), () => true),
@@ -43,7 +46,11 @@ internal sealed partial class MainWindow
                 if (!start.IsEnabled) Ui.Tip(card, L.T("Enable this feature in Settings to start its guide."));
                 cards.Children.Add(card);
             }
-            empty.Visibility = cards.Children.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            bool isEmpty = cards.Children.Count == 0;
+            empty.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+            if (isEmpty && !wasEmpty) Motion.Transition(empty);
+            else if (!isEmpty && wasEmpty) Motion.Transition(cards);
+            wasEmpty = isEmpty;
         }
         search.TextChanged += (_, _) => Render(); Render();
     }

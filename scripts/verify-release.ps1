@@ -1,10 +1,11 @@
 [CmdletBinding()]
-param([string]$Directory = 'App release')
+param([string]$Directory = '')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$bundle = if ([IO.Path]::IsPathRooted($Directory)) { $Directory } else { Join-Path $repo $Directory }
 [xml]$project = Get-Content -LiteralPath (Join-Path $repo 'src/DesktopTools/DesktopTools.csproj') -Raw
 $version = [string]$project.Project.PropertyGroup.Version
+if ([string]::IsNullOrWhiteSpace($Directory)) { $Directory = "App releases/${version}-preview" }
+$bundle = if ([IO.Path]::IsPathRooted($Directory)) { $Directory } else { Join-Path $repo $Directory }
 $metadata = Get-Content -LiteralPath (Join-Path $bundle 'release.json') -Raw | ConvertFrom-Json
 if ($metadata.product -ne 'DesktopTools' -or $metadata.version -ne $version) { throw 'Release metadata does not match the project.' }
 $expected = @("DesktopTools-$version-win-x64-setup.exe", "DesktopTools-$version-win-x64-portable.zip")

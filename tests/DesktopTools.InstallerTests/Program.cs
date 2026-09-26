@@ -466,7 +466,7 @@ static void RenderInstallerModes(Assembly installer, Type program)
                     var download = (Button)Field("runtimeDownload")!;
                     Check(download.Visibility == (runtimeReady ? Visibility.Collapsed : Visibility.Visible), "runtime guidance does not match prerequisite state");
                     Check(((TextBlock)Field("runtimeDescription")!).Text.Contains(
-                        Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? (runtimeReady ? "установлен" : "Остальные инструменты") : (runtimeReady ? "ready" : "Other tools work"), StringComparison.Ordinal), "runtime explanation is missing");
+                        Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? (runtimeReady ? "установлен" : "локального перевода") : (runtimeReady ? "ready" : "offline translation"), StringComparison.Ordinal), "runtime explanation is missing");
                     runtimeReady = !runtimeReady;
                     windowType.GetMethod("RefreshRuntime", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
                     Check(download.Visibility == (runtimeReady ? Visibility.Collapsed : Visibility.Visible), "Check again failed to refresh prerequisite state");

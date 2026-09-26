@@ -1,6 +1,6 @@
 # Compatibility
 
-DesktopTools 1.2.4 targets Windows 11 x64. The app is self-contained; screen recording additionally requires Microsoft Visual C++ x64 Redistributable and Windows Media Foundation.
+DesktopTools targets Windows 11 x64. The app is self-contained; screen recording, offline translation and image background removal require Microsoft Visual C++ x64 Redistributable. Recording and video editing use Windows Media Foundation. Unaffected tools remain usable when the Visual C++ runtime is missing. Diagnostics checks for required files but does not validate devices, codecs or sharing output.
 
 ## Verified locally
 

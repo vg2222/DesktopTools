@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using DesktopTools;
 using DesktopTools.Extras;
 using DesktopTools.Native;
+using DesktopTools.Localization;
 
 internal static class RecordingPrerequisiteChecks
 {
@@ -23,6 +24,7 @@ internal static class RecordingPrerequisiteChecks
 
     internal static async Task RunAsync()
     {
+        L.Use("en");
         using var controller = new AppController(true);
         controller.UpdateSettings(settings =>
         {
@@ -35,10 +37,11 @@ internal static class RecordingPrerequisiteChecks
         IReadOnlyList<string> missing = ["vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll"];
         int prerequisiteReads = 0;
         int outputChooserCalls = 0;
+        IReadOnlyList<MonitorInfo> monitors = [monitor];
         var recorder = new ScreenRecorderWindow(
             controller,
             _ => { outputChooserCalls++; return null; },
-            () => [monitor],
+            () => monitors,
             () => { prerequisiteReads++; return missing; });
 
         try
@@ -56,24 +59,35 @@ internal static class RecordingPrerequisiteChecks
             using (var output = File.Create(Path.Combine(Environment.CurrentDirectory, "recorder-layout.png"))) image.Save(output);
             var runtimeHelp = Field<Button>(recorder, "runtimeHelp");
             var status = Field<TextBlock>(recorder, "status");
+            Check(runtimeHelp.Visibility == Visibility.Visible && status.Text.Contains("vcruntime140.dll", StringComparison.OrdinalIgnoreCase),
+                "Missing runtime warning is absent before recording is attempted");
 
             start.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(40);
+            Check(controller.Status == L.T("Screen recording is unavailable until Microsoft Visual C++ x64 is installed."),
+                "Record click did not report the unavailable feature: " + controller.Status);
             Check(start.IsEnabled, "Missing runtime disabled retry");
             Check(runtimeHelp.Visibility == Visibility.Visible && status.Text.Contains("vcruntime140.dll", StringComparison.OrdinalIgnoreCase),
                 "Missing runtime guidance was not shown");
             Check(outputChooserCalls == 0 && Field<Task?>(recorder, "session") == null && Field<ScreenRecordingService?>(recorder, "service") == null,
                 "Missing runtime entered output or native recording");
 
+            monitors = [];
+            await recorder.RefreshDisplaysAsync();
+            Check(status.Text.Contains("vcruntime140.dll", StringComparison.OrdinalIgnoreCase),
+                "Display changes replaced the missing-runtime warning");
+            monitors = [monitor];
+            recorder.SetSource(new RecordingSelection("Prerequisite fixture", monitor));
+
             start.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(40);
-            Check(prerequisiteReads == 2 && start.IsEnabled && outputChooserCalls == 0,
+            Check(prerequisiteReads == 3 && start.IsEnabled && outputChooserCalls == 0,
                 "Missing runtime path was not retryable");
 
             missing = [];
             start.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             for (int attempt = 0; attempt < 50 && Field<Task?>(recorder, "session") != null; attempt++) await Task.Delay(20);
-            Check(prerequisiteReads == 3 && outputChooserCalls == 1, "Repaired prerequisites did not reach the cancellable output choice");
+            Check(prerequisiteReads == 4 && outputChooserCalls == 1, "Repaired prerequisites did not reach the cancellable output choice");
             Check(start.IsEnabled && runtimeHelp.Visibility == Visibility.Collapsed
                 && Field<Task?>(recorder, "session") == null && Field<ScreenRecordingService?>(recorder, "service") == null,
                 "Cancelled retry retained runtime help or recording state");

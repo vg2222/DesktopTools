@@ -24,6 +24,7 @@ internal static class ShortcutCatalogView
             content.Children.Add(Ui.Text($"{name} · {gesture}", 12));
         }
         var retry = Ui.Button(L.T("Retry shortcuts"), () => { controller.RetryShortcuts(); refresh(); });
+        retry.Content = Ui.IconLabel("Refresh", L.T("Retry shortcuts"), 16, textSize: 13);
         retry.Margin = new Thickness(0, 12, 0, 0);
         retry.HorizontalAlignment = HorizontalAlignment.Left;
         content.Children.Add(retry);
@@ -39,7 +40,10 @@ internal static class ShortcutCatalogView
         void Refresh()
         {
             string value = entry.Read(controller.Settings);
-            change.Content = string.IsNullOrWhiteSpace(value) ? Ui.Text(L.T("Unassigned"), 12, muted: true) : Ui.Shortcut(value);
+            var label = new StackPanel { Orientation = Orientation.Horizontal };
+            var icon = Ui.Icon("Pen", 14); icon.Margin = new Thickness(0, 0, 8, 0); label.Children.Add(icon);
+            label.Children.Add(string.IsNullOrWhiteSpace(value) ? Ui.Text(L.T("Unassigned"), 12, muted: true) : Ui.Shortcut(value));
+            change.Content = label;
         }
         change.Click += (_, _) => { controller.RecordFeatureShortcut(entry); Refresh(); refreshPage?.Invoke(); };
         Refresh(); controls.Children.Add(change);

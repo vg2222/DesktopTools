@@ -41,8 +41,12 @@ internal static class PageTransitionChecks
         await Task.Delay(250);
         main.Navigate("Presentation tools");
         await Task.Delay(30);
-        Check(page.Opacity < .95 && page.RenderTransform is TranslateTransform repeated && repeated.X > 2,
-            $"A later category change started without visible motion: opacity={page.Opacity:0.###}, x={(page.RenderTransform as TranslateTransform)?.X:0.###}, loaded={page.IsLoaded}, enabled={Motion.Enabled}, clocks={page.HasAnimatedProperties}.");
+        if (Motion.Enabled)
+            Check(page.Opacity < .95 && page.RenderTransform is TranslateTransform repeated && repeated.X > 2,
+                $"A later category change started without visible motion: opacity={page.Opacity:0.###}, x={(page.RenderTransform as TranslateTransform)?.X:0.###}, loaded={page.IsLoaded}, enabled={Motion.Enabled}, clocks={page.HasAnimatedProperties}.");
+        else
+            Check(page.Opacity == 1 && page.RenderTransform is TranslateTransform resetPage && resetPage.X == 0,
+                "Reduced-motion setting left the category shifted or transparent.");
         foreach (var category in new[] { "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities" })
             main.Navigate(category);
         Check(page.Children.Count > 0, "Rapid category switching left the destination blank.");

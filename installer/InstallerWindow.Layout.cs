@@ -368,7 +368,7 @@ internal sealed partial class InstallerWindow
         if (runtimeCard is null || runtimeTitle is null || runtimeDescription is null) return;
         bool ready = runtimeCheck();
         runtimeTitle.Text = L.T(ready ? "Screen recording runtime is installed" : "One extra step for screen recording");
-        runtimeDescription.Text = L.T(ready ? "Microsoft Visual C++ x64 is ready on this PC." : "Install Microsoft Visual C++ x64 to record your screen. Other tools work without it. Setup can continue; recording stays unavailable until it's installed.");
+        runtimeDescription.Text = L.T(ready ? "Microsoft Visual C++ x64 is ready on this PC." : "Install Microsoft Visual C++ x64 for screen recording, offline translation and background removal. Setup can continue; these actions stay unavailable until it is installed.");
         runtimeCard.Background = ready ? CardBrush : Brush("#222B3A");
         runtimeCard.BorderBrush = ready ? StrokeBrush : Brush("#3E5778");
         runtimeDownload!.Visibility = runtimeRecheck!.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;

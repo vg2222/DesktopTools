@@ -6,5 +6,10 @@
   "Tools": "Outils",
   "Enabled tools are available to open. Enabling a tool does not start it.": "Les outils activés peuvent être ouverts. Les activer ne les démarre pas.",
   "No shortcuts found.": "Aucun raccourci trouvé.",
-  "Find a shortcut": "Rechercher un raccourci"
+  "Find a shortcut": "Rechercher un raccourci",
+  "Clear search": "Effacer la recherche",
+  "Try a different search.": "Essayez une autre recherche.",
+  "Check the spelling or choose another category.": "Vérifiez l’orthographe ou choisissez une autre catégorie.",
+  "No tools found": "Aucun outil trouvé",
+  "No results": "Aucun résultat"
 }

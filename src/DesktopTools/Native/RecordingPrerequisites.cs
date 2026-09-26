@@ -1,6 +1,6 @@
 namespace DesktopTools.Native;
 
-public static class RecordingPrerequisites
+public static class VisualCppRuntime
 {
     private static readonly string[] VisualCppRuntimeFiles =
     {
@@ -9,12 +9,12 @@ public static class RecordingPrerequisites
         "msvcp140.dll"
     };
 
-    public static Uri VisualCppRuntimeHelpUri { get; } = new("https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170");
+    public static Uri HelpUri { get; } = new("https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170");
 
-    public static IReadOnlyList<string> FindMissingVisualCppRuntimeFiles()
-        => FindMissingVisualCppRuntimeFiles(File.Exists, AppContext.BaseDirectory, Environment.SystemDirectory);
+    public static IReadOnlyList<string> FindMissingFiles()
+        => FindMissingFiles(File.Exists, AppContext.BaseDirectory, Environment.SystemDirectory);
 
-    internal static IReadOnlyList<string> FindMissingVisualCppRuntimeFiles(
+    internal static IReadOnlyList<string> FindMissingFiles(
         Func<string, bool> fileExists,
         string appDirectory,
         string systemDirectory)
@@ -25,4 +25,12 @@ public static class RecordingPrerequisites
                 && !fileExists(Path.Combine(systemDirectory, file)))
             .ToArray();
     }
+}
+
+public static class RecordingPrerequisites
+{
+    public static Uri VisualCppRuntimeHelpUri => VisualCppRuntime.HelpUri;
+    public static IReadOnlyList<string> FindMissingVisualCppRuntimeFiles() => VisualCppRuntime.FindMissingFiles();
+    internal static IReadOnlyList<string> FindMissingVisualCppRuntimeFiles(Func<string, bool> fileExists, string appDirectory, string systemDirectory)
+        => VisualCppRuntime.FindMissingFiles(fileExists, appDirectory, systemDirectory);
 }

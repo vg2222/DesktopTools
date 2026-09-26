@@ -15,7 +15,7 @@ Push-Location $repo
 try {
     # Test builds may replace project.assets.json with a framework-only restore. Clean also
     # resolves packages, so restore the release RID before asking it to clean that target.
-    & dotnet restore src/DesktopTools/DesktopTools.csproj -r win-x64 -p:SelfContained=true
+    & dotnet restore src/DesktopTools/DesktopTools.csproj -r win-x64 -p:SelfContained=true -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { throw "Release restore failed with exit code $LASTEXITCODE." }
     # A clean release compile prevents stale CodeView/PDB paths from an earlier incremental build entering public binaries.
     & dotnet clean src/DesktopTools/DesktopTools.csproj -c Release -r win-x64 -p:DebugSymbols=false -p:DebugType=None

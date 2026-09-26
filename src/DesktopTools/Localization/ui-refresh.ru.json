@@ -6,5 +6,10 @@
   "Tools": "Инструменты",
   "Enabled tools are available to open. Enabling a tool does not start it.": "Включённые инструменты доступны для запуска. Включение не запускает инструмент.",
   "No shortcuts found.": "Сочетания не найдены.",
-  "Find a shortcut": "Поиск сочетаний"
+  "Find a shortcut": "Поиск сочетаний",
+  "Clear search": "Очистить поиск",
+  "Try a different search.": "Попробуйте другой запрос.",
+  "Check the spelling or choose another category.": "Проверьте написание или выберите другую категорию.",
+  "No tools found": "Инструменты не найдены",
+  "No results": "Ничего не найдено"
 }

@@ -10,7 +10,7 @@ namespace DesktopTools.Extras;
 
 public sealed class QrCodeWindow : Window
 {
-    private readonly TextBox input = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MinHeight = 150, MaxLength = 7089 };
+    private readonly TextBox input = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalContentAlignment = VerticalAlignment.Top, MinHeight = 150, MaxLength = 7089 };
     private readonly Image preview = new() { Stretch = Stretch.Uniform, Margin = new Thickness(22) };
     private readonly Grid previewStage = new();
     private readonly StackPanel emptyPreview = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };

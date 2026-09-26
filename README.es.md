@@ -80,9 +80,11 @@ DesktopTools permanece en el área de notificación cuando cierras la ventana pr
 
 La página **Atajos** muestra todas las asignaciones de funciones. Las asignaciones predeterminadas están activadas; las opcionales empiezan desactivadas. Cada asignación tiene su propio interruptor.
 
+**Diagnóstico** comprueba los componentes del sistema, los idiomas OCR de Windows y los conflictos de atajos. La búsqueda en **Configuración** abre los ajustes de una herramienta concreta.
+
 ## 💡 Algunos detalles
 
-La grabación de pantalla necesita Microsoft Visual C++ x64 Redistributable y Windows Media Foundation. Las frecuencias de grabación de hasta 144 FPS son objetivos; el rendimiento real depende de la fuente, el codificador y el hardware. Consulta la página de [compatibilidad](docs/compatibility.md) para conocer las limitaciones de captura y la cobertura actual de las pruebas. El instalador comprueba este componente y ofrece la página de descarga de Microsoft si es necesario.
+La grabación de pantalla, la traducción sin conexión y la eliminación de fondos necesitan Microsoft Visual C++ x64 Redistributable. La grabación y edición de vídeo usan Windows Media Foundation. Las frecuencias de grabación de hasta 144 FPS son objetivos; el rendimiento real depende de la fuente, el codificador y el hardware. Consulta la página de [compatibilidad](docs/compatibility.md) para conocer las limitaciones de captura y la cobertura actual de las pruebas. El instalador comprueba el componente Visual C++ y ofrece la página de descarga de Microsoft si es necesario.
 
 La aplicación admite **inglés, ruso, alemán, francés y español**, además de los modos claro, oscuro y del sistema. Los idiomas de la interfaz son independientes del par de traducción inglés–ruso que se admite actualmente.
 

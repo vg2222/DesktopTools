@@ -50,11 +50,41 @@ internal static class Ui
         var b = Button("", action); b.Content = Icon(icon); b.Width = 36; b.Height = 36; b.MinHeight = 36; b.Padding = new Thickness(8); b.BorderThickness = new Thickness(0); b.Background = Brushes.Transparent;
         Tip(b, label); AutomationProperties.SetName(b, label); return b;
     }
-    public static FrameworkElement IconLabel(string icon, string label, double size = 17, bool primary = false)
+    public static FrameworkElement IconLabel(string icon, string label, double size = 17, bool primary = false, double textSize = 12)
     {
         var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         var symbol = Icon(icon, size); if (primary) symbol.SetResourceReference(Shape.FillProperty, "AccentText"); content.Children.Add(symbol);
-        var text = Text(label, 12); if (primary) text.SetResourceReference(TextBlock.ForegroundProperty, "AccentText"); text.Margin = new Thickness(8, 0, 0, 0); content.Children.Add(text); return content;
+        var text = Text(label, textSize); if (primary) text.SetResourceReference(TextBlock.ForegroundProperty, "AccentText"); text.Margin = new Thickness(8, 0, 0, 0); content.Children.Add(text); return content;
+    }
+    public static Button SearchClearButton(TextBox search)
+    {
+        var clear = IconButton("Close", L.T("Clear search"), () => { search.Clear(); search.Focus(); });
+        clear.HorizontalAlignment = HorizontalAlignment.Right;
+        clear.VerticalAlignment = VerticalAlignment.Center;
+        clear.Margin = new Thickness(0, 0, 6, 0);
+        clear.Width = clear.Height = clear.MinHeight = 32;
+        clear.Content = Icon("Close", 13);
+        void Refresh() => clear.Visibility = search.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        search.TextChanged += (_, _) => Refresh();
+        Refresh();
+        return clear;
+    }
+    public static Border SearchEmptyState(string title, string detail)
+    {
+        var copy = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 400 };
+        var badge = new Border { Width = 48, Height = 48, CornerRadius = new CornerRadius(15), HorizontalAlignment = HorizontalAlignment.Center };
+        badge.SetResourceReference(Border.BackgroundProperty, "Hover");
+        var icon = Icon("Search", 22); icon.HorizontalAlignment = HorizontalAlignment.Center; icon.VerticalAlignment = VerticalAlignment.Center;
+        icon.SetResourceReference(Shape.FillProperty, "Muted"); badge.Child = icon; copy.Children.Add(badge);
+        var heading = Text(title, 16, true, muted: true); heading.TextAlignment = TextAlignment.Center; heading.HorizontalAlignment = HorizontalAlignment.Center;
+        heading.Margin = new Thickness(0, 14, 0, 0); copy.Children.Add(heading);
+        var explanation = Text(detail, 13, muted: true); explanation.TextAlignment = TextAlignment.Center; explanation.HorizontalAlignment = HorizontalAlignment.Center;
+        explanation.Margin = new Thickness(0, 5, 0, 0); copy.Children.Add(explanation);
+        var surface = new Border { Child = copy, MinHeight = 176, Padding = new Thickness(24), Margin = new Thickness(0, 8, 0, 0),
+            CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1) };
+        surface.SetResourceReference(Border.BackgroundProperty, "Field");
+        surface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
+        return surface;
     }
     public static Button ImportPrompt(string icon, string title, string detail, Action open)
     {

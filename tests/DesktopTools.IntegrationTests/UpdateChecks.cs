@@ -48,6 +48,8 @@ internal static class UpdateChecks
             Check(controller.AvailableUpdate?.Version == "2.0.0" && !controller.CheckingUpdate, "Manual update check did not finish");
             var indicator = Walk(main).OfType<Button>().Single(b => Equals(b.Tag, "update-indicator")); Check(indicator.IsVisible, "Update missing from main navigation");
             var notice = Application.Current.Windows.OfType<NotificationWindow>().Single(); notice.UpdateLayout();
+            Check(Walk(notice).OfType<Button>().Any(button => AutomationProperties.GetName(button) == "Update"),
+                "Update notification did not show its short update action");
             notice.ActivateBody();
             await Task.Delay(30);
             Check(notice.IsVisible && Application.Current.Windows.OfType<ConfirmationDialog>().Count() == 0,
@@ -58,6 +60,9 @@ internal static class UpdateChecks
             Walk(notice).OfType<Button>().Single(button => AutomationProperties.GetName(button) == "Cancel")
                 .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(notice.IsVisible, "Cancelling notification confirmation dismissed the update offer");
+            notice.UpdateLayout();
+            Check(Walk(notice).OfType<Button>().Any(button => AutomationProperties.GetName(button) == "Update"),
+                "Cancelling confirmation did not restore the short update action");
             Render(notice, Path.Combine(original, "update-available.png"));
             Uri? opened = null; controller.UpdateLinkLauncher = uri => opened = uri;
             controller.OpenUpdateNotes(); notice.UpdateLayout();

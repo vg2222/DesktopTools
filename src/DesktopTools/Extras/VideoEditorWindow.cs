@@ -275,7 +275,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
 
     private static TextBox NumberBox()
     {
-        var box = new TextBox { MinWidth = 58, MinHeight = 38, Text = "0", FontSize = 13, Padding = new Thickness(8, 5, 8, 5) };
+        var box = new TextBox { MinWidth = 58, MinHeight = 38, Text = "0", FontSize = 14, Padding = new Thickness(8, 5, 8, 5) };
         var border = new FrameworkElementFactory(typeof(Border));
         border.SetValue(Border.CornerRadiusProperty, new CornerRadius(9));
         border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Control.BackgroundProperty));

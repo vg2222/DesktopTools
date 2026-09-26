@@ -41,7 +41,7 @@ internal sealed partial class MainWindow
         // Standalone tool symbols, intentionally different from Home's small category scenes.
         icon = id switch
         {
-            "record" => "Monitor", "profile-Everyday" => "Home", "profile-Meetings" => "Present", "profile-Teaching" => "Pen", "ocr" => "ScanText", "translate" => "Translate", "prompter" => "Prompter", "freeze" => "Freeze",
+            "record" => "Monitor", "Diagnostics" => "Check", "profile-Everyday" => "Home", "profile-Meetings" => "Present", "profile-Teaching" => "Pen", "ocr" => "ScanText", "translate" => "Translate", "prompter" => "Prompter", "freeze" => "Freeze",
             "aid-Click indicators" => "Click", "aid-Shortcut display" => "Shortcuts", "aid-Stopwatch" => "Timer",
             "aid-Countdown" => "Timer", "aid-Screen ruler" => "Ruler", "aid-Screen blackout" => "Shield", _ => icon
         };

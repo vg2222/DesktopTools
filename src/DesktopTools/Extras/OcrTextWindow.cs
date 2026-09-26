@@ -23,7 +23,7 @@ internal sealed class OcrTextWindow : Window
         var languages = LocalOcr.Languages;
         var choice = new ComboBox { ItemsSource = languages, SelectedIndex = languages.Count > 0 ? 0 : -1, Margin = new Thickness(0, 12, 0, 12), MinWidth = 220, HorizontalAlignment = HorizontalAlignment.Left };
         System.Windows.Automation.AutomationProperties.SetName(choice, L.T("OCR language")); header.Children.Add(choice); grid.Children.Add(header);
-        var output = new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+        var output = new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalContentAlignment = VerticalAlignment.Top };
         System.Windows.Automation.AutomationProperties.SetName(output, L.T("Recognized text")); var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition());
         var preview = new Image { Source = image, Stretch = System.Windows.Media.Stretch.Uniform, Margin = new Thickness(0, 0, 16, 0) };
         System.Windows.Automation.AutomationProperties.SetName(preview, L.T("Selected area")); columns.Children.Add(preview); Grid.SetColumn(output, 1); columns.Children.Add(output); Grid.SetRow(columns, 1); grid.Children.Add(columns);

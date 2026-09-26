@@ -81,9 +81,11 @@ DesktopTools stays in the notification area when you close its main window. Clic
 The **Shortcuts** page lists all feature bindings. Default bindings are enabled; optional bindings start disabled. Every binding has its own switch.
 If shortcuts do not respond, check that DesktopTools is running in the tray and that the shortcut's switch is on. If the Shortcuts page reports a conflict, choose another combination or close the app using it, then select **Retry shortcuts**. To test which enabled combinations Windows will accept, quit DesktopTools from the tray and run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\diagnose-shortcuts.ps1` from a repository checkout. The script reads only shortcut preferences and changes nothing.
 
+Use **Diagnostics** to check native components, Windows OCR languages and shortcut conflicts. Search in **Settings** to jump straight to one tool's settings page.
+
 ## 💡 A few details
 
-Screen recording needs Microsoft Visual C++ x64 Redistributable and Windows Media Foundation. Recording rates up to 144 FPS are targets; actual performance depends on the source, encoder and hardware. See [compatibility](docs/compatibility.md) for capture limitations and current testing coverage. Setup checks this runtime and offers the Microsoft download page when needed.
+Screen recording, offline translation and image background removal need Microsoft Visual C++ x64 Redistributable; recording also needs Windows Media Foundation. Other image tools and screen OCR remain usable without the Visual C++ runtime. Recording rates up to 144 FPS are targets; actual performance depends on the source, encoder and hardware. See [compatibility](docs/compatibility.md) for capture limitations and current testing coverage. Setup checks the runtime and offers the Microsoft download page when needed.
 
 The app supports **English, Russian, German, French and Spanish**, plus light, dark and system appearance. Interface languages are separate from the currently supported English–Russian translation pair.
 

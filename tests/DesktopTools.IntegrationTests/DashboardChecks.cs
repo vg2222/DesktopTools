@@ -16,6 +16,35 @@ internal static class DashboardChecks
     private static System.Collections.Generic.IEnumerable<DependencyObject> Walk(DependencyObject root)
     { yield return root; for (int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++) foreach(var child in Walk(VisualTreeHelper.GetChild(root,i))) yield return child; }
     private static void Check(bool value, string message) { if(!value) throw new Exception(message); }
+    public static Task FeatureSettingsAsync()
+    {
+        L.Use("en");
+        using var controller = new AppController(true);
+        controller.UpdateSettings(s => s.Animations = false);
+        controller.OpenMain();
+        var main = Field<MainWindow>(controller, "main");
+        try
+        {
+            var tools = (Array)typeof(MainWindow).GetMethod("DashboardTools", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(main, null)!;
+            string Value(object tool, string property) => (string)tool.GetType().GetProperty(property)!.GetValue(tool)!;
+            var routes = tools.Cast<object>().Select(tool => (Id: Value(tool, "Id"), Title: Value(tool, "Title"), Settings: Value(tool, "Settings"))).ToArray();
+            Check(routes.Select(route => route.Settings).Distinct().Count() == routes.Length,
+                "Feature settings icon still shares a category or another feature's destination");
+            foreach (var route in routes)
+            {
+                main.Navigate(route.Settings); main.UpdateLayout();
+                Check(Walk(main).OfType<TextBlock>().Any(text => text.IsVisible && text.Text == L.T(route.Title)),
+                    "Feature settings do not identify " + route.Title);
+                string[] actions = DesktopTools.Core.FeatureShortcutCatalog.All.Where(entry => entry.FeatureId == route.Id)
+                    .Select(entry => "shortcut-enabled-" + entry.Action).ToArray();
+                var switches = Walk(main).OfType<CheckBox>().Where(box => box.IsVisible && (box.Tag as string)?.StartsWith("shortcut-enabled-") == true).ToArray();
+                Check(switches.Length == actions.Length && switches.All(box => actions.Contains((string)box.Tag)),
+                    "Feature settings mixed shortcut controls: " + route.Id);
+            }
+        }
+        finally { main.Close(); }
+        return Task.CompletedTask;
+    }
     public static async Task EnableToolsAsync()
     {
         L.Use("en");
@@ -73,7 +102,8 @@ internal static class DashboardChecks
     public static async Task RunAsync()
     {
         using var controller = new AppController(true);
-        controller.UpdateSettings(s => { s.HomeFavorites = ["capture", "draw", "record", "notes"]; s.CaptureEnabled = s.ScreenRecorderEnabled = s.DrawingEnabled = s.FloatingNotesEnabled = true; });
+        Check(controller.UpdateSettings(s => { s.HomeFavorites = ["capture", "draw", "record", "notes"]; s.CaptureEnabled = s.ScreenRecorderEnabled = s.DrawingEnabled = s.FloatingNotesEnabled = true; }),
+            "Could not establish dashboard test settings: " + controller.Status);
         controller.OpenMain();
         var main = Field<MainWindow>(controller,"main");
         try
@@ -97,7 +127,10 @@ internal static class DashboardChecks
                 var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bmp));using(var f=File.Create("home-a-"+language+"-"+theme+".png"))png.Save(f);
                 var search=Field<TextBox>(main,"dashboardSearch");search.Text=L.T("Screen recorder");main.UpdateLayout();
                 var result=Walk(main).OfType<Button>().FirstOrDefault(b=>(b.Tag as string)=="launch-record");Check(result!=null,"Localized search missing recorder");
-                search.Text="zzzz-no-match";main.UpdateLayout();Check(Walk(main).OfType<TextBlock>().Any(t=>t.Text==L.T("No tools found. Try another name.")),"No search empty state");
+                search.Text="zzzz-no-match";main.UpdateLayout();Check(Walk(main).OfType<TextBlock>().Any(t=>t.Text==L.T("No tools found")),"No search empty state");
+                Check(Walk(main).OfType<FrameworkElement>().Any(item => item.Tag as string == "search-empty-home" && item.IsVisible), "Home search needs a centered empty state");
+                Walk(main).OfType<Button>().Single(button => button.Tag as string == "search-clear-home").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(search.Text.Length == 0, "Home search clear action did not clear the field");
                 main.Navigate("Text tools");main.UpdateLayout();Check(Walk(main).OfType<Button>().Any(b=>(b.Tag as string)=="launch-ocr"),"OCR missing in text category");
             }
             L.Use("en"); main.Navigate("Home"); main.UpdateLayout();

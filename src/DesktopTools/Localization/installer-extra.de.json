@@ -45,7 +45,7 @@
   "Check again": "Erneut prüfen",
   "Screen recording runtime is installed": "Laufzeit für Bildschirmaufnahmen ist installiert",
   "Microsoft Visual C++ x64 is ready on this PC.": "Microsoft Visual C++ x64 ist auf diesem PC bereit.",
-  "Install Microsoft Visual C++ x64 to record your screen. Other tools work without it. Setup can continue; recording stays unavailable until it's installed.": "Installieren Sie Microsoft Visual C++ x64 für Bildschirmaufnahmen. Andere Werkzeuge funktionieren ohne es. Das Setup kann fortgesetzt werden.",
+  "Install Microsoft Visual C++ x64 for screen recording, offline translation and background removal. Setup can continue; these actions stay unavailable until it is installed.": "Installieren Sie Microsoft Visual C++ x64 für Bildschirmaufnahmen, Offline-Übersetzung und Hintergrundentfernung. Das Setup kann fortgesetzt werden; diese Funktionen sind bis zur Installation nicht verfügbar.",
   "DesktopTools is ready to use. Restart the app if it was already open.": "DesktopTools ist bereit. Starten Sie die App neu, falls sie bereits geöffnet war.",
   "Version {0} is available on GitHub": "Version {0} ist auf GitHub verfügbar",
   "Download is checksum-verified before the newer setup opens.": "Der Download wird vor dem Öffnen des neueren Setups per Prüfsumme geprüft.",

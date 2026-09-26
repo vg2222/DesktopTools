@@ -36,6 +36,7 @@ internal static class Program
             {
                 if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);
                 else if (args.Contains("--record-prerequisites-only")) await Test("Recorder prerequisite UI guard and retry", RecordingPrerequisiteChecks.RunAsync);
+                else if (args.Contains("--native-runtime-features-only")) await Test("Native runtime warnings for translation and background removal", NativeRuntimeFeatureChecks.RunAsync);
                 else if (args.Contains("--updates-only")) await Test("Update discovery, persistent controls, notes feedback and progress", UpdateChecks.RunAsync);
                 else if (args.Contains("--interaction-refinement-only")) await Test("Capture privacy and editor interaction refinements", InteractionRefinementChecks.RunAsync);
                 else if (args.Contains("--bug-regressions-only")) await Test("Focused bug regressions", BugRegressionChecks.RunAsync);
@@ -80,6 +81,8 @@ internal static class Program
                 else if (args.Contains("--foundation-only")) await Test("Bundled typography and shared controls", FoundationChecks.RunAsync);
                 else if (args.Contains("--rounded-windows-only")) await Test("Native rounded windows without DWM rounding", RoundedWindowChecks.RunAsync);
                 else if (args.Contains("--enable-tools-only")) await Test("Available tools and independent shortcut persistence", DashboardChecks.EnableToolsAsync);
+                else if (args.Contains("--feature-settings-only")) await Test("Every dashboard tool opens only its own settings", DashboardChecks.FeatureSettingsAsync);
+                else if (args.Contains("--diagnostics-search-only")) await Test("Dependency diagnostics and searchable feature settings", DiagnosticSearchChecks.RunAsync);
                 else if (args.Contains("--page-transition-only")) await Test("Category page transitions and reduced motion", PageTransitionChecks.RunAsync);
                 else if (args.Contains("--dashboard-only")) await Test("Dashboard navigation, search, favorites and themes", DashboardChecks.RunAsync);
                 else if (args.Contains("--recorder-only")) await Test("Screen recording lifecycle and MP4 output", RecordingChecks.RunAsync);

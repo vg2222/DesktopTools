@@ -16,7 +16,7 @@ internal sealed partial class MainWindow
     private static string NavigationIcon(string page) => page switch
     {
         "Capture tools" => "Capture", "Presentation tools" => "Present", "Media tools" => "Image", "Text tools" => "Text",
-        "Desktop utilities" => "Utilities", _ => page
+        "Desktop utilities" => "Utilities", "Diagnostics" => "Check", _ => page
     };
     private DashboardTool[] DashboardTools()
     {
@@ -40,7 +40,7 @@ internal sealed partial class MainWindow
             new("files", "File shelf", "Desktop utilities", "Folder", "Collect files for dragging between apps.", controller.OpenFileShelf, () => controller.Settings.FileShelfEnabled, "Utilities"),
             new("audio", "Audio controls", "Desktop utilities", "Audio", "Adjust volume and mute for individual apps.", controller.OpenAudioControls, () => controller.Settings.AudioControlsEnabled, "Utilities"),
             new("wheel", "Quick actions wheel", "Desktop utilities", "Utilities", "Open wheel", () => controller.OpenQuickWheel(), () => controller.Settings.QuickWheelEnabled, "Utilities"),
-            new("window", "Pin active window", "Desktop utilities", "Pin", controller.Settings.WindowPinShortcut, () => Navigate("Utilities"), () => controller.Settings.WindowPinEnabled, "Utilities")
+            new("window", "Pin active window", "Desktop utilities", "Pin", controller.Settings.WindowPinShortcut, () => Navigate("Feature:window"), () => controller.Settings.WindowPinEnabled, "Utilities")
         };
         foreach (string aid in AidNames)
         {
@@ -49,6 +49,7 @@ internal sealed partial class MainWindow
         }
         return tools.Select(tool => tool with
         {
+            Settings = "Feature:" + tool.Id,
             Enabled = () => DesktopTools.Core.FeatureAvailability.IsAvailable(controller.Settings, tool.Id) && tool.Enabled()
         }).ToArray();
     }
@@ -58,14 +59,20 @@ internal sealed partial class MainWindow
     }
     private void Home()
     {
-        var header = new DockPanel(); var customize = Ui.Button(L.T("Edit favorites"), () => DashboardCategory(null));
+        var header = new DockPanel(); var customize = Ui.IconButton("Star", L.T("Edit favorites"), () => DashboardCategory(null));
+        customize.Tag = "edit-favorites"; customize.Width = customize.Height = customize.MinHeight = 40;
+        customize.SetResourceReference(BackgroundProperty, "Field");
+        customize.SetResourceReference(BorderBrushProperty, "Stroke"); customize.BorderThickness = new Thickness(1);
         DockPanel.SetDock(customize, Dock.Right); header.Children.Add(customize); header.Children.Add(Ui.Text(L.T("My dashboard"), 30, true)); page.Children.Add(header);
         var searchRow = new Grid { Margin = new Thickness(0, 18, 0, 4) };
-        dashboardSearch = new TextBox { Height = 44, MinHeight = 44, Padding = new Thickness(15, 11, 80, 11) };
+        dashboardSearch = new TextBox { Height = 50, MinHeight = 50, FontSize = 15, Padding = new Thickness(44, 9, 80, 9) };
         System.Windows.Automation.AutomationProperties.SetName(dashboardSearch, L.T("Find a tool"));
-        var placeholder = Ui.Text(L.T("Find a tool"), 13, muted: true); placeholder.Margin = new Thickness(16, 0, 80, 0); placeholder.IsHitTestVisible = false;
+        var searchIcon = Ui.Icon("Search", 18); searchIcon.HorizontalAlignment = HorizontalAlignment.Left;
+        searchIcon.Margin = new Thickness(16, 0, 0, 0); searchIcon.IsHitTestVisible = false;
+        var placeholder = Ui.Text(L.T("Find a tool"), 15, muted: true); placeholder.Margin = new Thickness(46, 0, 80, 0); placeholder.IsHitTestVisible = false;
         var hint = Ui.Text("Ctrl K", 11, muted: true); hint.HorizontalAlignment = HorizontalAlignment.Right; hint.Margin = new Thickness(0, 0, 16, 0); hint.IsHitTestVisible = false;
-        searchRow.Children.Add(dashboardSearch); searchRow.Children.Add(placeholder); searchRow.Children.Add(hint); page.Children.Add(searchRow);
+        searchRow.Children.Add(dashboardSearch); searchRow.Children.Add(searchIcon); searchRow.Children.Add(placeholder); searchRow.Children.Add(hint); page.Children.Add(searchRow);
+        var clearSearch = Ui.SearchClearButton(dashboardSearch); clearSearch.Tag = "search-clear-home"; searchRow.Children.Add(clearSearch);
         string selectedGroup = "All";
         var filters = new WrapPanel { Margin = new Thickness(0, 6, 0, 8) };
         var filterButtons = new Dictionary<string, Button>();
@@ -73,18 +80,31 @@ internal sealed partial class MainWindow
         var results = new StackPanel { Visibility = Visibility.Collapsed }; page.Children.Add(results);
         var normal = new StackPanel(); page.Children.Add(normal);
         var all = DashboardTools();
+        bool wasSearching = false, wasEmpty = false;
         void Search()
         {
             string query = dashboardSearch.Text.Trim(); placeholder.Visibility = query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            hint.Visibility = query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             bool searching = query.Length != 0 || selectedGroup != "All";
             results.Children.Clear(); normal.Visibility = searching ? Visibility.Collapsed : Visibility.Visible; results.Visibility = searching ? Visibility.Visible : Visibility.Collapsed;
             foreach (var (group, button) in filterButtons)
                 button.SetResourceReference(BackgroundProperty, group == selectedGroup ? "Selected" : "Field");
-            if (!searching) return;
+            if (!searching) { wasSearching = wasEmpty = false; return; }
             var matches = all.Where(t => (selectedGroup == "All" || t.Group == selectedGroup) &&
                 $"{t.Title} {L.T(t.Title)} {t.Group} {L.T(t.Group)} {t.Detail} {L.T(t.Detail)}".Contains(query, StringComparison.CurrentCultureIgnoreCase)).ToArray();
-            results.Children.Add(Ui.Text(matches.Length == 0 ? L.T("No tools found. Try another name.") : L.T("Search results"), 15, true));
-            foreach (var tool in matches) results.Children.Add(DashboardRow(tool, false));
+            if (matches.Length == 0)
+            {
+                var empty = Ui.SearchEmptyState(L.T("No tools found"), L.T("Check the spelling or choose another category."));
+                empty.Tag = "search-empty-home"; results.Children.Add(empty);
+                if (!wasEmpty) Motion.Transition(empty);
+            }
+            else
+            {
+                results.Children.Add(Ui.Text(L.T("Search results"), 15, true));
+                foreach (var tool in matches) results.Children.Add(DashboardRow(tool, false));
+                if (wasEmpty || !wasSearching) Motion.Transition(results);
+            }
+            wasSearching = true; wasEmpty = matches.Length == 0;
         }
         foreach (string group in new[] { "All" }.Concat(DashboardGroups))
         {

@@ -80,9 +80,11 @@ DesktopTools reste dans la zone de notification lorsque vous fermez sa fenêtre 
 
 La page **Raccourcis** répertorie toutes les associations de fonctions. Les raccourcis par défaut sont activés ; les raccourcis facultatifs sont désactivés au départ. Chaque raccourci dispose de son propre interrupteur.
 
+La page **Diagnostic** vérifie les composants système, les langues OCR Windows et les conflits de raccourcis. La recherche dans **Paramètres** ouvre les réglages d’un outil précis.
+
 ## 💡 Quelques précisions
 
-L’enregistrement d’écran nécessite Microsoft Visual C++ x64 Redistributable et Windows Media Foundation. Les fréquences d’enregistrement jusqu’à 144 IPS sont des objectifs ; les performances réelles dépendent de la source, de l’encodeur et du matériel. Consultez la page [Compatibilité](docs/compatibility.md) pour connaître les limites de capture et la couverture actuelle des tests. Le programme d’installation vérifie ce composant et propose la page de téléchargement de Microsoft si nécessaire.
+L’enregistrement d’écran, la traduction hors ligne et la suppression d’arrière-plan nécessitent Microsoft Visual C++ x64 Redistributable. L’enregistrement et le montage vidéo utilisent Windows Media Foundation. Les fréquences d’enregistrement jusqu’à 144 IPS sont des objectifs ; les performances réelles dépendent de la source, de l’encodeur et du matériel. Consultez la page [Compatibilité](docs/compatibility.md) pour connaître les limites de capture et la couverture actuelle des tests. Le programme d’installation vérifie le composant Visual C++ et propose la page de téléchargement de Microsoft si nécessaire.
 
 L’application prend en charge **l’anglais, le russe, l’allemand, le français et l’espagnol**, ainsi que les apparences claire, sombre et système. Les langues de l’interface sont indépendantes de la paire de traduction anglais–russe actuellement prise en charge.
 

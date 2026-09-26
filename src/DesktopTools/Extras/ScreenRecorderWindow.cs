@@ -38,6 +38,8 @@ internal sealed class ScreenRecorderWindow : Window
     private readonly Func<Window, string?>? chooseOutput;
     private readonly Func<IReadOnlyList<MonitorInfo>> readMonitors;
     private readonly Func<IReadOnlyList<string>> readMissingRuntime;
+    private bool runtimeMissing;
+    private IReadOnlyList<string> missingRuntimeFiles = [];
     internal bool IsRecording => service?.Active == true;
     public ScreenRecorderWindow(AppController controller, Func<Window, string?>? chooseOutput = null, Func<IReadOnlyList<MonitorInfo>>? readMonitors = null, Func<IReadOnlyList<string>>? readMissingRuntime = null)
     {
@@ -125,7 +127,10 @@ internal sealed class ScreenRecorderWindow : Window
         timer.Tick += (_, _) => UpdateRecordingUi();
         Closing += OnClosing; Closed += (_, _) => { closed = true; sourcePicker?.Close(); sourceThumbnail.Dispose(); timer.Stop(); preview.Source = null; SystemEvents.DisplaySettingsChanged -= DisplaysChanged; };
         SizeChanged += (_, _) => { if (IsLoaded) sourceThumbnail.Update(this, preview); };
-        SystemEvents.DisplaySettingsChanged += DisplaysChanged; Refresh(); Motion.WindowEntrance(this);
+        SystemEvents.DisplaySettingsChanged += DisplaysChanged; Refresh();
+        var missingOnOpen = this.readMissingRuntime();
+        if (missingOnOpen.Count > 0) ShowMissingRuntime(missingOnOpen);
+        Motion.WindowEntrance(this);
         AddHandler(FeatureTourButton.SetupAppliedEvent, new RoutedEventHandler((_, _) => { microphone.IsChecked = controller.Settings.RecordingMicrophone; systemAudio.IsChecked = controller.Settings.RecordingSystemAudio; Refresh(); }));
     }
     private async Task RefreshPreviewAsync()
@@ -143,7 +148,7 @@ internal sealed class ScreenRecorderWindow : Window
             if (source.Region is Rect r) { bitmap = new System.Windows.Media.Imaging.CroppedBitmap(bitmap, new Int32Rect((int)r.X, (int)r.Y, (int)r.Width, (int)r.Height)); bitmap.Freeze(); }
             preview.Source = bitmap; previewHint.Visibility = Visibility.Collapsed;
         }
-        catch (Exception ex) { if (!closed) status.Text = ex.Message; }
+        catch (Exception ex) { if (!closed) { if (runtimeMissing) ShowMissingRuntime(missingRuntimeFiles); else status.Text = ex.Message; } }
     }
     private async Task ChooseSourceAsync()
     {
@@ -158,6 +163,7 @@ internal sealed class ScreenRecorderWindow : Window
         selectedSource = source; sourceThumbnail.Dispose(); preview.Source = bitmap; previewHint.Visibility = bitmap != null || source.Window != null ? Visibility.Collapsed : Visibility.Visible;
         previewTitle.Text = source.Label; previewDescription.Text = L.T("Refresh preview"); sourceKinds.Visibility = Visibility.Collapsed;
         sourceChoice.Content = Ui.IconLabel(source.Window == null ? "Monitor" : "Window", L.T("Recording source")); Ui.Tip(sourceChoice, source.Label); status.Text = source.Label; Refresh();
+        if (runtimeMissing) ShowMissingRuntime(missingRuntimeFiles);
     }
     private void StartRecording()
     {
@@ -166,9 +172,13 @@ internal sealed class ScreenRecorderWindow : Window
         if (missingFiles.Count > 0)
         {
             ShowMissingRuntime(missingFiles);
+            controller.Report(L.T("Screen recording is unavailable until Microsoft Visual C++ x64 is installed."), NotificationKind.Warning);
             return;
         }
+        runtimeMissing = false;
+        missingRuntimeFiles = [];
         runtimeHelp.Visibility = Visibility.Collapsed;
+        if (selectedSource == null) { status.Text = L.T("Choose a display, then start recording."); Refresh(); return; }
         int generation = ++sessionGeneration;
         session = RunRecordingWithBoundaryAsync(generation);
         Refresh();
@@ -197,9 +207,12 @@ internal sealed class ScreenRecorderWindow : Window
     }
     private void ShowMissingRuntime(IReadOnlyList<string> missingFiles)
     {
+        runtimeMissing = true;
+        missingRuntimeFiles = missingFiles;
         runtimeHelp.Visibility = Visibility.Visible;
-        status.Text = L.T("Screen recording needs the Microsoft Visual C++ x64 Runtime. Install it, then restart DesktopTools.")
+        status.Text = L.T("Screen recording needs the Microsoft Visual C++ x64 Runtime. Install it, then try Record again.")
             + "\n" + L.T("Missing files: ") + string.Join(", ", missingFiles);
+        Refresh();
     }
     private void OpenVisualCppRuntimeDownloadPage()
     {
@@ -286,7 +299,7 @@ internal sealed class ScreenRecorderWindow : Window
     }
     private void Refresh()
     {
-        bool active = IsRecording; bool busy = session != null; start.IsEnabled = !busy && selectedSource != null; pause.IsEnabled = stop.IsEnabled = active && !stopping;
+        bool active = IsRecording; bool busy = session != null; start.IsEnabled = !busy && (selectedSource != null || runtimeMissing); pause.IsEnabled = stop.IsEnabled = active && !stopping;
         sourcePreview.IsEnabled = sourceChoice.IsEnabled = microphone.IsEnabled = systemAudio.IsEnabled = !busy;
         qualityChoice.IsEnabled = fpsChoice.IsEnabled = hardwareAcceleration.IsEnabled = !busy;
         refreshPreview.IsEnabled = !busy && selectedSource != null;
@@ -318,6 +331,7 @@ internal sealed class ScreenRecorderWindow : Window
         previewTitle.Text = L.T("Choose what to record."); previewDescription.Text = L.T("Click to choose a display, window or region."); sourceKinds.Visibility = Visibility.Visible;
         sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         status.Text = L.T("Source is no longer available. Refresh the list."); Refresh();
+        if (runtimeMissing) ShowMissingRuntime(missingRuntimeFiles);
         await StopAsync(source.Window != null ? "Source window closed. Recording stopped." : "Source display changed. Recording stopped.");
     }
 }

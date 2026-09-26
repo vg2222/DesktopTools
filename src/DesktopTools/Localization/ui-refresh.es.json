@@ -6,5 +6,10 @@
   "Tools": "Herramientas",
   "Enabled tools are available to open. Enabling a tool does not start it.": "Las herramientas activadas se pueden abrir. Activarlas no las inicia.",
   "No shortcuts found.": "No se encontraron atajos.",
-  "Find a shortcut": "Buscar un atajo"
+  "Find a shortcut": "Buscar un atajo",
+  "Clear search": "Borrar búsqueda",
+  "Try a different search.": "Prueba otra búsqueda.",
+  "Check the spelling or choose another category.": "Comprueba la ortografía o elige otra categoría.",
+  "No tools found": "No se encontraron herramientas",
+  "No results": "Sin resultados"
 }

@@ -80,9 +80,11 @@ DesktopTools bleibt im Infobereich aktiv, wenn du das Hauptfenster schließt. Kl
 
 Auf der Seite **Tastenkombinationen** sind alle Funktionsbelegungen aufgeführt. Standardbelegungen sind aktiviert, optionale Belegungen zunächst deaktiviert. Jede Belegung hat einen eigenen Schalter.
 
+Unter **Diagnose** kannst du Systemkomponenten, Windows-OCR-Sprachen und Konflikte bei Tastenkürzeln prüfen. Die Suche in **Einstellungen** öffnet die Seite eines einzelnen Werkzeugs.
+
 ## 💡 Einige Details
 
-Für Bildschirmaufnahmen werden Microsoft Visual C++ x64 Redistributable und Windows Media Foundation benötigt. Aufnahmeraten bis 144 FPS sind Zielwerte; die tatsächliche Leistung hängt von Quelle, Encoder und Hardware ab. Unter [Kompatibilität](docs/compatibility.md) findest du Einschränkungen bei der Aufnahme und den aktuellen Testumfang. Das Setup prüft diese Laufzeit und bietet bei Bedarf die Downloadseite von Microsoft an.
+Für Bildschirmaufnahmen, Offline-Übersetzung und Hintergrundentfernung wird Microsoft Visual C++ x64 Redistributable benötigt. Aufnahme und Videoschnitt verwenden Windows Media Foundation. Aufnahmeraten bis 144 FPS sind Zielwerte; die tatsächliche Leistung hängt von Quelle, Encoder und Hardware ab. Unter [Kompatibilität](docs/compatibility.md) findest du Einschränkungen bei der Aufnahme und den aktuellen Testumfang. Das Setup prüft die Visual-C++-Laufzeit und bietet bei Bedarf die Downloadseite von Microsoft an.
 
 Die App unterstützt **Englisch, Russisch, Deutsch, Französisch und Spanisch** sowie helle, dunkle und systemabhängige Darstellung. Die Oberflächensprachen sind unabhängig vom derzeit unterstützten Übersetzungspaar Englisch–Russisch.
 

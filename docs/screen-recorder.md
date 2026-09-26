@@ -2,7 +2,7 @@
 
 Open **Capture tools → Screen recorder**. The first visit offers setup followed by a guide; both can be skipped and repeated from Help or Settings → Tools.
 
-Screen recording needs Microsoft Visual C++ x64 Redistributable. Setup checks for it and offers Microsoft's official download page if it is missing. Portable users receive the same guidance when starting a recording. Install the x64 package using Microsoft's installer and restart DesktopTools. Missing runtime files are reported before the recorder loads; a library-loading error is displayed in the recorder instead of terminating the app. The .NET runtime is already included with DesktopTools.
+Screen recording needs Microsoft Visual C++ x64 Redistributable. Setup checks for it and offers Microsoft's official download page if it is missing. Portable users see the warning as soon as the recorder opens. The Record button explains the unavailable feature without opening a save dialog or loading the native backend. Install the x64 package using Microsoft's installer, then try Record again; restart DesktopTools if Windows still reports missing files. The .NET runtime is already included with DesktopTools.
 
 Choose **Recording source** or click anywhere on the selected-display preview to open the display/window/region picker. Search the list and inspect the preview, then confirm the source. Choosing a source does not start recording. Enable microphone and/or system audio if needed (both default to off), choose quality and target FPS, then start and select a new MP4 filename.
 

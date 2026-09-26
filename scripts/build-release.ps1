@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$OutputDirectory = 'App release')
+param([string]$OutputDirectory = '')
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -7,13 +7,17 @@ $project = Join-Path $repo 'src/DesktopTools/DesktopTools.csproj'
 [xml]$projectXml = Get-Content -LiteralPath $project -Raw
 $version = [string]$projectXml.Project.PropertyGroup.Version
 if ($version -notmatch '^\d+\.\d+\.\d+([.-][A-Za-z0-9.-]+)?$') { throw "Invalid project version: $version" }
+if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = "App releases/${version}-preview" }
 
 $releaseRoot = if ([IO.Path]::IsPathRooted($OutputDirectory)) { [IO.Path]::GetFullPath($OutputDirectory) } else { [IO.Path]::GetFullPath((Join-Path $repo $OutputDirectory)) }
 $repoRoot = [IO.Path]::GetFullPath($repo).TrimEnd('\') + '\'
+$artifactRoot = [IO.Path]::GetFullPath((Join-Path $repo 'artifacts')).TrimEnd('\') + '\'
 if (-not $releaseRoot.StartsWith($repoRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Release output must stay inside the repository.' }
-if ([IO.Path]::GetFileName($releaseRoot) -ne 'App release') { throw 'Release output folder must be named App release.' }
-if (Test-Path -LiteralPath $releaseRoot) { Remove-Item -LiteralPath $releaseRoot -Recurse -Force }
-New-Item -ItemType Directory -Force -Path $releaseRoot | Out-Null
+if ([IO.Path]::GetFileName($releaseRoot) -ne "${version}-preview" -or
+    [IO.Path]::GetFileName([IO.Path]::GetDirectoryName($releaseRoot)) -ne 'App releases') {
+    throw "Release output must be App releases/${version}-preview."
+}
+if (Test-Path -LiteralPath $releaseRoot) { throw "Preview folder already exists: $releaseRoot. Preserve or move it before rebuilding." }
 
 $archiveName = "DesktopTools-$version-win-x64-portable.zip"
 $artifactArchive = Join-Path $repo ('artifacts/' + $archiveName)
@@ -29,7 +33,12 @@ if (-not (Test-Path -LiteralPath (Join-Path $portableSource 'DesktopTools.exe'))
 & (Join-Path $portableSource 'DesktopTools.exe') --smoke
 if ($LASTEXITCODE -ne 0) { throw "Published smoke check failed with exit code $LASTEXITCODE." }
 $smokeOutput = Join-Path $portableSource 'artifacts'
-if (Test-Path -LiteralPath $smokeOutput) { Remove-Item -LiteralPath $smokeOutput -Recurse -Force }
+if (Test-Path -LiteralPath $smokeOutput) {
+    $resolvedSmokeOutput = [IO.Path]::GetFullPath($smokeOutput)
+    if (-not $resolvedSmokeOutput.StartsWith($artifactRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Smoke output escaped the artifacts directory.' }
+    Remove-Item -LiteralPath $resolvedSmokeOutput -Recurse -Force
+}
+New-Item -ItemType Directory -Force -Path $releaseRoot | Out-Null
 
 $portableFolder = Join-Path $releaseRoot 'DesktopTools-portable'
 Copy-Item -LiteralPath $portableSource -Destination $portableFolder -Recurse
@@ -54,7 +63,9 @@ try {
     Copy-Item -LiteralPath $builtSetup -Destination $setup
 }
 finally {
-    if (Test-Path -LiteralPath $installerStage) { Remove-Item -LiteralPath $installerStage -Recurse -Force }
+    $resolvedInstallerStage = [IO.Path]::GetFullPath($installerStage)
+    if (-not $resolvedInstallerStage.StartsWith($artifactRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Installer staging escaped the artifacts directory.' }
+    if (Test-Path -LiteralPath $resolvedInstallerStage) { Remove-Item -LiteralPath $resolvedInstallerStage -Recurse -Force }
 }
 
 $releaseNotes = Join-Path $repo "docs/releases/$version.md"
@@ -71,7 +82,9 @@ Updates: Settings > Updates checks stable GitHub releases at startup and hourly 
 
 This release is unsigned. Windows SmartScreen may show a warning. Verify SHA256SUMS.txt before running downloaded files.
 
-Requirements: Windows 11 x64. Screen recording also requires Microsoft Visual C++ x64 Redistributable and Windows Media Foundation. Setup checks the Visual C++ runtime and offers Microsoft's official download page when missing. Choose x64 and run Microsoft's installer, then return and select Check again. Other tools can be installed and used without it. The runtime is licensed separately and is not bundled or silently installed by DesktopTools.
+Requirements: Windows 11 x64. Screen recording, offline translation and image background removal require Microsoft Visual C++ x64 Redistributable. Recording and video editing use Windows Media Foundation. Setup checks the Visual C++ runtime and offers Microsoft's official download page when missing. Choose x64 and run Microsoft's installer, then return and select Check again. Other tools remain usable without it. The runtime is licensed separately and is not bundled or silently installed by DesktopTools.
+
+Before publishing: open DesktopTools > Diagnostics to review native components, Windows OCR languages and shortcut conflicts. Search from Settings opens each tool's own settings page.
 Project: https://github.com/vg2222/DesktopTools
 "@
 Set-Content -LiteralPath (Join-Path $releaseRoot 'README.txt') -Value $readme -Encoding utf8
@@ -92,5 +105,13 @@ $metadata = [ordered]@{
     signed = $false; commit = $commit; sourceModified = $sourceModified
 }
 $metadata | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releaseRoot 'release.json') -Encoding utf8
+# Keep only the reviewable bundle; the publish output and intermediate ZIP are reproducible.
+$resolvedPublishStage = [IO.Path]::GetFullPath((Split-Path $portableSource -Parent))
+if (-not $resolvedPublishStage.StartsWith($artifactRoot, [StringComparison]::OrdinalIgnoreCase) -or
+    [IO.Path]::GetFileName($resolvedPublishStage) -notlike 'publish-*') { throw 'Publish staging escaped the artifacts directory.' }
+if ((Get-FileHash -LiteralPath $artifactArchive -Algorithm SHA256).Hash -ne
+    (Get-FileHash -LiteralPath $portableArchive -Algorithm SHA256).Hash) { throw 'Portable archive copy differs from staging.' }
+Remove-Item -LiteralPath $resolvedPublishStage -Recurse -Force
+Remove-Item -LiteralPath ([IO.Path]::GetFullPath($artifactArchive)) -Force
 Write-Host "Release folder: $releaseRoot"
 Get-ChildItem -LiteralPath $releaseRoot | Select-Object Name, Length

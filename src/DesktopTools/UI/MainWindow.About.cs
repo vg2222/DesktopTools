@@ -11,7 +11,7 @@ internal sealed partial class MainWindow
     {
         var body = new StackPanel { MaxWidth = 680, HorizontalAlignment = HorizontalAlignment.Stretch };
         var brand = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 12, 0, 28) };
-        var icon = Ui.Icon("Utilities", 42); icon.Margin = new Thickness(0, 0, 18, 0); brand.Children.Add(icon);
+        var icon = Ui.AppIcon(52); icon.Margin = new Thickness(0, 0, 16, 0); brand.Children.Add(icon);
         var title = new StackPanel(); title.Children.Add(Ui.Text("DesktopTools", 28, true)); title.Children.Add(Ui.Text(L.T("Draw, explain, and capture anything on your desktop."), 12, muted: true)); brand.Children.Add(title); body.Children.Add(brand);
         var rows = new StackPanel();
         var license = Ui.Button("MIT", () => ShowLicense("License", "DesktopTools.License")); license.Tag = "about-license";
@@ -35,7 +35,7 @@ internal sealed partial class MainWindow
         var panel = new DockPanel { Margin = new Thickness(18) };
         var header = UtilityWindowChrome.Header(dialog, dialog.Title, dialog.Close, L.T("Close"), 18); DockPanel.SetDock(header, Dock.Top); panel.Children.Add(header);
         var close = Ui.Button(L.T("Close"), dialog.Close); close.HorizontalAlignment = HorizontalAlignment.Right; close.Margin = new Thickness(0, 12, 0, 0); DockPanel.SetDock(close, Dock.Bottom); panel.Children.Add(close);
-        panel.Children.Add(new TextBox { Text = reader.ReadToEnd(), IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Tag = "license-text" });
+        panel.Children.Add(new TextBox { Text = reader.ReadToEnd(), IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalContentAlignment = VerticalAlignment.Top, Tag = "license-text" });
         dialog.SetResourceReference(BackgroundProperty, "Surface"); dialog.Content = panel; dialog.ShowDialog();
     }
 }

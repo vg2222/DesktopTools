@@ -9,7 +9,7 @@
 
 ## Final bundle
 
-1. Build from the final reviewed source with `./scripts/build-release.ps1`. Do not reuse a bundle whose included documentation or source predates the release candidate.
+1. Build a test candidate from the current source with `./scripts/build-release.ps1`. It writes to ignored `App releases/<version>-preview`, preserving older bundles; move an existing preview folder before rebuilding the same version. Give the installer and portable archive to testers before publication.
 2. Run `./scripts/verify-release.ps1` to check versioned filenames, metadata and SHA-256 hashes. This is an integrity check, not a claim that the app has passed hardware acceptance.
 3. Verify installation, repair, update and uninstall in a disposable account or VM, including preservation of external media and the keep/delete data choices.
 4. Compare the final downloadable files with `SHA256SUMS.txt`, and keep the release notes aligned with the published assets. See [security checks](security-checks.md).

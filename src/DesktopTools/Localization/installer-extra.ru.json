@@ -45,7 +45,7 @@
   "Check again": "Проверить снова",
   "Screen recording runtime is installed": "Компонент записи экрана установлен",
   "Microsoft Visual C++ x64 is ready on this PC.": "Microsoft Visual C++ x64 установлен на этом ПК.",
-  "Install Microsoft Visual C++ x64 to record your screen. Other tools work without it. Setup can continue; recording stays unavailable until it's installed.": "Для записи экрана установите Microsoft Visual C++ x64. Остальные инструменты работают без него. Установку приложения можно продолжить.",
+  "Install Microsoft Visual C++ x64 for screen recording, offline translation and background removal. Setup can continue; these actions stay unavailable until it is installed.": "Установите Microsoft Visual C++ x64 для записи экрана, локального перевода и удаления фона. Установку приложения можно продолжить; эти функции станут доступны после установки компонента.",
   "DesktopTools is ready to use. Restart the app if it was already open.": "DesktopTools готов к работе. Если приложение уже было открыто, перезапустите его.",
   "Version {0} is available on GitHub": "На GitHub доступна версия {0}",
   "Download is checksum-verified before the newer setup opens.": "Перед запуском нового установщика загрузка проверяется по контрольной сумме.",

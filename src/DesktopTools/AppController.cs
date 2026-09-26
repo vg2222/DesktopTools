@@ -21,6 +21,7 @@ internal sealed partial class AppController : IDisposable
     private readonly HotkeyService hotkeys = new();
     private IReadOnlyDictionary<string, string> unavailableShortcuts = new Dictionary<string, string>();
     internal IReadOnlyDictionary<string, string> UnavailableShortcuts => unavailableShortcuts;
+    internal IReadOnlyDictionary<string, string> RegisteredShortcuts => hotkeys.RegisteredHotkeys;
     private readonly EscapeKeyService escape = new();
     private QuickWheelWindow? quickWheel;
     public void OpenQuickWheel(bool held = false)

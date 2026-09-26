@@ -86,7 +86,7 @@ internal sealed partial class AppController
     {
         updateNotice?.Close();
         var notice = new NotificationWindow(UpdateStatus, NotificationKind.Info, main, Settings.MessageNotificationStyle,
-            actions: [("Update in background", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())], seconds: Settings.NotificationSeconds);
+            actions: [("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())], seconds: Settings.NotificationSeconds);
         notice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
         updateNotice = notice; notice.Closed += (_, _) => { if (ReferenceEquals(updateNotice, notice)) { updateNotice = null; updatePromptOpen = false; } }; notice.Show();
     }
@@ -129,7 +129,7 @@ internal sealed partial class AppController
         updateNotice.HoldOpen = false;
         updateNotice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
         updateNotice.UpdateMessage(UpdateStatus,
-            actions: [("Update in background", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())]);
+            actions: [("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())]);
     }
     private async Task ConfirmBackgroundUpdateAsync(bool installed)
     {

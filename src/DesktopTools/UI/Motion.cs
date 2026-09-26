@@ -45,16 +45,18 @@ public static class Motion
     {
         bool interrupted = element.HasAnimatedProperties ||
             element.RenderTransform is TranslateTransform active && active.HasAnimatedProperties;
-        double opacity = interrupted ? element.Opacity : .86;
-        double startY = interrupted && element.RenderTransform is TranslateTransform previous ? previous.Y : 3;
+        double opacity = interrupted ? element.Opacity : .76;
+        double startY = interrupted && element.RenderTransform is TranslateTransform previous ? previous.Y : 6;
         element.BeginAnimation(UIElement.OpacityProperty, null);
         element.Opacity = 1;
         var translation = element.RenderTransform as TranslateTransform ?? new TranslateTransform();
         element.RenderTransform = translation; translation.BeginAnimation(TranslateTransform.YProperty, null);
         translation.Y = 0;
         if (!Enabled) return;
-        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(opacity, 1, TimeSpan.FromMilliseconds(180)) { FillBehavior = FillBehavior.Stop });
-        translation.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(startY, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        var duration = TimeSpan.FromMilliseconds(185);
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(opacity, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        translation.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(startY, 0, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
     }
     internal static void PrepareNoticeEntrance(FrameworkElement element)
     {

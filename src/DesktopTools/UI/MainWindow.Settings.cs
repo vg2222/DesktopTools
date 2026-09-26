@@ -9,6 +9,14 @@ internal sealed partial class MainWindow
 {
     private IEnumerable<UIElement> FeatureShortcutRows(string groupTitle)
     {
+        if (currentPage.StartsWith("Feature:", StringComparison.Ordinal))
+        {
+            string id = currentPage[8..];
+            if (!id.StartsWith("aid-", StringComparison.Ordinal) && groupTitle == L.T(FeatureSettingsSection(id)))
+                return FeatureShortcutCatalog.All.Where(entry => entry.FeatureId == id)
+                    .Select(entry => (UIElement)ShortcutCatalogView.Row(controller, entry));
+            return [];
+        }
         string[] ids = currentPage switch
         {
             "Draw" when groupTitle == L.T("Drawing defaults") => ["draw"],

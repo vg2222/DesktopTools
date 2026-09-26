@@ -4,6 +4,9 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 
 ## Drawing and input
 
+- Open Diagnostics with one click from the sidebar. Verify the Visual C++, Media Foundation, OCR-language and shortcut cards; run checks again, then retry a deliberately blocked shortcut and open its feature settings. A missing file should produce a clear fix link, while a file-presence result must not claim that recording or a sharing viewer was tested.
+- In Settings, search by a tool name, translated name and shortcut gesture. Open a result and confirm it goes to that tool's dedicated settings page. Enter should open the first result; Escape should clear the search.
+
 1. Open another process with a clickable button and editable text. Press Ctrl+Alt+D and draw over the button. Expect ink and no underlying click.
 2. Press Draw again. Click, scroll and type in that other process; ink remains visible. Press Draw to resume. Repeat with the palette previously focused; no stuck keyboard or mouse capture is acceptable.
 3. Exercise pen/highlighter, arrow, line, rectangle, ellipse, text and whole-object eraser. Undo/redo across creation, erase and Clear all; after undo, a new action must discard redo. Verify a single pen dot.
@@ -49,6 +52,8 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 - Inspect notifications on bright/dark desktop wallpapers: one rounded silhouette, no gray rectangular edge. Hover pauses expiry; dismissal leaves latest screenshot available.
 - Pin wide, tall and tiny screenshots; drag, proportional resize, hover controls, compact/right-click menus, keyboard access and close. Check across mixed-DPI monitors.
 - Keyboard navigation in rounded shortcut fields, dropdowns, sliders and editor buttons; Windows reduced-motion/high-contrast modes. No zoom or slide animation on buttons/pages.
+- In each dashboard category, open every feature's settings icon. Each destination should identify only that feature, show only its shortcut controls, and return to its category. Check recorder, pin screenshot, OCR and translation separately.
+- On a machine without Microsoft Visual C++ x64, verify the recorder warns before selecting a source and Record shows a notification without opening Save. Translation and background removal warn and do not start native processing; screen OCR and other image edits still work.
 
 ## 1.0.0 update follow-up
 - Move laser and spotlight across every physical display and seams at mixed DPI. Test All and Selected settings; verify consistent laser alpha and smooth spotlight motion.
@@ -84,7 +89,7 @@ Use a disposable Windows account or VM with two stable published versions and th
 
 - Install the earlier version, create a note and change a setting. Confirm startup/manual checks find the newer release; change the background interval and verify disabling it leaves manual checks available.
 - Leave the update notification without any input, then return. Open release notes and confirm the notification remains, reports the browser action and uses the extended duration. When its message expands or contracts, confirm the notification resizes smoothly and nearby notices do not overlap. During download, confirm the rounded progress bar uses the app accent in both light and dark themes and advances smoothly. Dismiss the notice and confirm the sidebar and Updates page still offer the update.
-- Choose Update in background. Cancel the initial warning once, then accept. Confirm download and installation progress, app restart and preservation of saved notes/settings. Unsaved work is intentionally discarded after confirmation.
+- Choose Update in the notification. Cancel the initial warning once, then accept. Confirm download and installation progress, app restart and preservation of saved notes/settings. Unsaved work is intentionally discarded after confirmation.
 - Launch the existing app from its installed Start menu shortcut, which uses the installation folder as its working directory. Update it with a newer setup and confirm the folder swap succeeds after that app exits; setup must not hold the old folder open through its inherited working directory.
 - Interrupt the download and verify the running app survives with an error notification. In a disposable installation, cause replacement to fail and verify rollback, minimized error relaunch, sound and taskbar attention.
 - Open matching, newer and older setup versions. Verify maintenance choices, primary Update for newer setup, and continued local maintenance when offline. With an older setup, confirm the three standard actions remain visible and Advanced options reveals Install older version; cancel its warning, then retry in a disposable installation and verify notes/settings remain while app files switch to the older version.
