@@ -19,12 +19,12 @@ internal sealed class FileShelfWindow : Window
         this.report = report;
         Title = L.T("File shelf"); Width = 500; Height = 450; MinWidth = 400; MinHeight = 340;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
-        ResizeMode = ResizeMode.CanResize; Topmost = true; AllowDrop = true; ShowInTaskbar = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        ResizeMode = ResizeMode.CanResize; Topmost = true; AllowDrop = true; ShowInTaskbar = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = new DockPanel();
-        var header = UtilityWindowChrome.Header(this, L.T("File shelf"), () => DesktopTools.Presentation.WindowDismissal.Hide(this, () => Motion.Enabled), L.T("Hide file shelf"));
+        var header = UtilityWindowChrome.Header(this, L.T("File shelf"), () => DesktopTools.Presentation.WindowDismissal.Hide(this, () => Motion.Enabled), L.T("Hide file shelf"), allowMinimize: true);
         DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var options = UtilityWindowChrome.CaptionButton("More", L.T("File shelf options"), () => { });
-        DockPanel.SetDock(options, Dock.Right); header.Children.Insert(1, options);
+        DockPanel.SetDock(options, Dock.Right); header.Children.Insert(header.Children.Count - 1, options);
         var menu = new ContextMenu();
         var pin = new MenuItem { Header = L.T("Always on top"), IsCheckable = true, IsChecked = Topmost };
         pin.Click += (_, _) => Topmost = pin.IsChecked; menu.Items.Add(pin);

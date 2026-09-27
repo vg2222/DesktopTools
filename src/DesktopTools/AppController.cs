@@ -78,7 +78,7 @@ internal sealed partial class AppController : IDisposable
         if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
         Application.Current.Shutdown();
     }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report)); }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report) { WindowState = WindowState.Maximized }); }
     internal TextToolsWindow? OpenTextTools()
     {
         if (!Settings.TranslationEnabled && !Settings.ScreenTextEnabled) return null;
@@ -94,7 +94,7 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report)); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;

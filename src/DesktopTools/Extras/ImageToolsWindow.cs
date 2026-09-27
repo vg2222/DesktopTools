@@ -73,7 +73,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             var button = Ui.IconButton(symbol, L.T(label), action); button.Width = button.Height = 34; button.MinHeight = 34; button.Margin = new Thickness(3, 0, 3, 0);
             button.BorderThickness = new Thickness(1); button.SetResourceReference(Control.BorderBrushProperty, "Stroke"); button.SetResourceReference(Control.BackgroundProperty, "Field"); return button;
         }
-        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Image tools"), Close, L.T("Close image tools"), 13);
+        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Image tools"), Close, L.T("Close image tools"), 13, allowMinimize: true, allowMaximize: true);
         header.Margin = new Thickness(0, 0, 0, 12);
         openControls = new WrapPanel();
         var openImage = Ui.Button(L.T("Open image"), Open); openImage.Content = Ui.IconLabel("Folder", L.T("Open image")); openImage.Tag = "import-image"; openControls.Children.Add(openImage);
@@ -84,7 +84,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         var more = Icon("More", "Image tools", () => { }); var menu = new ContextMenu();
         var reset = new MenuItem { Header = L.T("Reset") }; reset.Click += (_, _) => Edit(() => originalImage!); menu.Items.Add(reset);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; openControls.Children.Add(more);
-        DockPanel.SetDock(openControls, Dock.Right); header.Children.Insert(1, openControls);
+        DockPanel.SetDock(openControls, Dock.Right); header.Children.Insert(header.Children.Count - 1, openControls);
         root.Children.Add(header);
 
         var sizeRow = new StackPanel();
@@ -208,7 +208,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             new(() => editCanvas, "Image canvas", "Use the handles to adjust the crop or size, then apply the change."),
             new(() => rowHost, "Image tools", "Choose size, format or background options. The pen opens annotation tools."),
             new(() => export, "Export image", "Review the name, format, size and preview before saving a separate copy.")
-        }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         void Mode(string mode)
         {
             if (showingOriginal) ToggleOriginalPreview();

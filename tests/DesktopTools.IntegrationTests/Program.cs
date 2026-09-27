@@ -104,6 +104,7 @@ internal static class Program
                 else if (args.Contains("--video-thumbnails-only")) await Test("Bounded portrait and wide video thumbnails", VideoThumbnailChecks.RunAsync);
                 else if (args.Contains("--video-crop-only")) await Test("Video crop apply/cancel and edited preview", () => VideoWindowChecks.RunAsync(focused: true));
                 else if (args.Contains("--video-frame-layout-only")) await Test("Video Frame inspector compact layout", VideoWindowChecks.RunFrameLayoutAsync);
+                else if (args.Contains("--editor-chrome-only")) await Test("Editor startup size and feature window caption controls", EditorChromeChecks.RunAsync);
                 else if (args.Contains("--video-ui")) await Test("Video editor languages, edited preview and resource cleanup", () => VideoWindowChecks.RunAsync());
                 else if (args.Contains("--video-only")) await Test("Native video trim, cut, crop, rotation, mute and original protection", VideoEditingChecks.RunAsync);
                 else if (args.Contains("--effects-only")) await Test("Stationary spotlight and uniform laser", () => { EffectChecks.Run(); return Task.CompletedTask; });

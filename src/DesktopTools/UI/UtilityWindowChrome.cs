@@ -101,7 +101,8 @@ internal static class UtilityWindowChrome
         return card;
     }
 
-    public static DockPanel Header(Window window, string text, Action closeAction, string closeLabel, double titleSize = 22)
+    public static DockPanel Header(Window window, string text, Action closeAction, string closeLabel, double titleSize = 22,
+        bool allowMinimize = false, bool allowMaximize = false)
     {
         if (window.AllowsTransparency && !GetHasTopDrag(window))
         {
@@ -121,6 +122,25 @@ internal static class UtilityWindowChrome
         close.Margin = new Thickness(0);
         DockPanel.SetDock(close, Dock.Right);
         header.Children.Add(close);
+        if (allowMaximize && window.ResizeMode is ResizeMode.CanResize or ResizeMode.CanResizeWithGrip)
+        {
+            var maximize = CaptionButton("Maximize", L.T("Maximize or restore"), () =>
+                window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized);
+            void UpdateMaximize(object? sender, EventArgs args) => maximize.Content = Ui.Icon(window.WindowState == WindowState.Maximized ? "Window" : "Maximize", 14);
+            window.StateChanged += UpdateMaximize;
+            window.Closed += (_, _) => window.StateChanged -= UpdateMaximize;
+            UpdateMaximize(window, EventArgs.Empty);
+            maximize.Margin = new Thickness(0);
+            DockPanel.SetDock(maximize, Dock.Right);
+            header.Children.Add(maximize);
+        }
+        if (allowMinimize && window.ShowInTaskbar && window.ResizeMode != ResizeMode.NoResize)
+        {
+            var minimize = CaptionButton("Minimize", L.T("Minimize"), () => NativeWindowService.Minimize(window));
+            minimize.Margin = new Thickness(0);
+            DockPanel.SetDock(minimize, Dock.Right);
+            header.Children.Add(minimize);
+        }
         var dragArea = new Border
         {
             Background = Brushes.Transparent, MinHeight = DesignTokens.ControlHeight, Cursor = Cursors.Arrow,
@@ -130,6 +150,11 @@ internal static class UtilityWindowChrome
         {
             if (e.LeftButton != MouseButtonState.Pressed) return;
             e.Handled = true;
+            if (allowMaximize && e.ClickCount == 2)
+            {
+                window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+                return;
+            }
             if (window.IsVisible && Mouse.LeftButton == MouseButtonState.Pressed) window.DragMove();
         };
         header.Children.Add(dragArea);

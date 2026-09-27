@@ -33,10 +33,10 @@ internal sealed class NotesWindow : Window
         Title = L.T("Floating notes"); Tag = "Floating notes";
         Width = 920; Height = 620; MinWidth = 700; MinHeight = 430;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
-        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = false;
+        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = true;
         WindowStartupLocation = WindowStartupLocation.CenterScreen; Topmost = topmost;
         var layout = new DockPanel();
-        var header = UtilityWindowChrome.Header(this, L.T("Notes"), Close, L.T("Close"), 20);
+        var header = UtilityWindowChrome.Header(this, L.T("Notes"), Close, L.T("Close"), 20, allowMinimize: true);
         DockPanel.SetDock(header, Dock.Top); layout.Children.Add(header);
         var subtitle = Ui.Text(L.T("Your notes, saved automatically on this device."), 12, muted: true);
         subtitle.Margin = new Thickness(0, 0, 0, 18); DockPanel.SetDock(subtitle, Dock.Top); layout.Children.Add(subtitle);

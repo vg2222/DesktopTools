@@ -51,7 +51,7 @@ internal sealed class ScreenRecorderWindow : Window
         this.readMonitors = readMonitors ?? MonitorService.GetAll;
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
         this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 970; Height = 590; MinWidth = 860; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
+        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var panel = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
         var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 9); panel.Children.Add(setupHeading);
         sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
@@ -92,7 +92,7 @@ internal sealed class ScreenRecorderWindow : Window
             new(() => microphone, "Microphone", "Enable microphone audio only when you want your voice in the recording."),
             new(() => systemAudio, "System audio", "System audio records sounds played by the computer."),
             new(() => qualityGrid, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
-        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         start = Ui.Button(L.T("Start recording"), StartRecording, true);
         start.Content = Ui.IconLabel("Record", L.T("Start recording"), primary: true);
         pause = Ui.IconButton("Pause", L.T("Pause"), TogglePause); stop = Ui.IconButton("Stop", L.T("Stop and save"), () => _ = StopAsync());

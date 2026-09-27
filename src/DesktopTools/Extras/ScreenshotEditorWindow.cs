@@ -49,7 +49,7 @@ public sealed class ScreenshotEditorWindow : Window
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         layout.RowDefinitions.Add(new RowDefinition());
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Edit screenshot"), Close, L.T("Close"), 13); layout.Children.Add(header);
+        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Edit screenshot"), Close, L.T("Close"), 13, allowMinimize: true); layout.Children.Add(header);
         var work = new Grid(); work.ColumnDefinitions.Add(new ColumnDefinition()); work.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(230) }); Grid.SetRow(work, 2); layout.Children.Add(work);
         _surface = new Canvas { Width = image.PixelWidth, Height = image.PixelHeight, Background = Brushes.Transparent, ClipToBounds = true, Cursor = Cursors.Cross };
         _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
@@ -109,7 +109,7 @@ public sealed class ScreenshotEditorWindow : Window
             new(() => backdrop, "Image canvas", "Draw on the image. Select moves an annotation; Undo restores the previous change."),
             new(() => propertyCard, "Properties", "Choose color, thickness and opacity for your annotations."),
             new(() => actions, "Export image", applyToImage ? "Apply returns the edited image to the image editor without saving a file." : "Copy sends the result to the clipboard. Save creates a PNG file.")
-        }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         var shell = Ui.Card(layout, 14); shell.Margin = new Thickness(0); shell.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); shell.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = shell;
         Loaded += (_, _) => Motion.Reveal(layout);
         _surface.MouseLeftButtonDown += Begin; _surface.MouseMove += Move; _surface.MouseLeftButtonUp += Finish;

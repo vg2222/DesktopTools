@@ -45,7 +45,7 @@ internal sealed class TextToolsWindow : Window
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.CanResize; Background = Brushes.Transparent;
         UtilityWindowChrome.EnableBackdrop(this);
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Text tools"), Close, L.T("Close text tools"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
+        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Text tools"), Close, L.T("Close text tools"), 13, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var settings = new StackPanel();
         var modes = new Grid { Margin = new Thickness(0, 12, 0, 8) }; modes.ColumnDefinitions.Add(new ColumnDefinition()); modes.ColumnDefinitions.Add(new ColumnDefinition());
         translationTab = new RadioButton { Content = Ui.IconLabel("Translate", L.T("Translate text"), 20), GroupName = "TextMode", Tag = "text-mode-translate", Margin = new Thickness(0, 0, 4, 0) };
@@ -109,7 +109,7 @@ internal sealed class TextToolsWindow : Window
             new(() => source, "Source text", "Paste text here, or scan an area of the screen. You can correct recognized text before translating."),
             new(() => ocrMode ? languageRow : directionRow, "Languages", "Choose the source and result languages, or an installed OCR language."),
             new(() => actions, "Translate", "Run translation or OCR when ready. Copy transfers the result to the clipboard.")
-        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) { if (IsProcessing) operation?.Cancel(); else Close(); e.Handled = true; } };
         Motion.WindowEntrance(this); ShowMode(!controller.Settings.TranslationEnabled); RefreshButtons();
     }

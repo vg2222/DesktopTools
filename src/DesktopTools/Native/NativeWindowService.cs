@@ -11,14 +11,27 @@ namespace DesktopTools.Native;
 
 public static class NativeWindowService
 {
+    private static readonly DependencyProperty RestoreMaximizedProperty = DependencyProperty.RegisterAttached(
+        "RestoreMaximized", typeof(bool), typeof(NativeWindowService), new PropertyMetadata(false));
     internal static Func<Window, bool?>? CapturePrivacyResolver { get; set; }
     public static nint GetForegroundWindowHandle() => NativeMethods.GetForegroundWindow();
+
+    public static void Minimize(Window window)
+    {
+        window.SetValue(RestoreMaximizedProperty, window.WindowState == WindowState.Maximized);
+        window.WindowState = WindowState.Minimized;
+    }
 
     public static void ShowForeground(Window window)
     {
         DesktopTools.Presentation.WindowDismissal.Cancel(window);
         window.ShowActivated = true;
-        if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+        if (window.WindowState == WindowState.Minimized)
+        {
+            bool restoreMaximized = (bool)window.GetValue(RestoreMaximizedProperty);
+            window.WindowState = restoreMaximized ? WindowState.Maximized : WindowState.Normal;
+            window.ClearValue(RestoreMaximizedProperty);
+        }
         if (!window.IsVisible) window.Show();
         window.Activate();
         var handle = new WindowInteropHelper(window).Handle;

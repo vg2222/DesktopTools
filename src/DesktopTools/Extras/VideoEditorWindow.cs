@@ -77,7 +77,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
 
         var root = new Grid();
         for (int i = 0; i < 7; i++) root.RowDefinitions.Add(new RowDefinition { Height = i == 2 ? new GridLength(1, GridUnitType.Star) : GridLength.Auto });
-        AddRow(root, UtilityWindowChrome.Header(this, Title, Close, L.T("Close video editor")), 0);
+        AddRow(root, UtilityWindowChrome.Header(this, Title, Close, L.T("Close video editor"), allowMinimize: true, allowMaximize: true), 0);
 
         var toolbar = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         openButton = Ui.Button(L.T("Open video"), async () => await OpenAsync()); openButton.Content = Ui.IconLabel("Folder", L.T("Open video")); openButton.Tag = "import-video";

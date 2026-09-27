@@ -29,7 +29,7 @@ public sealed class QrCodeWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterOwner; ResizeMode = ResizeMode.CanResizeWithGrip;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
         var root = new DockPanel();
-        var header = UtilityWindowChrome.Header(this, L.T("QR code"), Close, L.T("Close QR code"), 15);
+        var header = UtilityWindowChrome.Header(this, L.T("QR code"), Close, L.T("Close QR code"), 15, allowMinimize: true);
         header.Margin = new Thickness(26, 18, 22, 4); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
 
         var columns = new Grid { Margin = new Thickness(28, 12, 28, 28) };
