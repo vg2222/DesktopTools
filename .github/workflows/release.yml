@@ -52,11 +52,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            App release/DesktopTools-${{ steps.version.outputs.value }}-win-x64-setup.exe
-            App release/DesktopTools-${{ steps.version.outputs.value }}-win-x64-portable.zip
-            App release/RELEASE-NOTES.md
-            App release/SHA256SUMS.txt
-            App release/release.json
+            App releases/${{ steps.version.outputs.value }}-preview/DesktopTools-${{ steps.version.outputs.value }}-win-x64-setup.exe
+            App releases/${{ steps.version.outputs.value }}-preview/DesktopTools-${{ steps.version.outputs.value }}-win-x64-portable.zip
+            App releases/${{ steps.version.outputs.value }}-preview/RELEASE-NOTES.md
+            App releases/${{ steps.version.outputs.value }}-preview/SHA256SUMS.txt
+            App releases/${{ steps.version.outputs.value }}-preview/release.json
       - name: Publish tagged GitHub release
         if: github.ref_type == 'tag'
         shell: pwsh
@@ -68,10 +68,10 @@ jobs:
             throw "Tag $env:GITHUB_REF_NAME does not match project version $env:VERSION."
           }
           gh release create $env:GITHUB_REF_NAME `
-            "App release/DesktopTools-$env:VERSION-win-x64-setup.exe" `
-            "App release/DesktopTools-$env:VERSION-win-x64-portable.zip" `
-            "App release/SHA256SUMS.txt" `
-            "App release/release.json" `
+            "App releases/$env:VERSION-preview/DesktopTools-$env:VERSION-win-x64-setup.exe" `
+            "App releases/$env:VERSION-preview/DesktopTools-$env:VERSION-win-x64-portable.zip" `
+            "App releases/$env:VERSION-preview/SHA256SUMS.txt" `
+            "App releases/$env:VERSION-preview/release.json" `
             --title "DesktopTools $env:VERSION" `
             --notes-file "docs/releases/$env:VERSION.md" `
             --verify-tag --latest
