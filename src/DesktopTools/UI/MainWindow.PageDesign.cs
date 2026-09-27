@@ -34,7 +34,9 @@ internal sealed partial class MainWindow
         panel.ColumnDefinitions.Add(new ColumnDefinition()); panel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(112) });
         var copy = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 18, 0) };
         copy.Children.Add(Ui.Text(L.T(title), 28, true)); var detail = Ui.Text(L.T(description), 13, muted: true); detail.Margin = new Thickness(0, 9, 0, 0); copy.Children.Add(detail); panel.Children.Add(copy);
-        var art = DashboardGroups.Contains(title) ? DashboardArt(NavigationIcon(title), 60) : ToolArtwork(title, icon); Grid.SetColumn(art, 1); panel.Children.Add(art); page.Children.Add(panel);
+        var art = title == "News" ? NewsCheckAction() :
+            DashboardGroups.Contains(title) ? DashboardArt(NavigationIcon(title), 60) : ToolArtwork(title, icon);
+        Grid.SetColumn(art, 1); panel.Children.Add(art); page.Children.Add(panel);
     }
     private static FrameworkElement ToolArtwork(string id, string icon, double size = 56, bool plain = false)
     {

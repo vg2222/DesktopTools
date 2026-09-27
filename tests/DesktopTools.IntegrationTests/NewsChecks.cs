@@ -93,8 +93,14 @@ internal static class NewsChecks
             double ItemY(FrameworkElement element) => element.TransformToAncestor(main).Transform(new Point()).Y;
             Check(Math.Abs(ItemX(detailsAction) - ItemX(itemTitle)) <= 1,
                 "News details action is indented past the announcement text.");
-            Check(ItemY(itemTitle) - ItemY(pageSubtitle) < 135,
-                "News repeats a large heading and routine status above its first announcement.");
+            Check(ItemY(itemTitle) - ItemY(pageSubtitle) < 100,
+                "The separate Check news row pushes announcements too far below the page description.");
+            var pageTitle = Walk(main).OfType<TextBlock>().Single(t => t.Text == "News" && t.FontSize >= 27);
+            var checkAction = Walk(main).OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Check news");
+            double pageTitleCenter = ItemY(pageTitle) + pageTitle.ActualHeight / 2;
+            double checkActionCenter = ItemY(checkAction) + checkAction.ActualHeight / 2;
+            Check(Math.Abs(pageTitleCenter - checkActionCenter) < 35,
+                "Check news should live beside the page title instead of in a separate row.");
             var autoCheckTitle = Walk(main).OfType<TextBlock>().Single(t => t.Text == "Check news automatically");
             var autoCheckSwitch = Walk(main).OfType<CheckBox>().Single(c => AutomationProperties.GetName(c) == "Check news automatically");
             double titleCenter = ItemY(autoCheckTitle) + autoCheckTitle.ActualHeight / 2;

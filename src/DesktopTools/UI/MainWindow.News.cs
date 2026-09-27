@@ -44,13 +44,6 @@ internal sealed partial class MainWindow
         newsContent = null;
         controller.MarkNewsRead();
         RefreshNewsUi();
-        var checkRow = new Grid { Margin = new Thickness(0, 0, 0, 8) };
-        newsCheckButton = Ui.Button(L.T("Check news"), async () => await controller.CheckNewsAsync());
-        newsCheckButton.Content = Ui.IconLabel("Refresh", L.T("Check news"));
-        newsCheckButton.HorizontalAlignment = HorizontalAlignment.Right;
-        newsCheckButton.Margin = new Thickness(0);
-        checkRow.Children.Add(newsCheckButton); page.Children.Add(checkRow);
-
         newsStatusText = Ui.Text("", 12, muted: true);
         newsStatusText.Margin = new Thickness(0, 0, 0, 10);
         newsStatusText.Visibility = Visibility.Collapsed;
@@ -73,6 +66,21 @@ internal sealed partial class MainWindow
         preferenceCard.Margin = new Thickness(0, 4, 0, 0);
         page.Children.Add(preferenceCard);
         RenderNewsContent();
+    }
+    private FrameworkElement NewsCheckAction()
+    {
+        newsCheckButton = Ui.Button(L.T("Check news"), async () => await controller.CheckNewsAsync());
+        newsCheckButton.Content = Ui.Icon("Refresh", 25);
+        newsCheckButton.Width = newsCheckButton.Height = newsCheckButton.MinHeight = 56;
+        newsCheckButton.Padding = new Thickness(14);
+        newsCheckButton.Margin = new Thickness(0);
+        newsCheckButton.HorizontalAlignment = HorizontalAlignment.Center;
+        newsCheckButton.VerticalAlignment = VerticalAlignment.Center;
+        newsCheckButton.SetResourceReference(Control.BackgroundProperty, "Selected");
+        newsCheckButton.SetResourceReference(Control.BorderBrushProperty, "GlassRim");
+        newsCheckButton.BorderThickness = new Thickness(1);
+        Ui.Tip(newsCheckButton, L.T("Check news"));
+        return newsCheckButton;
     }
     private void RenderNewsContent()
     {
