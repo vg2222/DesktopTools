@@ -1,7 +1,7 @@
 const translations = {
   en: {
-    pageTitle: "DesktopTools | Tools for your Windows desktop",
-    description: "DesktopTools brings screenshots, screen recording, presentation tools and everyday utilities together on Windows 11. Free, open source and local-first.",
+    pageTitle: "DesktopTools - Screenshot & Recording for Windows 11",
+    description: "Free, open-source Windows 11 app for screenshots, screen recording, annotation, OCR and more. Work locally with no account or telemetry.",
     skip: "Skip to content", brandHome: "DesktopTools home", mainNav: "Main navigation", languageLabel: "Language",
     navFeatures: "Features", navPrivacy: "Privacy", navDownload: "Download",
     heroCapture: "Capture.", heroRecord: "Record.", heroPresent: "Present.",
