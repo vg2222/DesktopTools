@@ -1,0 +1,138 @@
+/* A viewport-wide atmosphere stays continuous as the page scrolls. */
+main, .site-footer { position: relative; z-index: 1; }
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgb(149 147 224 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(149 147 224 / 6%) 1px, transparent 1px),
+    linear-gradient(rgb(132 132 215 / 2.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(132 132 215 / 2.5%) 1px, transparent 1px),
+    radial-gradient(circle 520px at 50% 20%, rgb(37 36 102 / 14%), transparent 100%);
+  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px, 100% 100%;
+  background-position: center top;
+  background-repeat: repeat, repeat, repeat, repeat, no-repeat;
+}
+
+body::after {
+  background: radial-gradient(
+    circle 330px at var(--pointer-x, 50%) var(--pointer-y, 40%),
+    rgb(102 96 218 / 26%) 0%,
+    rgb(66 62 156 / 12%) 48%,
+    transparent 100%
+  );
+}
+
+.hero-emblem::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -15px;
+  border: 1px solid rgb(166 162 247 / 14%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 18px rgb(110 103 224 / 5%), 0 0 24px rgb(91 87 194 / 7%);
+  pointer-events: none;
+}
+
+/* The current location stays readable without changing the navigation layout. */
+.primary-nav a { position: relative; }
+.primary-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-light);
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+}
+.primary-nav a[aria-current="location"] { color: var(--text); }
+.primary-nav a[aria-current="location"]::after { transform: scaleX(1); opacity: .8; }
+
+.button-primary { position: relative; isolation: isolate; overflow: hidden; }
+.button-primary > span { position: relative; z-index: 1; }
+.button-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 15%, rgb(212 211 255 / 14%) 48%, transparent 82%);
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+.feature-icon, .workflow-icon { transition: transform .25s ease, color .25s ease; }
+.playground { transition: border-color .25s ease, box-shadow .25s ease; }
+.playground:focus-within { border-color: #777ab6; box-shadow: 0 0 0 3px rgb(110 109 190 / 10%), 0 20px 70px rgb(0 0 0 / 20%); }
+
+@media (hover: hover) and (pointer: fine) {
+  .feature-row:hover .feature-icon, .workflow-grid article:hover .workflow-icon { color: #cacbff; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button-primary:hover::after, .button-primary:focus-visible::after {
+    transform: translateX(110%);
+    transition: transform .65s cubic-bezier(.2, .7, .2, 1);
+  }
+  .feature-row:hover .feature-icon, .workflow-grid article:hover .workflow-icon { transform: translateY(-2px) scale(1.06); }
+
+  /* Reveal grouped details in reading order; outer rows retain hover feedback. */
+  .feature-list.reveal-ready, .workflow-grid.reveal-ready { opacity: 1; transform: none; }
+  .feature-list.reveal-ready .feature-row > *, .workflow-grid.reveal-ready article > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .55s var(--detail-delay, 0s) ease, transform .55s var(--detail-delay, 0s) cubic-bezier(.2, .7, .2, 1);
+  }
+  .feature-list.is-visible .feature-row > *, .workflow-grid.is-visible article > * { opacity: 1; transform: none; }
+  .feature-row:nth-child(2), .workflow-grid article:nth-child(2) { --detail-delay: .07s; }
+  .feature-row:nth-child(3), .workflow-grid article:nth-child(3) { --detail-delay: .14s; }
+  .feature-row:nth-child(4) { --detail-delay: .21s; }
+
+  body::after {
+    animation: ambient-light-settle 1.35s ease-out both;
+  }
+
+  body::before {
+    animation: ambient-grid-settle 1.15s cubic-bezier(.2, .7, .2, 1) both;
+  }
+
+  .hero-emblem::after {
+    animation: ambient-ring-settle .9s .1s cubic-bezier(.2, .7, .2, 1) both;
+  }
+
+  @keyframes ambient-light-settle {
+    from { opacity: .4; }
+    to { opacity: 1; }
+  }
+
+  @keyframes ambient-grid-settle {
+    from { opacity: 0; transform: scale(1.035); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes ambient-ring-settle {
+    from { opacity: 0; transform: scale(.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+}
+
+@media (max-width: 580px) {
+  body::before {
+    background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px, 100% 100%;
+  }
+
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body::after { animation: none; opacity: .55; }
+  body::before { animation: none; opacity: .55; }
+}
