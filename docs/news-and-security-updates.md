@@ -6,7 +6,20 @@ Ordinary announcements appear once as a DesktopTools notification and stay on th
 
 ## Publish an announcement
 
-Edit `news/announcements.json` on the protected main branch. Give each new item a unique lowercase ID, a UTC publication time, `kind: "news"`, localized `title` and `message` objects, and an optional repository link. English text is required; the other four languages fall back to English if absent. An optional `expiresUtc` hides an ordinary announcement after that time. Review the JSON and its wording before merging because clients will read it without a new app release.
+Create a branch, edit `news/announcements.json`, and open a pull request into the protected `main` branch. Add an item to the `items` array with a unique lowercase ID, the actual UTC publication time, `kind: "news"`, a short title and message, and an optional repository link. Provide all five supported languages; English is required and is the fallback if another translation is missing. For example:
+
+```json
+{
+  "id": "new-guide-2026-10-01",
+  "kind": "news",
+  "publishedUtc": "2026-10-01T12:00:00Z",
+  "title": { "en": "New guide", "ru": "Новое руководство", "de": "Neue Anleitung", "fr": "Nouveau guide", "es": "Nueva guía" },
+  "message": { "en": "Read the new DesktopTools guide.", "ru": "Прочитайте новое руководство DesktopTools.", "de": "Lesen Sie die neue DesktopTools-Anleitung.", "fr": "Découvrez le nouveau guide DesktopTools.", "es": "Lee la nueva guía de DesktopTools." },
+  "url": "https://github.com/vg2222/DesktopTools"
+}
+```
+
+Replace the example text, link, ID, and time. An optional `expiresUtc` hides an ordinary announcement after that time. Once the pull request is reviewed and merged, installed versions with News support fetch the new feed at startup and then about hourly when automatic checks are enabled; users can also select **Check news**. Publishing ordinary news does not require another app release. Review the JSON and its wording before merging because clients will read it directly from `main`.
 
 ## Mark a security update as urgent
 

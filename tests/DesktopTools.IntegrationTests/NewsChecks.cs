@@ -86,7 +86,28 @@ internal static class NewsChecks
             main.Navigate("Home"); Render(main, Path.Combine(original, "news-home-dark.png"));
             main.Navigate("News"); main.UpdateLayout();
             Check(!controller.HasUnreadNews && Walk(main).OfType<TextBlock>().Any(t => t.Text == "A new feature"), "News page or read state missing");
+            var itemTitle = Walk(main).OfType<TextBlock>().Single(t => t.Text == "A new feature");
+            var detailsAction = Walk(main).OfType<Button>().Single(b => AutomationProperties.GetName(b) == "View details");
+            var pageSubtitle = Walk(main).OfType<TextBlock>().Single(t => t.Text == "Announcements and important update notices.");
+            double ItemX(FrameworkElement element) => element.TransformToAncestor(main).Transform(new Point()).X;
+            double ItemY(FrameworkElement element) => element.TransformToAncestor(main).Transform(new Point()).Y;
+            Check(Math.Abs(ItemX(detailsAction) - ItemX(itemTitle)) <= 1,
+                "News details action is indented past the announcement text.");
+            Check(ItemY(itemTitle) - ItemY(pageSubtitle) < 135,
+                "News repeats a large heading and routine status above its first announcement.");
+            var autoCheckTitle = Walk(main).OfType<TextBlock>().Single(t => t.Text == "Check news automatically");
+            var autoCheckSwitch = Walk(main).OfType<CheckBox>().Single(c => AutomationProperties.GetName(c) == "Check news automatically");
+            double titleCenter = ItemY(autoCheckTitle) + autoCheckTitle.ActualHeight / 2;
+            double switchCenter = ItemY(autoCheckSwitch) + autoCheckSwitch.ActualHeight / 2;
+            Check(Math.Abs(titleCenter - switchCenter) <= 3,
+                "Automatic news switch does not align with its title.");
+            Check(!Walk(main).OfType<TextBlock>().Any(t => t.Text.StartsWith("News is up to date.") && t.Visibility == Visibility.Visible),
+                "Routine news status adds unnecessary page copy.");
             Render(main, Path.Combine(original, "news-page-dark.png"));
+            controller.NewsClient.Dispose(); controller.NewsClient = new AnnouncementClient(new HttpClient(new FixtureHandler("", HttpStatusCode.NotFound)));
+            await controller.CheckNewsAsync(false); main.UpdateLayout();
+            Check(!Walk(main).OfType<TextBlock>().Any(t => t.Text.StartsWith("Showing bundled news.") && t.Visibility == Visibility.Visible),
+                "Bundled-news fallback status should not crowd the page.");
             var saved = new SettingsStore(Path.Combine(isolated, "artifacts", "smoke-settings")).Load();
             Check(saved.ReadNewsIds.Contains("normal-1") && saved.NotifiedNewsIds.Contains("normal-1"), "News read/notified state not persisted");
             foreach (var notice in Application.Current.Windows.OfType<NotificationWindow>().ToArray()) notice.Close();
@@ -118,9 +139,9 @@ internal static class NewsChecks
         }
         finally { Environment.CurrentDirectory = original; }
     }
-    private sealed class FixtureHandler(string json) : HttpMessageHandler
+    private sealed class FixtureHandler(string json, HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
+            Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(json) });
     }
 }

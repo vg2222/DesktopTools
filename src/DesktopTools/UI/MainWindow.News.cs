@@ -44,25 +44,47 @@ internal sealed partial class MainWindow
         newsContent = null;
         controller.MarkNewsRead();
         RefreshNewsUi();
-        var heading = new DockPanel { Margin = new Thickness(0, 0, 0, 16) };
+        var checkRow = new Grid { Margin = new Thickness(0, 0, 0, 8) };
         newsCheckButton = Ui.Button(L.T("Check news"), async () => await controller.CheckNewsAsync());
         newsCheckButton.Content = Ui.IconLabel("Refresh", L.T("Check news"));
-        DockPanel.SetDock(newsCheckButton, Dock.Right); heading.Children.Add(newsCheckButton);
-        heading.Children.Add(Ui.Text(L.T("Latest announcements"), 20, true)); page.Children.Add(heading);
+        newsCheckButton.HorizontalAlignment = HorizontalAlignment.Right;
+        newsCheckButton.Margin = new Thickness(0);
+        checkRow.Children.Add(newsCheckButton); page.Children.Add(checkRow);
 
-        newsStatusText = Ui.Text("", 12, muted: true); newsStatusText.Margin = new Thickness(0, 0, 0, 16); page.Children.Add(newsStatusText);
+        newsStatusText = Ui.Text("", 12, muted: true);
+        newsStatusText.Margin = new Thickness(0, 0, 0, 10);
+        newsStatusText.Visibility = Visibility.Collapsed;
+        page.Children.Add(newsStatusText);
         newsContent = new StackPanel(); page.Children.Add(newsContent);
-        var preference = Ui.Row(L.T("Check news automatically"), L.T("Checks once an hour while DesktopTools is running."),
-            Ui.Toggle(controller.Settings.AutomaticNewsChecks, enabled => Change(settings => settings.AutomaticNewsChecks = enabled)));
-        preference.Margin = new Thickness(0, 20, 0, 0); page.Children.Add(Ui.Card(preference));
+        var preference = new Grid();
+        preference.ColumnDefinitions.Add(new ColumnDefinition());
+        preference.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        preference.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        preference.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        preference.Children.Add(Ui.Text(L.T("Check news automatically"), 14, true));
+        var toggle = Ui.Toggle(controller.Settings.AutomaticNewsChecks, enabled => Change(settings => settings.AutomaticNewsChecks = enabled));
+        toggle.VerticalAlignment = VerticalAlignment.Center;
+        Grid.SetColumn(toggle, 1); preference.Children.Add(toggle);
+        System.Windows.Automation.AutomationProperties.SetName(toggle, L.T("Check news automatically"));
+        var description = Ui.Text(L.T("Checks once an hour while DesktopTools is running."), 12, muted: true);
+        description.Margin = new Thickness(0, 4, 0, 0);
+        Grid.SetRow(description, 1); Grid.SetColumnSpan(description, 2); preference.Children.Add(description);
+        var preferenceCard = Ui.Card(preference, 18);
+        preferenceCard.Margin = new Thickness(0, 4, 0, 0);
+        page.Children.Add(preferenceCard);
         RenderNewsContent();
     }
     private void RenderNewsContent()
     {
         if (newsContent == null || currentPage != "News") return;
         newsContent.Children.Clear();
-        if (newsStatusText != null) newsStatusText.Text = L.T(controller.NewsStatus) +
-            (controller.LastNewsCheck is { } checkedAt ? " · " + checkedAt.ToString("g", L.Culture) : "");
+        if (newsStatusText != null)
+        {
+            bool failedManualCheck = controller.NewsStatus == L.T("Could not check news. Showing saved announcements.");
+            newsStatusText.Text = controller.CheckingNews ? L.T("Checking news…") :
+                failedManualCheck ? controller.NewsStatus : "";
+            newsStatusText.Visibility = newsStatusText.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
         if (newsCheckButton != null) newsCheckButton.IsEnabled = !controller.CheckingNews;
         var security = controller.ActiveSecurityAlert;
         if (security != null) newsContent.Children.Add(NewsCard(security, urgent: true));
@@ -95,7 +117,7 @@ internal sealed partial class MainWindow
         if (item.Url != null)
         {
             var details = Ui.Button(L.T("View details"), () => controller.OpenNewsLink(item));
-            details.Margin = new Thickness(7, 0, 0, 0); actions.Children.Add(details);
+            actions.Children.Add(details);
         }
         if (actions.Children.Count > 0) body.Children.Add(actions);
         var card = Ui.Card(body, 18); card.Margin = new Thickness(0, 0, 0, 12);
