@@ -29,6 +29,7 @@ internal sealed partial class InstallerWindow
             Width = 880; Height = 700;
             MaxHeight = Math.Max(360, SystemParameters.WorkArea.Height - 16);
             MaxWidth = Math.Max(600, SystemParameters.WorkArea.Width - 16);
+            MinWidth = Math.Min(740, MaxWidth); MinHeight = Math.Min(480, MaxHeight);
             WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
             AllowsTransparency = true; Background = Brushes.Transparent;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -39,7 +40,8 @@ internal sealed partial class InstallerWindow
         var surface = new Border { CornerRadius = new CornerRadius(18), BorderThickness = new Thickness(1), BorderBrush = Brush("#7593A7C5"), Background = SystemParameters.HighContrast ? Brushes.Black : BackgroundBrush };
         surface.SizeChanged += (_, _) => surface.Clip = new RectangleGeometry(new Rect(0, 0, surface.ActualWidth, surface.ActualHeight), 18, 18);
         Content = surface;
-        var columns = new Grid(); surface.Child = columns;
+        var shell = new Grid(); surface.Child = shell;
+        var columns = new Grid(); shell.Children.Add(columns);
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(224) });
         columns.ColumnDefinitions.Add(new ColumnDefinition());
 
@@ -56,31 +58,25 @@ internal sealed partial class InstallerWindow
         brandLine.Children.Add(logo);
         brandLine.Children.Add(Text("DesktopTools", 17, FontWeights.SemiBold, TextBrush, new Thickness(11, 0, 0, 0)));
         identity.Children.Add(brandLine);
-        identity.Children.Add(Text("SETUP", 10, FontWeights.SemiBold, Brush("#90ADD9"), new Thickness(5, 32, 0, 11)));
-        identity.Children.Add(RailPage(uninstall ? "delete" : setupMode switch
-        {
-            Program.SetupMode.Update => "arrow_clockwise",
-            Program.SetupMode.Maintenance => "desktop_toolbox",
-            Program.SetupMode.OlderSetup => "info",
-            _ => "desktop"
-        }, uninstall ? "Uninstall" : setupMode switch
+        string stageTitle = uninstall ? "Uninstall" : setupMode switch
         {
             Program.SetupMode.Update => "Update DesktopTools",
             Program.SetupMode.Maintenance => "Manage DesktopTools",
             Program.SetupMode.OlderSetup => "Manage DesktopTools",
             _ => "Install DesktopTools"
-        }));
+        };
+        var stage = new StackPanel { Margin = new Thickness(4, 33, 0, 0) };
+        stage.Children.Add(new Border { Width = 28, Height = 3, CornerRadius = new CornerRadius(2), Background = AccentBrush,
+            HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 13) });
+        stage.Children.Add(Text(stageTitle, 20, FontWeights.SemiBold, TextBrush));
+        identity.Children.Add(new Border { Child = stage, Tag = "installer-stage-summary" });
         brand.Children.Add(identity);
-        var features = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(5, 0, 0, 12) };
-        features.Children.Add(Text("DESKTOPTOOLS", 10, FontWeights.SemiBold, Brush("#90ADD9"), new Thickness(0, 0, 0, 16)));
-        features.Children.Add(RailFeature("screenshot", "Capture", "Screenshots & recording"));
-        features.Children.Add(RailFeature("pen", "Create", "Images, text & annotations"));
-        features.Children.Add(RailFeature("presenter", "Present", "Tools for your audience"));
-        Grid.SetRow(features, 1); brand.Children.Add(features);
+        var railActions = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 20) };
+        Grid.SetRow(railActions, 1); brand.Children.Add(railActions);
         var version = new StackPanel();
         version.Children.Add(new Border { Height = 1, Background = Brush("#4F8190A5"), Margin = new Thickness(0, 0, 0, 15) });
-        version.Children.Add(Text("Windows 11 · x64", 11, FontWeights.Medium, MutedBrush));
-        version.Children.Add(Text(L.T("Setup ") + displayedSetupVersion, 11, FontWeights.Normal, MutedBrush, new Thickness(0, 5, 0, 0)));
+        version.Children.Add(Text(L.T("Setup ") + displayedSetupVersion, 11, FontWeights.SemiBold, TextBrush));
+        version.Children.Add(Text("Windows 11 · x64", 11, FontWeights.Normal, MutedBrush, new Thickness(0, 6, 0, 0)));
         Grid.SetRow(version, 2); brand.Children.Add(version);
 
         var main = new Grid { Margin = new Thickness(30, 18, 28, 22) };
@@ -213,13 +209,12 @@ internal sealed partial class InstallerWindow
         if (setupMode == Program.SetupMode.Update && !uninstall)
         {
             launch.Margin = new Thickness(0, 14, 0, 0); content.Children.Add(launch);
-            moreOptions = CreateMoreOptionsButton(); moreOptions.Background = Brushes.Transparent;
-            moreOptions.HorizontalAlignment = HorizontalAlignment.Left; footer.Children.Add(moreOptions);
+            moreOptions = CreateMoreOptionsButton(); railActions.Children.Add(moreOptions);
         }
         else if (setupMode == Program.SetupMode.OlderSetup && !uninstall)
         {
             moreOptions = CreateAdvancedOptionsLink();
-            footer.Children.Add(moreOptions);
+            railActions.Children.Add(moreOptions);
         }
         else footer.Children.Add(launch);
         cancel = Button(!uninstall && setupMode is Program.SetupMode.Maintenance or Program.SetupMode.OlderSetup ? "Close" : "Cancel", false, Close, 82);
@@ -227,6 +222,7 @@ internal sealed partial class InstallerWindow
         primary = Button(uninstall ? "Uninstall" : setupMode == Program.SetupMode.Update ? "Update DesktopTools" : "Install DesktopTools", true, async () => await ExecuteAsync(forceLocal: true), 164);
         primary.Visibility = !uninstall && setupMode is Program.SetupMode.Maintenance or Program.SetupMode.OlderSetup ? Visibility.Collapsed : Visibility.Visible;
         Grid.SetColumn(primary, 2); footer.Children.Add(primary); Grid.SetRow(footer, 2); main.Children.Add(footer);
+        var resizeGrip = CreateResizeGrip(); shell.Children.Add(resizeGrip);
         if (IsLoaded) Dispatcher.BeginInvoke(new Action(AnimateLayout), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
@@ -401,27 +397,43 @@ internal sealed partial class InstallerWindow
         if (ready && finished) statusHint.Text = L.T("DesktopTools is ready to use. Restart the app if it was already open.");
     }
 
-    private static FrameworkElement RailFeature(string icon, string title, string detail)
+    private Thumb CreateResizeGrip()
     {
-        var panel = new StackPanel { Margin = new Thickness(0, 0, 0, 21) };
-        var row = new StackPanel { Orientation = Orientation.Horizontal };
-        row.Children.Add(FluentIcon(icon, Brush("#A5BDE2"), 17));
-        row.Children.Add(Text(title, 12, FontWeights.SemiBold, TextBrush, new Thickness(10, 0, 0, 0)));
-        panel.Children.Add(row); panel.Children.Add(Text(detail, 11, FontWeights.Normal, MutedBrush, new Thickness(27, 5, 0, 0)));
-        return panel;
+        var grip = new Thumb
+        {
+            Tag = "installer-resize", Width = 20, Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(0, 0, 3, 3), Cursor = Cursors.SizeNWSE,
+            Focusable = true, ToolTip = L.T("Resize")
+        };
+        AutomationProperties.SetName(grip, L.T("Resize"));
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+        var lines = new FrameworkElementFactory(typeof(System.Windows.Shapes.Path));
+        lines.SetValue(System.Windows.Shapes.Path.DataProperty, Geometry.Parse("M 4,15 L 15,4 M 10,15 L 15,10"));
+        lines.SetValue(System.Windows.Shapes.Path.StrokeProperty, MutedBrush);
+        lines.SetValue(System.Windows.Shapes.Path.StrokeThicknessProperty, 1.4);
+        border.AppendChild(lines);
+        grip.Template = new ControlTemplate(typeof(Thumb)) { VisualTree = border };
+        grip.DragDelta += (_, e) => ResizeBy(e.HorizontalChange, e.VerticalChange);
+        grip.KeyDown += (_, e) =>
+        {
+            (double dx, double dy) = e.Key switch
+            {
+                Key.Right => (24, 0), Key.Left => (-24, 0),
+                Key.Down => (0, 24), Key.Up => (0, -24), _ => (0, 0)
+            };
+            if (dx == 0 && dy == 0) return;
+            ResizeBy(dx, dy); e.Handled = true;
+        };
+        Panel.SetZIndex(grip, 2);
+        return grip;
     }
 
-    private static FrameworkElement RailPage(string icon, string title)
+    private void ResizeBy(double dx, double dy)
     {
-        var row = new StackPanel { Orientation = Orientation.Horizontal };
-        row.Children.Add(FluentIcon(icon, Brush("#D6E6FF"), 18));
-        row.Children.Add(Text(title, 12, FontWeights.SemiBold, TextBrush, new Thickness(11, 0, 0, 0)));
-        return new Border
-        {
-            Child = row, Background = Brush("#B62C4777"), BorderBrush = Brush("#9975A2EF"),
-            BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
-            Padding = new Thickness(12, 12, 10, 12)
-        };
+        Width = Math.Clamp(Width + dx, MinWidth, MaxWidth);
+        Height = Math.Clamp(Height + dy, MinHeight, MaxHeight);
     }
 
     private static Button ActionRow(string icon, string title, string description, Action action, out TextBlock descriptionBlock)
