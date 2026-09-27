@@ -34,15 +34,15 @@ h1, h2, h3 { font-family: "Segoe UI Variable Display", "Segoe UI", Arial, sans-s
 .scroll-progress { position: absolute; left: 0; bottom: -1px; width: 100%; height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left center; pointer-events: none; }
 .header-inner { display: flex; align-items: center; min-height: 72px; gap: 32px; }
 .brand { display: inline-flex; align-items: center; gap: 11px; flex: none; font-size: 1.08rem; font-weight: 750; letter-spacing: -.045em; white-space: nowrap; }
-.brand img { flex: none; width: 38px; height: 38px; object-fit: contain; transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.brand img { flex: none; width: 30px; height: 30px; object-fit: contain; transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 .brand:hover img { transform: translateY(-2px) rotate(-4deg); }
 .primary-nav { display: flex; align-items: center; gap: clamp(18px, 2.8vw, 38px); margin-left: auto; }
 .primary-nav a, .header-github { color: #aaaac0; font-size: .91rem; font-weight: 600; white-space: nowrap; transition: color .2s ease; }
 .primary-nav a:hover, .header-github:hover { color: #fff; }
 .header-end { display: flex; align-items: center; gap: 13px; }
-.header-end select { min-width: 65px; padding: 8px 12px; appearance: auto; border: 1px solid #343757; border-radius: 999px; background: #0b0d1b; color: var(--text); cursor: pointer; font-size: .84rem; font-weight: 650; }
+.header-end select { min-width: 108px; padding: 8px 12px; appearance: auto; border: 1px solid #343757; border-radius: 999px; background: #0b0d1b; color: var(--text); cursor: pointer; font-size: .84rem; font-weight: 650; }
 .header-github { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 38px; padding: 7px 15px; border: 1px solid #656bb4; border-radius: 15px; background: var(--accent); color: #fff; box-shadow: inset 0 1px 0 rgb(210 211 255 / 16%), 0 8px 20px rgb(22 22 70 / 20%); transition: transform .22s ease, background .22s ease, border-color .22s ease, box-shadow .22s ease; }
-.header-github svg { display: block; flex: none; width: 18px; height: 18px; fill: currentColor; }
+.header-github svg { display: block; flex: none; width: 20px; height: 20px; fill: currentColor; }
 .header-github:hover { transform: translateY(-2px); border-color: #8b90d9; background: #454ca4; color: #fff; box-shadow: inset 0 1px 0 rgb(224 225 255 / 21%), 0 12px 25px rgb(28 29 92 / 27%); }
 .header-github:active { transform: translateY(0); }
 
