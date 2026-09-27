@@ -23,6 +23,7 @@ internal sealed class NotesWindow : Window
     private readonly Border sheet;
     private readonly StackPanel empty;
     private readonly MenuItem delete;
+    private readonly MenuItem detach;
     private FloatingNote? selected;
 
     internal NotesWindow(IReadOnlyList<FloatingNote> notes, Action create, Action<FloatingNote> remove,
@@ -32,10 +33,10 @@ internal sealed class NotesWindow : Window
         Title = L.T("Floating notes"); Tag = "Floating notes";
         Width = 920; Height = 620; MinWidth = 700; MinHeight = 430;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
-        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = false;
+        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = true;
         WindowStartupLocation = WindowStartupLocation.CenterScreen; Topmost = topmost;
         var layout = new DockPanel();
-        var header = UtilityWindowChrome.Header(this, L.T("Notes"), Close, L.T("Close"), 20);
+        var header = UtilityWindowChrome.Header(this, L.T("Notes"), Close, L.T("Close"), 20, allowMinimize: true);
         DockPanel.SetDock(header, Dock.Top); layout.Children.Add(header);
         var subtitle = Ui.Text(L.T("Your notes, saved automatically on this device."), 12, muted: true);
         subtitle.Margin = new Thickness(0, 0, 0, 18); DockPanel.SetDock(subtitle, Dock.Top); layout.Children.Add(subtitle);
@@ -67,7 +68,9 @@ internal sealed class NotesWindow : Window
         var pin = new MenuItem { Header = L.T("Always on top"), IsCheckable = true, IsChecked = Topmost };
         pin.Click += (_, _) => Topmost = pin.IsChecked;
         delete = new MenuItem { Header = L.T("Delete note") }; delete.Click += (_, _) => { if (selected != null) remove(selected); };
-        menu.Items.Add(pin); menu.Items.Add(new Separator()); menu.Items.Add(delete);
+        detach = new MenuItem { Header = L.T("Detach from window") };
+        detach.Click += (_, _) => { if (selected != null) { selected.AttachedProcess = null; selected.AttachedWindow = null; Refresh(); } };
+        menu.Items.Add(pin); menu.Items.Add(new Separator()); menu.Items.Add(detach); menu.Items.Add(delete);
         options.ContextMenu = menu; options.Click += (_, _) => { menu.PlacementTarget = options; menu.Placement = PlacementMode.Bottom; menu.IsOpen = true; };
         DockPanel.SetDock(toolbar, Dock.Top); content.Children.Add(toolbar);
         var footer = new DockPanel { Margin = new Thickness(10, 16, 0, 0) };
@@ -106,6 +109,7 @@ internal sealed class NotesWindow : Window
     {
         if (selected == null || !notes.Contains(selected)) selected = notes.FirstOrDefault();
         editor.SetNote(selected); delete.IsEnabled = floating.IsEnabled = selected != null;
+        detach.IsEnabled = selected?.AttachedWindow != null;
         sheet.Visibility = selected != null ? Visibility.Visible : Visibility.Collapsed;
         empty.Visibility = selected == null ? Visibility.Visible : Visibility.Collapsed;
         RefreshList();
@@ -128,7 +132,8 @@ internal sealed class NotesWindow : Window
             }
             item.Title.Text = string.IsNullOrWhiteSpace(note.Title) ? L.T("Untitled note") : note.Title;
             string previewText = note.Body.Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ');
-            item.Preview.Text = string.IsNullOrWhiteSpace(previewText) ? L.T("Empty note") : previewText[..Math.Min(100, previewText.Length)];
+            string body = string.IsNullOrWhiteSpace(previewText) ? L.T("Empty note") : previewText[..Math.Min(75, previewText.Length)];
+            item.Preview.Text = note.AttachedWindow == null ? body : L.T("Attached to") + " " + note.AttachedWindow + " · " + body;
             item.Row.SetResourceReference(BackgroundProperty, note == selected ? "Selected" : "GlassSurface");
             AutomationProperties.SetName(item.Row, item.Title.Text);
             bool matches = note.Title.Contains(query, StringComparison.CurrentCultureIgnoreCase) || note.Body.Contains(query, StringComparison.CurrentCultureIgnoreCase);

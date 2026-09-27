@@ -87,7 +87,7 @@ internal sealed partial class MainWindow
                     { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
         }
         if (updateCheckButton != null) updateCheckButton.IsEnabled = !controller.CheckingUpdate && !controller.DownloadingUpdate;
-        if (updateDownloadButton != null) { updateDownloadButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed; updateDownloadButton.IsEnabled = !controller.DownloadingUpdate; }
+        if (updateDownloadButton != null) { updateDownloadButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed; updateDownloadButton.IsEnabled = !controller.DownloadingUpdate && (controller.ActiveSecurityAlert == null || controller.SafeSecurityReleaseAvailable); }
         if (updateNotesButton != null) updateNotesButton.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
     }
 }

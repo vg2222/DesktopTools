@@ -19,10 +19,10 @@ namespace DesktopTools.Installer;
 
 internal sealed partial class InstallerWindow : Window
 {
-    private static readonly Brush BackgroundBrush = Brush("#14171C");
-    private static readonly Brush RailBrush = Brush("#1B2028");
-    private static readonly Brush CardBrush = Brush("#1D222A");
-    private static readonly Brush StrokeBrush = Brush("#343B46");
+    private static readonly Brush BackgroundBrush = Brush("#F2181D25");
+    private static readonly Brush RailBrush = new LinearGradientBrush(Color("#F3242D3B"), Color("#EF171D28"), 90);
+    private static readonly Brush CardBrush = Brush("#D82A3341");
+    private static readonly Brush StrokeBrush = Brush("#657C92AC");
     private static readonly Brush TextBrush = Brush("#F2F4F7");
     private static readonly Brush MutedBrush = Brush("#A8B0BC");
     private static readonly Brush AccentBrush = Brush("#3478F6");
@@ -62,6 +62,10 @@ internal sealed partial class InstallerWindow : Window
     private bool closed;
     private bool shellConfigured;
     private int progressValue;
+    private FrameworkElement? animatedRail;
+    private FrameworkElement? animatedCaption;
+    private FrameworkElement? animatedContent;
+    private FrameworkElement? animatedFooter;
 
     internal InstallerWindow(bool uninstall) : this(uninstall, false) { }
 
@@ -99,7 +103,7 @@ internal sealed partial class InstallerWindow : Window
         {
             DesktopTools.Presentation.WindowDismissal.Attach(this, () => SystemParameters.ClientAreaAnimation && !SystemParameters.HighContrast);
             if (primary.IsVisible) primary.Focus(); else githubUpdate?.Focus();
-            AnimateEntrance((FrameworkElement)Content);
+            AnimateLayout();
             if (!uninstall)
             {
                 if (automaticUpdate) await ExecuteAsync(forceLocal: true);
@@ -279,38 +283,53 @@ internal sealed partial class InstallerWindow : Window
 
     private Button CreateMoreOptionsButton()
     {
-        return Button("More options", false, () =>
+        return CreateRailAdvancedButton(() =>
         {
             if (!busy && !finished && !closed && advancedOptions is not null)
+            {
                 advancedOptions.Visibility = advancedOptions.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-        }, 106);
+                if (advancedOptions.Visibility == Visibility.Visible)
+                {
+                    AnimateEntrance(advancedOptions, 0, 8);
+                    Dispatcher.BeginInvoke(new Action(() => advancedOptions.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
+                }
+            }
+        });
     }
 
     private Button CreateAdvancedOptionsLink()
     {
-        var link = new Button
-        {
-            Content = new TextBlock { Text = L.T("Advanced options"), TextDecorations = TextDecorations.Underline },
-            Foreground = AccentHoverBrush, Background = Brushes.Transparent, BorderThickness = new Thickness(0),
-            Padding = new Thickness(0, 6, 8, 6), FontSize = 13, Cursor = Cursors.Hand,
-            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center
-        };
-        var surface = new FrameworkElementFactory(typeof(Border));
-        surface.SetValue(Border.BackgroundProperty, Brushes.Transparent);
-        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
-        surface.AppendChild(presenter);
-        link.Template = new ControlTemplate(typeof(Button)) { VisualTree = surface };
-        link.MouseEnter += (_, _) => link.Opacity = .76;
-        link.MouseLeave += (_, _) => link.Opacity = 1;
-        link.Click += (_, _) =>
+        return CreateRailAdvancedButton(() =>
         {
             if (!busy && !finished && !closed && downgradeOptions is not null)
             {
                 downgradeOptions.Visibility = downgradeOptions.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
                 if (downgradeOptions.Visibility == Visibility.Visible)
+                {
+                    AnimateEntrance(downgradeOptions, 0, 8);
                     Dispatcher.BeginInvoke(new Action(() => downgrade?.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
+                }
             }
-        };
+        });
+    }
+
+    private Button CreateRailAdvancedButton(Action action)
+    {
+        var link = Button("Advanced options", false, action, double.NaN);
+        link.Tag = "installer-advanced";
+        link.Height = 43;
+        link.HorizontalAlignment = HorizontalAlignment.Stretch;
+        link.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        var row = new Grid { Margin = new Thickness(12, 0, 11, 0) };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
+        row.ColumnDefinitions.Add(new ColumnDefinition());
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.Children.Add(FluentIcon("settings", Brush("#C8DCFF"), 16));
+        var label = Text("Advanced options", 12, FontWeights.SemiBold, TextBrush);
+        Grid.SetColumn(label, 1); row.Children.Add(label);
+        var arrow = FluentIcon("chevron_right", MutedBrush, 14);
+        Grid.SetColumn(arrow, 2); row.Children.Add(arrow);
+        link.Content = row;
         AutomationProperties.SetName(link, L.T("Advanced options"));
         return link;
     }
@@ -403,15 +422,26 @@ internal sealed partial class InstallerWindow : Window
         AnimateStateChange(status);
     }
 
-    private static void AnimateEntrance(FrameworkElement element)
+    private void AnimateLayout()
     {
-        if (!SystemParameters.ClientAreaAnimation) return;
-        var transform = new TranslateTransform(0, 6);
+        if (!SystemParameters.ClientAreaAnimation || SystemParameters.HighContrast) return;
+        if (animatedRail is not null) AnimateEntrance(animatedRail, 0, 8);
+        if (animatedCaption is not null) AnimateEntrance(animatedCaption, 35, 6);
+        if (animatedContent is not null) AnimateEntrance(animatedContent, 65, 12);
+        if (animatedFooter is not null) AnimateEntrance(animatedFooter, 100, 8);
+    }
+
+    private static void AnimateEntrance(FrameworkElement element, int delay, double distance)
+    {
+        if (!SystemParameters.ClientAreaAnimation || SystemParameters.HighContrast) return;
+        var transform = new TranslateTransform(0, distance);
         element.RenderTransform = transform;
         element.Opacity = 0;
-        element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180)));
-        transform.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(6, 0, TimeSpan.FromMilliseconds(220))
+        element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(210))
+        { BeginTime = TimeSpan.FromMilliseconds(delay), EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut } });
+        transform.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(distance, 0, TimeSpan.FromMilliseconds(250))
         {
+            BeginTime = TimeSpan.FromMilliseconds(delay),
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         });
     }

@@ -57,7 +57,7 @@ Choose a monitor, window or region and set the sound and quality before recordin
 
 No account. No telemetry. No cloud processing of your content. Your screenshots, notes, OCR, English–Russian translation and background removal are processed on your PC.
 
-You choose where to save images and recordings. Automatic update checks contact GitHub for release information; they do not upload your media or notes. Change the check interval or turn automatic checks off in **Settings → Updates**.
+You choose where to save images and recordings. Automatic update checks contact GitHub for release information; they do not upload your media or notes. Change the check interval or turn automatic checks off in **Settings → Updates**. The new **News** page can check this repository for announcements once an hour; its automatic checks have a separate switch. Security notices never install updates without your confirmation.
 
 Recorder controls, drawing controls, notifications, floating notes and the teleprompter start hidden from supported captures. Drawings and audience effects remain visible. Adjust individual tools in **Settings → Privacy**. Capture exclusion depends on the recording or sharing app—check the receiving view before relying on it.
 

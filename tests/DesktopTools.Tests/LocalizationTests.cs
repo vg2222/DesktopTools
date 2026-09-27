@@ -34,6 +34,8 @@ internal static class LocalizationTests
                     if (key.Contains('|')) Check(key.Split('|').Where((_, i) => i % 2 == 1).SequenceEqual(value.Split('|').Where((_, i) => i % 2 == 1)), "File filter changed: " + key);
                 }
                 Check(L.T("Settings") != "Settings", "Main navigation not translated: " + language);
+                Check(L.Catalog(language).ContainsKey("Frozen screen: windows only. Turn off Freeze screen before selecting for panels, images, and video."),
+                    "Frozen smart-region guidance is untranslated: " + language);
                 Check(L.EnglishHint(L.T("Capture failed: ") + "native detail").Contains("failed"), "Error severity lost");
                 Check(L.F($"Slot {3}").Contains('3'), "Formatting lost argument");
                 var settings = new AppSettings { Language = language, DefaultTool = "Arrow", DrawShortcut = "Ctrl+Alt+D", TeleprompterText = "Settings — Привет" };

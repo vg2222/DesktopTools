@@ -15,6 +15,38 @@ internal static class RegionFreezeChecks
 {
     private static void Check(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
 
+    internal static async Task RunSmartAsync()
+    {
+        CheckSmartSelectionGestures();
+        foreach (string language in new[] { "ru", "de", "fr", "es" })
+            Check(L.Catalog(language).ContainsKey("Smart region capture")
+                && L.Catalog(language).ContainsKey("Click highlighted area · Drag a custom region · Esc to cancel"),
+                "Smart region instructions are untranslated for " + language);
+
+        using var controller = new AppController(true);
+        controller.Settings.CaptureEnabled = true;
+        controller.Settings.FreezeRegionBeforeSelection = false;
+
+        controller.Settings.SmartRegionCaptureEnabled = true;
+        var smartTask = controller.CaptureAsync();
+        var selector = await WaitForSelection(controller);
+        Check(selector?.SmartRegionEnabled == true, "Region capture did not enable smart selection");
+        selector!.Close(); await smartTask;
+
+        controller.Settings.SmartRegionCaptureEnabled = false;
+        var manualTask = controller.CaptureAsync();
+        selector = await WaitForSelection(controller);
+        Check(selector?.SmartRegionEnabled == false, "Disabled smart selection was still active");
+        selector!.Close(); await manualTask;
+
+        controller.Settings.SmartRegionCaptureEnabled = true;
+        controller.Settings.ScreenTextEnabled = true;
+        var textTask = controller.CaptureAsync(textOnly: true);
+        selector = await WaitForSelection(controller);
+        Check(selector?.SmartRegionEnabled == false, "OCR unexpectedly enabled smart selection");
+        selector!.Close(); await textTask;
+    }
+
     internal static async Task RunAsync()
     {
         string directory = Path.Combine(Environment.CurrentDirectory, "region-freeze-" + Guid.NewGuid().ToString("N"));
@@ -30,6 +62,7 @@ internal static class RegionFreezeChecks
                 "Region freeze setting is untranslated for " + language);
 
         CheckSelectorRendersStill();
+        CheckSmartSelectionGestures();
         await CheckDashboardCaptureTransitionAsync();
 
         using var controller = new AppController(true);
@@ -40,6 +73,7 @@ internal static class RegionFreezeChecks
         var frozenTask = controller.CaptureAsync();
         SelectionWindow? selector = await WaitForSelection(controller);
         Check(selector != null, "Frozen selection did not open: " + controller.Status);
+        Check(selector!.SmartRegionEnabled, "Region capture did not enable Smart Region Capture by default");
         BitmapSource? frame = selector!.FrozenFrame;
         Check(frame is { IsFrozen: true }, "Selector has no immutable preselection frame");
         var monitor = DesktopTools.Native.MonitorService.GetVirtualDesktop();
@@ -53,9 +87,11 @@ internal static class RegionFreezeChecks
         Check(PixelsEqual(expected, controller.LastCapture!), "Final screenshot differs from the bitmap shown for selection");
 
         controller.Settings.FreezeRegionBeforeSelection = false;
+        controller.Settings.SmartRegionCaptureEnabled = false;
         var liveTask = controller.CaptureAsync();
         selector = await WaitForSelection(controller);
-        Check(selector != null && selector.FrozenFrame == null, "Live setting still uses a frozen selector");
+        Check(selector != null && selector.FrozenFrame == null && !selector.SmartRegionEnabled,
+            "Disabled Smart Region Capture or live selection changed unexpectedly");
         var completedCapture = controller.LastCapture;
         selector!.Close();
         await liveTask;
@@ -65,7 +101,8 @@ internal static class RegionFreezeChecks
         controller.Settings.ScreenTextEnabled = true;
         var textTask = controller.CaptureAsync(textOnly: true);
         selector = await WaitForSelection(controller);
-        Check(selector != null && selector.FrozenFrame == null, "OCR selection unexpectedly froze the screen");
+        Check(selector != null && selector.FrozenFrame == null && !selector.SmartRegionEnabled,
+            "OCR selection unexpectedly enabled smart selection or froze the screen");
         selector!.Close(); await textTask;
         Check(!controller.IsBusy && ReferenceEquals(completedCapture, controller.LastCapture), "Cancelled OCR selection changed the screenshot");
 
@@ -126,6 +163,63 @@ internal static class RegionFreezeChecks
             Check(pixel[2] > 100 && pixel[1] < 40 && pixel[0] < 40, "Selector did not draw the provided still behind its dimming layer");
         }
         finally { selector.Close(); }
+
+        var snapshot = new DesktopTools.Native.SmartRegionWindow((nint)123, new Rect(12, 10, 70, 50));
+        var smart = new SelectionWindow(monitor, frozenFrame: source, smartRegion: true, frozenWindows: [snapshot]);
+        try
+        {
+            Check(smart.HoverWindowAt(new Point(30, 20)) == snapshot,
+                "Frozen selection ignored its captured window geometry");
+            Check(!smart.CanRefineLiveElements,
+                "Frozen selection may overlay live panel positions on saved pixels");
+        }
+        finally { smart.Close(); }
+        var liveSmart = new SelectionWindow(monitor, smartRegion: true);
+        try { Check(liveSmart.CanRefineLiveElements, "Live smart selection cannot suggest inner panels or media"); }
+        finally { liveSmart.Close(); }
+    }
+
+    private static void CheckSmartSelectionGestures()
+    {
+        var suggestion = new Rect(18, 12, 240, 140);
+        Check(SelectionWindow.SelectionForGesture(new Point(40, 40), new Point(42, 41), suggestion) == suggestion,
+            "A short click did not select the highlighted area");
+        Check(SelectionWindow.SelectionForGesture(new Point(40, 40), new Point(120, 95), suggestion) == new Rect(40, 40, 80, 55),
+            "A manual drag did not override the highlighted area");
+        Check(SelectionWindow.SelectionForGesture(new Point(40, 40), new Point(41, 40), null) == null,
+            "An empty short click unexpectedly selected an area");
+        Check(SelectionWindow.SelectionForGesture(new Point(40, 40), new Point(43, 43), null, smartMode: false) == new Rect(40, 40, 3, 3),
+            "Turning smart selection off changed the original small manual drag");
+
+        var monitor = new Rect(-1920, -120, 2560, 1440);
+        var physical = new Rect(-1800, -60, 800, 450);
+        var local = SelectionWindow.PhysicalToSurface(physical, monitor, new Size(1706.6666667, 960));
+        Check(Math.Abs(local.X - 80) < .001 && Math.Abs(local.Y - 40) < .001
+            && Math.Abs(local.Width - 533.3333333) < .001 && Math.Abs(local.Height - 300) < .001,
+            "Smart suggestion lost its negative-origin or mixed-DPI coordinate mapping");
+
+        // The selector runs in host-DPI coordinates; converting its border back
+        // through canonical DIPs must not add a physical pixel at either edge.
+        var pixelMonitor = new DesktopTools.Native.MonitorInfo("virtual", monitor, monitor, 1, 1);
+        var physicalEdges = new Rect(-1905, -110, 485, 320);
+        var hostSize = new Size(1706.6666666666667, 960);
+        var dipEdges = SelectionWindow.PhysicalToSurface(physicalEdges, monitor, hostSize);
+        var canonical = new Rect(dipEdges.X * monitor.Width / hostSize.Width,
+            dipEdges.Y * monitor.Height / hostSize.Height,
+            dipEdges.Width * monitor.Width / hostSize.Width,
+            dipEdges.Height * monitor.Height / hostSize.Height);
+        Check(AppController.RegionPixelBounds(canonical, pixelMonitor, 2560, 1440) == new Int32Rect(15, 10, 485, 320),
+            "Smart click included an extra physical pixel after host-DPI conversion");
+        var wideMonitor = new Rect(0, 0, 3440, 1440);
+        var wideHost = new Size(2293.3333333333335, 960);
+        var wideSurface = SelectionWindow.PhysicalToSurface(new Rect(15, 10, 485, 320), wideMonitor, wideHost);
+        var wideCanonical = new Rect(wideSurface.X * wideMonitor.Width / wideHost.Width,
+            wideSurface.Y * wideMonitor.Height / wideHost.Height,
+            wideSurface.Width * wideMonitor.Width / wideHost.Width,
+            wideSurface.Height * wideMonitor.Height / wideHost.Height);
+        var wideInfo = new DesktopTools.Native.MonitorInfo("wide", wideMonitor, wideMonitor, 1, 1);
+        Check(AppController.RegionPixelBounds(wideCanonical, wideInfo, 3440, 1440) == new Int32Rect(15, 10, 485, 320),
+            "Smart click included a pixel before a rounded physical left edge");
     }
 
     private static async Task<SelectionWindow?> WaitForSelection(AppController controller)

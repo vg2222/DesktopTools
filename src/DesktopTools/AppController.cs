@@ -78,7 +78,7 @@ internal sealed partial class AppController : IDisposable
         if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
         Application.Current.Shutdown();
     }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report)); }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report) { WindowState = WindowState.Maximized }); }
     internal TextToolsWindow? OpenTextTools()
     {
         if (!Settings.TranslationEnabled && !Settings.ScreenTextEnabled) return null;
@@ -94,7 +94,7 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report)); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
@@ -546,7 +546,9 @@ internal sealed partial class AppController : IDisposable
             var monitor = Settings.CaptureMonitorMode == "All" ? MonitorService.GetVirtualDesktop() : MonitorService.GetCurrent(Settings.MonitorMode == "Primary");
             bool sameSession = SameMonitor(overlay?.Monitor, monitor);
             BitmapSource? matchingFrozenFrame = !textOnly && sameSession ? frozenFrame : null;
+            bool smartCapture = Settings.SmartRegionCaptureEnabled && !textOnly && matchingFrozenFrame == null;
             BitmapSource? selectionFrame = null;
+            IReadOnlyList<SmartRegionWindow>? selectionWindows = null;
             if (!repeat && !textOnly && Settings.FreezeRegionBeforeSelection)
             {
                 selectionFrame = matchingFrozenFrame;
@@ -558,6 +560,7 @@ internal sealed partial class AppController : IDisposable
                         await Task.Delay(45, cancellation.Token);
                         NativeWindowService.SynchronizeDesktop();
                         cancellation.Token.ThrowIfCancellationRequested();
+                        if (smartCapture) selectionWindows = SmartRegionDetector.SnapshotWindows(monitor.Bounds);
                         selectionFrame = CaptureService.Capture(monitor);
                     }
                 }
@@ -570,7 +573,8 @@ internal sealed partial class AppController : IDisposable
             }
             else
             {
-                selector = new SelectionWindow(monitor, textOnly, selectionFrame); selector.Show(); selector.Activate(); rect = await selector.Result; selector = null;
+                selector = new SelectionWindow(monitor, textOnly, selectionFrame, smartCapture, selectionWindows);
+                selector.Show(); selector.Activate(); rect = await selector.Result; selector = null;
             }
             if (rect == null) return;
             for (int seconds = textOnly ? 0 : Settings.CaptureDelaySeconds; seconds > 0; seconds--)
@@ -584,8 +588,8 @@ internal sealed partial class AppController : IDisposable
             else using (new HiddenWindowsScope()) { await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render); await Task.Delay(45, cancellation.Token); NativeWindowService.SynchronizeDesktop(); desktop = matchingFrozenFrame ?? CaptureService.Capture(monitor); }
             if (disposed) return;
             var r = rect.Value;
-            int x = Math.Clamp((int)Math.Floor(r.X * monitor.ScaleX), 0, desktop.PixelWidth - 1), y = Math.Clamp((int)Math.Floor(r.Y * monitor.ScaleY), 0, desktop.PixelHeight - 1);
-            int right = Math.Clamp((int)Math.Ceiling(r.Right * monitor.ScaleX), x + 1, desktop.PixelWidth), bottom = Math.Clamp((int)Math.Ceiling(r.Bottom * monitor.ScaleY), y + 1, desktop.PixelHeight);
+            var pixels = RegionPixelBounds(r, monitor, desktop.PixelWidth, desktop.PixelHeight);
+            int x = pixels.X, y = pixels.Y, right = pixels.X + pixels.Width, bottom = pixels.Y + pixels.Height;
             if (textOnly) { textImage = new CroppedBitmap(desktop, new Int32Rect(x, y, right - x, bottom - y)); textImage.Freeze(); return; }
             var inkMonitor = overlay?.Monitor;
             bool includeInk = Settings.IncludeAnnotations && inkMonitor != null && (sameSession || monitor.Id == "VirtualDesktop");
@@ -606,6 +610,21 @@ internal sealed partial class AppController : IDisposable
             scanningText = false;
             if (!disposed && !cancellation.IsCancellationRequested && textImage != null && Settings.ScreenTextEnabled) { var textWindow = OpenTextTools(); if (textWindow != null) _ = textWindow.RecognizeScreenAsync(textImage); }
         }
+    }
+    internal static Int32Rect RegionPixelBounds(Rect region, MonitorInfo monitor, int pixelWidth, int pixelHeight)
+    {
+        // A physical-pixel border may pass through WPF host DIPs and monitor DIPs.
+        // Remove only floating-point noise near whole pixels before floor/ceiling.
+        static double ExactEdge(double value)
+        {
+            double whole = Math.Round(value);
+            return Math.Abs(value - whole) <= 1e-7 ? whole : value;
+        }
+        int x = Math.Clamp((int)Math.Floor(ExactEdge(region.X * monitor.ScaleX)), 0, pixelWidth - 1);
+        int y = Math.Clamp((int)Math.Floor(ExactEdge(region.Y * monitor.ScaleY)), 0, pixelHeight - 1);
+        int right = Math.Clamp((int)Math.Ceiling(ExactEdge(region.Right * monitor.ScaleX)), x + 1, pixelWidth);
+        int bottom = Math.Clamp((int)Math.Ceiling(ExactEdge(region.Bottom * monitor.ScaleY)), y + 1, pixelHeight);
+        return new Int32Rect(x, y, right - x, bottom - y);
     }
     public void OpenRecentCapture(BitmapSource image) { LastCapture = image; RedactLast(); }
     public async Task CopyAsync(BitmapSource image)

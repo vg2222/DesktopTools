@@ -57,7 +57,7 @@ Elige un monitor, una ventana o una zona y configura el sonido y la calidad ante
 
 Sin cuenta. Sin telemetría. Sin procesar tu contenido en la nube. Tus capturas, notas, reconocimiento de texto, traducciones entre inglés y ruso y eliminación de fondos se procesan en tu PC.
 
-Tú eliges dónde guardar las imágenes y grabaciones. La comprobación automática de actualizaciones consulta GitHub para obtener información sobre las versiones; no sube tus archivos multimedia ni tus notas. Cambia el intervalo o desactiva las comprobaciones automáticas en **Configuración → Actualizaciones**.
+Tú eliges dónde guardar las imágenes y grabaciones. La comprobación automática de actualizaciones consulta GitHub para obtener información sobre las versiones; no sube tus archivos multimedia ni tus notas. Cambia el intervalo o desactiva las comprobaciones automáticas en **Configuración → Actualizaciones**. La página **Noticias** puede consultar cada hora los anuncios de este repositorio y tiene su propio interruptor. Los avisos de seguridad nunca instalan una actualización sin tu confirmación.
 
 Los controles de grabación y dibujo, las notificaciones, las notas flotantes y el teleprónter empiezan ocultos en las capturas compatibles. Los dibujos y efectos para la audiencia permanecen visibles. Ajusta cada herramienta en **Configuración → Privacidad**. La exclusión de elementos depende de la aplicación con la que grabes o compartas la pantalla; comprueba la vista que recibe la audiencia antes de confiar en ella.
 

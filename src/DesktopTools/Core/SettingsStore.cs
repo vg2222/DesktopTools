@@ -119,6 +119,8 @@ public sealed class SettingsStore
         s.VisibleCaptureFeatures = (s.VisibleCaptureFeatures ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Take(32).ToArray();
         s.CaptureVisibilityOverrides = (s.CaptureVisibilityOverrides ?? new()).Where(p => !string.IsNullOrWhiteSpace(p.Key)).Take(32).ToDictionary(p => p.Key, p => p.Value);
         if (s.UpdateCheckHours is not (0 or .25 or .5 or 1 or 2 or 3 or 6 or 12 or 24 or 168)) s.UpdateCheckHours = 1;
+        s.ReadNewsIds = ValidNewsIds(s.ReadNewsIds);
+        s.NotifiedNewsIds = ValidNewsIds(s.NotifiedNewsIds);
         s.HomeFavorites = (s.HomeFavorites ?? ["capture", "draw", "record", "notes"]).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Take(8).ToArray();
         if (!DrawingBindings.Validate(s.DrawingShortcuts, out _)) s.DrawingShortcuts = DrawingBindings.Defaults;
         s.Version = 1;
@@ -163,6 +165,9 @@ public sealed class SettingsStore
     private static string Known(string? value, params string[] choices) => choices.FirstOrDefault(c => c.Equals(value, StringComparison.OrdinalIgnoreCase)) ?? choices[0];
     private static double Number(double value, double min, double max, double fallback) => double.IsFinite(value) ? Math.Clamp(value, min, max) : fallback;
     private static string Shortcut(string? value, string fallback) => string.IsNullOrWhiteSpace(value) || value.Length > 100 ? fallback : value.Trim();
+    private static string[] ValidNewsIds(string[]? ids) => (ids ?? [])
+        .Where(id => id is { Length: > 0 and <= 80 } && id.All(c => c is >= 'a' and <= 'z' or >= '0' and <= '9' or '-'))
+        .Distinct(StringComparer.Ordinal).TakeLast(50).ToArray();
     private static string ValidColor(string? value, string fallback)
     {
         try { return ColorConverter.ConvertFromString(value ?? "") is Color ? value! : fallback; }

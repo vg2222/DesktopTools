@@ -11,3 +11,5 @@ Do not open a public issue with exploit details or private user data. Use GitHub
 If private reporting is unavailable, open a public issue requesting a private maintainer contact without including vulnerability details. Do not attach credentials, private screenshots, recordings, or personal files.
 
 DesktopTools is a local desktop application without an account, telemetry, or cloud service. Capture exclusion and sharing-only blackout are compatibility features, not security boundaries. See [download verification](docs/security-checks.md) for release checksum guidance.
+
+When a fix is published, DesktopTools may show an [in-app security update notice](docs/news-and-security-updates.md). It does not install or restart automatically; users confirm the existing update flow. Publish a GitHub security advisory and release notes as well, because older app versions cannot receive in-app news.

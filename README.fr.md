@@ -57,7 +57,7 @@ Choisissez un écran, une fenêtre ou une zone, puis réglez le son et la qualit
 
 Aucun compte. Aucune télémétrie. Aucun traitement de votre contenu dans le cloud. Vos captures d’écran, notes, reconnaissances de texte, traductions anglais–russe et suppressions d’arrière-plan sont traitées sur votre PC.
 
-Vous choisissez où enregistrer les images et les enregistrements. La vérification automatique des mises à jour contacte GitHub pour obtenir les informations de version ; elle ne téléverse ni vos médias ni vos notes. Modifiez sa fréquence ou désactivez-la dans **Paramètres → Mises à jour**.
+Vous choisissez où enregistrer les images et les enregistrements. La vérification automatique des mises à jour contacte GitHub pour obtenir les informations de version ; elle ne téléverse ni vos médias ni vos notes. Modifiez sa fréquence ou désactivez-la dans **Paramètres → Mises à jour**. La page **Actualités** peut consulter chaque heure les annonces de ce dépôt ; elle dispose de son propre interrupteur. Les avis de sécurité n’installent jamais une mise à jour sans votre accord.
 
 Les commandes d’enregistrement et de dessin, les notifications, les notes flottantes et le téléprompteur sont masqués par défaut dans les captures compatibles. Les dessins et les effets destinés au public restent visibles. Réglez chaque outil dans **Paramètres → Confidentialité**. L’exclusion de la capture dépend de l’application utilisée pour enregistrer ou partager : vérifiez la vue reçue avant de vous y fier.
 

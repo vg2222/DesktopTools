@@ -1,0 +1,11 @@
+{
+  "Meters show device activity. Use a test clip to verify recorded sound.": "Индикаторы показывают активность устройств. Проверьте записанный звук в тестовом клипе.",
+  "Record 5-second test": "Записать тест 5 секунд",
+  "Play test clip": "Воспроизвести тест",
+  "Microphone activity": "Активность микрофона",
+  "System audio activity": "Активность системного звука",
+  "Recording needs at least 512 MB of free space on the destination drive.": "Для записи нужно не менее 512 МБ свободного места на выбранном диске.",
+  "Test clip is ready. Play it to check picture and sound.": "Тестовый клип готов. Воспроизведите его и проверьте изображение и звук.",
+  "Could not open test clip: ": "Не удалось открыть тестовый клип: ",
+  "File reports {0:0.#} FPS. Repeated frames may reduce visible smoothness.": "Файл сообщает {0:0.#} кадр/с. Повторяющиеся кадры могут снижать плавность."
+}

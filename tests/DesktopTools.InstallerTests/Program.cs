@@ -422,10 +422,18 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 var window = (Window)constructor.Invoke([uninstall, false, mode, modeName == "OlderSetup" ? "1.3.0" : "1.0.0", modeName == "Update" ? "1.1.0" : "1.0.0", completedCheck, new Func<bool>(() => runtimeReady)]);
                 if (!uninstall) ((Task)windowType.GetMethod("CheckLatestAsync", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null)!).GetAwaiter().GetResult();
                 if (compact) { window.Width = 740; window.Height = 480; }
+                var rail = (FrameworkElement)windowType.GetField("animatedRail", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window)!;
+                Check(VisualDescendants(rail).OfType<Border>().Any(b => Equals(b.Tag, "installer-stage-summary")),
+                    "installer rail still uses an inert page instead of a task summary");
+                var railAdvanced = VisualDescendants(rail).OfType<Button>().SingleOrDefault(b => Equals(b.Tag, "installer-advanced"));
+                Check((railAdvanced is not null) == (!uninstall && modeName is "Update" or "OlderSetup"),
+                    "Advanced options must appear in the rail only when hidden choices exist");
                 if (expand)
                 {
-                    var panel = (Border?)windowType.GetField("advancedOptions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(window);
-                    if (panel is not null) panel.Visibility = Visibility.Visible;
+                    var panel = (Border)windowType.GetField("advancedOptions", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window)!;
+                    Check(panel.Visibility == Visibility.Collapsed, "update alternatives must start collapsed");
+                    railAdvanced!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Check(panel.Visibility == Visibility.Visible, "rail Advanced options did not reveal update alternatives");
                 }
                 double width = window.Width, height = window.Height;
                 window.Measure(new Size(width, height));
@@ -439,6 +447,16 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => frame.Continue = false));
                 System.Windows.Threading.Dispatcher.PushFrame(frame);
                 root.UpdateLayout();
+                if (expand && windowType.GetField("advancedOptions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(window) is FrameworkElement expanded)
+                {
+                    expanded.BeginAnimation(UIElement.OpacityProperty, null);
+                    expanded.Opacity = 1;
+                    if (expanded.RenderTransform is TranslateTransform shift)
+                    {
+                        shift.BeginAnimation(TranslateTransform.YProperty, null);
+                        shift.Y = 0;
+                    }
+                }
                 AssertControlsFit(window);
                 object? Field(string field) => windowType.GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(window);
                 if (!uninstall && modeName is "Maintenance" or "OlderSetup")
@@ -486,6 +504,16 @@ static void RenderInstallerModes(Assembly installer, Type program)
                 encoder.Save(stream);
                 if (name == "install")
                 {
+                    var grip = VisualDescendants(root).OfType<System.Windows.Controls.Primitives.Thumb>().SingleOrDefault(t => Equals(t.Tag, "installer-resize"));
+                    Check(grip is not null, "installer needs a visible resize grip");
+                    double originalWidth = window.Width, originalHeight = window.Height;
+                    grip!.RaiseEvent(new System.Windows.Controls.Primitives.DragDeltaEventArgs(56, 42)
+                    { RoutedEvent = System.Windows.Controls.Primitives.Thumb.DragDeltaEvent });
+                    Check(window.Width > originalWidth && window.Height > originalHeight, "installer resize grip did not resize the window");
+                    grip.RaiseEvent(new System.Windows.Controls.Primitives.DragDeltaEventArgs(-10000, -10000)
+                    { RoutedEvent = System.Windows.Controls.Primitives.Thumb.DragDeltaEvent });
+                    Check(window.Width == window.MinWidth && window.Height == window.MinHeight,
+                        "installer resize grip can shrink below the usable minimum");
                     var selector = VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"));
                     selector.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     var menu = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;

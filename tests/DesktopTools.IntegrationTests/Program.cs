@@ -25,6 +25,7 @@ internal static class Program
     private static int Main(string[] args)
     {
         if (args.Length == 2 && args[0] == "--input-target") return NativeInputChecks.RunTarget(args[1]);
+        if (args.Length == 2 && args[0] == "--pin-owned-target") return WindowPinOwnershipChecks.RunTarget(args[1]);
         var root = Environment.CurrentDirectory;
         var output = Path.Combine(root, "artifacts", "integration"); Directory.CreateDirectory(output);
         Environment.CurrentDirectory = output;
@@ -38,6 +39,7 @@ internal static class Program
                 else if (args.Contains("--record-prerequisites-only")) await Test("Recorder prerequisite UI guard and retry", RecordingPrerequisiteChecks.RunAsync);
                 else if (args.Contains("--native-runtime-features-only")) await Test("Native runtime warnings for translation and background removal", NativeRuntimeFeatureChecks.RunAsync);
                 else if (args.Contains("--updates-only")) await Test("Update discovery, persistent controls, notes feedback and progress", UpdateChecks.RunAsync);
+                else if (args.Contains("--news-only")) await Test("Announcements and emergency-update guidance", NewsChecks.RunAsync);
                 else if (args.Contains("--interaction-refinement-only")) await Test("Capture privacy and editor interaction refinements", InteractionRefinementChecks.RunAsync);
                 else if (args.Contains("--bug-regressions-only")) await Test("Focused bug regressions", BugRegressionChecks.RunAsync);
                 else if (args.Contains("--onboarding-refinement-only")) await Test("Onboarding, icons, switches and audience visibility", OnboardingRefinementChecks.RunAsync);
@@ -54,6 +56,7 @@ internal static class Program
                 else if (args.Contains("--utility-backdrop-only")) await Test("Utility native backdrop and opaque fallback", UtilityBackdropChecks.RunAsync);
                 else if (args.Contains("--guide-placement-only")) await Test("Guide placement at screen corners and scaled negative origins", GuidePlacementChecks.RunAsync);
                 else if (args.Contains("--region-freeze-only")) await Test("Region freeze uses the selection still", RegionFreezeChecks.RunAsync);
+                else if (args.Contains("--smart-region-only")) await Test("Smart region click, drag and capture-mode routing", RegionFreezeChecks.RunSmartAsync);
                 else if (args.Contains("--capture-lifecycle-only")) await Test("One hundred native capture/edit/export/close cycles", () => CaptureLifecycleChecks.RunAsync(Results.Add));
                 else if (args.Contains("--input-only")) await Test("Cross-process native input", async () => { using var controller = new AppController(true); await NativeInputChecks.RunAsync(controller, Results.Add); });
                 else if (args.Contains("--blackout-escape-only")) await Test("Escape dismisses blackout without stopping independent aids", BlackoutEscapeChecks.RunAsync);
@@ -73,7 +76,12 @@ internal static class Program
                 else if (args.Contains("--setup-only")) await Test("Setup resume, completion, skip and preference preservation", SetupChecks.RunAsync);
                 else if (args.Contains("--chrome-pointer-order-only")) await Test("Isolated Chrome pointer drags and explicit pin", ChromeWindowOrderChecks.RunPointerAsync);
                 else if (args.Contains("--chrome-window-order-only")) await Test("Isolated Chrome monitor round trips and explicit pin", ChromeWindowOrderChecks.RunAsync);
-                else if (args.Contains("--window-order-only")) await Test("Window movement and explicit pin ownership", WindowPinChecks.RunAsync);
+                else if (args.Contains("--window-order-only"))
+                {
+                    await Test("Window movement and explicit pin ownership", WindowPinChecks.RunAsync);
+                    await Test("Pin restores owned window state without touching a bystander", WindowPinOwnershipChecks.RunAsync);
+                    await Test("Stale hotkey messages cannot trigger a different pin action", HotkeyMessageChecks.RunAsync);
+                }
                 else if (args.Contains("--save-notification-only")) await Test("Screenshot save survives notification expiry", ScreenshotSaveChecks.RunAsync);
                 else if (args.Contains("--reset-restart-only")) await Test("Reset data and restart handoff", DataResetChecks.RunAsync);
                 else if (args.Contains("--window-dismissal-only")) await Test("Window, notification and modal dismissal lifecycle", WindowDismissalChecks.RunAsync);
@@ -96,6 +104,7 @@ internal static class Program
                 else if (args.Contains("--video-thumbnails-only")) await Test("Bounded portrait and wide video thumbnails", VideoThumbnailChecks.RunAsync);
                 else if (args.Contains("--video-crop-only")) await Test("Video crop apply/cancel and edited preview", () => VideoWindowChecks.RunAsync(focused: true));
                 else if (args.Contains("--video-frame-layout-only")) await Test("Video Frame inspector compact layout", VideoWindowChecks.RunFrameLayoutAsync);
+                else if (args.Contains("--editor-chrome-only")) await Test("Editor startup size and feature window caption controls", EditorChromeChecks.RunAsync);
                 else if (args.Contains("--video-ui")) await Test("Video editor languages, edited preview and resource cleanup", () => VideoWindowChecks.RunAsync());
                 else if (args.Contains("--video-only")) await Test("Native video trim, cut, crop, rotation, mute and original protection", VideoEditingChecks.RunAsync);
                 else if (args.Contains("--effects-only")) await Test("Stationary spotlight and uniform laser", () => { EffectChecks.Run(); return Task.CompletedTask; });

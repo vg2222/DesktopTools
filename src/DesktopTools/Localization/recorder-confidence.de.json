@@ -1,0 +1,11 @@
+{
+  "Meters show device activity. Use a test clip to verify recorded sound.": "Die Anzeigen zeigen Geräteaktivität. Prüfen Sie den aufgezeichneten Ton mit einem Testclip.",
+  "Record 5-second test": "5-Sekunden-Test aufnehmen",
+  "Play test clip": "Testclip abspielen",
+  "Microphone activity": "Mikrofonaktivität",
+  "System audio activity": "Systemaudioaktivität",
+  "Recording needs at least 512 MB of free space on the destination drive.": "Für die Aufnahme werden mindestens 512 MB freier Speicherplatz auf dem Ziellaufwerk benötigt.",
+  "Test clip is ready. Play it to check picture and sound.": "Der Testclip ist bereit. Spielen Sie ihn ab, um Bild und Ton zu prüfen.",
+  "Could not open test clip: ": "Testclip konnte nicht geöffnet werden: ",
+  "File reports {0:0.#} FPS. Repeated frames may reduce visible smoothness.": "Die Datei meldet {0:0.#} FPS. Wiederholte Bilder können die Wiedergabe weniger flüssig machen."
+}

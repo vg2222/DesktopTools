@@ -88,6 +88,16 @@ internal static class Program
             settings.HideMainWindowFromCapture = true; settings.VisibleCaptureFeatures = ["Floating notes", "Notifications"]; store.Save(settings);
             var restored = new SettingsStore(path).Load(); Check(restored.HideMainWindowFromCapture == true && !restored.HideControlsFromCapture && restored.VisibleCaptureFeatures.SequenceEqual(settings.VisibleCaptureFeatures));
         }));
+        Test("Smart region capture defaults on and preserves opt-out", () => InStore((store, path) =>
+        {
+            File.WriteAllText(Path.Combine(path, "settings.json"), "{\"Version\":1}");
+            var preference = typeof(AppSettings).GetProperty("SmartRegionCaptureEnabled");
+            Check(preference != null, "Smart region capture setting is missing");
+            var settings = store.Load();
+            Check((bool)preference!.GetValue(settings)!, "Existing settings should enable smart region capture by default");
+            preference.SetValue(settings, false); store.Save(settings);
+            Check(!(bool)preference.GetValue(new SettingsStore(path).Load())!, "Smart region capture opt-out was not persisted");
+        }));
         Test("Dashboard favorites persist, deduplicate and recover null", () => InStore((store, path) =>
         {
             var settings = store.Load(); settings.HomeFavorites = ["notes", "record", "notes", "", "images"]; SettingsStore.Validate(settings); store.Save(settings);
@@ -173,6 +183,7 @@ internal static class Program
         DrawingEditTests.Run(Test, Check);
         DrawingBindingTests.Run(Test, Check);
         RenderingTests.Run(Test, Check);
+        Test("Smart region chooses useful regions under the pointer", SmartRegionDetectorTests.Run);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 

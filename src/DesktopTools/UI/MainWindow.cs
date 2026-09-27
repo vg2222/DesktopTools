@@ -70,11 +70,12 @@ internal sealed partial class MainWindow : Window
 
         var navItems = new StackPanel(); var navScroll = new ScrollViewer { Content = navItems, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }; SmoothScroll.Enable(navScroll); sidebar.Children.Add(navScroll);
 
-        foreach (var item in new[] { "Home", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Diagnostics", "Help", "About" })
+        foreach (var item in new[] { "Home", "News", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Diagnostics", "Help", "About" })
 
         {
 
             var content = new Grid(); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.Children.Add(Ui.Icon(NavigationIcon(item), 18)); var label = Ui.Text(L.T(item), 13, true); label.Margin = new Thickness(12, 0, 0, 0); Grid.SetColumn(label, 1); content.Children.Add(label);
+            if (item == "News") { content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); var badge = new Border { Width = 7, Height = 7, CornerRadius = new CornerRadius(4), VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed }; badge.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumn(badge, 2); content.Children.Add(badge); newsBadge = badge; }
 
             var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
 
@@ -83,6 +84,8 @@ internal sealed partial class MainWindow : Window
         }
 
         AddUpdateIndicator(footer);
+        controller.NewsChanged += OnNewsChanged;
+        RefreshNewsUi();
         var version = Ui.Text(VersionLabel, 11, muted: true); version.Name = "AppVersion"; version.Margin = new Thickness(14, 17, 0, 7); footer.Children.Add(version); body.Children.Add(sidebar);
 
         scroller = new ScrollViewer { Content = page, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Padding = new Thickness(26, 25, 24, 22) };
@@ -104,7 +107,7 @@ internal sealed partial class MainWindow : Window
         SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(this, controller.Dark, controller.Settings.Transparency);
         Loaded += (_, _) => DesktopTools.Presentation.WindowDismissal.Attach(this, () => Motion.Enabled);
 
-        Closed += (_, _) => { controller.Hud.Changed -= OnAidChanged; };
+        Closed += (_, _) => { controller.Hud.Changed -= OnAidChanged; controller.NewsChanged -= OnNewsChanged; };
 
         IsVisibleChanged += (_, _) => { if (IsVisible) Navigate(currentPage); };
         PreviewKeyDown += (_, e) => { if (modalLayers.Count == 0 && e.Key == Key.K && Keyboard.Modifiers == ModifierKeys.Control) { Navigate("Home"); dashboardSearch?.Focus(); e.Handled = true; } };
@@ -174,9 +177,9 @@ internal sealed partial class MainWindow : Window
             if (DashboardGroups.Contains(destination)) { DashboardCategory(destination); return; }
             if (destination.StartsWith("Feature:", StringComparison.Ordinal)) { FeatureSettings(destination[8..]); return; }
 
-            PageBanner(destination, destination switch { "Draw" => "Set up your drawing tools and floating palette.", "Capture" => "Choose what to capture and what happens next.", "Utilities" => "Files, notes, and application audio in one place.", "Profiles" => "Save tool preferences for the way you work.", "Shortcuts" => "Set global shortcuts and learn the drawing controls.", "Settings" => "Appearance, startup, and display preferences.", "Diagnostics" => "Check dependencies and shortcuts on this PC.", "Help" => "Help and learning", _ => "An open-source toolkit for Windows." }, destination);
+            PageBanner(destination, destination switch { "News" => "Announcements and important update notices.", "Draw" => "Set up your drawing tools and floating palette.", "Capture" => "Choose what to capture and what happens next.", "Utilities" => "Files, notes, and application audio in one place.", "Profiles" => "Save tool preferences for the way you work.", "Shortcuts" => "Set global shortcuts and learn the drawing controls.", "Settings" => "Appearance, startup, and display preferences.", "Diagnostics" => "Check dependencies and shortcuts on this PC.", "Help" => "Help and learning", _ => "An open-source toolkit for Windows." }, destination == "News" ? "Notifications" : destination);
 
-            switch (destination) { case "Utilities": Utilities(); break; case "Home": Home(); break; case "Draw": Draw(); break; case "Capture": Capture(); break; case "Profiles": Profiles(); break; case "Shortcuts": ShortcutsCatalog(); break; case "Settings": General(); break; case "Diagnostics": Diagnostics(); break; case "Help": Help(); break; case "About": About(); break; }
+            switch (destination) { case "Utilities": Utilities(); break; case "Home": Home(); break; case "News": News(); break; case "Draw": Draw(); break; case "Capture": Capture(); break; case "Profiles": Profiles(); break; case "Shortcuts": ShortcutsCatalog(); break; case "Settings": General(); break; case "Diagnostics": Diagnostics(); break; case "Help": Help(); break; case "About": About(); break; }
 
         }
 
@@ -422,7 +425,12 @@ internal sealed partial class MainWindow : Window
 
         Group(L.T("Capture behavior"),
 
-            Ui.Row(L.T("Freeze screen before selecting"), L.T("Capture a still when you start region capture, then choose from that frame."), Ui.Toggle(s.FreezeRegionBeforeSelection, v => Change(x => x.FreezeRegionBeforeSelection = v))),
+            Ui.Row(L.T("Freeze screen before selecting"), L.T("Capture a still when you start region capture, then choose from that frame."), Ui.Toggle(s.FreezeRegionBeforeSelection, v => { Change(x => x.FreezeRegionBeforeSelection = v); Navigate(currentPage); })),
+
+            Ui.Row(L.T("Smart region capture"), L.T(s.FreezeRegionBeforeSelection
+                ? "Frozen screen: windows only. Turn off Freeze screen before selecting for panels, images, and video."
+                : "Point to a window or clear rectangular area, then click to capture. Drag to select your own region."),
+                Ui.Toggle(s.SmartRegionCaptureEnabled, v => Change(x => x.SmartRegionCaptureEnabled = v))),
 
 
             Ui.Row(L.T("Capture displays"),L.T("All spans the desktop. Selected uses your app monitor preference."), Ui.Choice(new[] { "All", "Selected" }, s.CaptureMonitorMode, v => Change(x => x.CaptureMonitorMode = v))),

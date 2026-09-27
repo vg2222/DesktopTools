@@ -16,7 +16,7 @@ internal sealed partial class MainWindow
     private static string NavigationIcon(string page) => page switch
     {
         "Capture tools" => "Capture", "Presentation tools" => "Present", "Media tools" => "Image", "Text tools" => "Text",
-        "Desktop utilities" => "Utilities", "Diagnostics" => "Check", _ => page
+        "Desktop utilities" => "Utilities", "Diagnostics" => "Check", "News" => "Notifications", _ => page
     };
     private DashboardTool[] DashboardTools()
     {
@@ -64,6 +64,10 @@ internal sealed partial class MainWindow
         customize.SetResourceReference(BackgroundProperty, "Field");
         customize.SetResourceReference(BorderBrushProperty, "Stroke"); customize.BorderThickness = new Thickness(1);
         DockPanel.SetDock(customize, Dock.Right); header.Children.Add(customize); header.Children.Add(Ui.Text(L.T("My dashboard"), 30, true)); page.Children.Add(header);
+        newsHomeButton = Ui.Button(L.T("News"), () => Navigate("News"));
+        newsHomeButton.Tag = "home-news"; newsHomeButton.HorizontalContentAlignment = HorizontalAlignment.Left;
+        newsHomeButton.Margin = new Thickness(0, 14, 0, 0); newsHomeButton.Padding = new Thickness(16, 12, 16, 12);
+        page.Children.Add(newsHomeButton); RefreshNewsUi();
         var searchRow = new Grid { Margin = new Thickness(0, 18, 0, 4) };
         dashboardSearch = new TextBox { Height = 50, MinHeight = 50, FontSize = 15, Padding = new Thickness(44, 9, 80, 9) };
         System.Windows.Automation.AutomationProperties.SetName(dashboardSearch, L.T("Find a tool"));

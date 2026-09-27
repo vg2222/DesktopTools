@@ -31,8 +31,8 @@ internal sealed class TeleprompterWindow : Window
         this.save = save; speed = settings.TeleprompterSpeed;
         Title = L.T("Teleprompter"); Width = studioWidth; Height = studioHeight; MinWidth = 640; MinHeight = 360; Topmost = settings.TeleprompterTopmost;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, L.T("Teleprompter"), Close, L.T("Close teleprompter"), 18); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
-        var pin = UtilityWindowChrome.CaptionButton("Pin", L.T("Always on top"), () => { if (save(s => s.TeleprompterTopmost = !Topmost)) Topmost = !Topmost; }); DockPanel.SetDock(pin, Dock.Right); header.Children.Insert(1, pin);
+        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, L.T("Teleprompter"), Close, L.T("Close teleprompter"), 18, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
+        var pin = UtilityWindowChrome.CaptionButton("Pin", L.T("Always on top"), () => { if (save(s => s.TeleprompterTopmost = !Topmost)) Topmost = !Topmost; }); DockPanel.SetDock(pin, Dock.Right); header.Children.Insert(header.Children.Count - 1, pin);
         editor = new TextBox { Text = settings.TeleprompterText, FontSize = settings.TeleprompterFontSize, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalContentAlignment = VerticalAlignment.Top, MaxLength = 50000, Padding = new Thickness(18), BorderThickness = new Thickness(0), Background = Brushes.Transparent };
         script = Ui.Text(settings.TeleprompterText, settings.TeleprompterFontSize); script.Padding = new Thickness(24, 24, 24, 160); script.VerticalAlignment = VerticalAlignment.Top;
         scroll = new ScrollViewer { Content = script, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Visibility = Visibility.Collapsed };
@@ -54,14 +54,14 @@ internal sealed class TeleprompterWindow : Window
         font.SelectionChanged += (_, _) => { if (font.SelectedItem is double value && save(s => s.TeleprompterFontSize = value)) script.FontSize = editor.FontSize = value; }; toolbar.Children.Add(Group("Text size", font));
         bool mirrored = false;
         toolbar.Children.Add(Ui.IconButton("FlipHorizontal", L.T("Mirror"), () => { mirrored = !mirrored; script.RenderTransformOrigin = new Point(.5, .5); script.RenderTransform = new ScaleTransform(mirrored ? -1 : 1, 1); }));
-        mode = Ui.IconButton("Maximize", L.T("Presentation mode"), () => SetPresentation(!presentation)); DockPanel.SetDock(mode, Dock.Right); header.Children.Insert(1, mode);
+        mode = Ui.IconButton("Maximize", L.T("Presentation mode"), () => SetPresentation(!presentation)); DockPanel.SetDock(mode, Dock.Right); header.Children.Insert(header.Children.Count - 1, mode);
         var guide = FeatureTourButton.Create(this, "teleprompter", () => new GuidedTour.Step[]
         {
             new(() => editor.IsVisible ? editor : scroll, "Script", "Write your script here. Your text stays on this device."),
             new(() => velocity, "Speed", "Choose a comfortable reading speed before pressing Play."),
             new(() => font, "Text size", "Adjust text size to your viewing distance."),
             new(() => mode, "Presentation mode", "Switch between the studio and the compact reading window without losing your place.")
-        }, settings, save); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }, settings, save); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         AddHandler(FeatureTourButton.SetupAppliedEvent, new RoutedEventHandler((_, _) => { velocity.SelectedItem = settings.TeleprompterSpeed; font.SelectedItem = settings.TeleprompterFontSize; Topmost = settings.TeleprompterTopmost; }));
         var edit = Ui.IconButton("Text", L.T("Edit text"), () => { Pause(); if (presentation) SetPresentation(false); scroll.Visibility = Visibility.Collapsed; editor.Visibility = Visibility.Visible; editor.Focus(); });
         var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) }; DockPanel.SetDock(edit, Dock.Right); footer.Children.Add(edit); footer.Children.Add(toolbar);

@@ -37,10 +37,10 @@ public sealed class AudioControlsWindow : Window
         this.report = report; this.audio = audio;
         Title = L.T("DesktopTools Audio controls"); Width = 720; Height = 540; MinWidth = 600; MinHeight = 460;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
-        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        ResizeMode = ResizeMode.CanResizeWithGrip; ShowInTaskbar = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var layout = new DockPanel();
-        var header = UtilityWindowChrome.Header(this, L.T("Audio controls"), Close, L.T("Close audio controls"), 16);
-        var refresh = UtilityWindowChrome.CaptionButton("RotateRight", L.T("Refresh"), Refresh); DockPanel.SetDock(refresh, Dock.Right); header.Children.Insert(1, refresh);
+        var header = UtilityWindowChrome.Header(this, L.T("Audio controls"), Close, L.T("Close audio controls"), 16, allowMinimize: true);
+        var refresh = UtilityWindowChrome.CaptionButton("RotateRight", L.T("Refresh"), Refresh); DockPanel.SetDock(refresh, Dock.Right); header.Children.Insert(header.Children.Count - 1, refresh);
         DockPanel.SetDock(header, Dock.Top); layout.Children.Add(header);
         var description = Ui.Text(L.T("Choose your output and adjust each app below."), 12, muted: true);
         description.Margin = new Thickness(0, 0, 0, 18); DockPanel.SetDock(description, Dock.Top); layout.Children.Add(description);

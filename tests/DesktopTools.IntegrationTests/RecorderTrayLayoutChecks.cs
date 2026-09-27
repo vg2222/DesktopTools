@@ -24,11 +24,19 @@ internal static class RecorderTrayLayoutChecks
             var quality = Field<ComboBox>("qualityChoice");
             var fps = Field<ComboBox>("fpsChoice");
             var start = Field<Button>("start");
+            var testRecording = Field<Button>("testRecording");
+            var playTest = Field<Button>("playTest");
+            if (recorder.Topmost) throw new Exception("Recorder setup should not stay above other applications.");
             if (quality.ActualWidth < 180 || fps.ActualWidth < 105 || Math.Abs(quality.PointToScreen(new Point()).Y - fps.PointToScreen(new Point()).Y) > 2)
                 throw new Exception("Quality and FPS controls do not fit side by side.");
+            if (testRecording.PointToScreen(new Point()).Y >= quality.PointToScreen(new Point()).Y)
+                throw new Exception("The test clip action should sit with audio setup, not in the bottom recording controls.");
             if (start.PointToScreen(new Point()).Y <= fps.PointToScreen(new Point()).Y + fps.ActualHeight)
                 throw new Exception("Recording controls overlap the quality settings.");
             Render(recorder, "recorder-redesign.png");
+            playTest.Visibility = Visibility.Visible; recorder.UpdateLayout();
+            if (testRecording.PointToScreen(new Point()).X + testRecording.ActualWidth > playTest.PointToScreen(new Point()).X + 1)
+                throw new Exception("Test and playback actions overlap when a test clip is ready.");
         }
         finally { recorder.Close(); }
 

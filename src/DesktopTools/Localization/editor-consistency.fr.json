@@ -1,0 +1,7 @@
+{
+  "Show edited": "Afficher la version modifiée",
+  "Viewing original. Edits are still in your working copy.": "L'original est affiché. Les modifications restent dans la copie de travail.",
+  "Viewing edited working copy. Export saves a separate file.": "La copie de travail modifiée est affichée. L'export crée un fichier distinct.",
+  "Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready.": "Faites glisser les poignées bleues pour garder une zone, ou l'intérieur du cadre pour la déplacer. Appliquez le recadrage quand vous êtes prêt.",
+  "Drag an area to keep. The crop applies on release; Undo restores it.": "Tracez la zone à garder. Le recadrage s'applique au relâchement ; Annuler le rétablit."
+}

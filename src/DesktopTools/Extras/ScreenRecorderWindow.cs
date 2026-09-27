@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace DesktopTools.Extras;
 
@@ -25,7 +26,10 @@ internal sealed class ScreenRecorderWindow : Window
     private readonly TextBlock previewTitle, previewDescription;
     private readonly FrameworkElement sourceKinds;
     private readonly CheckBox microphone, systemAudio;
-    private readonly Button start, pause, stop, runtimeHelp;
+    private readonly Button start, testRecording, playTest, pause, stop, runtimeHelp;
+    private readonly ProgressBar microphoneMeter = RecordingAudioMeter.Create(7, new Thickness(0, 5, 0, 8));
+    private readonly ProgressBar systemMeter = RecordingAudioMeter.Create(7, new Thickness(0, 5, 0, 8));
+    private readonly DispatcherTimer meterTimer = new() { Interval = TimeSpan.FromMilliseconds(180) };
     private readonly TextBlock status = Ui.Text(L.T("Choose a display, then start recording."), 13, muted: true);
     private readonly TextBlock time = Ui.Text("00:00:00", 32, true);
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
@@ -40,20 +44,31 @@ internal sealed class ScreenRecorderWindow : Window
     private readonly Func<IReadOnlyList<string>> readMissingRuntime;
     private bool runtimeMissing;
     private IReadOnlyList<string> missingRuntimeFiles = [];
+    private string? testClipPath;
     internal bool IsRecording => service?.Active == true;
     public ScreenRecorderWindow(AppController controller, Func<Window, string?>? chooseOutput = null, Func<IReadOnlyList<MonitorInfo>>? readMonitors = null, Func<IReadOnlyList<string>>? readMissingRuntime = null)
     {
         this.readMonitors = readMonitors ?? MonitorService.GetAll;
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
-        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 970; Height = 590; MinWidth = 860; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = true; WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
+        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 970; Height = 590; MinWidth = 860; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var panel = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
         var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 9); panel.Children.Add(setupHeading);
         sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         microphone = Ui.Toggle(controller.Settings.RecordingMicrophone, value => controller.UpdateSettings(s => s.RecordingMicrophone = value));
         systemAudio = Ui.Toggle(controller.Settings.RecordingSystemAudio, value => controller.UpdateSettings(s => s.RecordingSystemAudio = value));
         panel.Children.Add(Ui.Row(L.T("Microphone"), L.T("Default Windows input device."), microphone));
+        System.Windows.Automation.AutomationProperties.SetName(microphoneMeter, L.T("Microphone activity")); panel.Children.Add(microphoneMeter);
         panel.Children.Add(Ui.Row(L.T("System audio"), L.T("Default Windows output device."), systemAudio));
+        System.Windows.Automation.AutomationProperties.SetName(systemMeter, L.T("System audio activity")); panel.Children.Add(systemMeter);
+        var meterExplanation = Ui.Text(L.T("Meters show device activity. Use a test clip to verify recorded sound."), 11, muted: true);
+        meterExplanation.TextWrapping = TextWrapping.Wrap; panel.Children.Add(meterExplanation);
+        testRecording = Ui.Button(L.T("Record 5-second test"), () => StartRecording(test: true));
+        testRecording.Content = Ui.IconLabel("Record", L.T("Record 5-second test"));
+        playTest = Ui.IconButton("Play", L.T("Play test clip"), PlayTestClip); playTest.Visibility = Visibility.Collapsed;
+        var testActions = new DockPanel { Margin = new Thickness(0, 9, 0, 0) };
+        DockPanel.SetDock(playTest, Dock.Right); testActions.Children.Add(playTest); testActions.Children.Add(testRecording);
+        panel.Children.Add(testActions);
         var outputHeading = Ui.Text(L.T("Recording quality"), 13, true); outputHeading.Margin = new Thickness(0, 10, 0, 8); panel.Children.Add(outputHeading);
         var qualityGrid = new Grid(); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.2, GridUnitType.Star) }); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(.8, GridUnitType.Star) });
         var qualityColumn = new StackPanel { Margin = new Thickness(0, 0, 8, 0) };
@@ -77,7 +92,7 @@ internal sealed class ScreenRecorderWindow : Window
             new(() => microphone, "Microphone", "Enable microphone audio only when you want your voice in the recording."),
             new(() => systemAudio, "System audio", "System audio records sounds played by the computer."),
             new(() => qualityGrid, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
-        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
+        }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         start = Ui.Button(L.T("Start recording"), StartRecording, true);
         start.Content = Ui.IconLabel("Record", L.T("Start recording"), primary: true);
         pause = Ui.IconButton("Pause", L.T("Pause"), TogglePause); stop = Ui.IconButton("Stop", L.T("Stop and save"), () => _ = StopAsync());
@@ -125,7 +140,9 @@ internal sealed class ScreenRecorderWindow : Window
         Ui.Tip(sourcePreview, L.T("Choose recording source")); left.Children.Add(sourcePreview);
         var card = Ui.Card(root, 18); card.Margin = new Thickness(0); card.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); card.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = card;
         timer.Tick += (_, _) => UpdateRecordingUi();
-        Closing += OnClosing; Closed += (_, _) => { closed = true; sourcePicker?.Close(); sourceThumbnail.Dispose(); timer.Stop(); preview.Source = null; SystemEvents.DisplaySettingsChanged -= DisplaysChanged; };
+        meterTimer.Tick += (_, _) => UpdateMeters();
+        Loaded += (_, _) => meterTimer.Start();
+        Closing += OnClosing; Closed += (_, _) => { closed = true; sourcePicker?.Close(); sourceThumbnail.Dispose(); timer.Stop(); meterTimer.Stop(); preview.Source = null; SystemEvents.DisplaySettingsChanged -= DisplaysChanged; DeleteTestClip(); };
         SizeChanged += (_, _) => { if (IsLoaded) sourceThumbnail.Update(this, preview); };
         SystemEvents.DisplaySettingsChanged += DisplaysChanged; Refresh();
         var missingOnOpen = this.readMissingRuntime();
@@ -165,7 +182,8 @@ internal sealed class ScreenRecorderWindow : Window
         sourceChoice.Content = Ui.IconLabel(source.Window == null ? "Monitor" : "Window", L.T("Recording source")); Ui.Tip(sourceChoice, source.Label); status.Text = source.Label; Refresh();
         if (runtimeMissing) ShowMissingRuntime(missingRuntimeFiles);
     }
-    private void StartRecording()
+    private void StartRecording() => StartRecording(test: false);
+    private void StartRecording(bool test)
     {
         if (session != null) return;
         var missingFiles = readMissingRuntime();
@@ -180,13 +198,13 @@ internal sealed class ScreenRecorderWindow : Window
         runtimeHelp.Visibility = Visibility.Collapsed;
         if (selectedSource == null) { status.Text = L.T("Choose a display, then start recording."); Refresh(); return; }
         int generation = ++sessionGeneration;
-        session = RunRecordingWithBoundaryAsync(generation);
+        session = RunRecordingWithBoundaryAsync(generation, test);
         Refresh();
     }
-    private async Task RunRecordingWithBoundaryAsync(int generation)
+    private async Task RunRecordingWithBoundaryAsync(int generation, bool test)
     {
         await Task.Yield(); // Assign session before the recorder method is invoked or a close can await it.
-        try { await RecordAsync(); }
+        try { await RecordAsync(test); }
         catch (Exception ex)
         {
             if (!closed && sessionGeneration == generation) status.Text = L.T("Recording failed: ") + ex.Message;
@@ -226,7 +244,7 @@ internal sealed class ScreenRecorderWindow : Window
         }
     }
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private async Task RecordAsync()
+    private async Task RecordAsync(bool test)
     {
         await Task.Yield(); // Assign session before any synchronous cancellation can complete.
         Refresh();
@@ -238,9 +256,15 @@ internal sealed class ScreenRecorderWindow : Window
             var source = selectedSource;
             ValidateSource(source);
             ScreenRecordingService.ValidateAudioSources(microphone.IsChecked == true, systemAudio.IsChecked == true);
-            var save = new SaveFileDialog { Filter = "MP4 video|*.mp4", DefaultExt = ".mp4", AddExtension = true, FileName = "DesktopTools-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"), OverwritePrompt = true };
-            var outputPath = chooseOutput != null ? chooseOutput(this) : save.ShowDialog(this) == true ? save.FileName : null;
+            string? outputPath;
+            if (test) outputPath = Path.Combine(Path.GetTempPath(), "DesktopTools-recording-test-" + Guid.NewGuid().ToString("N") + ".mp4");
+            else
+            {
+                var save = new SaveFileDialog { Filter = "MP4 video|*.mp4", DefaultExt = ".mp4", AddExtension = true, FileName = "DesktopTools-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"), OverwritePrompt = true };
+                outputPath = chooseOutput != null ? chooseOutput(this) : save.ShowDialog(this) == true ? save.FileName : null;
+            }
             if (outputPath == null || closed || closing || stopping) return;
+            if (RecordingReadiness.CheckDisk(outputPath) is string diskProblem) throw new IOException(diskProblem);
             ValidateSource(source);
             service = new ScreenRecordingService(); var current = service;
             service.StatusChanged += native => Dispatcher.BeginInvoke(() => { if (acceptingStatus && !closed && ReferenceEquals(service, current)) { status.Text = L.T(native); UpdateRecordingUi(); } });
@@ -248,11 +272,30 @@ internal sealed class ScreenRecorderWindow : Window
             var result = source.Window is { } capturedWindow
                 ? service.StartSource(new ScreenRecorderLib.WindowRecordingSource(capturedWindow.Handle) { IsCursorCaptureEnabled = true, IsBorderRequired = true }, outputPath, microphone.IsChecked == true, systemAudio.IsChecked == true, controller.Settings.RecordingFramesPerSecond, controller.Settings.RecordingQuality, controller.Settings.RecordingHardwareAcceleration)
                 : service.Start(source.Monitor!, source.Region, outputPath, microphone.IsChecked == true, systemAudio.IsChecked == true, controller.Settings.RecordingFramesPerSecond, controller.Settings.RecordingQuality, controller.Settings.RecordingHardwareAcceleration);
+            if (test)
+            {
+                _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Dispatcher.BeginInvoke(() =>
+                {
+                    if (!closed && ReferenceEquals(service, current) && !stopping) current.Stop();
+                }), TaskScheduler.Default);
+            }
             hud = new RecordingHudWindow(source.Label, TogglePause, () => _ = StopAsync(), AppCapturePrivacy.ShouldHideFeature("Screen recorder", controller.Settings), source.Monitor ?? MonitorService.GetForWindow(this));
             Hide(); hud.Show();
             timer.Start(); status.Text = L.T(service.Status); Refresh(); UpdateRecordingUi();
             var output = await result; acceptingStatus = false; UpdateRecordingUi();
-            status.Text = L.T("Recording saved: ") + output + (current.StopReason is string reason ? "\n" + L.T(reason) : "");
+            string rateInfo = "";
+            try
+            {
+                double? encodedRate = await VideoEditorService.ProbeEncodedFrameRateAsync(output);
+                if (encodedRate > 0) rateInfo = "\n" + L.F($"File reports {encodedRate.Value:0.#} FPS. Repeated frames may reduce visible smoothness.");
+            }
+            catch (Exception ex) { Debug.WriteLine(ex); }
+            if (test)
+            {
+                DeleteTestClip(); testClipPath = output; playTest.Visibility = Visibility.Visible;
+                status.Text = L.T("Test clip is ready. Play it to check picture and sound.") + rateInfo;
+            }
+            else status.Text = L.T("Recording saved: ") + output + rateInfo + (current.StopReason is string reason ? "\n" + L.T(reason) : "");
         }
         catch (Exception ex) { acceptingStatus = false; if (!closed) status.Text = L.T("Recording failed: ") + ex.Message; }
         finally
@@ -299,11 +342,41 @@ internal sealed class ScreenRecorderWindow : Window
     }
     private void Refresh()
     {
-        bool active = IsRecording; bool busy = session != null; start.IsEnabled = !busy && (selectedSource != null || runtimeMissing); pause.IsEnabled = stop.IsEnabled = active && !stopping;
+        bool active = IsRecording; bool busy = session != null; start.IsEnabled = testRecording.IsEnabled = !busy && (selectedSource != null || runtimeMissing); playTest.IsEnabled = !busy; pause.IsEnabled = stop.IsEnabled = active && !stopping;
         sourcePreview.IsEnabled = sourceChoice.IsEnabled = microphone.IsEnabled = systemAudio.IsEnabled = !busy;
         qualityChoice.IsEnabled = fpsChoice.IsEnabled = hardwareAcceleration.IsEnabled = !busy;
         refreshPreview.IsEnabled = !busy && selectedSource != null;
         pause.Content = Ui.Icon(paused ? "Play" : "Pause");
+    }
+    private void UpdateMeters()
+    {
+        double mic = 0, output = 0;
+        try
+        {
+            using var audio = new AudioSessionService();
+            if (microphone.IsChecked == true) mic = audio.ReadPeakLevel(true);
+            if (systemAudio.IsChecked == true) output = audio.ReadPeakLevel(false);
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            // Device changes make activity unavailable; recording validation reports hard failures.
+        }
+        microphoneMeter.Value = mic; systemMeter.Value = output;
+        hud?.UpdateMeters(microphone.IsChecked == true ? mic : null, systemAudio.IsChecked == true ? output : null);
+    }
+    private void PlayTestClip()
+    {
+        if (testClipPath == null || !File.Exists(testClipPath)) { playTest.Visibility = Visibility.Collapsed; return; }
+        try { Process.Start(new ProcessStartInfo(testClipPath) { UseShellExecute = true }); }
+        catch (Exception ex) { status.Text = L.T("Could not open test clip: ") + ex.Message; }
+    }
+    private void DeleteTestClip()
+    {
+        if (testClipPath == null) return;
+        try { File.Delete(testClipPath); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        testClipPath = null;
     }
     private void OnClosing(object? sender, CancelEventArgs e)
     {

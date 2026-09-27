@@ -4,6 +4,9 @@ public sealed class AppSettings
 {
     public bool AutomaticUpdateChecks { get; set; } = true;
     public double UpdateCheckHours { get; set; } = 1;
+    public bool AutomaticNewsChecks { get; set; } = true;
+    public string[] ReadNewsIds { get; set; } = [];
+    public string[] NotifiedNewsIds { get; set; } = [];
     public bool ClickIndicatorsEnabled { get; set; } = true;
     public bool KeystrokesEnabled { get; set; } = true;
     public bool StopwatchEnabled { get; set; } = true;
@@ -77,6 +80,7 @@ public sealed class AppSettings
     public bool FillShapes { get; set; }
     public bool ShapeSnapping { get; set; } = true;
     public bool FreezeRegionBeforeSelection { get; set; } = true;
+    public bool SmartRegionCaptureEnabled { get; set; } = true;
     public int CaptureDelaySeconds { get; set; }
     public string CaptureMonitorMode { get; set; } = "All";
     public string Color { get; set; } = "#FF2870FF";

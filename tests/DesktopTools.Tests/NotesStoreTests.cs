@@ -14,16 +14,18 @@ internal static class NotesStoreTests
         {
             var store = new NotesStore(directory);
             Check(store.Load().Count == 0, "Empty initial notes");
-            var note = new FloatingNote { Title = "Unicode: привет", Body = "one\ntwo" };
+            var note = new FloatingNote { Title = "Unicode: привет", Body = "one\ntwo", AttachedProcess = "notepad", AttachedWindow = "Draft - Notepad" };
             store.Save(new[] { note });
             var loaded = new NotesStore(directory).Load();
             Check(loaded.Count == 1 && loaded[0].Id == note.Id && loaded[0].Body == note.Body && loaded[0].Title == note.Title, "Round trip preserves content and identity");
+            Check(loaded[0].AttachedProcess == "notepad" && loaded[0].AttachedWindow == "Draft - Notepad", "Window attachment survives restart");
             note.Body = "updated"; store.Save(new[] { note });
             Check(new NotesStore(directory).Load()[0].Body == "updated", "Atomic replacement saves edits");
             Check(Directory.GetFiles(directory, "*.tmp").Length == 0, "Temporary files cleaned");
             string before = File.ReadAllText(path);
             Refused(() => store.Save(new[] { note, note }));
             Refused(() => store.Save(new[] { new FloatingNote { Body = new string('a', NotesStore.MaximumBodyLength + 1) } }));
+            Refused(() => store.Save(new[] { new FloatingNote { AttachedWindow = "Missing process" } }));
             Refused(() => store.Save(Enumerable.Range(0, 101).Select(_ => new FloatingNote()).ToArray()));
             Check(File.ReadAllText(path) == before, "Bounds errors preserve existing data");
             File.WriteAllText(path, "{broken");
