@@ -40,7 +40,8 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         Export(owner); return Task.FromResult(!HasUnsavedChanges);
     }
     private BitmapSource? encodedPreview;
-    private readonly Button undoButton, redoButton;
+    private readonly Button undoButton, redoButton, originalButton;
+    private bool showingOriginal;
     private readonly TextBox cropX = MediaWorkspaceLayout.NumericField("0"), cropY = MediaWorkspaceLayout.NumericField("0");
     private readonly TextBox cropWidth = MediaWorkspaceLayout.NumericField(), cropHeight = MediaWorkspaceLayout.NumericField();
     private string outputFormat = "PNG";
@@ -79,6 +80,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         undoButton = Icon("Undo", "Undo", () => { history?.Undo(); if (history != null) SetImage(history.Current); });
         redoButton = Icon("Redo", "Redo", () => { history?.Redo(); if (history != null) SetImage(history.Current); });
         openControls.Children.Add(undoButton); openControls.Children.Add(redoButton);
+        originalButton = Icon("Image", "Show original", ToggleOriginalPreview); originalButton.IsEnabled = false; openControls.Children.Add(originalButton);
         var more = Icon("More", "Image tools", () => { }); var menu = new ContextMenu();
         var reset = new MenuItem { Header = L.T("Reset") }; reset.Click += (_, _) => Edit(() => originalImage!); menu.Items.Add(reset);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; openControls.Children.Add(more);
@@ -113,7 +115,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         var applySize = Ui.Button(L.T("Apply size"), ResizeImage); applySize.Content = Ui.IconLabel("Check", L.T("Apply size")); applySize.Margin = new Thickness(0, 4, 0, 0); sizeRow.Children.Add(applySize);
         foreach (var field in new[] { width, height }) field.KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Enter) { ResizeImage(); e.Handled = true; } };
         var cropRow = new StackPanel();
-        var cropGuide = Ui.Text(L.T("Drag the corners to keep an area. Drag inside the frame to move it."), 12, muted: true);
+        var cropGuide = Ui.Text(L.T("Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready."), 12, muted: true);
         cropGuide.Margin = new Thickness(0, 0, 0, 12); cropRow.Children.Add(cropGuide);
         cropRow.Children.Add(Ui.Text(L.T("Aspect ratio"), 12, muted: true));
         cropRatio = Ui.Choice(new[] { "Free", "Original", "1:1", "4:3", "16:9", "9:16" }, "Free", value =>
@@ -209,6 +211,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(1, guide);
         void Mode(string mode)
         {
+            if (showingOriginal) ToggleOriginalPreview();
             activeMode = mode;
             if (mode == "Background") RefreshRuntimeWarning();
             sizeSection.Visibility = mode == "Size" ? Visibility.Visible : Visibility.Collapsed; formatSection.Visibility = mode == "Format" ? Visibility.Visible : Visibility.Collapsed;
@@ -307,7 +310,8 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     {
         originalImage ??= image; history ??= new ImageEditHistory(image); previewZoom.Value = 1; imageScroll.ScrollToHome();
         undoButton.IsEnabled = history.CanUndo; redoButton.IsEnabled = history.CanRedo; ChangedOutput();
-        bitmap = image; if (compare != null) { compare.IsChecked = false; compare.IsEnabled = ReferenceEquals(image, backgroundAfter) && backgroundBefore != null; } preview.Source = image; emptyImport.Visibility = Visibility.Collapsed; edits.IsEnabled = true; updating = true;
+        bitmap = image; showingOriginal = false; originalButton.IsEnabled = originalImage != null; Ui.Tip(originalButton, L.T("Show original"));
+        if (compare != null) { compare.IsChecked = false; compare.IsEnabled = ReferenceEquals(image, backgroundAfter) && backgroundBefore != null; } preview.Source = image; emptyImport.Visibility = Visibility.Collapsed; edits.IsEnabled = true; updating = true;
         removeBackground.IsEnabled = removal == null;
         if (activeMode == "Crop") cropRatio.SelectedItem = "Free";
         width.Text = image.PixelWidth.ToString(); height.Text = image.PixelHeight.ToString(); cropX.Text = cropY.Text = "0"; cropWidth.Text = image.PixelWidth.ToString(); cropHeight.Text = image.PixelHeight.ToString(); reductionSlider.Value = 100; updating = false; editCanvas.ResetSelection();
@@ -327,6 +331,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private void Export(Window owner)
     {
         if (bitmap == null) return;
+        if (showingOriginal) ToggleOriginalPreview();
         var dialog = new ImageExportDialog(bitmap, original, outputFormat, (int)quality.Value) { Owner = owner }; dialog.ShowDialog();
         if (dialog.SavedPath == null) return;
         savedImage = bitmap; status.Text = L.T("Saved copy: ") + dialog.SavedPath; report(L.T("Image copy saved."));
@@ -342,7 +347,18 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         if (!int.TryParse(cropX.Text, out int x) || !int.TryParse(cropY.Text, out int y) || !int.TryParse(cropWidth.Text, out int w) || !int.TryParse(cropHeight.Text, out int h)) { status.Text = L.T("Enter whole pixel crop coordinates and dimensions."); return; }
         Edit(() => ImageTransforms.Crop(bitmap!, new Int32Rect(x, y, w, h)));
     }
-    private void ChangedOutput() { revision++; encodedPreview = null; if (compare?.IsChecked != true) preview.Source = bitmap; sizeInfo.Text = L.T("Export changed. Choose Estimate size."); }
+    private void ToggleOriginalPreview()
+    {
+        if (bitmap == null || originalImage == null) return;
+        showingOriginal = !showingOriginal;
+        if (showingOriginal && compare?.IsChecked == true) compare.IsChecked = false;
+        preview.Source = showingOriginal ? originalImage : encodedPreview ?? bitmap;
+        editCanvas.ShowHandles(!showingOriginal && (activeMode is "Size" or "Crop"));
+        Ui.Tip(originalButton, L.T(showingOriginal ? "Show edited" : "Show original"));
+        System.Windows.Automation.AutomationProperties.SetName(originalButton, L.T(showingOriginal ? "Show edited" : "Show original"));
+        status.Text = L.T(showingOriginal ? "Viewing original. Edits are still in your working copy." : "Viewing edited working copy. Export saves a separate file.");
+    }
+    private void ChangedOutput() { revision++; encodedPreview = null; if (compare?.IsChecked != true && !showingOriginal) preview.Source = bitmap; sizeInfo.Text = L.T("Export changed. Choose Estimate size."); }
     private async Task Estimate()
     {
         if (bitmap == null || estimating) return;
@@ -356,7 +372,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             if (version == revision)
             {
                 using var stream = new MemoryStream(encoded); var decoded = new BitmapImage(); decoded.BeginInit(); decoded.CacheOption = BitmapCacheOption.OnLoad; decoded.StreamSource = stream; decoded.EndInit(); decoded.Freeze(); encodedPreview = decoded;
-                if (compare?.IsChecked != true) preview.Source = decoded;
+                if (compare?.IsChecked != true && !showingOriginal) preview.Source = decoded;
             }
             if (version == revision) sizeInfo.Text = L.F($"Export: {bytes / 1024d:0.0} KB") + (originalBytes > 0 ? L.F($" · Original: {originalBytes / 1024d:0.0} KB · {(bytes < originalBytes ? L.T("smaller") : L.T("not smaller"))}") : "");
         }

@@ -46,6 +46,13 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 
 Share the full monitor in Discord to a second participant/device. The remote observer must confirm whether ink appears, palette/popovers appear, or black rectangles/artifacts occur. Repeat with exclusion disabled and manual hiding. Also characterize application-window sharing separately. Enter observations in `compatibility.md`; SetWindowDisplayAffinity success alone is not a pass.
 
+## Window notes, recorder confidence, and editor preview
+
+- Attach a floating note to another application's window. Move that window across monitors and change its size; the note should follow without jumping when you drag the note to a new offset. Minimize and restore the application window; the note should hide and reappear. Restart DesktopTools and confirm the attachment recovers when exactly one matching window is open. Detach it from the notes list.
+- Play known microphone and system audio, enable each source separately, and confirm its meter responds. Record a five-second test from the audio setup area, play it, and verify picture and audible tracks. Confirm the bottom Start/Pause/Stop controls stay on one row. Put another app in front of the recorder setup window; it should stay in front until DesktopTools is activated again. Repeat the audio test with one source muted. Close the recorder and confirm the temporary test clip is removed when no player holds it open.
+- Record to a nearly full destination and confirm the free-space warning appears before capture starts. On a normal recording, compare the displayed file FPS with the file's metadata; do not treat it as a count of distinct captured frames.
+- In screenshot and image tools, make an edit, toggle Original/Edited, then export. Confirm the exported copy contains the edits and the original file remains unchanged. In video tools, wait for automatic preview, toggle Original/Edited, and confirm the edited preview returns without another render. Check crop guidance and controls at the smallest supported window size in every language.
+
 ## 2.1.2 manual follow-up
 - Cursor monitor mode: activate Draw/Laser/Spotlight/Freeze on A, hide or interact, move pointer to B and activate again. Verify B is used. Drawing starts fresh on B; capture cancellation retains A's document.
 - Capture B with A's ink or frozen session: exported pixels must show B without A's ink. Check at mixed DPI and negative monitor origins.
@@ -86,6 +93,9 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 ## GitHub update acceptance
 
 Use a disposable Windows account or VM with two stable published versions and their checksum manifests. These steps exercise real installation and cannot be established by protocol fixtures alone.
+
+- Open News offline and confirm the bundled announcement is readable. Restore network access, publish a new ordinary feed item, and confirm a single notification, Home cue and unread indicator. Open News, then restart; read/notified state should persist. Disable automatic news checks and confirm manual refresh still works.
+- In a disposable test feed, publish a `security` item whose safe version is newer than the installed version. Before a matching stable release exists, confirm the app shows an in-app warning and a persistent notification with no automatic installer. After publishing a matching stable release, confirm the urgent Update action still asks before downloading/restarting and uses the verified installer. Dismiss the notice, confirm the in-app warning remains, then check for a reminder after about an hour. Withdraw the feed item and confirm the urgent state clears.
 
 - Install the earlier version, create a note and change a setting. Confirm startup/manual checks find the newer release; change the background interval and verify disabling it leaves manual checks available.
 - Leave the update notification without any input, then return. Open release notes and confirm the notification remains, reports the browser action and uses the extended duration. When its message expands or contracts, confirm the notification resizes smoothly and nearby notices do not overlap. During download, confirm the rounded progress bar uses the app accent in both light and dark themes and advances smoothly. Dismiss the notice and confirm the sidebar and Updates page still offer the update.

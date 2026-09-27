@@ -1,0 +1,7 @@
+{
+  "Show edited": "Показать изменения",
+  "Viewing original. Edits are still in your working copy.": "Показан оригинал. Изменения сохранены в рабочей копии.",
+  "Viewing edited working copy. Export saves a separate file.": "Показана рабочая копия с изменениями. Экспорт сохранит отдельный файл.",
+  "Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready.": "Перетащите синие маркеры, чтобы выбрать область, или потяните рамку внутри, чтобы переместить её. Затем нажмите «Применить обрезку».",
+  "Drag an area to keep. The crop applies on release; Undo restores it.": "Выделите область, которую нужно оставить. Обрезка применится после отпускания кнопки; «Отменить» восстановит её."
+}

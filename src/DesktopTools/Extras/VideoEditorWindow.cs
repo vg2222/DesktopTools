@@ -140,7 +140,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         var feedback = new StackPanel { Margin = new Thickness(0, 8, 0, 6) }; feedback.Children.Add(progress); feedback.Children.Add(status); AddRow(root, feedback, 5);
         var actions = new WrapPanel();
         resetButton = Ui.IconButton("RotateLeft", L.T("Reset"), Reset);
-        originalButton = Ui.IconButton("Video", L.T("Show original"), ShowOriginal);
+        originalButton = Ui.IconButton("Video", L.T("Show original"), ToggleBeforeAfter);
         previewButton = Ui.Button(L.T("Update preview"), async () => await RenderAsync(previewOnly: true)); previewButton.Content = Ui.IconLabel("Refresh", L.T("Update preview"));
         exportButton = Ui.Button(L.T("Export MP4"), async () => await RenderAsync(previewOnly: false), true);
         cancelButton = Ui.Button(L.T("Cancel"), () => { previewPending = false; previewTimer.Stop(); operation?.Cancel(); });
@@ -166,7 +166,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         cropRatio = Ui.Choice(new[] { "Free", "Original", "1:1", "4:3", "16:9", "9:16" }, "Free", ApplyCropRatio);
         AutomationProperties.SetName(cropRatio, L.T("Aspect ratio"));
         var cropOptions = new StackPanel();
-        var cropHelp = Ui.Text(L.T("Drag the corners to keep an area. Drag inside to move it. Apply crop when ready."), 12, muted: true); cropHelp.Margin = new Thickness(0, 0, 0, 10); cropOptions.Children.Add(cropHelp);
+        var cropHelp = Ui.Text(L.T("Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready."), 12, muted: true); cropHelp.Margin = new Thickness(0, 0, 0, 10); cropOptions.Children.Add(cropHelp);
         editCropButton = Ui.Button(L.T("Edit crop"), BeginCrop); editCropButton.Content = Ui.IconLabel("Crop", L.T("Edit crop")); editCropButton.Margin = new Thickness(0, 0, 0, 10); cropOptions.Children.Add(editCropButton);
         cropOptions.Children.Add(Field(L.T("Aspect ratio"), cropRatio, 240));
         foreach (var field in crop.Children.OfType<StackPanel>()) { field.Width = 110; field.Margin = new Thickness(0, 0, 10, 8); }
@@ -458,6 +458,19 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         SetPlaybackSource(source.Path, source.Duration, edited: false);
         status.Text = L.T("Original video. Your source file stays unchanged."); RefreshEnabled();
     }
+    private void ToggleBeforeAfter()
+    {
+        if (source == null || busy) return;
+        if (showingEdited) { ShowOriginal(); return; }
+        if (renderedPreview == null || !File.Exists(renderedPreview)) return;
+        try
+        {
+            SetPlaybackSource(renderedPreview, ReadEdit().OutputDuration(source), edited: true);
+            status.Text = L.T("Edited preview ready. Press Play to review before exporting.");
+            RefreshEnabled();
+        }
+        catch (Exception ex) { ShowError(ex); }
+    }
 
     private VideoEdit ReadEdit()
     {
@@ -567,7 +580,11 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         if (source != null) { try { var size = ReadEdit().OutputSize(source); outputSize.Text = $"{outputPercent.Value:0}% · {size.Width} × {size.Height} px"; } catch (ArgumentException) { outputSize.Text = "—"; } }
         empty.IsEnabled = openButton.IsEnabled = !busy && !closed; editPanel.IsEnabled = source != null && (!busy || previewRendering) && !closed;
         resetButton.IsEnabled = ready; previewButton.IsEnabled = ready; exportButton.IsEnabled = ready;
-        originalButton.IsEnabled = ready && showingEdited; playButton.IsEnabled = ready && mediaOpened;
+        originalButton.IsEnabled = ready && (showingEdited || renderedPreview != null);
+        string previewAction = L.T(showingEdited ? "Show original" : "Show edited");
+        Ui.Tip(originalButton, previewAction);
+        System.Windows.Automation.AutomationProperties.SetName(originalButton, previewAction);
+        playButton.IsEnabled = ready && mediaOpened;
         seek.IsEnabled = ready && mediaOpened; cutFields.IsEnabled = removeSection.IsChecked == true;
         timeline.IsEnabled = editPanel.IsEnabled;
         cropActions.Visibility = cropEditing ? Visibility.Visible : Visibility.Collapsed;

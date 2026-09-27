@@ -45,6 +45,14 @@ public static class VideoEditorService
         new VideoEdit(0, info.Duration).Validate(info);
         return info;
     }
+    /// <summary>Container-reported frame rate; it does not prove that every frame is unique.</summary>
+    internal static async Task<double?> ProbeEncodedFrameRateAsync(string path)
+    {
+        var file = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(path));
+        var clip = await MediaClip.CreateFromFileAsync(file);
+        var rate = clip.GetVideoEncodingProperties().FrameRate;
+        return rate.Numerator > 0 && rate.Denominator > 0 ? rate.Numerator / (double)rate.Denominator : null;
+    }
     public static async Task ExportAsync(VideoInfo source, VideoEdit edit, string output, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         edit.Validate(source); cancellationToken.ThrowIfCancellationRequested();

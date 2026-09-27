@@ -17,6 +17,9 @@ internal sealed class RecordingHudWindow : Window
     private readonly Ellipse indicator = new() { Width = 14, Height = 14, Fill = Brushes.Coral, Margin = new Thickness(0, 0, 14, 0) };
     private readonly Button pause, stop;
     private readonly TextBlock sourceName;
+    private readonly ProgressBar microphoneMeter = RecordingAudioMeter.Create(5, new Thickness(0));
+    private readonly ProgressBar systemMeter = RecordingAudioMeter.Create(5, new Thickness(0));
+    private readonly StackPanel meterRow = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 5, 0, 0) };
     private readonly string sourceLabel;
     private bool completed;
     private readonly ColumnDefinition timeColumn;
@@ -27,7 +30,13 @@ internal sealed class RecordingHudWindow : Window
         Title = L.T("Screen recorder"); Width = 470; Height = 78; ResizeMode = ResizeMode.NoResize;
         WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent;
         ShowInTaskbar = false; Topmost = true; ShowActivated = false; WindowStartupLocation = WindowStartupLocation.Manual;
-        var monitor = display ?? MonitorService.GetCurrent();
+        MonitorInfo monitor;
+        if (display != null) monitor = display;
+        else
+        {
+            try { monitor = MonitorService.GetCurrent(); }
+            catch (System.ComponentModel.Win32Exception) { monitor = MonitorService.GetCurrent(primary: true); }
+        }
         var initial = BottomPlacement(monitor, new Size(Width, Height));
         Left = initial.Left / monitor.ScaleX; Top = initial.Top / monitor.ScaleY;
         Loaded += (_, _) =>
@@ -42,7 +51,13 @@ internal sealed class RecordingHudWindow : Window
         Add(indicator, 0); Add(time, 1);
         var divider = new Border { Width = 1, Height = 28 }; divider.SetResourceReference(Border.BackgroundProperty, "Stroke"); Add(divider, 2);
         sourceLabel = source; var name = sourceName = Ui.Text(source, 12); name.TextWrapping = TextWrapping.NoWrap; name.TextTrimming = TextTrimming.CharacterEllipsis; name.ToolTip = source;
-        var label = new DockPanel { Margin = new Thickness(14, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center }; var icon = Ui.Icon("Monitor", 20); icon.Margin = new Thickness(0, 0, 9, 0); label.Children.Add(icon); label.Children.Add(name); Add(label, 3);
+        var label = new DockPanel { Margin = new Thickness(14, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center }; var icon = Ui.Icon("Monitor", 20); icon.Margin = new Thickness(0, 0, 9, 0); label.Children.Add(icon);
+        var sourceStack = new StackPanel(); sourceStack.Children.Add(name);
+        microphoneMeter.Width = systemMeter.Width = 46;
+        microphoneMeter.ToolTip = L.T("Microphone activity"); systemMeter.ToolTip = L.T("System audio activity");
+        AutomationProperties.SetName(microphoneMeter, L.T("Microphone activity")); AutomationProperties.SetName(systemMeter, L.T("System audio activity"));
+        meterRow.Children.Add(microphoneMeter); systemMeter.Margin = new Thickness(8, 0, 0, 0); meterRow.Children.Add(systemMeter); meterRow.Visibility = Visibility.Collapsed;
+        sourceStack.Children.Add(meterRow); label.Children.Add(sourceStack); Add(label, 3);
         pause = Ui.IconButton("Pause", L.T("Pause"), togglePause); stop = Ui.IconButton("Stop", L.T("Stop"), requestStop);
         foreach (var button in new[] { pause, stop }) { button.Width = button.Height = 42; button.Margin = new Thickness(3, 0, 3, 0); button.VerticalAlignment = VerticalAlignment.Center; DesignTokens.SetButtonRadius(button, new CornerRadius(21)); }
         pause.SetResourceReference(Control.BackgroundProperty, "Card"); stop.Background = new SolidColorBrush(Color.FromRgb(222, 53, 65)); ((Shape)stop.Content).Fill = Brushes.White;
@@ -70,6 +85,14 @@ internal sealed class RecordingHudWindow : Window
         sourceName.Text = sourceSuspended ? L.T("Source paused") : sourceLabel; sourceName.ToolTip = sourceSuspended ? L.T("Source window is minimized or hidden. Recording is paused.") : sourceLabel;
     }
     internal void Finish() { completed = true; Close(); }
+    internal void UpdateMeters(double? microphone, double? systemAudio)
+    {
+        microphoneMeter.Visibility = microphone.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        systemMeter.Visibility = systemAudio.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        meterRow.Visibility = microphone.HasValue || systemAudio.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        microphoneMeter.Value = Math.Clamp(microphone ?? 0, 0, 1);
+        systemMeter.Value = Math.Clamp(systemAudio ?? 0, 0, 1);
+    }
     internal static Rect BottomPlacement(MonitorInfo monitor, Size size)
     {
         var area = monitor.WorkingArea;

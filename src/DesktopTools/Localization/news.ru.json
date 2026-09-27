@@ -1,0 +1,22 @@
+{
+  "News": "Новости",
+  "Announcements and important update notices.": "Новости и важные уведомления об обновлениях.",
+  "News is available offline. Check for newer announcements.": "Сохранённые новости доступны без сети. Проверьте новые объявления.",
+  "Checking news…": "Проверяем новости…",
+  "Showing bundled news. No online feed is available yet.": "Показываем встроенные новости. Онлайн-лента пока недоступна.",
+  "News is up to date.": "Новости обновлены.",
+  "Could not check news. Showing saved announcements.": "Не удалось проверить новости. Показываем сохранённые объявления.",
+  "Open news": "Открыть новости",
+  "View details": "Подробнее",
+  "Remind me later": "Напомнить позже",
+  "Security update available": "Доступно обновление безопасности",
+  "Latest announcements": "Последние новости",
+  "Check news": "Проверить новости",
+  "Check news automatically": "Проверять новости автоматически",
+  "Checks once an hour while DesktopTools is running.": "Проверка раз в час, пока DesktopTools работает.",
+  "No announcements yet. Check again later.": "Новостей пока нет. Проверьте позже.",
+  "Security notice": "Уведомление безопасности",
+  "Announcement": "Объявление",
+  "A fixed update is ready. DesktopTools will ask before downloading or restarting.": "Исправленное обновление доступно. DesktopTools спросит разрешение перед загрузкой и перезапуском.",
+  "A fixed update is not available yet. Check for updates or read the details.": "Исправленное обновление пока недоступно. Проверьте обновления или прочитайте подробности."
+}

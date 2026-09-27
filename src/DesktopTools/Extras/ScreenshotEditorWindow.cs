@@ -19,6 +19,9 @@ public sealed class ScreenshotEditorWindow : Window
     private readonly Canvas _surface;
     private readonly EditCanvas _drawing;
     private readonly Button _undo, _redo;
+    private readonly Button _originalButton;
+    private readonly Image _originalLayer;
+    private bool _showingOriginal;
     private readonly Button _colorButton;
     private readonly Dictionary<string, Button> _tools = [];
     private readonly TextBlock _status;
@@ -49,6 +52,8 @@ public sealed class ScreenshotEditorWindow : Window
         var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Edit screenshot"), Close, L.T("Close"), 13); layout.Children.Add(header);
         var work = new Grid(); work.ColumnDefinitions.Add(new ColumnDefinition()); work.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(230) }); Grid.SetRow(work, 2); layout.Children.Add(work);
         _surface = new Canvas { Width = image.PixelWidth, Height = image.PixelHeight, Background = Brushes.Transparent, ClipToBounds = true, Cursor = Cursors.Cross };
+        _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
+        _surface.Children.Add(_originalLayer);
         _drawing = new EditCanvas(image, _document) { Width = image.PixelWidth, Height = image.PixelHeight, IsHitTestVisible = false }; _surface.Children.Add(_drawing);
         var backdrop = new Border { Child = new Viewbox { Child = _surface, Stretch = Stretch.Uniform }, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
         backdrop.SetResourceReference(Border.BackgroundProperty, "Card"); backdrop.SetResourceReference(Border.BorderBrushProperty, "Stroke"); work.Children.Add(backdrop);
@@ -71,7 +76,7 @@ public sealed class ScreenshotEditorWindow : Window
         _status = Ui.Text("", 11, muted: true); _status.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(_status);
         var propertyCard = Ui.Card(properties, 14); propertyCard.VerticalAlignment = VerticalAlignment.Top; propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 1); work.Children.Add(propertyCard);
         var tools = new WrapPanel();
-        void SelectTool(string tool) { CommitText(); CancelGesture(); _tool = tool; Update(); }
+        void SelectTool(string tool) { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = tool; Update(); }
         foreach (var tool in new[] { "Select", "Pen", "Highlighter", "Arrow", "Rectangle", "Ellipse", "Text", "Eraser", "Crop" })
         {
             var button = Ui.IconButton(tool, L.T(tool), () => SelectTool(tool)); button.Width = button.Height = button.MinHeight = 32; button.Padding = new Thickness(7); button.Margin = new Thickness(1); _tools.Add(tool, button); tools.Children.Add(button);
@@ -85,6 +90,7 @@ public sealed class ScreenshotEditorWindow : Window
         var ocr = new MenuItem { Header = L.T("Extract text"), Icon = Ui.Icon("ScanText", 16) }; ocr.Click += (_, _) => ExtractText(); menu.Items.Add(ocr);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; tools.Children.Add(more); Closed += (_, _) => menu.IsOpen = false;
         _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); _undo.Width = _redo.Width = 32; tools.Children.Add(_undo); tools.Children.Add(_redo);
+        _originalButton = Ui.IconButton("Image", L.T("Show original"), ToggleOriginal); _originalButton.Width = 32; tools.Children.Add(_originalButton);
         var toolCard = Ui.Card(tools, 6); toolCard.Margin = new Thickness(0, 0, 12, 0); toolCard.VerticalAlignment = VerticalAlignment.Center;
         var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
         var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; DockPanel.SetDock(actions, Dock.Right); footer.Children.Add(actions);
@@ -114,6 +120,7 @@ public sealed class ScreenshotEditorWindow : Window
     private Annotation Current() => new() { Kind = _tool == "Crop" ? AnnotationKind.Rectangle : Enum.Parse<AnnotationKind>(_tool), Points = _points.ToArray(), Color = _color, Thickness = _thickness, Opacity = _opacity };
     private void Begin(object sender, MouseButtonEventArgs e)
     {
+        if (_showingOriginal) { e.Handled = true; return; }
         if (_editor != null && _editor.IsMouseOver) return;
         CommitText(); CancelGesture(); var point = Position(e);
         if (_tool is "Select" or "Eraser")
@@ -202,6 +209,13 @@ public sealed class ScreenshotEditorWindow : Window
     private void LostCapture(object sender, MouseEventArgs e) { if (_gesture) CancelGesture(); }
     private void Undo() { CommitText(); CancelGesture(); _document.Undo(); Update(); }
     private void Redo() { CommitText(); CancelGesture(); _document.Redo(); Update(); }
+    private void ToggleOriginal()
+    {
+        CommitText(); CancelGesture(); _showingOriginal = !_showingOriginal;
+        _originalLayer.Visibility = _showingOriginal ? Visibility.Visible : Visibility.Collapsed;
+        _drawing.Visibility = _showingOriginal ? Visibility.Collapsed : Visibility.Visible;
+        Ui.Tip(_originalButton, L.T(_showingOriginal ? "Show edited" : "Show original")); Update();
+    }
     private void Update()
     {
         _undo.IsEnabled = _document.CanUndo; _redo.IsEnabled = _document.CanRedo;
@@ -209,8 +223,9 @@ public sealed class ScreenshotEditorWindow : Window
         colorContent.Children.Add(new Border { Width = 18, Height = 18, CornerRadius = new CornerRadius(5), Background = new SolidColorBrush(_color), BorderBrush = Ui.Brush("Stroke"), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 8, 0) });
         colorContent.Children.Add(Ui.Text(_color.ToString(), 12)); _colorButton.Content = colorContent;
         foreach (var (tool, button) in _tools) button.SetResourceReference(BackgroundProperty, tool == _tool ? "Selected" : "Field");
-        var hint = _tool switch { "Crop" => L.T("Drag to select the area to keep."), "Text" => L.T("Click to add text. Ctrl+Enter to finish."), "Number" => L.T("Click to add the next numbered step."), "Eyedropper" => L.T("Click inside the crop to choose its pixel color."), "Redaction" => L.T("Drag an opaque cover over private details."), _ => L.T("Drag on the image to annotate.") };
-        _status.Text = L.F($"{_document.Crop.Width} × {_document.Crop.Height} pixels   •   {hint}");
+        var hint = _tool switch { "Crop" => L.T("Drag an area to keep. The crop applies on release; Undo restores it."), "Text" => L.T("Click to add text. Ctrl+Enter to finish."), "Number" => L.T("Click to add the next numbered step."), "Eyedropper" => L.T("Click inside the crop to choose its pixel color."), "Redaction" => L.T("Drag an opaque cover over private details."), _ => L.T("Drag on the image to annotate.") };
+        _status.Text = _showingOriginal ? L.T("Viewing original. Edits are still in your working copy.")
+            : L.F($"{_document.Crop.Width} × {_document.Crop.Height} pixels   •   {hint}");
         _drawing.InvalidateVisual();
     }
     private void ExtractText()
@@ -221,6 +236,7 @@ public sealed class ScreenshotEditorWindow : Window
     }
     private void Export(string action)
     {
+        if (_showingOriginal) ToggleOriginal();
         CommitText(); CancelGesture();
         try
         {

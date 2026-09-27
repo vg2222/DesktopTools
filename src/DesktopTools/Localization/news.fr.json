@@ -1,0 +1,22 @@
+{
+  "News": "Actualités",
+  "Announcements and important update notices.": "Annonces et avis de mise à jour importants.",
+  "News is available offline. Check for newer announcements.": "Les actualités enregistrées restent disponibles hors ligne. Vérifiez les nouvelles annonces.",
+  "Checking news…": "Vérification des actualités…",
+  "Showing bundled news. No online feed is available yet.": "Affichage des actualités intégrées. Le flux en ligne n’est pas encore disponible.",
+  "News is up to date.": "Les actualités sont à jour.",
+  "Could not check news. Showing saved announcements.": "Vérification impossible. Affichage des annonces enregistrées.",
+  "Open news": "Ouvrir les actualités",
+  "View details": "Voir les détails",
+  "Remind me later": "Me le rappeler plus tard",
+  "Security update available": "Mise à jour de sécurité disponible",
+  "Latest announcements": "Dernières annonces",
+  "Check news": "Vérifier les actualités",
+  "Check news automatically": "Vérifier les actualités automatiquement",
+  "Checks once an hour while DesktopTools is running.": "Vérification horaire pendant que DesktopTools fonctionne.",
+  "No announcements yet. Check again later.": "Aucune annonce pour le moment. Revenez plus tard.",
+  "Security notice": "Avis de sécurité",
+  "Announcement": "Annonce",
+  "A fixed update is ready. DesktopTools will ask before downloading or restarting.": "Une mise à jour corrective est disponible. DesktopTools demandera votre accord avant le téléchargement et le redémarrage.",
+  "A fixed update is not available yet. Check for updates or read the details.": "Aucune mise à jour corrective n’est encore disponible. Vérifiez les mises à jour ou consultez les détails."
+}

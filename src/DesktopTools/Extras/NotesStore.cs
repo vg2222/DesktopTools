@@ -12,8 +12,12 @@ public sealed class FloatingNote : System.ComponentModel.INotifyPropertyChanged
     public Guid Id { get; set; } = Guid.NewGuid();
     private string title = "";
     private string body = "";
+    private string? attachedProcess;
+    private string? attachedWindow;
     public string Title { get => title; set { if (title == value) return; title = value; PropertyChanged?.Invoke(this, new(nameof(Title))); } }
     public string Body { get => body; set { if (body == value) return; body = value; PropertyChanged?.Invoke(this, new(nameof(Body))); } }
+    public string? AttachedProcess { get => attachedProcess; set { if (attachedProcess == value) return; attachedProcess = value; PropertyChanged?.Invoke(this, new(nameof(AttachedProcess))); } }
+    public string? AttachedWindow { get => attachedWindow; set { if (attachedWindow == value) return; attachedWindow = value; PropertyChanged?.Invoke(this, new(nameof(AttachedWindow))); } }
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 }
 
@@ -87,7 +91,7 @@ public sealed class NotesStore
         if (notes.Count > MaximumNotes) throw new ArgumentException(L.T("At most 100 notes can be saved."));
         var ids = new HashSet<Guid>();
         foreach (var note in notes)
-            if (note == null || note.Id == Guid.Empty || !ids.Add(note.Id) || note.Title == null || note.Body == null || note.Title.Length > MaximumTitleLength || note.Body.Length > MaximumBodyLength)
+            if (note == null || note.Id == Guid.Empty || !ids.Add(note.Id) || note.Title == null || note.Body == null || note.Title.Length > MaximumTitleLength || note.Body.Length > MaximumBodyLength || note.AttachedProcess?.Length > 260 || note.AttachedWindow?.Length > 1024 || (note.AttachedProcess == null) != (note.AttachedWindow == null))
                 throw new ArgumentException(L.T("Notes contain invalid, duplicate, or oversized entries."));
     }
 }

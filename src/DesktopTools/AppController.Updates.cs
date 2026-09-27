@@ -33,17 +33,25 @@ internal sealed partial class AppController
     internal void StartUpdateChecks()
     {
         if (smoke) return;
+        InitializeNews();
         updateTimer.Tick += async (_, _) =>
         {
             if (Settings.AutomaticUpdateChecks && Settings.UpdateCheckHours > 0 &&
                 DateTimeOffset.UtcNow - lastUpdateAttempt >= TimeSpan.FromHours(Settings.UpdateCheckHours))
                 await CheckForUpdatesAsync(false);
+            if (Settings.AutomaticNewsChecks && DateTimeOffset.UtcNow - lastNewsAttempt >= TimeSpan.FromHours(1))
+                await CheckNewsAsync(false);
         };
         updateTimer.Start(); _ = CheckAfterStartupAsync();
     }
     private async Task CheckAfterStartupAsync()
     {
-        try { await Task.Delay(10000, updateLifetime.Token); if (Settings.AutomaticUpdateChecks) await CheckForUpdatesAsync(false); }
+        try
+        {
+            await Task.Delay(10000, updateLifetime.Token);
+            if (Settings.AutomaticUpdateChecks) await CheckForUpdatesAsync(false);
+            if (Settings.AutomaticNewsChecks) await CheckNewsAsync(false);
+        }
         catch (OperationCanceledException) { }
     }
     internal async Task CheckForUpdatesAsync(bool manual = true)
@@ -77,16 +85,28 @@ internal sealed partial class AppController
         { AvailableUpdate = null; UpdateStatus = L.T(release == null ? "No public release is available yet." : "DesktopTools is up to date."); }
         else
         {
-            AvailableUpdate = release; UpdateStatus = L.T("Update available") + " · " + release.Version;
-            if (manual || notifiedUpdate != release.Version) { notifiedUpdate = release.Version; ShowUpdateNotice(); }
+            AvailableUpdate = release; UpdateStatus = L.T(SafeSecurityReleaseAvailable ? "Security update available" : "Update available") + " · " + release.Version;
+            if (manual || notifiedUpdate != release.Version)
+            {
+                notifiedUpdate = release.Version;
+                if (ActiveSecurityAlert == null || SafeSecurityReleaseAvailable) ShowUpdateNotice();
+            }
         }
+        NotifySecurityIfNeeded();
         UpdateChanged?.Invoke();
     }
     private void ShowUpdateNotice()
     {
         updateNotice?.Close();
-        var notice = new NotificationWindow(UpdateStatus, NotificationKind.Info, main, Settings.MessageNotificationStyle,
-            actions: [("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())], seconds: Settings.NotificationSeconds);
+        bool emergency = SafeSecurityReleaseAvailable && !IsSecuritySnoozed(ActiveSecurityAlert);
+        var alert = ActiveSecurityAlert;
+        string message = emergency && alert != null ? L.T("Security update available") + " · " + AvailableUpdate?.Version + "\n" + alert.LocalMessage : UpdateStatus;
+        var actions = emergency && alert != null
+            ? new (string Label, Action Run)[] { ("Update", () => _ = BeginBackgroundUpdateAsync()), ("View details", () => OpenNewsLink(alert)), ("Remind me later", SnoozeSecurityNotice) }
+            : new (string Label, Action Run)[] { ("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close()) };
+        var notice = new NotificationWindow(message, emergency ? NotificationKind.Warning : NotificationKind.Info, main, Settings.MessageNotificationStyle,
+            actions: actions, seconds: Settings.NotificationSeconds);
+        notice.HoldOpen = emergency;
         notice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
         updateNotice = notice; notice.Closed += (_, _) => { if (ReferenceEquals(updateNotice, notice)) { updateNotice = null; updatePromptOpen = false; } }; notice.Show();
     }
@@ -104,6 +124,7 @@ internal sealed partial class AppController
     internal Task BeginBackgroundUpdateAsync()
     {
         if (AvailableUpdate == null || DownloadingUpdate || disposed || updatePromptOpen) return Task.CompletedTask;
+        if (ActiveSecurityAlert != null && !SafeSecurityReleaseAvailable) { OpenNews(); return Task.CompletedTask; }
         bool installed;
         try
         {
@@ -126,10 +147,15 @@ internal sealed partial class AppController
         if (!updatePromptOpen) return;
         updatePromptOpen = false;
         if (updateNotice == null) return;
-        updateNotice.HoldOpen = false;
+        bool emergency = SafeSecurityReleaseAvailable && !IsSecuritySnoozed(ActiveSecurityAlert);
+        updateNotice.HoldOpen = emergency;
         updateNotice.ClickAction = () => _ = BeginBackgroundUpdateAsync();
-        updateNotice.UpdateMessage(UpdateStatus,
-            actions: [("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())]);
+        var alert = ActiveSecurityAlert;
+        updateNotice.UpdateMessage(emergency && alert != null ? L.T("Security update available") + " · " + AvailableUpdate?.Version + "\n" + alert.LocalMessage : UpdateStatus,
+            kind: emergency ? NotificationKind.Warning : NotificationKind.Info,
+            actions: emergency && alert != null
+                ? [("Update", () => _ = BeginBackgroundUpdateAsync()), ("View details", () => OpenNewsLink(alert)), ("Remind me later", SnoozeSecurityNotice)]
+                : [("Update", () => _ = BeginBackgroundUpdateAsync()), ("Release notes", OpenUpdateNotes), ("Dismiss", () => updateNotice?.Close())]);
     }
     private async Task ConfirmBackgroundUpdateAsync(bool installed)
     {
@@ -211,6 +237,6 @@ internal sealed partial class AppController
     }
     private void StopUpdateChecks()
     {
-        updateTimer.Stop(); updateLifetime.Cancel(); updateNotice?.Close(); UpdateClient.Dispose();
+        updateTimer.Stop(); updateLifetime.Cancel(); updateNotice?.Close(); StopNewsChecks(); UpdateClient.Dispose();
     }
 }

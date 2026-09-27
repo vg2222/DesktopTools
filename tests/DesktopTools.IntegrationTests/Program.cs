@@ -38,6 +38,7 @@ internal static class Program
                 else if (args.Contains("--record-prerequisites-only")) await Test("Recorder prerequisite UI guard and retry", RecordingPrerequisiteChecks.RunAsync);
                 else if (args.Contains("--native-runtime-features-only")) await Test("Native runtime warnings for translation and background removal", NativeRuntimeFeatureChecks.RunAsync);
                 else if (args.Contains("--updates-only")) await Test("Update discovery, persistent controls, notes feedback and progress", UpdateChecks.RunAsync);
+                else if (args.Contains("--news-only")) await Test("Announcements and emergency-update guidance", NewsChecks.RunAsync);
                 else if (args.Contains("--interaction-refinement-only")) await Test("Capture privacy and editor interaction refinements", InteractionRefinementChecks.RunAsync);
                 else if (args.Contains("--bug-regressions-only")) await Test("Focused bug regressions", BugRegressionChecks.RunAsync);
                 else if (args.Contains("--onboarding-refinement-only")) await Test("Onboarding, icons, switches and audience visibility", OnboardingRefinementChecks.RunAsync);

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "news-center-1-2-6",
+      "kind": "news",
+      "publishedUtc": "2026-09-26T00:00:00Z",
+      "title": {
+        "en": "News is now in DesktopTools",
+        "ru": "Новости теперь в DesktopTools",
+        "de": "Neuigkeiten jetzt in DesktopTools",
+        "fr": "Les actualités arrivent dans DesktopTools",
+        "es": "Las noticias llegan a DesktopTools"
+      },
+      "message": {
+        "en": "Find product announcements and important update notices here. DesktopTools never installs an update without your confirmation.",
+        "ru": "Здесь будут новости приложения и важные уведомления об обновлениях. DesktopTools не устанавливает обновления без вашего подтверждения.",
+        "de": "Hier finden Sie Produktneuigkeiten und wichtige Update-Hinweise. DesktopTools installiert Updates nur mit Ihrer Bestätigung.",
+        "fr": "Retrouvez ici les actualités du produit et les avis de mise à jour importants. DesktopTools n’installe rien sans votre confirmation.",
+        "es": "Aquí encontrará novedades y avisos importantes de actualización. DesktopTools no instala actualizaciones sin su confirmación."
+      },
+      "url": "https://github.com/vg2222/DesktopTools"
+    }
+  ]
+}

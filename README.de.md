@@ -57,7 +57,7 @@ Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualitä
 
 Kein Konto. Keine Telemetrie. Keine Verarbeitung deiner Inhalte in der Cloud. Deine Screenshots, Notizen, Texterkennung, Englisch-Russisch-Übersetzungen und Hintergrundentfernungen werden auf deinem PC verarbeitet.
 
-Du entscheidest, wo Bilder und Aufnahmen gespeichert werden. Automatische Updateprüfungen rufen Versionsinformationen von GitHub ab; deine Medien oder Notizen werden dabei nicht hochgeladen. Unter **Einstellungen → Updates** kannst du das Prüfintervall ändern oder automatische Prüfungen deaktivieren.
+Du entscheidest, wo Bilder und Aufnahmen gespeichert werden. Automatische Updateprüfungen rufen Versionsinformationen von GitHub ab; deine Medien oder Notizen werden dabei nicht hochgeladen. Unter **Einstellungen → Updates** kannst du das Prüfintervall ändern oder automatische Prüfungen deaktivieren. Die Seite **Neuigkeiten** kann stündlich Ankündigungen aus diesem Repository abrufen; dafür gibt es einen eigenen Schalter. Sicherheitshinweise installieren Updates niemals ohne deine Bestätigung.
 
 Steuerelemente für Aufnahme und Zeichnen, Benachrichtigungen, schwebende Notizen und der Teleprompter sind in unterstützten Aufnahmen zunächst ausgeblendet. Zeichnungen und Effekte für das Publikum bleiben sichtbar. Passe einzelne Werkzeuge unter **Einstellungen → Datenschutz** an. Ob Elemente aus der Aufnahme ausgeschlossen werden, hängt von der verwendeten Aufnahme- oder Freigabe-App ab. Prüfe daher die empfangene Ansicht, bevor du dich darauf verlässt.
 
