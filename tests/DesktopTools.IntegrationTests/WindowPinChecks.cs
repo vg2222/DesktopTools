@@ -68,11 +68,14 @@ internal static class WindowPinChecks
             Check(!Topmost(handle), "Dispose did not restore original unpinned state.");
             SameBounds(handle, original);
 
-            // Establish an original topmost state only on this test's helper.
+            // An existing topmost state belongs to the other application, not DesktopTools.
             Check(SetWindowPos(handle, new nint(-1), 0, 0, 0, 0, 0x213), "Could not establish helper topmost baseline.");
             using (var originallyPinned = new WindowPinService())
             {
-                Check(!originallyPinned.ToggleWindow(handle) && !Topmost(handle), "Existing topmost window did not unpin.");
+                bool rejected = false;
+                try { originallyPinned.ToggleWindow(handle); }
+                catch (InvalidOperationException) { rejected = true; }
+                Check(rejected && Topmost(handle), "Pin changed another application's existing topmost state.");
                 originallyPinned.RestoreAll();
                 Check(Topmost(handle), "RestoreAll lost originally topmost state.");
             }

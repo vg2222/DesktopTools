@@ -25,6 +25,7 @@ internal static class Program
     private static int Main(string[] args)
     {
         if (args.Length == 2 && args[0] == "--input-target") return NativeInputChecks.RunTarget(args[1]);
+        if (args.Length == 2 && args[0] == "--pin-owned-target") return WindowPinOwnershipChecks.RunTarget(args[1]);
         var root = Environment.CurrentDirectory;
         var output = Path.Combine(root, "artifacts", "integration"); Directory.CreateDirectory(output);
         Environment.CurrentDirectory = output;
@@ -75,7 +76,12 @@ internal static class Program
                 else if (args.Contains("--setup-only")) await Test("Setup resume, completion, skip and preference preservation", SetupChecks.RunAsync);
                 else if (args.Contains("--chrome-pointer-order-only")) await Test("Isolated Chrome pointer drags and explicit pin", ChromeWindowOrderChecks.RunPointerAsync);
                 else if (args.Contains("--chrome-window-order-only")) await Test("Isolated Chrome monitor round trips and explicit pin", ChromeWindowOrderChecks.RunAsync);
-                else if (args.Contains("--window-order-only")) await Test("Window movement and explicit pin ownership", WindowPinChecks.RunAsync);
+                else if (args.Contains("--window-order-only"))
+                {
+                    await Test("Window movement and explicit pin ownership", WindowPinChecks.RunAsync);
+                    await Test("Pin restores owned window state without touching a bystander", WindowPinOwnershipChecks.RunAsync);
+                    await Test("Stale hotkey messages cannot trigger a different pin action", HotkeyMessageChecks.RunAsync);
+                }
                 else if (args.Contains("--save-notification-only")) await Test("Screenshot save survives notification expiry", ScreenshotSaveChecks.RunAsync);
                 else if (args.Contains("--reset-restart-only")) await Test("Reset data and restart handoff", DataResetChecks.RunAsync);
                 else if (args.Contains("--window-dismissal-only")) await Test("Window, notification and modal dismissal lifecycle", WindowDismissalChecks.RunAsync);

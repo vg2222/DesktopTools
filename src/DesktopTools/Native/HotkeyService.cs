@@ -146,7 +146,16 @@ public sealed class HotkeyService : IDisposable
     private IntPtr WindowProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (message == 0x0312 && actions.TryGetValue(wParam.ToInt32(), out string? action))
-        { handled = true; if (!DispatchSuspended) Pressed?.Invoke(action); }
+        {
+            handled = true;
+            // A queued WM_HOTKEY can outlive a shortcut change. Its numeric ID may
+            // already belong to a different action, so verify the original gesture.
+            long encoded = lParam.ToInt64();
+            var gesture = new HotkeyGesture((uint)(encoded & 0xffff) & ~0x4000u,
+                (uint)((encoded >> 16) & 0xffff));
+            if (!DispatchSuspended && registrations.TryGetValue(gesture, out int id) && id == wParam.ToInt32())
+                Pressed?.Invoke(action);
+        }
         return IntPtr.Zero;
     }
 
