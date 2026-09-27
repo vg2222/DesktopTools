@@ -39,6 +39,10 @@ public sealed class WindowPinService : IDisposable
                 existing = null;
             }
             bool original = IsTopmost(handle);
+            // Only undo topmost changes that DesktopTools itself made. Other applications
+            // can make their windows topmost while the user switches or moves windows.
+            if (existing is null && original)
+                throw new InvalidOperationException(L.T("This window is already on top. DesktopTools did not pin it."));
             bool pinned = !original;
             // Record before mutation so a failed postcondition check can still be restored.
             Change change = existing ?? new Change(identity, original);

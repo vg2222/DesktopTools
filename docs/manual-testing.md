@@ -29,8 +29,9 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 1. Laser movement leaves a fading trail without permanent annotations; spotlight follows the pointer. Toggle each effect and disable it while active. Confirm underlying interaction matches the intended mode and no effect window survives Quit.
 2. Freeze a changing clock/video, draw over the still and capture. Verify the frozen background is used once, while the underlying application continues running. Leave freeze and confirm the live desktop returns.
 3. Pin a capture, resize it and change opacity. Close it and confirm no stale topmost window remains.
-4. Add solid redaction covers at image edges in a scaled editor. Undo a cover, export a copy and inspect PNG pixels: covered areas must be fully opaque black and the original unchanged. Do not distribute the original sensitive image by mistake.
-5. Apply Everyday, Meetings and Teaching profiles, save/override/delete a custom preset, and restart. Tool preferences change while theme/startup/monitor/save path/palette position stay unchanged. A conflicting profile shortcut must leave active preferences and registrations unchanged.
+4. Pin another application's window, then switch among unrelated applications without using the pin shortcut. Their topmost states must not change. Unpin the original window and verify only it changes. Try Pin window on an application window that was already always-on-top before DesktopTools started; DesktopTools must leave it unchanged and explain why.
+5. Add solid redaction covers at image edges in a scaled editor. Undo a cover, export a copy and inspect PNG pixels: covered areas must be fully opaque black and the original unchanged. Do not distribute the original sensitive image by mistake.
+6. Apply Everyday, Meetings and Teaching profiles, save/override/delete a custom preset, and restart. Tool preferences change while theme/startup/monitor/save path/palette position stay unchanged. A conflicting profile shortcut must leave active preferences and registrations unchanged.
 
 ## Lifecycle and appearance
 
