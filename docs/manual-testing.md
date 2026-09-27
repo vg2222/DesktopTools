@@ -22,6 +22,7 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 3. Repeat at 100%, 150% and 200%, including a secondary monitor left/above primary with negative desktop coordinates. Check pointer-to-ink alignment, crop edges, text and strokes. Record actual scaling separately from synthetic coordinate tests.
 4. Disconnect/change resolution of the active monitor while drawing and selecting. Expect safe dismissal and no invisible input blocker. Next activation must use current geometry.
 5. Open tooltips/popovers while requesting capture exclusion. Test both enabled and disabled exclusion and manual hide-palette fallback.
+6. Enable Smart Region Capture and hover over a window or dialog with screen freeze on; the suggested border must follow the saved frame even if the live window moves. Turn freeze off and hover over a panel, image and browser video to check inner-region suggestions. One click must capture the highlighted pixels and leave no selector overlay in the output. Drag a custom rectangle when a suggestion is wrong; turn Smart Region Capture off and confirm the original drag selection. Repeat at mixed DPI and negative monitor origins, and cancel with Escape. When selecting from an older drawing-session freeze, confirm the selector uses manual drag rather than stale window positions.
 
 ## Presentation, redaction and profiles
 

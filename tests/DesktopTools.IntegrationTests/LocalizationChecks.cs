@@ -49,7 +49,23 @@ internal static class LocalizationChecks
                         var text = Descendants(main).OfType<TextBlock>().Select(t => t.Text).ToArray();
                         if (text.Contains("Settings") && language != "en") throw new Exception("Untranslated navigation: " + language);
                         if (text.Any(t => t.Contains('\uFFFD'))) throw new Exception("Broken Unicode: " + language + "/" + page);
-                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts") Render(main, language + "-" + theme + "-" + page);
+                        if (page == "Capture")
+                        {
+                            if (!text.Contains(L.T("Smart region capture")) ||
+                                !text.Contains(L.T("Frozen screen: windows only. Turn off Freeze screen before selecting for panels, images, and video.")))
+                                throw new Exception("Frozen smart region guidance is missing: " + language);
+                            var freeze = Descendants(main).OfType<CheckBox>().Single(c =>
+                                System.Windows.Automation.AutomationProperties.GetName(c) == L.T("Freeze screen before selecting"));
+                            freeze.IsChecked = false;
+                            main.UpdateLayout();
+                            if (!Descendants(main).OfType<TextBlock>().Any(t => t.Text == L.T("Point to a window or clear rectangular area, then click to capture. Drag to select your own region.")))
+                                throw new Exception("Live smart region guidance did not refresh: " + language);
+                            freeze = Descendants(main).OfType<CheckBox>().Single(c =>
+                                System.Windows.Automation.AutomationProperties.GetName(c) == L.T("Freeze screen before selecting"));
+                            freeze.IsChecked = true;
+                            main.UpdateLayout();
+                        }
+                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture") Render(main, language + "-" + theme + "-" + page);
                     }
                     var combo = Ui.Choice(new[] { "Pen", "Arrow" }, "Pen", _ => { });
                     if (!Equals(combo.SelectedItem, "Pen")) throw new Exception("Translated stored choice");

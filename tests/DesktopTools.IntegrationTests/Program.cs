@@ -55,6 +55,7 @@ internal static class Program
                 else if (args.Contains("--utility-backdrop-only")) await Test("Utility native backdrop and opaque fallback", UtilityBackdropChecks.RunAsync);
                 else if (args.Contains("--guide-placement-only")) await Test("Guide placement at screen corners and scaled negative origins", GuidePlacementChecks.RunAsync);
                 else if (args.Contains("--region-freeze-only")) await Test("Region freeze uses the selection still", RegionFreezeChecks.RunAsync);
+                else if (args.Contains("--smart-region-only")) await Test("Smart region click, drag and capture-mode routing", RegionFreezeChecks.RunSmartAsync);
                 else if (args.Contains("--capture-lifecycle-only")) await Test("One hundred native capture/edit/export/close cycles", () => CaptureLifecycleChecks.RunAsync(Results.Add));
                 else if (args.Contains("--input-only")) await Test("Cross-process native input", async () => { using var controller = new AppController(true); await NativeInputChecks.RunAsync(controller, Results.Add); });
                 else if (args.Contains("--blackout-escape-only")) await Test("Escape dismisses blackout without stopping independent aids", BlackoutEscapeChecks.RunAsync);

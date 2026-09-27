@@ -425,7 +425,12 @@ internal sealed partial class MainWindow : Window
 
         Group(L.T("Capture behavior"),
 
-            Ui.Row(L.T("Freeze screen before selecting"), L.T("Capture a still when you start region capture, then choose from that frame."), Ui.Toggle(s.FreezeRegionBeforeSelection, v => Change(x => x.FreezeRegionBeforeSelection = v))),
+            Ui.Row(L.T("Freeze screen before selecting"), L.T("Capture a still when you start region capture, then choose from that frame."), Ui.Toggle(s.FreezeRegionBeforeSelection, v => { Change(x => x.FreezeRegionBeforeSelection = v); Navigate(currentPage); })),
+
+            Ui.Row(L.T("Smart region capture"), L.T(s.FreezeRegionBeforeSelection
+                ? "Frozen screen: windows only. Turn off Freeze screen before selecting for panels, images, and video."
+                : "Point to a window or clear rectangular area, then click to capture. Drag to select your own region."),
+                Ui.Toggle(s.SmartRegionCaptureEnabled, v => Change(x => x.SmartRegionCaptureEnabled = v))),
 
 
             Ui.Row(L.T("Capture displays"),L.T("All spans the desktop. Selected uses your app monitor preference."), Ui.Choice(new[] { "All", "Selected" }, s.CaptureMonitorMode, v => Change(x => x.CaptureMonitorMode = v))),

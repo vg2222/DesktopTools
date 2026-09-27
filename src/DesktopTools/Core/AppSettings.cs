@@ -80,6 +80,7 @@ public sealed class AppSettings
     public bool FillShapes { get; set; }
     public bool ShapeSnapping { get; set; } = true;
     public bool FreezeRegionBeforeSelection { get; set; } = true;
+    public bool SmartRegionCaptureEnabled { get; set; } = true;
     public int CaptureDelaySeconds { get; set; }
     public string CaptureMonitorMode { get; set; } = "All";
     public string Color { get; set; } = "#FF2870FF";
