@@ -17,6 +17,8 @@ namespace DesktopTools.Extras;
 internal sealed class VideoEditorWindow : Window, IUnsavedWork
 {
     private readonly Action<string> report;
+    private readonly Func<string, IReadOnlyList<RecordingMarker>> loadMarkers;
+    private readonly StackPanel markerBar = new() { Orientation = Orientation.Horizontal, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 0, 9) };
     private readonly MediaElement media = new()
     {
         LoadedBehavior = MediaState.Manual, UnloadedBehavior = MediaState.Manual,
@@ -67,9 +69,9 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     private readonly StackPanel cropActions = new();
     private readonly Button editCropButton;
 
-    public VideoEditorWindow(Action<string> report)
+    public VideoEditorWindow(Action<string> report, Func<string, IReadOnlyList<RecordingMarker>>? loadMarkers = null)
     {
-        this.report = report;
+        this.report = report; this.loadMarkers = loadMarkers ?? (_ => []);
         Title = L.T("Video editor"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.CanResize; Background = Brushes.Transparent;
@@ -83,7 +85,10 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         openButton = Ui.Button(L.T("Open video"), async () => await OpenAsync()); openButton.Content = Ui.IconLabel("Folder", L.T("Open video")); openButton.Tag = "import-video";
         DockPanel.SetDock(openButton, Dock.Left); toolbar.Children.Add(openButton);
         fileLabel.TextTrimming = TextTrimming.CharacterEllipsis; fileLabel.TextWrapping = TextWrapping.NoWrap;
-        fileLabel.VerticalAlignment = VerticalAlignment.Center; toolbar.Children.Add(fileLabel); AddRow(root, toolbar, 1);
+        fileLabel.VerticalAlignment = VerticalAlignment.Center; toolbar.Children.Add(fileLabel);
+        var mediaHeader = new StackPanel(); mediaHeader.Children.Add(toolbar);
+        mediaHeader.Children.Add(new ScrollViewer { Content = markerBar, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled });
+        AddRow(root, mediaHeader, 1);
 
         var stage = new Grid { MinHeight = 140 };
         empty = Ui.ImportPrompt("Video", L.T("Open video"), L.T("Choose a video to trim, crop and save a copy."), async () => await OpenAsync()); empty.Tag = "import-video-empty";
@@ -319,6 +324,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             cancellation.Token.ThrowIfCancellationRequested(); if (closed) return;
             new VideoEdit(0, loaded.Duration).Validate(loaded);
             source = loaded; fileLabel.Text = Path.GetFileName(loaded.Path);
+            ShowRecordingMarkers(loaded.Path);
             fileLabel.ToolTip = L.F($"{loaded.Width} × {loaded.Height} px · {loaded.Duration:0.###} seconds");
             empty.Visibility = Visibility.Collapsed; Reset(); savedEdit = ReadEdit();
             if ((Application.Current as App)?.Controller?.Settings.VideoMuteOnOpen == true) mute.IsChecked = true;
@@ -329,6 +335,34 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         catch (OperationCanceledException) { if (!closed) status.Text = L.T("Operation canceled."); }
         catch (Exception ex) { ShowError(ex); }
         finally { EndOperation(cancellation); }
+    }
+    internal async Task LoadAndSeekAsync(string path, TimeSpan position)
+    {
+        if (source?.Path != path) await LoadAsync(path);
+        if (source?.Path == path)
+        {
+            QueueSeek(position.TotalSeconds);
+            if (IsVisible) ApplyPendingSeek();
+        }
+    }
+    private void ShowRecordingMarkers(string path)
+    {
+        markerBar.Children.Clear();
+        var markers = loadMarkers(path);
+        markerBar.Visibility = markers.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+        if (markers.Count == 0) return;
+        markerBar.Children.Add(Ui.Text(L.T("Recording markers") + ":", 12, true));
+        foreach (var marker in markers)
+        {
+            var position = marker.Position;
+            var button = Ui.Button($"{L.T("Marker")} {marker.Number} · {RecordingTime.Format(position, compact: true)}", () =>
+            {
+                if (showingEdited) ShowOriginal();
+                QueueSeek(position.TotalSeconds);
+            });
+            button.Margin = new Thickness(8, 0, 0, 0);
+            markerBar.Children.Add(button);
+        }
     }
 
     private async Task LoadThumbnailsAsync(VideoInfo loaded)

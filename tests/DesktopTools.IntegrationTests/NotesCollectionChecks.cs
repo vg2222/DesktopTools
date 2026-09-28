@@ -10,6 +10,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using DesktopTools;
 using DesktopTools.Extras;
+using DesktopTools.Native;
+using System.Windows.Interop;
 
 internal static class NotesCollectionChecks
 {
@@ -53,6 +55,24 @@ internal static class NotesCollectionChecks
         {
             service.Show(); await Task.Delay(80);
             var window = Field<NotesWindow>(service, "manager");
+            Check(Children(window).OfType<Button>().Any(x => x.Name == "NewWindowNote"), "Notes collection does not expose quick note for a window");
+            Check(Children(window).OfType<Button>().Any(x => x.Name == "AttachNoteToWindow"), "Selected note cannot be attached from collection");
+            var target = new Window { Title = "Attachment test target", Width = 300, Height = 200 };
+            target.Show();
+            try
+            {
+                var modelForAttachment = Field<List<FloatingNote>>(service, "notes")[0];
+                var candidate = new RecordingWindowInfo(new WindowInteropHelper(target).Handle, (uint)Environment.ProcessId, target.Title);
+                Check(NoteAttachmentService.TryAttach(modelForAttachment, candidate, out _), "Valid window rejected for note attachment");
+                Check(modelForAttachment.AttachedWindow == target.Title && modelForAttachment.AttachedProcess != null, "Attachment identity was not stored");
+                typeof(FloatingNotesService).GetMethod("Attach", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(service, new object[] { modelForAttachment, candidate });
+                var attachedNote = Field<Dictionary<Guid, Window>>(service, "windows")[modelForAttachment.Id];
+                Check(Field<RecordingWindowInfo>(attachedNote, "attachedWindow").Handle == candidate.Handle, "Floating note did not follow the chosen window");
+                Check(!NoteAttachmentService.TryAttach(modelForAttachment, candidate with { Handle = (nint)1 }, out _), "Invalid window was accepted");
+                Check(modelForAttachment.AttachedWindow == target.Title, "Invalid selection changed existing attachment");
+                modelForAttachment.AttachedWindow = null; modelForAttachment.AttachedProcess = null;
+            }
+            finally { target.Close(); }
             var controls = Children(window).OfType<TextBox>().ToArray();
             var search = controls.Single(x => x.Name == "NotesSearch"); var title = controls.Single(x => x.Name == "NoteTitle"); var body = controls.Single(x => x.Name == "NoteBody");
             search.Text = "release";
@@ -106,7 +126,7 @@ internal static class NotesCollectionChecks
             Check(Field<List<FloatingNote>>(service, "notes")[0].Title == "Совещание • café", "Restart lost Unicode title");
         }
         bool canClose = false;
-        var blocked = new NotesWindow(new List<FloatingNote>(), () => { }, _ => { }, _ => { }, () => canClose, false);
+        var blocked = new NotesWindow(new List<FloatingNote>(), () => { }, _ => { }, _ => { }, (_, _) => { }, _ => { }, () => canClose, false);
         blocked.Show(); blocked.Close(); Check(blocked.IsVisible, "Failed persistence allowed close");
         canClose = true; blocked.Close();
     }

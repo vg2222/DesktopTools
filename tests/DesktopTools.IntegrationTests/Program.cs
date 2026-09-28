@@ -72,6 +72,7 @@ internal static class Program
                 else if (args.Contains("--prompter-only")) await Test("Prompter studio, presentation and persistence", PrompterStudioChecks.RunAsync);
                 else if (args.Contains("--collection-utilities-only")) await Test("Shelf originals and audio mixer lifecycle", CollectionUtilitiesChecks.RunAsync);
                 else if (args.Contains("--notes-only")) await Test("Notes collection search, synchronization and persistence", NotesCollectionChecks.RunAsync);
+                else if (args.Contains("--step-guide-only")) await Test("Numbered screenshot guide export and original safety", StepGuideChecks.RunAsync);
                 else if (args.Contains("--setup-transitions-only")) await Test("Setup forward, back, rapid and reduced-motion transitions", SetupTransitionChecks.RunAsync);
                 else if (args.Contains("--setup-only")) await Test("Setup resume, completion, skip and preference preservation", SetupChecks.RunAsync);
                 else if (args.Contains("--chrome-pointer-order-only")) await Test("Isolated Chrome pointer drags and explicit pin", ChromeWindowOrderChecks.RunPointerAsync);

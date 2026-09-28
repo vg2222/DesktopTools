@@ -78,7 +78,19 @@ internal sealed partial class AppController : IDisposable
         if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
         Application.Current.Shutdown();
     }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report) { WindowState = WindowState.Maximized }); }
+    internal RecordingMarkerStore RecordingMarkers { get; }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
+    internal async void OpenVideoEditorAt(string path, TimeSpan position)
+    {
+        if (!Settings.VideoEditorEnabled) return;
+        try
+        {
+            OpenVideoEditor();
+            if (utilityWindows.TryGetValue("Video", out var window) && window is VideoEditorWindow editor)
+                await editor.LoadAndSeekAsync(path, position);
+        }
+        catch (Exception ex) { Report(L.T("Could not open recording marker: ") + ex.Message); }
+    }
     internal TextToolsWindow? OpenTextTools()
     {
         if (!Settings.TranslationEnabled && !Settings.ScreenTextEnabled) return null;
@@ -95,6 +107,7 @@ internal sealed partial class AppController : IDisposable
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
     public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
+    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, Report)); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
@@ -169,6 +182,7 @@ internal sealed partial class AppController : IDisposable
     public AppController(bool smoke)
     {
         this.smoke = smoke; AppCapturePrivacy.Initialize();
+        RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
         Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool;
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)

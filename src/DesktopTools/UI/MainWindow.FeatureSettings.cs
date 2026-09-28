@@ -11,7 +11,7 @@ internal sealed partial class MainWindow
 {
     private static string FeatureSettingsSection(string id) => id switch
     {
-        "capture" => "Capture behavior", "pin" => "Pin screenshot", "draw" => "Drawing defaults",
+        "capture" => "Capture behavior", "pin" => "Pin screenshot", "guide" => "Step-by-step guide", "draw" => "Drawing defaults",
         "laser" => "Laser pointer", "spotlight" => "Cursor spotlight", "freeze" => "Freeze frame",
         "record" => "Screen recorder", "prompter" => "Teleprompter", "images" => "Image tools",
         "video" => "Video editor", "color" => "Screen eyedropper", "ocr" => "Scan screen text",
@@ -43,6 +43,13 @@ internal sealed partial class MainWindow
         {
             Group(L.T("Pin screenshot"),
                 Ui.Row(L.T("Pin above applications"), L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)));
+            return;
+        }
+        if (id == "guide")
+        {
+            Group(L.T("Step-by-step guide"),
+                Ui.Row(L.T("Build a guide"), L.T("Arrange screenshots, write captions, and export one PNG."),
+                    Ui.Button(L.T("Open guide builder"), controller.OpenStepGuide)));
             return;
         }
         if (id == "capture")

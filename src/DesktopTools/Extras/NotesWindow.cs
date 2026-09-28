@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using DesktopTools.Localization;
 using DesktopTools.UI;
+using DesktopTools.Native;
 
 namespace DesktopTools.Extras;
 
@@ -19,7 +20,7 @@ internal sealed class NotesWindow : Window
     private readonly NoteEditorView editor = new();
     private readonly TextBlock status = Ui.Text("", 12, muted: true);
     private readonly TextBlock listStatus = Ui.Text("", 12, muted: true);
-    private readonly Button retry, floating;
+    private readonly Button retry, floating, attachButton;
     private readonly Border sheet;
     private readonly StackPanel empty;
     private readonly MenuItem delete;
@@ -27,7 +28,8 @@ internal sealed class NotesWindow : Window
     private FloatingNote? selected;
 
     internal NotesWindow(IReadOnlyList<FloatingNote> notes, Action create, Action<FloatingNote> remove,
-        Action<FloatingNote> openFloating, Func<bool> flush, bool topmost)
+        Action<FloatingNote> openFloating, Action<FloatingNote, RecordingWindowInfo> attachToWindow,
+        Action<RecordingWindowInfo> createForWindow, Func<bool> flush, bool topmost)
     {
         this.notes = notes;
         Title = L.T("Floating notes"); Tag = "Floating notes";
@@ -49,6 +51,11 @@ internal sealed class NotesWindow : Window
         var add = Ui.Button(L.T("New note"), Create, true); add.Content = Ui.IconLabel("Plus", L.T("New note"), primary: true);
         add.Name = "NewNote"; add.Margin = new Thickness(0, 0, 0, 10); add.HorizontalContentAlignment = HorizontalAlignment.Center;
         controls.Children.Add(add); AutomationProperties.SetName(search, L.T("Search notes"));
+        var newWindowNote = Ui.Button(L.T("New note for window"), () => { });
+        newWindowNote.Name = "NewWindowNote"; newWindowNote.Content = Ui.IconLabel("Window", L.T("New note for window"));
+        newWindowNote.Margin = new Thickness(0, 0, 0, 10);
+        controls.Children.Add(newWindowNote);
+        AddWindowMenu(newWindowNote, createForWindow);
         var searchField = new Grid(); searchField.Children.Add(search);
         var hint = Ui.Text(L.T("Search notes"), 12, muted: true); hint.Margin = new Thickness(12, 0, 0, 0); hint.IsHitTestVisible = false;
         search.TextChanged += (_, _) => hint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -64,6 +71,12 @@ internal sealed class NotesWindow : Window
         floating = Ui.Button(L.T("Open as floating note"), () => { if (selected != null) openFloating(selected); });
         floating.Content = Ui.IconLabel("Pin", L.T("Open as floating note")); floating.HorizontalAlignment = HorizontalAlignment.Left;
         floating.BorderThickness = new Thickness(0); floating.Background = Brushes.Transparent; toolbar.Children.Add(floating);
+        attachButton = Ui.Button(L.T("Attach to window"), () => { });
+        attachButton.Name = "AttachNoteToWindow"; attachButton.Content = Ui.IconLabel("Window", L.T("Attach to window"));
+        attachButton.Margin = new Thickness(10, 0, 0, 0);
+        attachButton.BorderThickness = new Thickness(0); attachButton.Background = Brushes.Transparent;
+        toolbar.Children.Add(attachButton);
+        AddWindowMenu(attachButton, target => { if (selected != null) attachToWindow(selected, target); });
         var menu = new ContextMenu();
         var pin = new MenuItem { Header = L.T("Always on top"), IsCheckable = true, IsChecked = Topmost };
         pin.Click += (_, _) => Topmost = pin.IsChecked;
@@ -108,11 +121,28 @@ internal sealed class NotesWindow : Window
     internal void Refresh()
     {
         if (selected == null || !notes.Contains(selected)) selected = notes.FirstOrDefault();
-        editor.SetNote(selected); delete.IsEnabled = floating.IsEnabled = selected != null;
+        editor.SetNote(selected); delete.IsEnabled = floating.IsEnabled = attachButton.IsEnabled = selected != null;
         detach.IsEnabled = selected?.AttachedWindow != null;
         sheet.Visibility = selected != null ? Visibility.Visible : Visibility.Collapsed;
         empty.Visibility = selected == null ? Visibility.Visible : Visibility.Collapsed;
         RefreshList();
+    }
+    private static void AddWindowMenu(Button button, Action<RecordingWindowInfo> onChoose)
+    {
+        var menu = new ContextMenu(); button.ContextMenu = menu;
+        button.Click += (_, _) =>
+        {
+            menu.Items.Clear();
+            foreach (var candidate in RecordingWindows.GetAll().Take(80))
+            {
+                var target = candidate;
+                var item = new MenuItem { Header = candidate.Title, ToolTip = candidate.Title };
+                item.Click += (_, _) => onChoose(target);
+                menu.Items.Add(item);
+            }
+            if (menu.Items.Count == 0) menu.Items.Add(new MenuItem { Header = L.T("No open windows"), IsEnabled = false });
+            menu.PlacementTarget = button; menu.Placement = PlacementMode.Bottom; menu.IsOpen = true;
+        };
     }
     private void RefreshList()
     {

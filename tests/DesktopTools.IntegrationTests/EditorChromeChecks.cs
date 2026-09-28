@@ -92,7 +92,7 @@ internal static class EditorChromeChecks
             Window[] additional =
             [
                 new TextToolsWindow(controller),
-                new NotesWindow(Array.Empty<FloatingNote>(), () => { }, _ => { }, _ => { }, () => true, false),
+                new NotesWindow(Array.Empty<FloatingNote>(), () => { }, _ => { }, _ => { }, (_, _) => { }, _ => { }, () => true, false),
                 new AudioControlsWindow(_ => { }),
                 new FileShelfWindow(_ => { })
             ];

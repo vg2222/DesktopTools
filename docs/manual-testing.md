@@ -90,7 +90,13 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 
 - Drag files/folders from Explorer into shelf, drag an entry to another folder/app, confirm copy semantics and original unchanged. Hide/reopen shelf retains entries; restart clears it.
 - Create note, edit title/text, resize/move, close/reopen and restart app; verify text retained. Delete only through manager confirmation. Disable/re-enable notes and verify persistence.
+- In Notes, choose **New note for window** and select a visible app. Verify the floating note appears beside that exact window and follows it. Attach an existing note from the collection, then close its target: the note must not jump to an unrelated window. Reopen the target or detach, and verify the note and its text remain available.
 - Play audio in two apps; adjust one volume/mute and confirm the other unchanged. Change default playback device and refresh. Close mixer and verify no refresh timer remains. No audio changes were performed during automated checks.
+
+### Screenshot guides and recording markers
+
+- Open **Step-by-step guide** from Capture tools. Add files and the latest capture, write captions, reorder and remove steps, then export PNG. Inspect numbering, captions and rounded images. Confirm the source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
+- Record a short clip and add a marker with the HUD control and Ctrl+Alt+M. Pause, then confirm a marker cannot be added while paused. Stop, click a marker to open the video editor at that time. Close and reopen the editor with the same file; markers must still appear. Replace the video at the same path and confirm old markers are not shown.
 
 ## GitHub update acceptance
 

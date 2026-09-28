@@ -2,6 +2,7 @@ using DesktopTools.Localization;
 using System.Windows;
 using System.Windows.Threading;
 using DesktopTools.UI;
+using DesktopTools.Native;
 
 namespace DesktopTools.Extras;
 
@@ -31,7 +32,7 @@ public sealed class FloatingNotesService : IDisposable
     {
         if (disposed) return;
         if (manager != null) { DesktopTools.Native.NativeWindowService.ShowForeground(manager); return; }
-        manager = new NotesWindow(notes, Create, Delete, Open, TryFlush, DefaultTopmost);
+        manager = new NotesWindow(notes, Create, Delete, Open, Attach, CreateForWindow, TryFlush, DefaultTopmost);
         manager.Closed += (_, _) => { manager = null; Flush(); };
         manager.SetSaved(!dirty, saveFailed); DesktopTools.Native.NativeWindowService.ShowForeground(manager);
     }
@@ -40,6 +41,21 @@ public sealed class FloatingNotesService : IDisposable
         if (notes.Count >= NotesStore.MaximumNotes) { report(L.T("You can keep up to 100 notes. Delete a note to add another.")); return; }
         var note = new FloatingNote(); note.PropertyChanged += NoteChanged;
         notes.Add(note); Changed(); Refresh(); manager?.Select(note);
+    }
+    private void CreateForWindow(RecordingWindowInfo target)
+    {
+        if (notes.Count >= NotesStore.MaximumNotes) { report(L.T("You can keep up to 100 notes. Delete a note to add another.")); return; }
+        var note = new FloatingNote { Title = target.Title };
+        note.PropertyChanged += NoteChanged;
+        notes.Add(note); Changed(); Refresh(); manager?.Select(note);
+        Attach(note, target);
+    }
+    private void Attach(FloatingNote note, RecordingWindowInfo target)
+    {
+        Open(note);
+        if (windows.TryGetValue(note.Id, out var window) && !((FloatingNoteWindow)window).Attach(target))
+            report(L.T("The selected window is no longer available."));
+        Refresh();
     }
     private void Refresh() => manager?.Refresh();
     private void NoteChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

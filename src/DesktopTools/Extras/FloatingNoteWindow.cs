@@ -99,13 +99,16 @@ internal sealed class FloatingNoteWindow : Window
         try { using var process = Process.GetProcessById(checked((int)id)); return process.ProcessName; }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception or OverflowException) { return null; }
     }
-    private void Attach(RecordingWindowInfo window)
+    internal bool Attach(RecordingWindowInfo window)
     {
-        string? process = ProcessName(window.ProcessId);
-        if (process == null) return;
-        note.AttachedProcess = process; note.AttachedWindow = window.Title;
+        if (!NoteAttachmentService.TryAttach(note, window, out string error))
+        {
+            attachmentStatus.Text = L.T(error);
+            return false;
+        }
         attachedWindow = window; lastSourceBounds = lastNoteBounds = null;
         UpdateAttachment(placeBesideWindow: true);
+        return true;
     }
     private void Detach()
     {

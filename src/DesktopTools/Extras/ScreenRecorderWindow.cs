@@ -32,6 +32,9 @@ internal sealed class ScreenRecorderWindow : Window
     private readonly DispatcherTimer meterTimer = new() { Interval = TimeSpan.FromMilliseconds(180) };
     private readonly TextBlock status = Ui.Text(L.T("Choose a display, then start recording."), 13, muted: true);
     private readonly TextBlock time = Ui.Text("00:00:00", 32, true);
+    private readonly StackPanel markerList = new();
+    private readonly RecordingMarkerTimeline markerTimeline = new();
+    private HotkeyService? markerHotkey;
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
     private ScreenRecordingService? service;
     private Task? session;
@@ -102,6 +105,7 @@ internal sealed class ScreenRecorderWindow : Window
         time.FontSize = 25; recordingState.Children.Add(time);
         status.TextWrapping = TextWrapping.Wrap; status.Margin = new Thickness(0, 4, 0, 0); recordingState.Children.Add(status);
         runtimeHelp.Margin = new Thickness(0, 8, 0, 0); runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left; recordingState.Children.Add(runtimeHelp);
+        recordingState.Children.Add(new ScrollViewer { Content = markerList, MaxHeight = 100, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         transport.Children.Add(recordingState);
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
         start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop); transport.Children.Add(actions);
@@ -186,6 +190,7 @@ internal sealed class ScreenRecorderWindow : Window
     private void StartRecording(bool test)
     {
         if (session != null) return;
+        markerTimeline.Clear(); markerList.Children.Clear();
         var missingFiles = readMissingRuntime();
         if (missingFiles.Count > 0)
         {
@@ -279,7 +284,15 @@ internal sealed class ScreenRecorderWindow : Window
                     if (!closed && ReferenceEquals(service, current) && !stopping) current.Stop();
                 }), TaskScheduler.Default);
             }
-            hud = new RecordingHudWindow(source.Label, TogglePause, () => _ = StopAsync(), AppCapturePrivacy.ShouldHideFeature("Screen recorder", controller.Settings), source.Monitor ?? MonitorService.GetForWindow(this));
+            hud = new RecordingHudWindow(source.Label, TogglePause, () => _ = StopAsync(), AppCapturePrivacy.ShouldHideFeature("Screen recorder", controller.Settings), source.Monitor ?? MonitorService.GetForWindow(this), AddMarker);
+            try
+            {
+                markerHotkey = new HotkeyService(); markerHotkey.Pressed += MarkerHotkeyPressed;
+                if (markerHotkey.RegisterAvailable(new Dictionary<string, string> { ["record-marker"] = "Ctrl+Alt+M" }).Count > 0)
+                { markerHotkey.Pressed -= MarkerHotkeyPressed; markerHotkey.Dispose(); markerHotkey = null; }
+                hud.SetMarkerShortcut(markerHotkey != null);
+            }
+            catch (Exception ex) { Debug.WriteLine(ex); markerHotkey?.Dispose(); markerHotkey = null; }
             Hide(); hud.Show();
             timer.Start(); status.Text = L.T(service.Status); Refresh(); UpdateRecordingUi();
             var output = await result; acceptingStatus = false; UpdateRecordingUi();
@@ -295,13 +308,24 @@ internal sealed class ScreenRecorderWindow : Window
                 DeleteTestClip(); testClipPath = output; playTest.Visibility = Visibility.Visible;
                 status.Text = L.T("Test clip is ready. Play it to check picture and sound.") + rateInfo;
             }
-            else status.Text = L.T("Recording saved: ") + output + rateInfo + (current.StopReason is string reason ? "\n" + L.T(reason) : "");
+            else
+            {
+                status.Text = L.T("Recording saved: ") + output + rateInfo + (current.StopReason is string reason ? "\n" + L.T(reason) : "");
+                ShowSavedMarkers(output);
+                try { controller.RecordingMarkers.Save(output, markerTimeline.Markers); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+                {
+                    status.Text += "\n" + L.T("Recording saved, but markers could not be saved for later: ") + ex.Message;
+                    controller.Report(L.T("Recording saved, but markers could not be saved for later: ") + ex.Message, NotificationKind.Warning);
+                }
+            }
         }
         catch (Exception ex) { acceptingStatus = false; if (!closed) status.Text = L.T("Recording failed: ") + ex.Message; }
         finally
         {
             acceptingStatus = false; // Late native Idle events must not overwrite the saved/error message.
             timer.Stop(); hud?.Finish(); hud = null;
+            if (markerHotkey != null) { markerHotkey.Pressed -= MarkerHotkeyPressed; markerHotkey.Dispose(); markerHotkey = null; }
             try { if (service != null) await service.DisposeAsync(); }
             catch (Exception ex) { if (!closed) status.Text = L.T("Recording failed: ") + ex.Message; }
             finally
@@ -309,6 +333,29 @@ internal sealed class ScreenRecorderWindow : Window
                 service = null; session = null; paused = stopping = false;
                 if (!closed) { Refresh(); if (closing) Close(); else { Show(); Activate(); if (selectedSource?.Window is { } window) sourceThumbnail.Show(this, preview, window.Handle); } }
             }
+        }
+    }
+    private void MarkerHotkeyPressed(string action) { if (action == "record-marker") AddMarker(); }
+    private void AddMarker()
+    {
+        if (service == null || stopping || paused || service.SourceSuspended || service.Status != "Recording") return;
+        if (!markerTimeline.Add(service.Elapsed, recording: true)) return;
+        var latest = markerTimeline.Markers[^1];
+        hud?.SetMarkerCount(latest.Number);
+    }
+    private void ShowSavedMarkers(string videoPath)
+    {
+        markerList.Children.Clear();
+        if (markerTimeline.Markers.Count == 0) return;
+        var heading = Ui.Text(L.T("Recording markers"), 12, true);
+        heading.Margin = new Thickness(0, 10, 0, 4); markerList.Children.Add(heading);
+        foreach (var marker in markerTimeline.Markers)
+        {
+            var position = marker.Position;
+            var button = Ui.Button($"{L.T("Marker")} {marker.Number}  ·  {RecordingTime.Format(position, compact: true)}", () => controller.OpenVideoEditorAt(videoPath, position));
+            button.HorizontalAlignment = HorizontalAlignment.Stretch;
+            button.HorizontalContentAlignment = HorizontalAlignment.Left;
+            button.Margin = new Thickness(0, 2, 0, 2); markerList.Children.Add(button);
         }
     }
     private void TogglePause()
