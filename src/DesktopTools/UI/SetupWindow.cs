@@ -267,7 +267,7 @@ internal sealed class SetupWindow : Window
         "capture" => "Select, edit, and share a screenshot.", "record" => "Record a monitor or region to MP4.",
         "draw" => "Annotate over any application.", "images" => "Resize, rotate, mirror and convert images.",
         "video" => "Trim, cut, crop, rotate and export MP4.", "color" => "Pick a desktop pixel and copy HEX or RGB.",
-        "ocr" => "Recognize a selected screen area without saving a screenshot.", "translate" => "Russian and English, processed on this computer.",
+        "ocr" => "Recognize a selected screen area without saving a screenshot.", "translate" => "Translate locally with offline language packs.",
         "qr" => "Create a code from text or a link.", "notes" => "Keep notes and checklists above your work.",
         "files" => "Collect files for dragging between apps.", "audio" => "Adjust volume and mute for individual apps.",
         "wheel" => "Hold the shortcut, point to an action, then release. Escape or the center cancels.",

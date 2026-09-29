@@ -155,7 +155,8 @@ public sealed class SettingsStore
         s.SaveDirectory ??= "";
         s.WindowPinShortcut = Shortcut(s.WindowPinShortcut, "Ctrl+Alt+T"); s.EyedropperShortcut = Shortcut(s.EyedropperShortcut, "Ctrl+Alt+P");
         s.TranslationShortcut = Shortcut(s.TranslationShortcut, "Ctrl+Alt+R"); s.ScreenTextShortcut = Shortcut(s.ScreenTextShortcut, "Ctrl+Alt+E");
-        s.TranslationDirection = Known(s.TranslationDirection, "en-ru", "ru-en");
+        if (s.TranslationDirection == null || !System.Text.RegularExpressions.Regex.IsMatch(s.TranslationDirection, "^[a-z]{2}-[a-z]{2}$") ||
+            s.TranslationDirection[..2] == s.TranslationDirection[3..]) s.TranslationDirection = "en-ru";
         if (string.IsNullOrWhiteSpace(s.ScreenTextLanguage) || s.ScreenTextLanguage.Length > 32) s.ScreenTextLanguage = "en-US";
         s.DrawShortcut = Shortcut(s.DrawShortcut, "Ctrl+Alt+D"); s.CaptureShortcut = Shortcut(s.CaptureShortcut, "Ctrl+Alt+S");
         s.HidePaletteShortcut = Shortcut(s.HidePaletteShortcut, "Ctrl+Alt+H"); s.LaserShortcut = Shortcut(s.LaserShortcut, "Ctrl+Alt+L");

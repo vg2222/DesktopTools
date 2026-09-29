@@ -18,8 +18,11 @@ internal sealed class TextToolsWindow : Window
     private readonly TextBlock status = Ui.Text(L.T("Select text in an app, scan an area, or paste text here."), 12, muted: true);
     private readonly Border activity = new() { Height = 4, CornerRadius = new CornerRadius(2), Opacity = 0, Margin = new Thickness(0, 10, 0, 10) };
     private readonly Button translate, cancel, copy;
-    private readonly ComboBox direction, ocrLanguage;
-    private ComboBox fromLanguage = null!, toLanguage = null!;
+    private readonly ComboBox ocrLanguage;
+    private readonly TranslationLanguagePicker languagePair;
+    private readonly Button downloadPack, refreshLanguages;
+    private readonly TextBlock packStatus = Ui.Text("", 12, muted: true);
+    private readonly ProgressBar packProgress = new() { Minimum = 0, Maximum = 1, Height = 5, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 6, 0, 0) };
     private Button scan = null!, copySource = null!;
     private CancellationTokenSource? operation;
     private bool closed, writingSource;
@@ -41,7 +44,7 @@ internal sealed class TextToolsWindow : Window
         this.controller = controller;
         this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles;
         lastDirection = controller.Settings.TranslationDirection;
-        Title = L.T("Text tools"); Width = 860; Height = 560; MinWidth = 660; MinHeight = 420;
+        Title = L.T("Text tools"); Width = 920; Height = 640; MinWidth = 750; MinHeight = 520;
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.CanResize; Background = Brushes.Transparent;
         UtilityWindowChrome.EnableBackdrop(this);
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -55,22 +58,24 @@ internal sealed class TextToolsWindow : Window
         translationTab.Checked += (_, _) => { if (ocrMode) ShowMode(false); }; screenshotTab.Checked += (_, _) => { if (!ocrMode) ShowMode(true); };
         modes.Children.Add(translationTab); Grid.SetColumn(screenshotTab, 1); modes.Children.Add(screenshotTab); settings.Children.Add(modes);
         modeDescription.Margin = new Thickness(0, 0, 0, 10); settings.Children.Add(modeDescription);
-        var directionNames = new[] { "English → Russian", "Russian → English" };
-        direction = Ui.Choice(directionNames, controller.Settings.TranslationDirection == "ru-en" ? directionNames[1] : directionNames[0], value =>
-        {
-            if (synchronizingSettings) return;
-            controller.UpdateSettings(s => s.TranslationDirection = value == directionNames[1] ? "ru-en" : "en-ru"); Invalidate();
-        });
-        var pair = new Grid { Margin = new Thickness(0, 8, 0, 16) }; pair.ColumnDefinitions.Add(new ColumnDefinition()); pair.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(52) }); pair.ColumnDefinitions.Add(new ColumnDefinition());
-        fromLanguage = Ui.Choice(new[] { "English", "Russian" }, controller.Settings.TranslationDirection == "ru-en" ? "Russian" : "English", value => { if (!synchronizingSettings) direction.SelectedItem = value == "Russian" ? directionNames[1] : directionNames[0]; });
-        toLanguage = Ui.Choice(new[] { "English", "Russian" }, controller.Settings.TranslationDirection == "ru-en" ? "English" : "Russian", value => { if (!synchronizingSettings) direction.SelectedItem = value == "English" ? directionNames[1] : directionNames[0]; });
-        var swap = Ui.IconButton("Swap", L.T("Swap languages"), () => direction.SelectedItem = Equals(direction.SelectedItem, directionNames[0]) ? directionNames[1] : directionNames[0]); pair.Children.Add(fromLanguage); Grid.SetColumn(swap, 1); pair.Children.Add(swap); Grid.SetColumn(toLanguage, 2); pair.Children.Add(toLanguage);
-        System.Windows.Automation.AutomationProperties.SetName(fromLanguage, L.T("Source language")); System.Windows.Automation.AutomationProperties.SetName(toLanguage, L.T("Target language"));
-        directionRow = pair; settings.Children.Add(directionRow);
+        languagePair = new TranslationLanguagePicker(lastDirection, value => controller.UpdateSettings(s => s.TranslationDirection = value));
+        if (languagePair.Direction != lastDirection) lastDirection = languagePair.Direction;
+        languagePair.Margin = new Thickness(0, 0, 0, 8);
+        var translationSettings = new StackPanel(); translationSettings.Children.Add(languagePair);
+        var packRow = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
+        downloadPack = Ui.Button(L.T("Download offline packs"), async () => await DownloadPacksAsync());
+        downloadPack.Content = Ui.IconLabel("Folder", L.T("Download offline packs"));
+        DockPanel.SetDock(downloadPack, Dock.Right); packRow.Children.Add(downloadPack);
+        packStatus.TextWrapping = TextWrapping.Wrap; packStatus.VerticalAlignment = VerticalAlignment.Center;
+        packStatus.Margin = new Thickness(0, 0, 12, 0); packRow.Children.Add(packStatus);
+        translationSettings.Children.Add(packRow); translationSettings.Children.Add(packProgress);
+        directionRow = translationSettings; settings.Children.Add(directionRow);
         var languages = LocalOcr.Languages;
-        ocrLanguage = new ComboBox { ItemsSource = languages, MinWidth = 180, SelectedItem = languages.FirstOrDefault(l => l.Tag == controller.Settings.ScreenTextLanguage) ?? languages.FirstOrDefault() };
+        ocrLanguage = new ComboBox { ItemsSource = languages, MinWidth = 180, SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage) };
         ocrLanguage.SelectionChanged += (_, _) => { if (!synchronizingSettings && ocrLanguage.SelectedItem is OcrLanguage selected) controller.UpdateSettings(s => s.ScreenTextLanguage = selected.Tag); };
-        languageRow = Ui.Row(L.T("Screen text language"), L.T("Uses installed Windows OCR language packs."), ocrLanguage); settings.Children.Add(languageRow);
+        var ocrChoices = new StackPanel { Orientation = Orientation.Horizontal }; ocrChoices.Children.Add(ocrLanguage);
+        refreshLanguages = Ui.IconButton("Refresh", L.T("Refresh Windows OCR languages"), RefreshOcrLanguages); ocrChoices.Children.Add(refreshLanguages);
+        languageRow = Ui.Row(L.T("Screen text language"), L.T("Uses installed Windows OCR language packs."), ocrChoices); settings.Children.Add(languageRow);
         DockPanel.SetDock(settings, Dock.Top); root.Children.Add(settings);
         var footer = new StackPanel(); activity.SetResourceReference(Border.BackgroundProperty, "Accent"); footer.Children.Add(activity);
         status.TextWrapping = TextWrapping.Wrap; footer.Children.Add(status);
@@ -99,11 +104,12 @@ internal sealed class TextToolsWindow : Window
         source.VerticalContentAlignment = VerticalAlignment.Top; output.VerticalContentAlignment = VerticalAlignment.Top;
         source.Padding = output.Padding = new Thickness(12); source.FontSize = output.FontSize = 14;
         System.Windows.Automation.AutomationProperties.SetName(source, L.T("Source text")); System.Windows.Automation.AutomationProperties.SetName(output, L.T("Translation"));
-        System.Windows.Automation.AutomationProperties.SetName(direction, L.T("Translation direction")); System.Windows.Automation.AutomationProperties.SetName(ocrLanguage, L.T("Screen text language"));
+        System.Windows.Automation.AutomationProperties.SetName(languagePair, L.T("Translation direction")); System.Windows.Automation.AutomationProperties.SetName(ocrLanguage, L.T("Screen text language"));
         source.TextChanged += (_, _) => { if (!writingSource) Invalidate(); RefreshButtons(); };
         controller.SettingsChanged += SettingsChanged;
         Closed += (_, _) => { closed = true; controller.SettingsChanged -= SettingsChanged; operation?.Cancel(); StopAnimation(); source.Clear(); output.Clear(); capturedArea.Source = null; };
         IsVisibleChanged += (_, _) => UpdateAnimation();
+        Activated += (_, _) => { if (!IsProcessing) RefreshOcrLanguages(); };
         var guide = FeatureTourButton.Create(this, "text-tools", () => new GuidedTour.Step[]
         {
             new(() => source, "Source text", "Paste text here, or scan an area of the screen. You can correct recognized text before translating."),
@@ -136,7 +142,7 @@ internal sealed class TextToolsWindow : Window
         if (lastDirection != controller.Settings.TranslationDirection)
         {
             lastDirection = controller.Settings.TranslationDirection; Invalidate();
-            synchronizingSettings = true; try { direction.SelectedItem = lastDirection == "ru-en" ? "Russian → English" : "English → Russian"; fromLanguage.SelectedItem = lastDirection == "ru-en" ? "Russian" : "English"; toLanguage.SelectedItem = lastDirection == "ru-en" ? "English" : "Russian"; } finally { synchronizingSettings = false; }
+            languagePair.SetDirection(lastDirection);
         }
         var language = LocalOcr.Languages.FirstOrDefault(l => l.Tag == controller.Settings.ScreenTextLanguage);
         if (language != null && !Equals(ocrLanguage.SelectedItem, language))
@@ -145,6 +151,51 @@ internal sealed class TextToolsWindow : Window
             try { ocrLanguage.SelectedItem = language; } finally { synchronizingSettings = false; }
         }
         RefreshButtons(); UpdateAnimation();
+    }
+    private void RefreshOcrLanguages()
+    {
+        if (closed || IsProcessing) return;
+        var languages = LocalOcr.Languages;
+        synchronizingSettings = true;
+        try
+        {
+            ocrLanguage.ItemsSource = languages;
+            ocrLanguage.SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage);
+        }
+        finally { synchronizingSettings = false; }
+        if (ocrLanguage.SelectedItem is OcrLanguage selected && controller.Settings.ScreenTextLanguage != selected.Tag)
+            controller.UpdateSettings(s => s.ScreenTextLanguage = selected.Tag);
+    }
+    private void RefreshPackStatus()
+    {
+        if (closed) return;
+        var missing = TranslationPacks.Missing(languagePair.Direction);
+        packStatus.Text = missing.Count > 0
+            ? L.F($"Offline packs needed: {missing.Sum(pack => pack.Files.Sum(file => file.Bytes)) / 1048576d:0} MB. Download once; your text stays on this PC.")
+            : L.T(TranslationPacks.Route(languagePair.Direction).Length == 2 ? "Offline translation through English. Review the result." : "Offline packs ready. Your text stays on this PC.");
+        downloadPack.Visibility = missing.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        downloadPack.IsEnabled = !IsProcessing;
+    }
+    private async Task DownloadPacksAsync()
+    {
+        if (closed || IsProcessing) return;
+        var packs = TranslationPacks.Missing(languagePair.Direction);
+        if (packs.Count == 0) return;
+        var cancellation = Begin(L.T("Downloading offline packs…"), TimeSpan.FromMinutes(30));
+        packProgress.Visibility = Visibility.Visible; packProgress.Value = 0;
+        try
+        {
+            for (int i = 0; i < packs.Count; i++)
+            {
+                int index = i;
+                var progress = new Progress<double>(value => { if (!closed && operation == cancellation) packProgress.Value = (index + value) / packs.Count; });
+                await TranslationPacks.InstallAsync(packs[i].Direction, progress, cancellation.Token);
+            }
+            if (!closed) status.Text = L.T("Offline packs ready. Your text stays on this PC.");
+        }
+        catch (OperationCanceledException) { if (!closed) status.Text = L.T("Processing canceled. You can try again."); }
+        catch (Exception ex) { if (!closed) status.Text = L.T("Could not download offline packs: ") + ex.Message; }
+        finally { if (!closed) packProgress.Visibility = Visibility.Collapsed; End(cancellation); }
     }
     private void Invalidate() { operation?.Cancel(); output.Clear(); copy.IsEnabled = false; status.Text = L.T("Text changed. Translate when ready."); }
     internal void SetSource(string text)
@@ -162,7 +213,8 @@ internal sealed class TextToolsWindow : Window
             controller.Report(status.Text, NotificationKind.Warning);
             return;
         }
-        var input = source.Text; string language = controller.Settings.TranslationDirection;
+        if (TranslationPacks.Missing(languagePair.Direction).Count > 0) { status.Text = L.T("Download the offline language pack first."); return; }
+        var input = source.Text; string language = languagePair.Direction;
         var cancellation = Begin(L.T("Translating locally…"));
         try
         {
@@ -176,6 +228,7 @@ internal sealed class TextToolsWindow : Window
     internal async Task RecognizeScreenAsync(BitmapSource image)
     {
         if (closed || !controller.Settings.ScreenTextEnabled) return;
+        RefreshOcrLanguages();
         ShowMode(true); capturedArea.Source = image;
         if (ocrLanguage.SelectedItem is not OcrLanguage language) { status.Text = L.T("No Windows OCR languages are installed. Add a language pack in Windows Settings → Time & language → Language & region, then reopen this window."); return; }
         var cancellation = Begin(L.T("Recognizing text…"));
@@ -193,9 +246,9 @@ internal sealed class TextToolsWindow : Window
         catch (Exception ex) { if (!closed && operation == cancellation) status.Text = L.T("Text recognition unavailable: ") + ex.Message; }
         finally { End(cancellation); }
     }
-    private CancellationTokenSource Begin(string message)
+    private CancellationTokenSource Begin(string message, TimeSpan? timeout = null)
     {
-        operation?.Cancel(); output.Clear(); var next = new CancellationTokenSource(TimeSpan.FromMinutes(2)); operation = next; status.Text = message; RefreshButtons(); UpdateAnimation(); return next;
+        operation?.Cancel(); output.Clear(); var next = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(2)); operation = next; status.Text = message; RefreshButtons(); UpdateAnimation(); return next;
     }
     private void End(CancellationTokenSource completed)
     {
@@ -205,6 +258,8 @@ internal sealed class TextToolsWindow : Window
     private void RefreshButtons()
     {
         translate.IsEnabled = !closed && !IsProcessing && controller.Settings.TranslationEnabled && !string.IsNullOrWhiteSpace(source.Text);
+        if (translate.IsEnabled) translate.IsEnabled = TranslationPacks.Missing(languagePair.Direction).Count == 0;
+        languagePair.IsEnabled = refreshLanguages.IsEnabled = !IsProcessing; RefreshPackStatus();
         copy.IsEnabled = !IsProcessing && !string.IsNullOrWhiteSpace(ocrMode ? source.Text : output.Text); cancel.Visibility = IsProcessing ? Visibility.Visible : Visibility.Collapsed; ocrLanguage.IsEnabled = !IsProcessing;
     }
     private IReadOnlyList<string> RefreshRuntimeWarning()

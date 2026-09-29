@@ -14,7 +14,26 @@ public sealed record OcrLanguage(string Tag, string Name)
 
 public static class LocalOcr
 {
-    public static IReadOnlyList<OcrLanguage> Languages => OcrEngine.AvailableRecognizerLanguages.Select(l => new OcrLanguage(l.LanguageTag, l.DisplayName)).ToArray();
+    public static IReadOnlyList<OcrLanguage> Languages => OcrEngine.AvailableRecognizerLanguages
+        .Select(l => new OcrLanguage(l.LanguageTag, l.DisplayName)).OrderBy(l => l.Name, StringComparer.CurrentCulture).ToArray();
+
+    internal static OcrLanguage? SelectLanguage(IReadOnlyList<OcrLanguage> languages, string? savedTag)
+    {
+        var exact = languages.FirstOrDefault(language => string.Equals(language.Tag, savedTag, StringComparison.OrdinalIgnoreCase));
+        if (exact != null) return exact;
+        if (!string.IsNullOrWhiteSpace(savedTag))
+        {
+            var sameLanguage = languages.FirstOrDefault(language => language.Tag.Split('-')[0].Equals(savedTag.Split('-')[0], StringComparison.OrdinalIgnoreCase));
+            if (sameLanguage != null) return sameLanguage;
+        }
+        foreach (string tag in Windows.System.UserProfile.GlobalizationPreferences.Languages)
+        {
+            var match = languages.FirstOrDefault(language => language.Tag.Equals(tag, StringComparison.OrdinalIgnoreCase))
+                ?? languages.FirstOrDefault(language => language.Tag.Split('-')[0].Equals(tag.Split('-')[0], StringComparison.OrdinalIgnoreCase));
+            if (match != null) return match;
+        }
+        return languages.FirstOrDefault();
+    }
 
     public static async Task<string> RecognizeAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
     {

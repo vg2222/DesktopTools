@@ -206,7 +206,7 @@ internal sealed partial class MainWindow : Window
 
         Group(L.T("Text tools"),
             Ui.Row(L.T("Open text tools"), L.T("Review, copy or translate recognized text."), UtilityButton(L.T("Open"), controller.OpenTextToolsWindow, () => controller.Settings.TranslationEnabled || controller.Settings.ScreenTextEnabled)),
-            Ui.Row(L.T("Translation direction"), null, Ui.Choice(new[] { "English → Russian", "Russian → English" }, s.TranslationDirection == "ru-en" ? "Russian → English" : "English → Russian", v => Change(x => x.TranslationDirection = v == "Russian → English" ? "ru-en" : "en-ru"))));
+            Ui.Row(L.T("Translation direction"), null, new TranslationLanguagePicker(s.TranslationDirection, v => Change(x => x.TranslationDirection = v))));
         Group(L.T("Screen recorder"), Ui.Row(L.T("Screen recorder"), L.T("Record a monitor or region to MP4."), Ui.Button(L.T("Open"), controller.OpenScreenRecorder)));
         var wheelRows = new List<UIElement> { Ui.Row(L.T("Using the wheel"), L.T("Hold the shortcut, point to an action, then release. Escape or the center cancels."), Ui.Button(L.T("Open"), () => controller.OpenQuickWheel())) };
         for (int index=0;index<8;index++) { int slot=index; wheelRows.Add(Ui.Row(L.F($"Slot {index+1}"),L.T(index==0 ? "Clockwise from the top" : null), Ui.Choice(QuickWheelActions.Available, s.QuickWheelItems[index], value => Change(x => x.QuickWheelItems[slot]=value)))); }

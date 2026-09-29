@@ -31,7 +31,7 @@ Security: [SHA-256 checksums](https://github.com/vg2222/DesktopTools/releases/la
 
 **Keep your audience with you.** Draw over your screen, point with a laser, bring a spotlight to the detail, or stay on track with a teleprompter and timers.
 
-**Clear the small tasks, too.** Read text from a screenshot, translate English and Russian locally, keep notes nearby, generate a QR code, or crop an image before sharing.
+**Clear the small tasks, too.** Read text from a screenshot, translate locally with offline language packs, keep notes nearby, generate a QR code, or crop an image before sharing.
 
 ## 📸 Three ways to get started
 
@@ -55,7 +55,7 @@ Choose a monitor, window or region and set the sound and quality before recordin
 
 ## 🔒 Local-first by design
 
-No account. No telemetry. No cloud processing of your content. Your screenshots, notes, OCR, English–Russian translation and background removal are processed on your PC.
+No account. No telemetry. No cloud processing of your content. Your screenshots, notes, OCR, translation and background removal are processed on your PC. Additional translation packs need a one-time download; your text is never sent to the model host.
 
 You choose where to save images and recordings. Automatic update checks contact GitHub for release information; they do not upload your media or notes. Change the check interval or turn automatic checks off in **Settings → Updates**. The new **News** page can check this repository for announcements once an hour; its automatic checks have a separate switch. Security notices never install updates without your confirmation.
 
@@ -87,7 +87,7 @@ Use **Diagnostics** to check native components, Windows OCR languages and shortc
 
 Screen recording, offline translation and image background removal need Microsoft Visual C++ x64 Redistributable; recording also needs Windows Media Foundation. Other image tools and screen OCR remain usable without the Visual C++ runtime. Recording rates up to 144 FPS are targets; actual performance depends on the source, encoder and hardware. See [compatibility](docs/compatibility.md) for capture limitations and current testing coverage. Setup checks the runtime and offers the Microsoft download page when needed.
 
-The app supports **English, Russian, German, French and Spanish**, plus light, dark and system appearance. Interface languages are separate from the currently supported English–Russian translation pair.
+The app supports **English, Russian, German, French and Spanish**, plus light, dark and system appearance. Text tools offer [20 offline translation languages](docs/offline-languages.md), with English–Russian bundled. Compatible Windows languages appear first; OCR uses the recognizers installed in Windows.
 
 <details>
 <summary><strong>🛠️ Build and contribute</strong></summary>

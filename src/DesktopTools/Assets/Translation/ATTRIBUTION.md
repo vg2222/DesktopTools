@@ -8,4 +8,6 @@ Original models: **OPUS-MT**, developed by the **Language Technology Research Gr
 
 Immutable model revisions, asset URLs, sizes and SHA256 checksums are in `manifest.json`. Attribution and licenses must accompany redistribution. No endorsement by the model authors is implied. Model output can contain mistakes and inherited biases; review translations before relying on them.
 
+Optional offline packs use additional OPUS-MT models by Helsinki-NLP, converted and quantized by Xenova. `catalog.json` records each upstream repository, conversion repository, immutable revision, license, sizes and SHA-256 checksums. Downloads retain the upstream README, attribution and the corresponding full license text. Non-English pairs use two separate local models through English; no model weights are modified by DesktopTools.
+
 Runtime: Microsoft ONNX Runtime 1.29.0 (MIT; notices under `../Models`) and Microsoft.ML.Tokenizers 2.0.0 (MIT; `TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`). DesktopTools application source remains MIT; the separately licensed model assets retain the terms above.

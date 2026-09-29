@@ -70,9 +70,7 @@ internal sealed partial class MainWindow
             var settings = controller.Settings;
             Group(L.T("Local translation"),
                 Ui.Row(L.T("Translation direction"), null,
-                    Ui.Choice(new[] { "English → Russian", "Russian → English" },
-                        settings.TranslationDirection == "ru-en" ? "Russian → English" : "English → Russian",
-                        value => Change(state => state.TranslationDirection = value == "Russian → English" ? "ru-en" : "en-ru"))),
+                    new TranslationLanguagePicker(settings.TranslationDirection, value => Change(state => state.TranslationDirection = value))),
                 Ui.Row(L.T("Open text tools"), L.T("Review, copy or translate recognized text."),
                     Ui.Button(L.T("Open"), controller.OpenTextToolsWindow)));
             return;
@@ -84,7 +82,7 @@ internal sealed partial class MainWindow
             if (languages.Count > 0)
             {
                 var choice = new ComboBox { ItemsSource = languages,
-                    SelectedItem = languages.FirstOrDefault(language => language.Tag == controller.Settings.ScreenTextLanguage) ?? languages[0],
+                    SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage),
                     MinWidth = 180 };
                 choice.SelectionChanged += (_, _) =>
                 {

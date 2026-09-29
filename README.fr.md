@@ -31,7 +31,7 @@ Sécurité : [sommes de contrôle SHA-256](https://github.com/vg2222/DesktopTool
 
 **Gardez votre public avec vous.** Dessinez par-dessus votre écran, pointez avec un laser, éclairez le détail important ou gardez le fil grâce au téléprompteur et aux minuteurs.
 
-**Réglez aussi les petites tâches.** Lisez le texte d’une capture d’écran, traduisez localement entre l’anglais et le russe, gardez vos notes à portée de main, générez un code QR ou recadrez une image avant de la partager.
+**Réglez aussi les petites tâches.** Lisez le texte d’une capture d’écran, traduisez localement avec des packs hors ligne, gardez vos notes à portée de main, générez un code QR ou recadrez une image avant de la partager.
 
 ## 📸 Trois façons de commencer
 
@@ -55,7 +55,7 @@ Choisissez un écran, une fenêtre ou une zone, puis réglez le son et la qualit
 
 ## 🔒 Conçu pour un traitement local
 
-Aucun compte. Aucune télémétrie. Aucun traitement de votre contenu dans le cloud. Vos captures d’écran, notes, reconnaissances de texte, traductions anglais–russe et suppressions d’arrière-plan sont traitées sur votre PC.
+Aucun compte. Aucune télémétrie. Aucun traitement de votre contenu dans le cloud. Vos captures d’écran, notes, reconnaissances de texte, traductions et suppressions d’arrière-plan sont traitées sur votre PC. Les packs supplémentaires nécessitent un téléchargement unique ; votre texte n’est jamais envoyé au serveur des modèles.
 
 Vous choisissez où enregistrer les images et les enregistrements. La vérification automatique des mises à jour contacte GitHub pour obtenir les informations de version ; elle ne téléverse ni vos médias ni vos notes. Modifiez sa fréquence ou désactivez-la dans **Paramètres → Mises à jour**. La page **Actualités** peut consulter chaque heure les annonces de ce dépôt ; elle dispose de son propre interrupteur. Les avis de sécurité n’installent jamais une mise à jour sans votre accord.
 
@@ -86,7 +86,7 @@ La page **Diagnostic** vérifie les composants système, les langues OCR Windows
 
 L’enregistrement d’écran, la traduction hors ligne et la suppression d’arrière-plan nécessitent Microsoft Visual C++ x64 Redistributable. L’enregistrement et le montage vidéo utilisent Windows Media Foundation. Les fréquences d’enregistrement jusqu’à 144 IPS sont des objectifs ; les performances réelles dépendent de la source, de l’encodeur et du matériel. Consultez la page [Compatibilité](docs/compatibility.md) pour connaître les limites de capture et la couverture actuelle des tests. Le programme d’installation vérifie le composant Visual C++ et propose la page de téléchargement de Microsoft si nécessaire.
 
-L’application prend en charge **l’anglais, le russe, l’allemand, le français et l’espagnol**, ainsi que les apparences claire, sombre et système. Les langues de l’interface sont indépendantes de la paire de traduction anglais–russe actuellement prise en charge.
+L’application prend en charge **l’anglais, le russe, l’allemand, le français et l’espagnol**, ainsi que les apparences claire, sombre et système. Les outils de texte proposent [20 langues de traduction hors ligne](docs/offline-languages.md) ; anglais–russe est inclus. Les langues Windows compatibles apparaissent en premier. L’OCR utilise les reconnaisseurs installés dans Windows.
 
 <details>
 <summary><strong>🛠️ Compiler et contribuer</strong></summary>

@@ -97,6 +97,13 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 - Open **Step-by-step guide** from Capture tools. Select a recent capture or folder image and confirm the annotation editor opens before the step is added. Try **Add original**, then edit another image with crop, text and an opaque cover and use **Add edited image**; cancel a third image and confirm no step is added. Add multiple files, edit one from its step card, and confirm other steps are unchanged. Confirm folder thumbnails use two columns; drag the divider to resize the picker. Write captions, reorder steps with drag and the arrow controls, remove a step, and export PNG with one through six steps per row. Inspect centered numbers, original image detail, rounded images, and light, dark, and custom export backgrounds. Confirm source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
 - Record a short clip and add a marker with the HUD control and Ctrl+Alt+M. Pause, then confirm a marker cannot be added while paused. Stop, click a marker to open the video editor at that time. Close and reopen the editor with the same file; markers must still appear. Replace the video at the same path and confirm old markers are not shown.
 
+## Offline translation and OCR language packs
+
+- Choose a supported Windows language and confirm it appears near the top of the source/target lists in Text tools and feature setup. Swap languages and reopen the window; preserve the saved pair. Unsupported Windows languages should not promise an unavailable model.
+- Choose a pair requiring downloads. Review its size, cancel a download, retry, and confirm no partially downloaded model is used. After download, disconnect the network and translate directly and through English. No input text should be transmitted; model requests are to pinned Hugging Face assets only.
+- Change the Windows OCR language components in a disposable account, refresh Text tools, and verify the list follows available recognizers. A saved generic code should select the corresponding regional recognizer. Remove that component and confirm fallback to an available recognizer. If none are installed, show the installation guidance.
+- Normal app updates preserve downloaded models; an explicitly confirmed full-data reset removes app-managed translation packs. Review non-English output with someone who reads that language. Native-speaker quality across all catalog languages is not established by automated fixtures.
+
 ## GitHub update acceptance
 
 Use a disposable Windows account or VM with two stable published versions and their checksum manifests. These steps exercise real installation and cannot be established by protocol fixtures alone.

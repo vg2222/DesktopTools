@@ -99,6 +99,7 @@ internal static class Program
                 else if (args.Contains("--recorder-only")) await Test("Screen recording lifecycle and MP4 output", RecordingChecks.RunAsync);
                 else if (args.Contains("--text-tools-only")) await Test("Text tools animation, translation, OCR and cancellation", TextToolsChecks.RunAsync);
                 else if (args.Contains("--translation-only")) await Test("Local EN-RU translation", TranslationChecks.RunAsync);
+                else if (args.Contains("--offline-packs-only")) await Test("Offline model downloads, pivot translation, integrity and Windows OCR language matching", OfflineLanguageChecks.RunAsync);
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);
                 else if (args.Contains("--toggles-only")) await Test("Switch animations survive Home, utility and aid updates", ToggleAnimationChecks.RunAsync);
                 else if (args.Contains("--blackout-only")) await Test("Sharing blackout capture, cancellation and settings", BlackoutChecks.RunAsync);

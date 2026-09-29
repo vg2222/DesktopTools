@@ -36,8 +36,8 @@ internal sealed class FeatureSetupWindow : Window
         else if (feature == "text-tools")
         {
             string direction = settings.TranslationDirection, language = settings.ScreenTextLanguage;
-            panel.Children.Add(Ui.Row(L.T("Translation direction"), null, Ui.Choice(new[] { "English → Russian", "Russian → English" }, direction == "ru-en" ? "Russian → English" : "English → Russian", value => direction = value == "Russian → English" ? "ru-en" : "en-ru")));
-            var languages = DesktopTools.Extras.LocalOcr.Languages; var choice = new ComboBox { ItemsSource = languages, SelectedItem = languages.FirstOrDefault(l => l.Tag == language) ?? languages.FirstOrDefault(), MinWidth = 180 };
+            panel.Children.Add(Ui.Row(L.T("Translation direction"), null, new TranslationLanguagePicker(direction, value => direction = value)));
+            var languages = DesktopTools.Extras.LocalOcr.Languages; var choice = new ComboBox { ItemsSource = languages, SelectedItem = DesktopTools.Extras.LocalOcr.SelectLanguage(languages, language), MinWidth = 180 };
             choice.SelectionChanged += (_, _) => { if (choice.SelectedItem is DesktopTools.Extras.OcrLanguage selected) language = selected.Tag; };
             panel.Children.Add(Ui.Row(L.T("Screen text language"), L.T("Uses installed Windows OCR language packs."), choice));
             apply = s => { s.TranslationDirection = direction; s.ScreenTextLanguage = language; };
