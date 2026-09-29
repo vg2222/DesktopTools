@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using DesktopTools.Extras;
@@ -17,11 +18,19 @@ internal static class StepGuideChecks
         string output = Path.Combine(Environment.CurrentDirectory, "step-guide-check.png");
         StepGuideComposer.Save(steps, "Example guide", output);
         var saved = new BitmapImage(new Uri(output));
-        if (saved.PixelWidth != 1600 || saved.PixelHeight < 600) throw new InvalidOperationException("Guide export did not include two rows of steps");
+        if (saved.PixelWidth != 2000 || saved.PixelHeight < 600) throw new InvalidOperationException("Guide export did not include two rows of steps");
         string singleOutput = Path.Combine(Environment.CurrentDirectory, "step-guide-single-column.png");
-        StepGuideComposer.Save(steps, "Example guide", singleOutput, new GuideLayoutOptions(1, true));
+        StepGuideComposer.Save(steps, "Example guide", singleOutput, new GuideLayoutOptions(1, Color.FromRgb(6, 6, 6)));
         var singleColumn = new BitmapImage(new Uri(singleOutput));
         if (singleColumn.PixelHeight <= saved.PixelHeight) throw new InvalidOperationException("Three-column guide did not reduce export height");
+        string wideOutput = Path.Combine(Environment.CurrentDirectory, "step-guide-six-columns.png");
+        var customBackground = Color.FromRgb(44, 56, 78);
+        StepGuideComposer.Save(steps, "Example guide", wideOutput, new GuideLayoutOptions(6, customBackground));
+        var wide = new BitmapImage(new Uri(wideOutput));
+        var corner = ScreenshotPixel.Read(wide, 0, 0);
+        if (wide.PixelWidth <= saved.PixelWidth ||
+            corner.R != customBackground.R || corner.G != customBackground.G || corner.B != customBackground.B)
+            throw new InvalidOperationException("Six-column export or custom background is incorrect");
         string longOutput = Path.Combine(Environment.CurrentDirectory, "step-guide-long-title.png");
         StepGuideComposer.Save(steps, new string('W', 120), longOutput);
         var longTitle = new BitmapImage(new Uri(longOutput));
@@ -29,10 +38,28 @@ internal static class StepGuideChecks
         var after = new byte[pixels.Length]; source.CopyPixels(after, 160 * 4, 0);
         if (!after.AsSpan().SequenceEqual(pixels)) throw new InvalidOperationException("Guide export modified the source screenshot");
         var history = new CaptureHistory(); history.Add(source);
-        var window = new StepGuideWindow(() => source, () => history.Entries, "", _ => { });
+        string folder = Path.Combine(Environment.CurrentDirectory, "guide-folder-fixture"); Directory.CreateDirectory(folder);
+        for (int i = 0; i < 4; i++) File.Copy(output, Path.Combine(folder, $"capture-{i}.png"), overwrite: true);
+        var window = new StepGuideWindow(() => source, () => history.Entries, folder, _ => { });
         try
         {
             window.Show();
+            if (window.Content is not System.Windows.Controls.Border shell ||
+                shell.Background is not SolidColorBrush normalSurface ||
+                Application.Current.Resources["Surface"] is not SolidColorBrush appSurface || normalSurface.Color != appSurface.Color)
+                throw new InvalidOperationException("Feature window ignored the app background");
+            var originalSurface = Application.Current.Resources["Surface"];
+            try
+            {
+                Application.Current.Resources["Surface"] = new SolidColorBrush(Color.FromRgb(31, 43, 67));
+                if (shell.Background is not SolidColorBrush customSurface || customSurface.Color != Color.FromRgb(31, 43, 67))
+                    throw new InvalidOperationException("Feature window did not follow the custom background");
+            }
+            finally { Application.Current.Resources["Surface"] = originalSurface; }
+            var folderTiles = (System.Windows.Controls.Primitives.UniformGrid)typeof(StepGuideWindow)
+                .GetField("folderTiles", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(window)!;
+            if (folderTiles.Columns != 2 || folderTiles.Children.Count != 4)
+                throw new InvalidOperationException("Folder screenshots are not shown in two columns");
             for (int i = 0; i < 4; i++)
                 typeof(StepGuideWindow).GetMethod("AddLatest", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(window, null);
             window.UpdateLayout();

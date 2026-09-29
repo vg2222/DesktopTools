@@ -94,7 +94,7 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 
 ### Screenshot guides and recording markers
 
-- Open **Step-by-step guide** from Capture tools. Add recent captures and files from the configured screenshot folder, then choose another folder. Write captions, reorder steps with drag and the arrow controls, remove a step, and export PNG with one, two, and three steps per row. Inspect numbering, captions, rounded images, and both background colors. Confirm source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
+- Open **Step-by-step guide** from Capture tools. Add recent captures and files from the configured screenshot folder, then choose another folder. Confirm folder thumbnails use two columns; drag the divider to resize the picker. Write captions, reorder steps with drag and the arrow controls, remove a step, and export PNG with one through six steps per row. Inspect centered numbers, original image detail, rounded images, and light, dark, and custom export backgrounds. Confirm source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
 - Record a short clip and add a marker with the HUD control and Ctrl+Alt+M. Pause, then confirm a marker cannot be added while paused. Stop, click a marker to open the video editor at that time. Close and reopen the editor with the same file; markers must still appear. Replace the video at the same path and confirm old markers are not shown.
 
 ## GitHub update acceptance

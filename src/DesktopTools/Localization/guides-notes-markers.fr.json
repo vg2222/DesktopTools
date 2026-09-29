@@ -44,5 +44,6 @@
   "Guide steps": "Étapes du guide",
   "No recent captures in this session.": "Aucune capture récente dans cette session.",
   "No screenshots found in this folder.": "Aucune capture trouvée dans ce dossier.",
-  "Could not open screenshot folder: ": "Impossible d’ouvrir le dossier de captures : "
+  "Could not open screenshot folder: ": "Impossible d’ouvrir le dossier de captures : ",
+  "Drag to resize screenshot picker": "Faites glisser pour redimensionner le sélecteur de captures"
 }

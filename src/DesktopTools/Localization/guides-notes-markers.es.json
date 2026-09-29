@@ -44,5 +44,6 @@
   "Guide steps": "Pasos de la guía",
   "No recent captures in this session.": "No hay capturas recientes en esta sesión.",
   "No screenshots found in this folder.": "No se encontraron capturas en esta carpeta.",
-  "Could not open screenshot folder: ": "No se pudo abrir la carpeta de capturas: "
+  "Could not open screenshot folder: ": "No se pudo abrir la carpeta de capturas: ",
+  "Drag to resize screenshot picker": "Arrastra para cambiar el ancho del selector de capturas"
 }

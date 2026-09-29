@@ -44,5 +44,6 @@
   "Guide steps": "Anleitungsschritte",
   "No recent captures in this session.": "In dieser Sitzung gibt es noch keine Aufnahmen.",
   "No screenshots found in this folder.": "Keine Screenshots in diesem Ordner gefunden.",
-  "Could not open screenshot folder: ": "Screenshot-Ordner konnte nicht geöffnet werden: "
+  "Could not open screenshot folder: ": "Screenshot-Ordner konnte nicht geöffnet werden: ",
+  "Drag to resize screenshot picker": "Ziehen, um die Screenshot-Auswahl zu verbreitern"
 }

@@ -44,5 +44,6 @@
   "Guide steps": "Шаги инструкции",
   "No recent captures in this session.": "В этой сессии пока нет снимков.",
   "No screenshots found in this folder.": "В папке нет скриншотов.",
-  "Could not open screenshot folder: ": "Не удалось открыть папку скриншотов: "
+  "Could not open screenshot folder: ": "Не удалось открыть папку скриншотов: ",
+  "Drag to resize screenshot picker": "Потяните, чтобы изменить ширину выбора скриншотов"
 }
