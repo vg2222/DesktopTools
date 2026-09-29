@@ -17,6 +17,7 @@ internal static class RecorderTrayLayoutChecks
     {
         using var controller = new AppController(true);
         var recorder = new ScreenRecorderWindow(controller);
+        TestDisplayPlacement.OnSecondary(recorder);
         try
         {
             recorder.Show(); await Task.Delay(130); recorder.UpdateLayout();
@@ -34,6 +35,8 @@ internal static class RecorderTrayLayoutChecks
             if (start.PointToScreen(new Point()).Y <= fps.PointToScreen(new Point()).Y + fps.ActualHeight)
                 throw new Exception("Recording controls overlap the quality settings.");
             Render(recorder, "recorder-redesign.png");
+            controller.UpdateSettings(settings => settings.Theme = "Dark");
+            await Task.Delay(60); recorder.UpdateLayout(); Render(recorder, "recorder-redesign-dark.png");
             playTest.Visibility = Visibility.Visible; recorder.UpdateLayout();
             if (testRecording.PointToScreen(new Point()).X + testRecording.ActualWidth > playTest.PointToScreen(new Point()).X + 1)
                 throw new Exception("Test and playback actions overlap when a test clip is ready.");

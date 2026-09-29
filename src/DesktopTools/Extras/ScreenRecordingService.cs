@@ -57,7 +57,12 @@ internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
             AudioOptions = new AudioOptions { IsAudioEnabled = sources.Count > 0, AudioSources = sources },
             // A static desktop may not deliver another capture frame for seconds.
             // Keep media time advancing so a still screen produces a usable clip.
-            VideoEncoderOptions = new VideoEncoderOptions { Framerate = framesPerSecond, Quality = encoderQuality, IsFixedFramerate = true, IsHardwareEncodingEnabled = hardwareAcceleration, Encoder = new H264VideoEncoder { BitrateMode = H264BitrateControlMode.Quality }, IsFragmentedMp4Enabled = false },
+            // Fixed pacing duplicates stale WGC frames while the encoder is busy and
+            // can make the reported FPS look higher than the captured motion. Let
+            // arriving frames set timestamps, capped by the requested target.
+            VideoEncoderOptions = new VideoEncoderOptions { Framerate = framesPerSecond, Quality = encoderQuality, IsFixedFramerate = false,
+                IsHardwareEncodingEnabled = hardwareAcceleration,
+                Encoder = new H264VideoEncoder { BitrateMode = H264BitrateControlMode.Quality }, IsFragmentedMp4Enabled = false },
             OutputOptions = new OutputOptions { RecorderMode = RecorderMode.Video }
         };
         completion = new(TaskCreationOptions.RunContinuationsAsynchronously);

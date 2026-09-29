@@ -5,7 +5,8 @@ namespace DesktopTools.Core;
 public sealed record VideoInfo(string Path, double Duration, int Width, int Height, bool HasAudio);
 public sealed record VideoSegment(double Start, double End);
 public sealed record VideoEdit(double Start, double End, bool RemoveSection = false, double CutStart = 0, double CutEnd = 0,
-    int CropX = 0, int CropY = 0, int CropWidth = 0, int CropHeight = 0, int Rotation = 0, bool Mute = false, int OutputPercent = 100)
+    int CropX = 0, int CropY = 0, int CropWidth = 0, int CropHeight = 0, int Rotation = 0, bool Mute = false, int OutputPercent = 100,
+    int VolumePercent = 100, string OutputQuality = "Standard")
 {
     public IReadOnlyList<VideoSegment> Segments(VideoInfo source)
     {
@@ -29,6 +30,8 @@ public sealed record VideoEdit(double Start, double End, bool RemoveSection = fa
     public void Validate(VideoInfo source)
     {
         if (OutputPercent < 10 || OutputPercent > 100) throw new ArgumentException(L.T("Choose an output size between 10% and 100%."));
+        if (VolumePercent is < 0 or > 200) throw new ArgumentException(L.T("Choose an audio volume between 0% and 200%."));
+        if (OutputQuality is not ("Standard" or "High" or "Maximum")) throw new ArgumentException(L.T("Choose a valid output quality."));
         if (!double.IsFinite(source.Duration) || source.Duration <= 0 || source.Duration > 21600 || source.Width < 2 || source.Height < 2 || source.Width > 8192 || source.Height > 8192)
             throw new ArgumentException(L.T("Use a video up to six hours long and 8192 pixels per side."));
         if (!double.IsFinite(Start) || !double.IsFinite(End) || Start < 0 || End > source.Duration + .001 || End - Start < .05)

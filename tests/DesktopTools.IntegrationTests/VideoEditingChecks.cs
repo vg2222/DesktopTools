@@ -48,6 +48,11 @@ internal static class VideoEditingChecks
         string directory = Path.GetFullPath("video-checks-" + Guid.NewGuid().ToString("N"));
         string path = await FixtureAsync(directory); var original = SHA256.HashData(File.ReadAllBytes(path));
         var info = await VideoEditorService.ProbeAsync(path); Check(info.Width == 320 && info.Height == 240 && Math.Abs(info.Duration - 4) < .1, "Source metadata");
+        string still = Path.Combine(directory, "current-frame.png");
+        await VideoEditorService.SaveFrameAsync(info, 1.5, still);
+        var stillFrame = BitmapDecoder.Create(new Uri(still), BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames[0];
+        Check(stillFrame.PixelWidth == 320 && stillFrame.PixelHeight == 240, "Saved frame lost source resolution");
+        try { await VideoEditorService.SaveFrameAsync(info, 1.5, still); throw new Exception("Existing still image was overwritten"); } catch (IOException) { }
         var edited = Path.Combine(directory, "cut.mp4");
         await VideoEditorService.ExportAsync(info, new VideoEdit(.5, 3.5, true, 1, 3), edited);
         var result = await VideoEditorService.ProbeAsync(edited); Check(Math.Abs(result.Duration - 1) < .12, "Precise cut duration: " + result.Duration);
@@ -87,6 +92,9 @@ internal static class VideoEditingChecks
         var audioResult = await VideoEditorService.ProbeAsync(audioCut); Check(audioResult.HasAudio && Math.Abs(audioResult.Duration - 1) < .12, "Audio lost or cut duration changed");
         var muted = Path.Combine(directory, "muted.mp4"); await VideoEditorService.ExportAsync(audioInfo, new VideoEdit(0, 1, Mute: true), muted);
         Check(!(await VideoEditorService.ProbeAsync(muted)).HasAudio, "Mute retained audio stream");
+        var adjusted = Path.Combine(directory, "adjusted.mp4");
+        await VideoEditorService.ExportAsync(audioInfo, new VideoEdit(0, 1, VolumePercent: 50, OutputQuality: "High"), adjusted);
+        Check((await VideoEditorService.ProbeAsync(adjusted)).HasAudio, "Volume or quality option lost the audio stream");
         // Asymmetric pattern proves crop content and clockwise orientation, not only output dimensions.
         byte[] pattern = new byte[320 * 240 * 4];
         for (int y = 0; y < 240; y++) for (int x = 0; x < 320; x++)

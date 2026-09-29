@@ -13,6 +13,36 @@ namespace DesktopTools.Extras;
 
 public static class VideoEditorService
 {
+    public static async Task SaveFrameAsync(VideoInfo source, double seconds, string output, CancellationToken cancellationToken = default, bool overwrite = false)
+    {
+        new VideoEdit(0, source.Duration).Validate(source);
+        if (!double.IsFinite(seconds) || seconds < 0 || seconds > source.Duration) throw new ArgumentOutOfRangeException(nameof(seconds));
+        output = Path.GetFullPath(output);
+        if (!string.Equals(Path.GetExtension(output), ".png", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException(L.T("Save the frame as a PNG file."));
+        if (!overwrite && File.Exists(output)) throw new IOException(L.T("Choose a new filename. Existing images are not overwritten."));
+        string temporary = Path.Combine(Path.GetDirectoryName(output)!, ".desktoptools-frame-" + Guid.NewGuid().ToString("N") + ".png");
+        var composition = new MediaComposition();
+        try
+        {
+            var input = await StorageFile.GetFileFromPathAsync(source.Path).AsTask(cancellationToken);
+            composition.Clips.Add(await MediaClip.CreateFromFileAsync(input).AsTask(cancellationToken));
+            using var thumbnail = await composition.GetThumbnailAsync(TimeSpan.FromSeconds(Math.Min(seconds, Math.Max(0, source.Duration - .001))),
+                source.Width, source.Height, VideoFramePrecision.NearestFrame).AsTask(cancellationToken);
+            using var stream = thumbnail.AsStreamForRead();
+            var decoded = System.Windows.Media.Imaging.BitmapDecoder.Create(stream, System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(decoded.Frames[0]));
+            using (var file = File.Create(temporary)) encoder.Save(file);
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Move(temporary, output, overwrite);
+        }
+        finally
+        {
+            composition.Clips.Clear();
+            if (File.Exists(temporary)) File.Delete(temporary);
+        }
+    }
     internal static async Task<IReadOnlyList<System.Windows.Media.Imaging.BitmapSource>> ThumbnailsAsync(VideoInfo source, CancellationToken cancellationToken)
     {
         var composition = new MediaComposition();
@@ -76,7 +106,7 @@ public static class VideoEditorService
                     throw new InvalidOperationException(L.T("The source video changed. Open it again before exporting."));
                 clip.TrimTimeFromStart = TimeSpan.FromSeconds(segment.Start);
                 clip.TrimTimeFromEnd = clip.OriginalDuration - TimeSpan.FromSeconds(Math.Min(segment.End, source.Duration));
-                clip.Volume = edit.Mute ? 0 : 1;
+                clip.Volume = edit.Mute ? 0 : edit.VolumePercent / 100d;
                 composition.Clips.Add(clip);
             }
             var size = edit.OutputSize(source);
@@ -89,7 +119,9 @@ public static class VideoEditorService
             }
             profile.Video.PixelAspectRatio.Numerator = 1; profile.Video.PixelAspectRatio.Denominator = 1;
             double fps = profile.Video.FrameRate.Numerator / (double)profile.Video.FrameRate.Denominator;
-            profile.Video.Bitrate = (uint)Math.Clamp(size.Width * (double)size.Height * fps * .15, 1_000_000, 40_000_000);
+            double qualityFactor = edit.OutputQuality switch { "High" => 1.6, "Maximum" => 2.4, _ => 1d };
+            double standardBitrate = Math.Clamp(size.Width * (double)size.Height * fps * .15, 1_000_000, 40_000_000);
+            profile.Video.Bitrate = (uint)Math.Clamp(standardBitrate * qualityFactor, 1_000_000, 80_000_000);
             if (edit.Mute || !source.HasAudio) profile.Audio = null;
             using (File.Open(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
             var destination = await StorageFile.GetFileFromPathAsync(temporary).AsTask(cancellationToken);

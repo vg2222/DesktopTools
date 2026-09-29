@@ -53,7 +53,7 @@ internal sealed class ScreenRecorderWindow : Window
     {
         this.readMonitors = readMonitors ?? MonitorService.GetAll;
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
-        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 970; Height = 590; MinWidth = 860; MinHeight = 540; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 1120; Height = 690; MinWidth = 900; MinHeight = 590; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var panel = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
         var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 9); panel.Children.Add(setupHeading);
@@ -111,7 +111,7 @@ internal sealed class ScreenRecorderWindow : Window
         start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop); transport.Children.Add(actions);
         var transportSurface = new Border { Child = transport, Padding = new Thickness(14), Margin = new Thickness(12, 10, 0, 0), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1) };
         transportSurface.SetResourceReference(Border.BackgroundProperty, "Field"); transportSurface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
-        var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350) }); root.Children.Add(columns);
+        var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(370) }); root.Children.Add(columns);
         var inspectorPanel = new DockPanel(); Grid.SetColumn(inspectorPanel, 1); columns.Children.Add(inspectorPanel);
         DockPanel.SetDock(transportSurface, Dock.Bottom); inspectorPanel.Children.Add(transportSurface);
         var inspector = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; inspectorPanel.Children.Add(inspector);

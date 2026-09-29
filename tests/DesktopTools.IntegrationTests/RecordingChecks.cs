@@ -22,6 +22,7 @@ internal static class RecordingChecks
             "Profile lost recording preferences or overwrote machine encoding preference");
         using var target = new Forms.Form { TopMost = true, StartPosition = Forms.FormStartPosition.CenterScreen,
             FormBorderStyle = Forms.FormBorderStyle.None, ClientSize = new Drawing.Size(320, 200), Text = "DesktopTools encoder helper" };
+        TestDisplayPlacement.OnSecondary(target);
         try
         {
             target.Show();

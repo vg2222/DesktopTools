@@ -40,7 +40,9 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     private readonly TextBox cutStart = NumberBox(), cutEnd = NumberBox();
     private readonly TextBox cropX = NumberBox(), cropY = NumberBox(), cropWidth = NumberBox(), cropHeight = NumberBox();
     private readonly CheckBox removeSection, mute;
-    private readonly ComboBox rotation, cropRatio;
+    private readonly ComboBox rotation, cropRatio, playbackSpeed, outputQuality;
+    private readonly Slider audioVolume = new() { Minimum = 0, Maximum = 200, Value = 100, TickFrequency = 5, IsSnapToTickEnabled = true };
+    private readonly TextBlock audioVolumeLabel = Ui.Text("100%", 12, muted: true);
     private readonly Slider outputPercent = new() { Minimum = 10, Maximum = 100, Value = 100, TickFrequency = 1, IsSnapToTickEnabled = true };
     private readonly TextBlock outputSize = Ui.Text("", 12, muted: true);
     private readonly Grid editPanel = new();
@@ -49,7 +51,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     private readonly Expander cropExpander;
     private readonly StackPanel cutFields = new() { Orientation = Orientation.Horizontal };
     private readonly ProgressBar progress = new() { Minimum = 0, Maximum = 100, Height = 3, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 5, 0, 5) };
-    private readonly Button openButton, playButton, resetButton, previewButton, originalButton, exportButton, cancelButton;
+    private readonly Button openButton, playButton, resetButton, previewButton, originalButton, exportButton, cancelButton, saveFrameButton;
     private readonly HashSet<string> scratchFiles = new(StringComparer.OrdinalIgnoreCase);
     private VideoInfo? source;
     private VideoEdit? savedEdit;
@@ -113,9 +115,15 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         playback.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         playback.ColumnDefinitions.Add(new ColumnDefinition());
         playback.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        playback.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         playButton = Ui.IconButton("Play", L.T("Play"), TogglePlayback); playButton.Margin = new Thickness(0, 0, 10, 0); playback.Children.Add(playButton);
         previewLabel.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(previewLabel, 1); playback.Children.Add(previewLabel);
-        Grid.SetColumn(seek, 2); playback.Children.Add(seek); clock.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(clock, 3); playback.Children.Add(clock);
+        Grid.SetColumn(seek, 2); playback.Children.Add(seek);
+        playbackSpeed = Ui.Choice(new[] { "0.5×", "0.75×", "1×", "1.25×", "1.5×", "2×" }, "1×",
+            value => media.SpeedRatio = double.Parse(value.TrimEnd('×'), CultureInfo.InvariantCulture), translate: false);
+        playbackSpeed.Width = 88; playbackSpeed.MinWidth = 88; playbackSpeed.Margin = new Thickness(0, 0, 12, 0); playbackSpeed.ToolTip = L.T("Preview playback speed; export keeps the original speed.");
+        AutomationProperties.SetName(playbackSpeed, L.T("Preview speed")); Grid.SetColumn(playbackSpeed, 3); playback.Children.Add(playbackSpeed);
+        clock.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(clock, 4); playback.Children.Add(clock);
         AutomationProperties.SetName(seek, L.T("Playback position")); AddRow(root, playback, 3);
 
         editPanel.ColumnDefinitions.Add(new ColumnDefinition()); editPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) }); editPanel.ColumnDefinitions.Add(new ColumnDefinition());
@@ -155,8 +163,25 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         var caption = (UIElement)root.Children[0]; root.Children.Clear(); root.RowDefinitions.Clear();
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); root.RowDefinitions.Add(new RowDefinition()); root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         AddRow(root, caption, 0);
-        var workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition()); workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) }); AddRow(root, workspace, 1);
-        var viewer = new DockPanel { Margin = new Thickness(0, 0, 16, 0) }; DockPanel.SetDock(mediaHeader, Dock.Top); viewer.Children.Add(mediaHeader); DockPanel.SetDock(playback, Dock.Bottom); viewer.Children.Add(playback); viewer.Children.Add(stageFrame); workspace.Children.Add(viewer);
+        var workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition { MinWidth = 350 });
+        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
+        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350), MinWidth = 280, MaxWidth = 580 }); AddRow(root, workspace, 1);
+        var viewer = new DockPanel { Margin = new Thickness(0, 0, 8, 0) }; DockPanel.SetDock(mediaHeader, Dock.Top); viewer.Children.Add(mediaHeader); DockPanel.SetDock(playback, Dock.Bottom); viewer.Children.Add(playback); viewer.Children.Add(stageFrame); workspace.Children.Add(viewer);
+        var splitter = new GridSplitter { Width = 10, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
+            ResizeDirection = GridResizeDirection.Columns, ResizeBehavior = GridResizeBehavior.PreviousAndNext, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.SizeWE };
+        var splitterSurface = new FrameworkElementFactory(typeof(Grid)); splitterSurface.SetValue(Panel.BackgroundProperty, Brushes.Transparent);
+        var splitterHandle = new FrameworkElementFactory(typeof(Border), "Handle");
+        splitterHandle.SetValue(Border.BackgroundProperty, new DynamicResourceExtension("Stroke"));
+        splitterHandle.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+        splitterHandle.SetValue(WidthProperty, 3d); splitterHandle.SetValue(HeightProperty, 42d);
+        splitterHandle.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center); splitterHandle.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
+        splitterSurface.AppendChild(splitterHandle);
+        var splitterTemplate = new ControlTemplate(typeof(GridSplitter)) { VisualTree = splitterSurface };
+        var hover = new Trigger { Property = IsMouseOverProperty, Value = true };
+        hover.Setters.Add(new Setter(Border.BackgroundProperty, new DynamicResourceExtension("Accent"), "Handle"));
+        splitterTemplate.Triggers.Add(hover); splitter.Template = splitterTemplate;
+        Ui.Tip(splitter, L.T("Drag to resize editor settings"));
+        AutomationProperties.SetName(splitter, L.T("Resize editor settings")); Grid.SetColumn(splitter, 1); workspace.Children.Add(splitter);
         editPanel.Children.Clear(); editPanel.ColumnDefinitions.Clear(); editPanel.RowDefinitions.Clear();
         foreach (var box in trim.Children.OfType<StackPanel>()) box.Width = 106;
         foreach (var box in cutFields.Children.OfType<StackPanel>()) box.Width = 106;
@@ -166,7 +191,12 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         removeSection.Unchecked += (_, _) => cutFields.Visibility = Visibility.Collapsed;
         frame.Children.Clear(); frame.Margin = new Thickness(0);
         if (rotation.Parent is Panel rotationParent) rotationParent.Children.Remove(rotation);
-        transform.Children.Clear(); muteRow.Margin = new Thickness(0, 0, 0, 14); frame.Children.Add(muteRow);
+        transform.Children.Clear(); muteRow.Margin = new Thickness(0, 0, 0, 8); frame.Children.Add(muteRow);
+        var volumeHeading = new DockPanel(); DockPanel.SetDock(audioVolumeLabel, Dock.Right); volumeHeading.Children.Add(audioVolumeLabel);
+        volumeHeading.Children.Add(Ui.Text(L.T("Audio volume"), 12, true)); frame.Children.Add(volumeHeading);
+        audioVolume.Margin = new Thickness(0, 5, 0, 15); frame.Children.Add(audioVolume);
+        AutomationProperties.SetName(audioVolume, L.T("Audio volume"));
+        audioVolume.ValueChanged += (_, _) => { audioVolumeLabel.Text = $"{audioVolume.Value:0}%"; Changed(); };
         var rotateAction = Ui.IconButton("RotateRight", L.T("Clockwise rotation"), () => rotation.SelectedIndex = (rotation.SelectedIndex + 1) % 4);
         cropRatio = Ui.Choice(new[] { "Free", "Original", "1:1", "4:3", "16:9", "9:16" }, "Free", ApplyCropRatio);
         AutomationProperties.SetName(cropRatio, L.T("Aspect ratio"));
@@ -187,6 +217,11 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         var presets = new WrapPanel { Margin = new Thickness(0, 8, 0, 8) };
         foreach (int percent in new[] { 25, 50, 75, 100 }) { int value = percent; var preset = Ui.Button($"{percent}%", () => outputPercent.Value = value); preset.Padding = new Thickness(8, 5, 8, 5); preset.MinWidth = 0; presets.Children.Add(preset); }
         outputSettings.Children.Add(presets); outputSettings.Children.Add(outputPercent); outputSize.Margin = new Thickness(0, 8, 0, 0); outputSettings.Children.Add(outputSize);
+        outputQuality = Ui.Choice(new[] { "Standard", "High", "Maximum" }, "Standard", _ => Changed());
+        outputQuality.Margin = new Thickness(0, 7, 0, 0); outputSettings.Children.Add(Field(L.T("Export quality"), outputQuality, 240));
+        saveFrameButton = Ui.Button(L.T("Save current frame as PNG"), async () => await SaveFrameAsync());
+        saveFrameButton.Content = Ui.IconLabel("Image", L.T("Save frame PNG"));
+        Ui.Tip(saveFrameButton, L.T("Save current frame as PNG"));
         AutomationProperties.SetName(outputPercent, L.T("Output size")); outputPercent.ValueChanged += (_, _) => Changed();
         cropExpander.Expanded += (_, _) => { if (!frameInspectorActive) return; BeginCrop(); };
         cropExpander.Collapsed += (_, _) => cropHandles.Visibility = Visibility.Collapsed;
@@ -212,11 +247,11 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             tabButtons[key] = button; inspectorTabs.Children.Add(button);
         }
         editorScroll.Content = editPanel; editorScroll.MaxHeight = double.PositiveInfinity;
-        var inspector = new DockPanel(); Grid.SetColumn(inspector, 1); workspace.Children.Add(inspector);
+        var inspector = new DockPanel(); Grid.SetColumn(inspector, 2); workspace.Children.Add(inspector);
         actions.Children.Clear();
         var exportActions = new StackPanel(); exportActions.Children.Add(cropActions); exportButton.Content = Ui.IconLabel("Save", L.T("Export MP4"), primary: true); exportButton.Height = 40; exportButton.Margin = new Thickness(0, 12, 0, 0); exportActions.Children.Add(exportButton);
         previewButton.Content = Ui.IconLabel("Refresh", L.T("Refresh preview")); previewButton.Margin = new Thickness(0, 8, 0, 0); exportActions.Children.Add(previewButton);
-        var utilityActions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) }; foreach (var button in new[] { resetButton, originalButton, cancelButton }) { button.Margin = new Thickness(0, 0, 6, 0); utilityActions.Children.Add(button); } exportActions.Children.Add(utilityActions);
+        var utilityActions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) }; foreach (var button in new[] { saveFrameButton, resetButton, originalButton, cancelButton }) { button.Margin = new Thickness(0, 0, 6, 0); utilityActions.Children.Add(button); } exportActions.Children.Add(utilityActions);
         DockPanel.SetDock(exportActions, Dock.Bottom); inspector.Children.Add(exportActions); DockPanel.SetDock(inspectorTabs, Dock.Top); inspector.Children.Add(inspectorTabs); inspector.Children.Add(editorScroll);
         var feedbackSurface = MediaWorkspaceLayout.Status(feedback); feedbackSurface.Margin = new Thickness(0, 10, 0, 0); AddRow(root, feedbackSurface, 2);
         InspectorMode("Timing");
@@ -292,7 +327,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     }
     private static StackPanel Field(string label, FrameworkElement input, double width = 155)
     {
-        var field = new StackPanel { Width = width, Margin = new Thickness(0, 0, 10, 0) };
+        var field = new StackPanel { Width = width, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 10, 0) };
         var caption = Ui.Text(label, 11, muted: true); caption.Margin = new Thickness(0, 0, 0, 4);
         field.Children.Add(caption); field.Children.Add(input); AutomationProperties.SetName(input, label); return field;
     }
@@ -312,6 +347,30 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             Title = L.T("Open video"), Filter = L.T("Video files|*.mp4;*.mov;*.m4v;*.avi;*.wmv;*.mkv|All files|*.*"), CheckFileExists = true
         };
         if (dialog.ShowDialog(this) == true) await LoadAsync(dialog.FileName);
+    }
+
+    private async Task SaveFrameAsync()
+    {
+        if (source == null || busy || !mediaOpened) return;
+        string path = showingEdited && renderedPreview != null ? renderedPreview : source.Path;
+        double position = media.Position.TotalSeconds;
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = L.T("Save current frame as PNG"), Filter = L.T("PNG image|*.png"), DefaultExt = ".png", AddExtension = true,
+            FileName = Path.GetFileNameWithoutExtension(source.Path) + "-frame-" + Math.Max(0, position).ToString("0.000", CultureInfo.InvariantCulture) + ".png",
+            OverwritePrompt = true
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        var cancellation = BeginOperation(L.T("Saving frame…"), indeterminate: true);
+        try
+        {
+            var frameSource = path == source.Path ? source : await VideoEditorService.ProbeAsync(path, cancellation.Token);
+            await VideoEditorService.SaveFrameAsync(frameSource, Math.Clamp(position, 0, frameSource.Duration), dialog.FileName, cancellation.Token, overwrite: true);
+            status.Text = L.T("Frame saved as PNG.");
+        }
+        catch (OperationCanceledException) { status.Text = L.T("Operation canceled."); }
+        catch (Exception ex) { ShowError(ex); }
+        finally { EndOperation(cancellation); }
     }
 
     internal async Task LoadAsync(string path)
@@ -349,19 +408,29 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     {
         markerBar.Children.Clear();
         var markers = loadMarkers(path);
+        timeline.Markers = markers; timeline.InvalidateVisual();
         markerBar.Visibility = markers.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
         if (markers.Count == 0) return;
-        markerBar.Children.Add(Ui.Text(L.T("Recording markers") + ":", 12, true));
+        var heading = Ui.Text($"{L.T("Recording markers")} · {markers.Count}", 12, true);
+        heading.VerticalAlignment = VerticalAlignment.Center; heading.Margin = new Thickness(0, 0, 10, 0); markerBar.Children.Add(heading);
         foreach (var marker in markers)
         {
             var position = marker.Position;
-            var button = Ui.Button($"{L.T("Marker")} {marker.Number} · {RecordingTime.Format(position, compact: true)}", () =>
+            var chipContent = new StackPanel { Orientation = Orientation.Horizontal };
+            var dot = new Border { Width = 7, Height = 7, CornerRadius = new CornerRadius(4), Background = new SolidColorBrush(Color.FromRgb(244, 174, 65)), VerticalAlignment = VerticalAlignment.Center };
+            chipContent.Children.Add(dot);
+            var label = Ui.Text($"{marker.Number}  {RecordingTime.Format(position, compact: true)}", 12, true);
+            label.Margin = new Thickness(7, 0, 0, 0); chipContent.Children.Add(label);
+            var chip = new Border { Child = chipContent, CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1), Padding = new Thickness(9, 5, 9, 5),
+                Margin = new Thickness(0, 0, 7, 0), Cursor = System.Windows.Input.Cursors.Hand,
+                ToolTip = $"{L.T("Marker")} {marker.Number} · {RecordingTime.Format(position, compact: true)}" };
+            chip.SetResourceReference(Border.BackgroundProperty, "Field"); chip.SetResourceReference(Border.BorderBrushProperty, "Stroke");
+            chip.MouseLeftButtonUp += (_, _) =>
             {
                 if (showingEdited) ShowOriginal();
                 QueueSeek(position.TotalSeconds);
-            });
-            button.Margin = new Thickness(8, 0, 0, 0);
-            markerBar.Children.Add(button);
+            };
+            markerBar.Children.Add(chip);
         }
     }
 
@@ -393,6 +462,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         cropX.Text = "0"; cropY.Text = "0";
         cropWidth.Text = source.Width.ToString(CultureInfo.CurrentCulture); cropHeight.Text = source.Height.ToString(CultureInfo.CurrentCulture);
         removeSection.IsChecked = false; mute.IsChecked = false; rotation.SelectedIndex = 0; outputPercent.Value = 100;
+        audioVolume.Value = 100; outputQuality.SelectedItem = "Standard";
         cropRatio.SelectedItem = "Free"; cropHandles.KeepRatio = false;
         updating = false; InvalidatePreview(); RefreshEnabled();
         status.Text = L.T("Original video. Your source file stays unchanged.");
@@ -511,7 +581,8 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         bool remove = removeSection.IsChecked == true;
         var edit = new VideoEdit(ReadSeconds(trimStart), ReadSeconds(trimEnd), remove,
             remove ? ReadSeconds(cutStart) : 0, remove ? ReadSeconds(cutEnd) : 0,
-            ReadPixels(cropX), ReadPixels(cropY), ReadPixels(cropWidth), ReadPixels(cropHeight), Math.Max(0, rotation.SelectedIndex) * 90, mute.IsChecked == true, (int)outputPercent.Value);
+            ReadPixels(cropX), ReadPixels(cropY), ReadPixels(cropWidth), ReadPixels(cropHeight), Math.Max(0, rotation.SelectedIndex) * 90, mute.IsChecked == true, (int)outputPercent.Value,
+            (int)audioVolume.Value, outputQuality.SelectedItem?.ToString() ?? "Standard");
         edit.Validate(source!); return edit;
     }
     private static double ReadSeconds(TextBox input)
@@ -614,6 +685,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         if (source != null) { try { var size = ReadEdit().OutputSize(source); outputSize.Text = $"{outputPercent.Value:0}% · {size.Width} × {size.Height} px"; } catch (ArgumentException) { outputSize.Text = "—"; } }
         empty.IsEnabled = openButton.IsEnabled = !busy && !closed; editPanel.IsEnabled = source != null && (!busy || previewRendering) && !closed;
         resetButton.IsEnabled = ready; previewButton.IsEnabled = ready; exportButton.IsEnabled = ready;
+        saveFrameButton.IsEnabled = ready && mediaOpened;
         originalButton.IsEnabled = ready && (showingEdited || renderedPreview != null);
         string previewAction = L.T(showingEdited ? "Show original" : "Show edited");
         Ui.Tip(originalButton, previewAction);
@@ -625,7 +697,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         cropActions.IsEnabled = source != null && (!busy || previewRendering) && !closed;
         editCropButton.IsEnabled = ready && !cropEditing;
         editCropButton.Visibility = cropEditing ? Visibility.Collapsed : Visibility.Visible;
-        foreach (var action in new[] { exportButton, previewButton, resetButton, originalButton })
+        foreach (var action in new[] { exportButton, previewButton, saveFrameButton, resetButton, originalButton })
             action.Visibility = cropEditing ? Visibility.Collapsed : Visibility.Visible;
         cropHandles.Visibility = cropEditing && frameInspectorActive && cropExpander.IsExpanded && !showingEdited ? Visibility.Visible : Visibility.Collapsed;
         cropHandles.IsEnabled = editPanel.IsEnabled && !showingEdited; UpdateCropHandles();

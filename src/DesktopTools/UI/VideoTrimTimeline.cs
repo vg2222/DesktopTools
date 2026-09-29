@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using DesktopTools.Extras;
+using DesktopTools.Localization;
 
 namespace DesktopTools.UI;
 
@@ -15,16 +17,18 @@ internal sealed class VideoTrimTimeline : FrameworkElement
     internal event Action? SeekCompleted;
     internal bool IsScrubbing => dragging && scrubbing;
     internal IReadOnlyList<System.Windows.Media.Imaging.BitmapSource> Thumbnails { get; set; } = Array.Empty<System.Windows.Media.Imaging.BitmapSource>();
+    internal IReadOnlyList<RecordingMarker> Markers { get; set; } = Array.Empty<RecordingMarker>();
     internal double Position { get; set; }
     internal double? CutStart { get; set; }
     internal double CutEnd { get; set; }
     private bool dragging, left;
     private bool cutting;
     private bool scrubbing;
+    private int? hoveredMarker;
     private double savedPosition;
     private double savedCutStart, savedCutEnd;
     private double savedStart, savedEnd;
-    internal VideoTrimTimeline() { Height = 58; Focusable = true; Cursor = Cursors.SizeWE; }
+    internal VideoTrimTimeline() { Height = 76; Focusable = true; Cursor = Cursors.SizeWE; }
     internal void SetRange(double duration, double start, double end)
     {
         Duration = Math.Max(0, duration); Start = Math.Clamp(start, 0, Duration); End = Math.Clamp(end, Start, Duration); InvalidateVisual();
@@ -65,11 +69,21 @@ internal sealed class VideoTrimTimeline : FrameworkElement
         dc.DrawRoundedRectangle(null, new Pen(Ui.Brush("Accent"), 2), selection, 4, 4);
         foreach (double time in new[] { Start, End }) { double x = X(time); dc.DrawRoundedRectangle(Ui.Brush("Accent"), null, new Rect(x - 5, 8, 10, 38), 4, 4); dc.DrawLine(new Pen(Brushes.White, 2), new Point(x, 18), new Point(x, 36)); }
         double position = X(Math.Clamp(Position, 0, Duration)); dc.DrawLine(new Pen(Ui.Brush("Accent"), 2), new Point(position, 2), new Point(position, 52)); dc.DrawEllipse(Ui.Brush("Accent"), null, new Point(position, 3), 3, 3);
+        var markerBrush = new SolidColorBrush(Color.FromRgb(244, 174, 65)); markerBrush.Freeze();
+        foreach (var marker in Markers)
+        {
+            if (marker.Position.TotalSeconds < 0 || marker.Position.TotalSeconds > Duration) continue;
+            double x = X(marker.Position.TotalSeconds);
+            dc.DrawLine(new Pen(markerBrush, 2), new Point(x, 50), new Point(x, 65));
+            dc.DrawEllipse(markerBrush, new Pen(Ui.Brush("Card"), 1.5), new Point(x, 65), 5, 5);
+        }
         if (IsKeyboardFocused) dc.DrawRectangle(null, new Pen(Ui.Brush("Accent"), 1), new Rect(1, 1, Math.Max(0, ActualWidth - 2), ActualHeight - 2));
     }
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
         var point = e.GetPosition(this); double x = point.X;
+        if (point.Y >= 53 && MarkerAt(x) is { } marker)
+        { Focus(); SeekRequested?.Invoke(marker.Position.TotalSeconds); SeekCompleted?.Invoke(); e.Handled = true; return; }
         if (point.Y < 8 && Math.Abs(x - X(Position)) < 10 && BeginScrub(x))
         { Focus(); CaptureMouse(); e.Handled = true; return; }
         if (BeginCutDrag(x)) { Focus(); CaptureMouse(); e.Handled = true; return; }
@@ -95,7 +109,28 @@ internal sealed class VideoTrimTimeline : FrameworkElement
         savedCutStart = cut; savedCutEnd = CutEnd; dragging = true; return true;
     }
     protected override void OnMouseMove(MouseEventArgs e)
-        => DragTo(e.GetPosition(this).X);
+    {
+        var point = e.GetPosition(this);
+        if (!dragging && point.Y >= 53 && MarkerAt(point.X) is { } marker)
+        {
+            Cursor = Cursors.Hand;
+            if (hoveredMarker != marker.Number)
+            {
+                hoveredMarker = marker.Number;
+                ToolTip = $"{L.T("Marker")} {marker.Number} · {RecordingTime.Format(marker.Position, compact: true)}";
+            }
+        }
+        else { Cursor = Cursors.SizeWE; hoveredMarker = null; ToolTip = null; }
+        DragTo(point.X);
+    }
+    protected override void OnMouseLeave(MouseEventArgs e) { hoveredMarker = null; ToolTip = null; Cursor = Cursors.SizeWE; base.OnMouseLeave(e); }
+    internal RecordingMarker? MarkerAt(double x)
+    {
+        if (Duration <= 0) return null;
+        return Markers.Where(marker => marker.Position.TotalSeconds >= 0 && marker.Position.TotalSeconds <= Duration)
+            .OrderBy(marker => Math.Abs(X(marker.Position.TotalSeconds) - x))
+            .FirstOrDefault(marker => Math.Abs(X(marker.Position.TotalSeconds) - x) <= 9);
+    }
     internal void DragTo(double x)
     {
         if (!dragging) return;
