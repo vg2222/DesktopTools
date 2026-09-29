@@ -45,5 +45,12 @@
   "No recent captures in this session.": "No hay capturas recientes en esta sesión.",
   "No screenshots found in this folder.": "No se encontraron capturas en esta carpeta.",
   "Could not open screenshot folder: ": "No se pudo abrir la carpeta de capturas: ",
-  "Drag to resize screenshot picker": "Arrastra para cambiar el ancho del selector de capturas"
+  "Drag to resize screenshot picker": "Arrastra para cambiar el ancho del selector de capturas",
+  "Choose one image to edit before adding it.": "Elige una imagen para editarla antes de añadirla.",
+  "Edit guide image": "Editar imagen de la guía",
+  "Add original": "Añadir original",
+  "Add edited image": "Añadir imagen editada",
+  "Apply to step": "Aplicar al paso",
+  "Edit image": "Editar imagen",
+  "Use the edited copy in the guide; the source image stays unchanged.": "Usa la copia editada en la guía; la imagen original no se modifica."
 }

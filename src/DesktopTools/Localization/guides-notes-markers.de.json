@@ -45,5 +45,12 @@
   "No recent captures in this session.": "In dieser Sitzung gibt es noch keine Aufnahmen.",
   "No screenshots found in this folder.": "Keine Screenshots in diesem Ordner gefunden.",
   "Could not open screenshot folder: ": "Screenshot-Ordner konnte nicht geöffnet werden: ",
-  "Drag to resize screenshot picker": "Ziehen, um die Screenshot-Auswahl zu verbreitern"
+  "Drag to resize screenshot picker": "Ziehen, um die Screenshot-Auswahl zu verbreitern",
+  "Choose one image to edit before adding it.": "Wähle ein Bild aus, um es vor dem Hinzufügen zu bearbeiten.",
+  "Edit guide image": "Bild für Anleitung bearbeiten",
+  "Add original": "Original hinzufügen",
+  "Add edited image": "Bearbeitetes Bild hinzufügen",
+  "Apply to step": "Auf Schritt anwenden",
+  "Edit image": "Bild bearbeiten",
+  "Use the edited copy in the guide; the source image stays unchanged.": "Verwende die bearbeitete Kopie in der Anleitung; das Originalbild bleibt unverändert."
 }

@@ -16,7 +16,7 @@ internal sealed class StepGuideWindow : Window
 {
     private sealed class Entry(BitmapSource image, string caption = "", string? sourcePath = null)
     {
-        internal BitmapSource Image { get; } = image;
+        internal BitmapSource Image { get; set; } = image;
         internal string Caption { get; set; } = caption;
         internal string? SourcePath { get; } = sourcePath;
     }
@@ -51,7 +51,8 @@ internal sealed class StepGuideWindow : Window
         var layout = new DockPanel();
         var header = UtilityWindowChrome.Header(this, Title, Close, L.T("Close"), 19, allowMinimize: true, allowMaximize: true);
         DockPanel.SetDock(header, Dock.Top); layout.Children.Add(header);
-        var intro = Ui.Text(L.T("Choose recent captures or a screenshot folder. Drag steps to reorder them; originals stay unchanged."), 13, muted: true);
+        var intro = Ui.Text(L.T("Choose recent captures or a screenshot folder. Drag steps to reorder them; originals stay unchanged.") + " " +
+            L.T("Choose one image to edit before adding it."), 13, muted: true);
         intro.Margin = new Thickness(0, 0, 0, 14); DockPanel.SetDock(intro, Dock.Top); layout.Children.Add(intro);
         var settings = new Grid { Margin = new Thickness(0, 0, 0, 16) };
         settings.ColumnDefinitions.Add(new ColumnDefinition());
@@ -180,7 +181,7 @@ internal sealed class StepGuideWindow : Window
             return;
         }
         foreach (var entry in entries)
-            recentTiles.Children.Add(SourceTile(entry.Image, entry.CreatedAt.ToLocalTime().ToString("t", L.Culture), () => AddImage(entry.Image)));
+            recentTiles.Children.Add(SourceTile(entry.Image, entry.CreatedAt.ToLocalTime().ToString("t", L.Culture), () => PrepareImage(entry.Image)));
     }
 
     private static Button SourceTile(BitmapSource image, string caption, Action add)
@@ -219,7 +220,7 @@ internal sealed class StepGuideWindow : Window
                 .OrderByDescending(File.GetLastWriteTimeUtc).Take(48).ToArray();
             foreach (var file in paths)
             {
-                try { folderTiles.Children.Add(SourceTile(LoadFile(file, 192), Path.GetFileName(file), () => AddFile(file))); }
+                try { folderTiles.Children.Add(SourceTile(LoadFile(file, 192), Path.GetFileName(file), () => PrepareFile(file))); }
                 catch (Exception ex) when (ex is IOException or InvalidOperationException or NotSupportedException or UnauthorizedAccessException) { }
             }
             if (folderTiles.Children.Count == 0) folderTiles.Children.Add(Ui.Text(L.T("No screenshots found in this folder."), 12, muted: true));
@@ -235,10 +236,33 @@ internal sealed class StepGuideWindow : Window
         image.EndInit(); image.Freeze(); return image;
     }
 
-    private void AddImage(BitmapSource image)
+    private void PrepareImage(BitmapSource image, string? sourcePath = null)
     {
         if (steps.Count >= 20) { status.Text = L.T("A guide can contain up to 20 screenshots."); return; }
-        steps.Add(new Entry(image)); Refresh();
+        var editor = new ScreenshotEditorWindow(image, result =>
+        {
+            steps.Add(new Entry(result, sourcePath: sourcePath)); Refresh();
+        }, report, applyToImage: true, applyLabel: "Add edited image", offerOriginal: true)
+        { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        editor.ShowDialog();
+    }
+
+    private void PrepareFile(string path)
+    {
+        try { PrepareImage(LoadFile(path), Path.GetFullPath(path)); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or NotSupportedException or UnauthorizedAccessException)
+        { status.Text = L.T("Could not open screenshot: ") + Path.GetFileName(path); }
+    }
+
+    private void EditStep(Entry step)
+    {
+        var editor = new ScreenshotEditorWindow(step.Image, result =>
+        {
+            if (!steps.Contains(step)) return;
+            step.Image = result; Refresh();
+        }, report, applyToImage: true, applyLabel: "Apply to step")
+        { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        editor.ShowDialog();
     }
 
     private void AddFile(string path, bool refresh = true)
@@ -253,6 +277,7 @@ internal sealed class StepGuideWindow : Window
     {
         var dialog = new OpenFileDialog { Title = L.T("Add screenshots"), Filter = L.T("Images|*.png;*.jpg;*.jpeg;*.bmp|All files|*.*"), Multiselect = true, CheckFileExists = true };
         if (dialog.ShowDialog(this) != true) return;
+        if (dialog.FileNames.Length == 1) { PrepareFile(dialog.FileNames[0]); return; }
         foreach (string path in dialog.FileNames) AddFile(path, refresh: false);
         Refresh();
     }
@@ -260,7 +285,7 @@ internal sealed class StepGuideWindow : Window
     {
         var image = latestCapture();
         if (image == null) { status.Text = L.T("Capture a screenshot first."); return; }
-        AddImage(image);
+        PrepareImage(image);
     }
     private void Move(int index, int delta)
     {
@@ -323,6 +348,10 @@ internal sealed class StepGuideWindow : Window
                 dragStart = null; DragDrop.DoDragDrop(frame, new DataObject("DesktopToolsGuideStep", step), DragDropEffects.Move);
             };
             detail.Children.Add(frame);
+            var edit = Ui.Button(L.T("Edit image"), () => EditStep(step));
+            edit.Content = Ui.IconLabel("Pen", L.T("Edit image"));
+            edit.Margin = new Thickness(0, 8, 0, 0);
+            detail.Children.Add(edit);
             var captionLabel = Ui.Text(L.T("Step caption"), 11, muted: true);
             captionLabel.Margin = new Thickness(0, 10, 0, 0);
             detail.Children.Add(captionLabel); detail.Children.Add(caption);

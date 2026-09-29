@@ -45,5 +45,12 @@
   "No recent captures in this session.": "В этой сессии пока нет снимков.",
   "No screenshots found in this folder.": "В папке нет скриншотов.",
   "Could not open screenshot folder: ": "Не удалось открыть папку скриншотов: ",
-  "Drag to resize screenshot picker": "Потяните, чтобы изменить ширину выбора скриншотов"
+  "Drag to resize screenshot picker": "Потяните, чтобы изменить ширину выбора скриншотов",
+  "Choose one image to edit before adding it.": "Выберите одно изображение, чтобы изменить его перед добавлением.",
+  "Edit guide image": "Редактировать изображение для инструкции",
+  "Add original": "Добавить оригинал",
+  "Add edited image": "Добавить изменённое",
+  "Apply to step": "Применить к шагу",
+  "Edit image": "Изменить изображение",
+  "Use the edited copy in the guide; the source image stays unchanged.": "Добавьте изменённую копию в инструкцию. Исходное изображение не изменится."
 }
