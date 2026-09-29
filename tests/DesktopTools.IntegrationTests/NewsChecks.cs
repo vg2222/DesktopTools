@@ -51,11 +51,12 @@ internal static class NewsChecks
         try
         {
             var bundled = AnnouncementClient.LoadBundled();
-            Check(bundled.Items.Count == 1 && bundled.Items[0].LocalTitle.Length > 0, "Bundled announcement missing");
+            Check(bundled.Items.Any(item => item.Id == "news-center-1-2-6") &&
+                bundled.Items.Any(item => item.Id == "star-desktoptools-2026-09"), "Bundled announcements missing");
             foreach (string language in DesktopTools.Localization.L.Languages)
             {
                 DesktopTools.Localization.L.Use(language);
-                Check(bundled.Items[0].LocalTitle.Length > 0 && bundled.Items[0].LocalMessage.Length > 0,
+                Check(bundled.Items.All(item => item.LocalTitle.Length > 0 && item.LocalMessage.Length > 0),
                     "Bundled news has no text in " + language);
                 if (language != "en")
                     Check(DesktopTools.Localization.L.T("Latest announcements") != "Latest announcements" &&
@@ -77,6 +78,8 @@ internal static class NewsChecks
             }
             using var controller = new AppController(true);
             controller.UpdateSettings(s => { s.Language = "en"; s.Theme = "Dark"; s.Animations = false; s.ReadNewsIds = []; s.NotifiedNewsIds = []; });
+            Check(Application.Current.Resources["Surface"] is SolidColorBrush darkSurface && darkSurface.Color == Color.FromRgb(6, 6, 6),
+                "Default dark app surface is not #060606");
             DesktopTools.Localization.L.Use("en");
             controller.OpenMain(); var main = Application.Current.Windows.OfType<MainWindow>().Single();
             controller.NewsClient.Dispose(); controller.NewsClient = new AnnouncementClient(new HttpClient(new FixtureHandler(ordinary)));

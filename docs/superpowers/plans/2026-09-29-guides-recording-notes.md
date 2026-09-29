@@ -1,4 +1,6 @@
-# Guides, recording markers and window notes implementation plan
+# Guides, recording markers and notes implementation plan
+
+> Historical plan. The later 1.2.6 scope removed note-to-window attachment; notes now open independently with an optional Always on top setting. See `docs/releases/1.2.6.md` for the current behavior.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

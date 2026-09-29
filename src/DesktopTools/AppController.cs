@@ -107,7 +107,7 @@ internal sealed partial class AppController : IDisposable
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
     public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
-    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, Report)); }
+    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report)); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
@@ -320,6 +320,7 @@ internal sealed partial class AppController : IDisposable
             if (!Settings.FileShelfEnabled) { fileShelf?.Shutdown(); fileShelf = null; }
             else if (fileShelf != null) fileShelf.Topmost = Settings.FileShelfTopmost;
             if (!Settings.FloatingNotesEnabled) { floatingNotes?.Dispose(); floatingNotes = null; }
+            else if (floatingNotes != null) floatingNotes.DefaultTopmost = Settings.NotesTopmost;
             if (!Settings.AudioControlsEnabled) audioControls?.Close();
             ApplyHudSettings(); if (themeChanged) ApplyTheme();
             if (exclusionChanged) { Palette?.ApplyExclusion(); foreach (Window window in Application.Current.Windows) AppCapturePrivacy.Apply(window, Settings); }
@@ -760,7 +761,7 @@ internal sealed partial class AppController : IDisposable
         Color accent = (Color)ColorConverter.ConvertFromString(accentHex); accent.A = 255;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         Application.Current.Resources["AccentText"] = new SolidColorBrush(.2126 * accent.R + .7152 * accent.G + .0722 * accent.B > 160 ? Colors.Black : Colors.White);
-        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#17181C"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
+        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
         if (Settings.UseCustomBackground)
         {
             Color background = (Color)ColorConverter.ConvertFromString(Settings.BackgroundColor); background.A = 255;

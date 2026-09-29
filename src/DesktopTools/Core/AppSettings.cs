@@ -55,7 +55,7 @@ public sealed class AppSettings
     public bool FileShelfEnabled { get; set; } = true;
     public bool FloatingNotesEnabled { get; set; } = true;
     public bool AudioControlsEnabled { get; set; } = true;
-    public bool NotesTopmost { get; set; } = true;
+    public bool NotesTopmost { get; set; } = false;
     public bool FileShelfTopmost { get; set; } = true;
 
     public int Version { get; set; } = 1;

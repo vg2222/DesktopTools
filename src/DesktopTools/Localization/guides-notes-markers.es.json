@@ -1,7 +1,4 @@
 {
-  "New note for window": "Nueva nota para una ventana",
-  "The selected window is no longer available.": "La ventana seleccionada ya no está disponible.",
-  "DesktopTools cannot identify this window. Try another window.": "DesktopTools no puede identificar esta ventana. Prueba otra.",
   "Add marker": "Añadir marcador",
   "Recording markers": "Marcadores de grabación",
   "Recording saved, but markers could not be saved for later: ": "Vídeo guardado, pero no se pudieron conservar los marcadores: ",
@@ -34,5 +31,18 @@
   "The guide title is too long.": "El título de la guía es demasiado largo.",
   "A screenshot has invalid dimensions.": "Una captura tiene dimensiones no válidas.",
   "A step caption is too long.": "La descripción de un paso es demasiado larga.",
-  "This guide is too tall. Export fewer screenshots.": "La guía es demasiado larga. Exporta menos capturas."
+  "This guide is too tall. Export fewer screenshots.": "La guía es demasiado larga. Exporta menos capturas.",
+  "Choose recent captures or a screenshot folder. Drag steps to reorder them; originals stay unchanged.": "Elige capturas recientes o una carpeta. Arrastra los pasos para reordenarlos; los originales no cambian.",
+  "Steps per row": "Pasos por fila",
+  "Export background": "Fondo de exportación",
+  "Screenshots": "Capturas de pantalla",
+  "Choose screenshot folder": "Elegir carpeta de capturas",
+  "Refresh recent captures": "Actualizar capturas recientes",
+  "Recent DesktopTools captures": "Capturas recientes de DesktopTools",
+  "Screenshot folder": "Carpeta de capturas",
+  "Choose a folder to browse screenshots.": "Elige una carpeta para explorar capturas.",
+  "Guide steps": "Pasos de la guía",
+  "No recent captures in this session.": "No hay capturas recientes en esta sesión.",
+  "No screenshots found in this folder.": "No se encontraron capturas en esta carpeta.",
+  "Could not open screenshot folder: ": "No se pudo abrir la carpeta de capturas: "
 }

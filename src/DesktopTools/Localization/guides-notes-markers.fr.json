@@ -1,7 +1,4 @@
 {
-  "New note for window": "Nouvelle note pour une fenêtre",
-  "The selected window is no longer available.": "La fenêtre sélectionnée n’est plus disponible.",
-  "DesktopTools cannot identify this window. Try another window.": "DesktopTools ne peut pas identifier cette fenêtre. Essayez-en une autre.",
   "Add marker": "Ajouter un repère",
   "Recording markers": "Repères de l’enregistrement",
   "Recording saved, but markers could not be saved for later: ": "Vidéo enregistrée, mais les repères n’ont pas pu être conservés : ",
@@ -34,5 +31,18 @@
   "The guide title is too long.": "Le titre du guide est trop long.",
   "A screenshot has invalid dimensions.": "Une capture a des dimensions invalides.",
   "A step caption is too long.": "La légende d’une étape est trop longue.",
-  "This guide is too tall. Export fewer screenshots.": "Ce guide est trop long. Exportez moins de captures."
+  "This guide is too tall. Export fewer screenshots.": "Ce guide est trop long. Exportez moins de captures.",
+  "Choose recent captures or a screenshot folder. Drag steps to reorder them; originals stay unchanged.": "Choisissez des captures récentes ou un dossier. Faites glisser les étapes pour les réordonner ; les originaux restent inchangés.",
+  "Steps per row": "Étapes par ligne",
+  "Export background": "Fond de l’export",
+  "Screenshots": "Captures d’écran",
+  "Choose screenshot folder": "Choisir un dossier de captures",
+  "Refresh recent captures": "Actualiser les captures récentes",
+  "Recent DesktopTools captures": "Captures récentes de DesktopTools",
+  "Screenshot folder": "Dossier de captures",
+  "Choose a folder to browse screenshots.": "Choisissez un dossier pour parcourir les captures.",
+  "Guide steps": "Étapes du guide",
+  "No recent captures in this session.": "Aucune capture récente dans cette session.",
+  "No screenshots found in this folder.": "Aucune capture trouvée dans ce dossier.",
+  "Could not open screenshot folder: ": "Impossible d’ouvrir le dossier de captures : "
 }

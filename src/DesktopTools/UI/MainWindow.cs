@@ -219,7 +219,7 @@ internal sealed partial class MainWindow : Window
         Group(L.T("Image tools"), Ui.Row(L.T("Editor"), L.T("Resize, rotate, mirror and export PNG, JPEG or BMP."), Ui.Button(L.T("Open image tools"), controller.OpenImageTools)));
         Group(L.T("File shelf"), Ui.Row(L.T("Keep above other windows"), null, Ui.Toggle(s.FileShelfTopmost, v => Change(x => x.FileShelfTopmost = v))), Ui.Row(L.T("Open shelf"), L.T("Drop files and folders into a temporary shelf. Originals stay in place."), Ui.Button(L.T("Open file shelf"), controller.OpenFileShelf)));
 
-        Group(L.T("Floating notes"), Ui.Row(L.T("New notes stay above other windows"), null, Ui.Toggle(s.NotesTopmost, v => Change(x => x.NotesTopmost = v))), Ui.Row(L.T("Manage notes"), L.T("Closing a note keeps its text saved."), Ui.Button(L.T("Open notes"), controller.OpenFloatingNotes)));
+        Group(L.T("Floating notes"), Ui.Row(L.T("Always on top"), L.T("Applies to the notes window and floating notes."), Ui.Toggle(s.NotesTopmost, v => Change(x => x.NotesTopmost = v))), Ui.Row(L.T("Manage notes"), L.T("Closing a note keeps its text saved."), Ui.Button(L.T("Open notes"), controller.OpenFloatingNotes)));
 
         Group(L.T("Audio controls"), Ui.Row(L.T("Application mixer"), L.T("Apps appear when they create an audio session."), Ui.Button(L.T("Open audio controls"), controller.OpenAudioControls)));
 

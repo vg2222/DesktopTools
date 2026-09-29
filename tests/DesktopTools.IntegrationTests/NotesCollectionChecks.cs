@@ -10,8 +10,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using DesktopTools;
 using DesktopTools.Extras;
-using DesktopTools.Native;
-using System.Windows.Interop;
 
 internal static class NotesCollectionChecks
 {
@@ -50,29 +48,13 @@ internal static class NotesCollectionChecks
         }
         string directory = Path.Combine(Environment.CurrentDirectory, "notes-collection-" + Guid.NewGuid().ToString("N"));
         var store = new NotesStore(directory); store.Load();
-        store.Save(new List<FloatingNote> { new FloatingNote { Title = "План встречи", Body = "Обсудить макеты\nПроверить запись" }, new FloatingNote { Title = "Ideas", Body = "Release notes" } });
+        store.Save(new List<FloatingNote> { new FloatingNote { Title = "План встречи", Body = "Обсудить макеты\nПроверить запись", AttachedProcess = "missing-app", AttachedWindow = "Closed window" }, new FloatingNote { Title = "Ideas", Body = "Release notes" } });
         using (var service = new FloatingNotesService(directory, _ => { }))
         {
             service.Show(); await Task.Delay(80);
             var window = Field<NotesWindow>(service, "manager");
-            Check(Children(window).OfType<Button>().Any(x => x.Name == "NewWindowNote"), "Notes collection does not expose quick note for a window");
-            Check(Children(window).OfType<Button>().Any(x => x.Name == "AttachNoteToWindow"), "Selected note cannot be attached from collection");
-            var target = new Window { Title = "Attachment test target", Width = 300, Height = 200 };
-            target.Show();
-            try
-            {
-                var modelForAttachment = Field<List<FloatingNote>>(service, "notes")[0];
-                var candidate = new RecordingWindowInfo(new WindowInteropHelper(target).Handle, (uint)Environment.ProcessId, target.Title);
-                Check(NoteAttachmentService.TryAttach(modelForAttachment, candidate, out _), "Valid window rejected for note attachment");
-                Check(modelForAttachment.AttachedWindow == target.Title && modelForAttachment.AttachedProcess != null, "Attachment identity was not stored");
-                typeof(FloatingNotesService).GetMethod("Attach", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(service, new object[] { modelForAttachment, candidate });
-                var attachedNote = Field<Dictionary<Guid, Window>>(service, "windows")[modelForAttachment.Id];
-                Check(Field<RecordingWindowInfo>(attachedNote, "attachedWindow").Handle == candidate.Handle, "Floating note did not follow the chosen window");
-                Check(!NoteAttachmentService.TryAttach(modelForAttachment, candidate with { Handle = (nint)1 }, out _), "Invalid window was accepted");
-                Check(modelForAttachment.AttachedWindow == target.Title, "Invalid selection changed existing attachment");
-                modelForAttachment.AttachedWindow = null; modelForAttachment.AttachedProcess = null;
-            }
-            finally { target.Close(); }
+            Check(!window.Topmost, "Notes manager is on top by default");
+            Check(!Children(window).OfType<Button>().Any(x => x.Name is "NewWindowNote" or "AttachNoteToWindow"), "Removed window-attachment controls are still visible");
             var controls = Children(window).OfType<TextBox>().ToArray();
             var search = controls.Single(x => x.Name == "NotesSearch"); var title = controls.Single(x => x.Name == "NoteTitle"); var body = controls.Single(x => x.Name == "NoteBody");
             search.Text = "release";
@@ -90,6 +72,11 @@ internal static class NotesCollectionChecks
             body.Undo(); Check(second.Body == "Release notes", "Undo crossed between notes"); window.Select(model);
             typeof(FloatingNotesService).GetMethod("Open", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(service, new object[] { model });
             var floating = Field<Dictionary<Guid, Window>>(service, "windows")[model.Id];
+            Check(floating.IsVisible && !floating.Topmost, "Legacy attached note was hidden or stayed on top by default");
+            service.DefaultTopmost = true;
+            Check(window.Topmost && floating.Topmost, "Notes topmost setting did not update open windows");
+            service.DefaultTopmost = false;
+            Check(!window.Topmost && !floating.Topmost, "Notes windows did not return to normal z-order");
             title.Text = "Совещание • café"; body.Text = "One\nДва\n三"; await Task.Delay(30);
             var floatingEditors = Children(floating).OfType<TextBox>().ToArray();
             Check(floatingEditors.Any(x => x.Text == body.Text), "Collection edit did not reach floating editor");
@@ -126,7 +113,7 @@ internal static class NotesCollectionChecks
             Check(Field<List<FloatingNote>>(service, "notes")[0].Title == "Совещание • café", "Restart lost Unicode title");
         }
         bool canClose = false;
-        var blocked = new NotesWindow(new List<FloatingNote>(), () => { }, _ => { }, _ => { }, (_, _) => { }, _ => { }, () => canClose, false);
+        var blocked = new NotesWindow(new List<FloatingNote>(), () => { }, _ => { }, _ => { }, () => canClose, false);
         blocked.Show(); blocked.Close(); Check(blocked.IsVisible, "Failed persistence allowed close");
         canClose = true; blocked.Close();
     }

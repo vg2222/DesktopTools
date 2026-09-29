@@ -156,7 +156,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); root.RowDefinitions.Add(new RowDefinition()); root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         AddRow(root, caption, 0);
         var workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition()); workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) }); AddRow(root, workspace, 1);
-        var viewer = new DockPanel { Margin = new Thickness(0, 0, 16, 0) }; DockPanel.SetDock(toolbar, Dock.Top); viewer.Children.Add(toolbar); DockPanel.SetDock(playback, Dock.Bottom); viewer.Children.Add(playback); viewer.Children.Add(stageFrame); workspace.Children.Add(viewer);
+        var viewer = new DockPanel { Margin = new Thickness(0, 0, 16, 0) }; DockPanel.SetDock(mediaHeader, Dock.Top); viewer.Children.Add(mediaHeader); DockPanel.SetDock(playback, Dock.Bottom); viewer.Children.Add(playback); viewer.Children.Add(stageFrame); workspace.Children.Add(viewer);
         editPanel.Children.Clear(); editPanel.ColumnDefinitions.Clear(); editPanel.RowDefinitions.Clear();
         foreach (var box in trim.Children.OfType<StackPanel>()) box.Width = 106;
         foreach (var box in cutFields.Children.OfType<StackPanel>()) box.Width = 106;

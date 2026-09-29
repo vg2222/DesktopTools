@@ -48,9 +48,8 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 
 Share the full monitor in Discord to a second participant/device. The remote observer must confirm whether ink appears, palette/popovers appear, or black rectangles/artifacts occur. Repeat with exclusion disabled and manual hiding. Also characterize application-window sharing separately. Enter observations in `compatibility.md`; SetWindowDisplayAffinity success alone is not a pass.
 
-## Window notes, recorder confidence, and editor preview
+## Notes, recorder confidence, and editor preview
 
-- Attach a floating note to another application's window. Move that window across monitors and change its size; the note should follow without jumping when you drag the note to a new offset. Minimize and restore the application window; the note should hide and reappear. Restart DesktopTools and confirm the attachment recovers when exactly one matching window is open. Detach it from the notes list.
 - Play known microphone and system audio, enable each source separately, and confirm its meter responds. Record a five-second test from the audio setup area, play it, and verify picture and audible tracks. Confirm the bottom Start/Pause/Stop controls stay on one row. Put another app in front of the recorder setup window; it should stay in front until DesktopTools is activated again. Repeat the audio test with one source muted. Close the recorder and confirm the temporary test clip is removed when no player holds it open.
 - Record to a nearly full destination and confirm the free-space warning appears before capture starts. On a normal recording, compare the displayed file FPS with the file's metadata; do not treat it as a count of distinct captured frames.
 - In screenshot and image tools, make an edit, toggle Original/Edited, then export. Confirm the exported copy contains the edits and the original file remains unchanged. In video tools, wait for automatic preview, toggle Original/Edited, and confirm the edited preview returns without another render. Check crop guidance and controls at the smallest supported window size in every language.
@@ -90,12 +89,12 @@ Share the full monitor in Discord to a second participant/device. The remote obs
 
 - Drag files/folders from Explorer into shelf, drag an entry to another folder/app, confirm copy semantics and original unchanged. Hide/reopen shelf retains entries; restart clears it.
 - Create note, edit title/text, resize/move, close/reopen and restart app; verify text retained. Delete only through manager confirmation. Disable/re-enable notes and verify persistence.
-- In Notes, choose **New note for window** and select a visible app. Verify the floating note appears beside that exact window and follows it. Attach an existing note from the collection, then close its target: the note must not jump to an unrelated window. Reopen the target or detach, and verify the note and its text remain available.
+- Open Notes and a floating note. Both should start as ordinary windows. Use the feature setting to turn **Always on top** on and off, then reopen Notes; saved text must remain available. A note previously attached to a closed window must now open independently.
 - Play audio in two apps; adjust one volume/mute and confirm the other unchanged. Change default playback device and refresh. Close mixer and verify no refresh timer remains. No audio changes were performed during automated checks.
 
 ### Screenshot guides and recording markers
 
-- Open **Step-by-step guide** from Capture tools. Add files and the latest capture, write captions, reorder and remove steps, then export PNG. Inspect numbering, captions and rounded images. Confirm the source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
+- Open **Step-by-step guide** from Capture tools. Add recent captures and files from the configured screenshot folder, then choose another folder. Write captions, reorder steps with drag and the arrow controls, remove a step, and export PNG with one, two, and three steps per row. Inspect numbering, captions, rounded images, and both background colors. Confirm source screenshots are byte-for-byte unchanged, and canceling Save creates no output.
 - Record a short clip and add a marker with the HUD control and Ctrl+Alt+M. Pause, then confirm a marker cannot be added while paused. Stop, click a marker to open the video editor at that time. Close and reopen the editor with the same file; markers must still appear. Replace the video at the same path and confirm old markers are not shown.
 
 ## GitHub update acceptance

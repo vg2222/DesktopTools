@@ -174,6 +174,7 @@
   "Minutes; changing this resets an active countdown.": "Minutes ; une modification réinitialise le compte à rebours actif.",
   "Mode": "Mode",
   "New notes stay above other windows": "Les nouvelles notes restent au-dessus des fenêtres",
+  "Applies to the notes window and floating notes.": "S’applique à la fenêtre des notes et aux notes flottantes.",
   "New profile name": "Nom du nouveau profil",
   "No profile applied yet.": "Aucun profil appliqué pour le moment.",
   "Notes save locally and can be reopened from the notes manager.": "Les notes sont enregistrées localement et peuvent être rouvertes depuis le gestionnaire.",

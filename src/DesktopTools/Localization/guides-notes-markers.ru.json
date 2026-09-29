@@ -1,7 +1,4 @@
 {
-  "New note for window": "Новая заметка для окна",
-  "The selected window is no longer available.": "Выбранное окно больше недоступно.",
-  "DesktopTools cannot identify this window. Try another window.": "Не удалось определить это окно. Выберите другое окно.",
   "Add marker": "Добавить метку",
   "Recording markers": "Метки записи",
   "Recording saved, but markers could not be saved for later: ": "Видео сохранено, но метки не удалось сохранить на будущее: ",
@@ -34,5 +31,18 @@
   "The guide title is too long.": "Название инструкции слишком длинное.",
   "A screenshot has invalid dimensions.": "Некорректный размер скриншота.",
   "A step caption is too long.": "Подпись к шагу слишком длинная.",
-  "This guide is too tall. Export fewer screenshots.": "Инструкция слишком длинная. Уберите часть скриншотов."
+  "This guide is too tall. Export fewer screenshots.": "Инструкция слишком длинная. Уберите часть скриншотов.",
+  "Choose recent captures or a screenshot folder. Drag steps to reorder them; originals stay unchanged.": "Выберите недавние снимки или папку. Перетаскивайте шаги для изменения порядка; оригиналы не изменятся.",
+  "Steps per row": "Шагов в строке",
+  "Export background": "Фон экспорта",
+  "Screenshots": "Скриншоты",
+  "Choose screenshot folder": "Выбрать папку скриншотов",
+  "Refresh recent captures": "Обновить недавние снимки",
+  "Recent DesktopTools captures": "Недавние снимки DesktopTools",
+  "Screenshot folder": "Папка скриншотов",
+  "Choose a folder to browse screenshots.": "Выберите папку для просмотра скриншотов.",
+  "Guide steps": "Шаги инструкции",
+  "No recent captures in this session.": "В этой сессии пока нет снимков.",
+  "No screenshots found in this folder.": "В папке нет скриншотов.",
+  "Could not open screenshot folder: ": "Не удалось открыть папку скриншотов: "
 }
