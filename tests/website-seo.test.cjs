@@ -4,7 +4,7 @@ const path = require('node:path');
 
 const website = path.resolve(__dirname, '../website');
 const html = fs.readFileSync(path.join(website, 'index.html'), 'utf8');
-const baseUrl = 'https://vg2222.github.io/DesktopTools/';
+const baseUrl = 'https://www.desktoptools.cc/';
 
 function meta(attribute, key) {
   const tags = [...html.matchAll(/<meta\s+[^>]+>/g)].map(match => match[0]);
@@ -16,7 +16,7 @@ function meta(attribute, key) {
 }
 
 const canonical = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/)?.[1];
-assert.equal(canonical, baseUrl, 'Search engines need the public GitHub Pages URL as canonical');
+assert.equal(canonical, baseUrl, 'Search engines need the primary custom domain as canonical');
 assert.match(html.match(/<title>([^<]+)<\/title>/)?.[1] ?? '', /DesktopTools.*Windows 11/, 'Title should identify the product and platform');
 assert.match(meta('name', 'description'), /screenshots|screen capture/i, 'Description should identify the product use');
 assert.equal(meta('property', 'og:type'), 'website');
