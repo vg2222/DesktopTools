@@ -185,6 +185,7 @@ internal static class Program
             Check(new SettingsStore(path).Load().DrawingEnabled);
         }));
         AutoRedactTests.Run(Test, Check);
+        AutomationTests.Run(Test, Check);
         DrawingEditTests.Run(Test, Check);
         DrawingBindingTests.Run(Test, Check);
         RenderingTests.Run(Test, Check);
