@@ -37,6 +37,7 @@ internal sealed partial class MainWindow
             new("ocr", "Scan screen text", "Text tools", "Text", "Recognize text (OCR)", () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(textOnly: true); }, () => controller.Settings.ScreenTextEnabled, "Utilities"),
             new("translate", "Local translation", "Text tools", "Translate", "Review, copy or translate recognized text.", controller.OpenTextToolsWindow, () => controller.Settings.TranslationEnabled || controller.Settings.ScreenTextEnabled, "Utilities"),
             new("qr", "QR codes", "Text tools", "QR", "Create a code from text or a link.", controller.OpenQrCodes, () => controller.Settings.QrCodesEnabled, "Utilities"),
+            new("automation", "Desktop Automation", "Desktop utilities", "Utilities", "Build and run local desktop actions.", controller.OpenAutomation, () => true, "Utilities"),
             new("notes", "Floating notes", "Desktop utilities", "Notes", "Keep notes and checklists above your work.", controller.OpenFloatingNotes, () => controller.Settings.FloatingNotesEnabled, "Utilities"),
             new("files", "File shelf", "Desktop utilities", "Folder", "Collect files for dragging between apps.", controller.OpenFileShelf, () => controller.Settings.FileShelfEnabled, "Utilities"),
             new("audio", "Audio controls", "Desktop utilities", "Audio", "Adjust volume and mute for individual apps.", controller.OpenAudioControls, () => controller.Settings.AudioControlsEnabled, "Utilities"),

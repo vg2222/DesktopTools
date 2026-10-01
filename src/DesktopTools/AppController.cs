@@ -172,7 +172,8 @@ internal sealed partial class AppController : IDisposable
     public string? ActiveProfile { get; private set; }
     public PaletteWindow? Palette { get; private set; }
     public OverlayState State => machine.State;
-    public bool IsBusy { get; private set; }
+    private bool busy;
+    public bool IsBusy { get => busy || automation?.IsActive == true; private set => busy = value; }
     public BitmapSource? LastCapture { get; private set; }
     public event Action? SettingsChanged;
     public event Action<string>? StatusChanged;
@@ -219,6 +220,7 @@ internal sealed partial class AppController : IDisposable
             }
             SystemEvents.DisplaySettingsChanged += DisplayChanged;
             SystemEvents.UserPreferenceChanged += PreferenceChanged;
+            InitializeAutomation();
         }
     }
     private static Dictionary<string, string> Bindings(AppSettings s) => FeatureShortcutCatalog.Bindings(s);
@@ -831,6 +833,7 @@ internal sealed partial class AppController : IDisposable
         CloseScreenshotReviews();
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
+        automation?.Dispose();
         StopUpdateChecks();
         trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
     }

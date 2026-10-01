@@ -19,6 +19,7 @@ public sealed class AutomationStore(string directory)
             if(new FileInfo(PathName).Length>16000000) throw new JsonException();
             string text=File.ReadAllText(PathName);
             using var parsed=JsonDocument.Parse(text);
+            if(parsed.RootElement.ValueKind!=JsonValueKind.Object)throw new JsonException();
             if(parsed.RootElement.TryGetProperty("Version",out var version) && version.TryGetInt32(out int number) && number>1)
             {RecoveryMessage=L.T("Automation uses a newer format. Saving is disabled.");return [];}
             if(!parsed.RootElement.TryGetProperty("Version",out _) || !parsed.RootElement.TryGetProperty("Scripts",out _)) throw new JsonException();

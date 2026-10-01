@@ -15,6 +15,7 @@
     <Compile Include="../../src/DesktopTools/Core/SettingsStore.cs" Link="Core/SettingsStore.cs" />
     <Compile Include="../../src/DesktopTools/Core/FeatureAvailability.cs" Link="Core/FeatureAvailability.cs" />
     <Compile Include="../../src/DesktopTools/Core/FeatureShortcutCatalog.cs" Link="Core/FeatureShortcutCatalog.cs" />
+    <Compile Include="../../src/DesktopTools/Core/AutomationScript.cs" Link="Core/AutomationScript.cs" />
     <Compile Include="../../src/DesktopTools/GlobalUsings.cs" Link="GlobalUsings.cs" />
     <Compile Include="../../shared/WindowDismissal.cs" Link="Presentation/WindowDismissal.cs" />
   </ItemGroup>
