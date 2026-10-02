@@ -9,7 +9,7 @@ internal sealed partial class AppController
     {
         nint target=NativeWindowService.GetForegroundWindowHandle();
         InitializeAutomation();
-        if(AutomationInput.External(target))automation!.Target=target;
+        automation!.Target=AutomationInput.External(target)?target:0;
         OpenUtility("Automation",()=>new AutomationWindow(automation!));
     }
     private void InitializeAutomation()

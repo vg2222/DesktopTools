@@ -18,6 +18,8 @@ internal sealed class AutomationInput : IDisposable
     [DllImport("user32.dll")]internal static extern bool IsWindow(nint hwnd);
     [DllImport("user32.dll")]internal static extern bool IsWindowVisible(nint hwnd);
     [DllImport("user32.dll")]internal static extern bool IsIconic(nint hwnd);
+    [DllImport("user32.dll")]internal static extern bool IsZoomed(nint hwnd);
+    [DllImport("user32.dll",EntryPoint="ShowWindowAsync")]internal static extern bool SetWindowState(nint hwnd,int state);
     [DllImport("user32.dll")]internal static extern uint GetWindowThreadProcessId(nint hwnd,out uint processId);
     [DllImport("user32.dll",CharSet=CharSet.Unicode)]private static extern int GetWindowText(nint hwnd,StringBuilder title,int count);
     [DllImport("user32.dll")]internal static extern nint GetAncestor(nint hwnd,uint flags);
@@ -30,10 +32,10 @@ internal sealed class AutomationInput : IDisposable
     internal static Point Pointer(){if(!GetCursorPos(out var p))throw new Win32Exception();return new(p.X,p.Y);}
     internal static bool External(nint hwnd)=>hwnd!=0 && IsWindow(hwnd) && GetWindowThreadProcessId(hwnd,out uint pid)!=0 && pid!=(uint)Environment.ProcessId;
     internal static string Title(nint hwnd){var b=new StringBuilder(1024);GetWindowText(hwnd,b,b.Capacity);return b.ToString();}
-    internal static nint FindWindow(string title)
+    internal static nint FindWindow(string title,bool includeMinimized=false)
     {
         if(string.IsNullOrWhiteSpace(title))return 0;
-        nint result=0;EnumWindows((h,_)=>{if(External(h)&&IsWindowVisible(h)&&!IsIconic(h)&&Title(h).Contains(title,StringComparison.OrdinalIgnoreCase)){result=h;return false;}return true;},0);return result;
+        nint result=0;EnumWindows((h,_)=>{if(External(h)&&IsWindowVisible(h)&&(includeMinimized||!IsIconic(h))&&Title(h).Contains(title,StringComparison.OrdinalIgnoreCase)){result=h;return false;}return true;},0);return result;
     }
     private static void Send(params Input[] inputs){if(SendInput((uint)inputs.Length,inputs,Marshal.SizeOf<Input>())!=inputs.Length)throw new Win32Exception(Marshal.GetLastWin32Error(),L.T("Windows could not send input. Check the target application's permissions."));}
     internal void Move(int x,int y)
@@ -64,9 +66,10 @@ internal sealed class AutomationInput : IDisposable
         foreach(string raw in text.Split('+'))
         {
             string s=raw.Trim().ToUpperInvariant();
-            ushort key=s switch{"CTRL" or "CONTROL"=>17,"ALT"=>18,"SHIFT"=>16,"WIN"=>91,"ENTER"=>13,"TAB"=>9,"SPACE"=>32,"BACKSPACE"=>8,"DELETE"=>46,"HOME"=>36,"END"=>35,"PAGEUP"=>33,"PAGEDOWN"=>34,"LEFT"=>37,"UP"=>38,"RIGHT"=>39,"DOWN"=>40,_=>0};
+            ushort key=s switch{"CTRL" or "CONTROL"=>17,"ALT"=>18,"SHIFT"=>16,"WIN"=>91,"ENTER"=>13,"TAB"=>9,"SPACE"=>32,"BACKSPACE"=>8,"DELETE"=>46,"INSERT"=>45,"HOME"=>36,"END"=>35,"PAGEUP"=>33,"PAGEDOWN"=>34,"LEFT"=>37,"UP"=>38,"RIGHT"=>39,"DOWN"=>40,_=>0};
             if(key==0 && s.Length==1 && char.IsAsciiLetterOrDigit(s[0]))key=s[0];
             if(key==0 && s.StartsWith('F') && int.TryParse(s.AsSpan(1),out int f) && f is >=1 and <=24)key=(ushort)(111+f);
+            if(key==0&&Enum.TryParse<System.Windows.Input.Key>(raw.Trim(),true,out var named)&&Enum.IsDefined(named)){int vk=System.Windows.Input.KeyInterop.VirtualKeyFromKey(named);if(vk is >0 and <255)key=(ushort)vk;}
             if(key==0 || key==27 || result.Contains(key))throw new ArgumentException(L.T("Invalid key combination."));
             result.Add(key);
         }

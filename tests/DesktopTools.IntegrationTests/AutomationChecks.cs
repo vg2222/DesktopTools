@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Interop;
+using System.Windows.Threading;
+using System.Linq;
 using DesktopTools.Core;
 using DesktopTools.Extras;
 using DesktopTools.Native;
@@ -20,6 +22,7 @@ internal static class AutomationChecks
     [StructLayout(LayoutKind.Sequential)] private struct RECT {public int Left,Top,Right,Bottom;}
     [DllImport("user32.dll")]private static extern bool AllowSetForegroundWindow(uint pid);
     [DllImport("user32.dll")]private static extern bool GetWindowRect(nint hwnd,out RECT rect);
+    [DllImport("user32.dll")]private static extern bool IsZoomed(nint hwnd);
     internal static async Task RunAsync()
     {
         string folder=Path.Combine(Environment.CurrentDirectory,"automation-fixture-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
@@ -36,15 +39,35 @@ internal static class AutomationChecks
                 nint hwnd=new WindowInteropHelper(w).Handle;GetWindowRect(hwnd,out var r);
                 NativeWindowService.SynchronizeDesktop();
                 if(language=="ru" && theme=="Dark")Save(CaptureService.Capture(new MonitorInfo("Fixture",new Rect(r.Left,r.Top,r.Right-r.Left,r.Bottom-r.Top),Rect.Empty,1,1)),"automation-actual-window.png");
+                if(language is "ru" or "de"){
+                    w.Width=1040;w.Height=700;w.UpdateLayout();Snapshot(w,"automation-min-"+theme+"-"+language+".png");
+                    typeof(AutomationWindow).GetField("settingsMode",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(w,true);
+                    typeof(AutomationWindow).GetMethod("RefreshEditor",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);w.UpdateLayout();Snapshot(w,"automation-settings-"+theme+"-"+language+".png");
+                    var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(250)};Exception? dialogError=null;
+                    timer.Tick+=(_,_)=>{timer.Stop();var dialog=Application.Current.Windows.Cast<Window>().FirstOrDefault(x=>x.Owner==w);try{if(dialog==null)throw new Exception("Action library did not open");dialog.UpdateLayout();Snapshot(dialog,"automation-library-"+theme+"-"+language+".png");}catch(Exception e){dialogError=e;}finally{dialog?.Close();}};
+                    timer.Start();typeof(AutomationWindow).GetMethod("OpenActions",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);timer.Stop();if(dialogError!=null)throw dialogError;
+                }
                 w.Close();
             }
             L.Use("en");
+            var closingWindow=new AutomationWindow(service);closingWindow.Show();
+            var recording=new AutomationRecorder();recording.Steps.Add(new(){Kind=AutomationKind.Wait,Value=200});
+            var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+            typeof(AutomationWindow).GetField("recorder",flags)!.SetValue(closingWindow,recording);
+            typeof(AutomationWindow).GetField("recordingScript",flags)!.SetValue(closingWindow,typeof(AutomationWindow).GetField("current",flags)!.GetValue(closingWindow));
+            typeof(AutomationWindow).GetField("isRecording",flags)!.SetValue(closingWindow,true);
+            typeof(AutomationWindow).GetMethod("StopRecording",flags)!.Invoke(closingWindow,null);
+            if(recording.HasHooks||!(bool)typeof(AutomationWindow).GetField("dirty",flags)!.GetValue(closingWindow)!)throw new Exception("Recording was not finalized before save");
+            if(!(bool)typeof(AutomationWindow).GetMethod("Save",flags)!.Invoke(closingWindow,null)!||service.Scripts[0].Steps[^1].Kind!=AutomationKind.Wait)throw new Exception("Recorded content not saved");closingWindow.Close();
             var countdownWindow=new AutomationWindow(service);countdownWindow.Show();
             var recordMethod=typeof(AutomationWindow).GetMethod("RecordAsync",BindingFlags.Instance|BindingFlags.NonPublic)!;
             var first=(Task)recordMethod.Invoke(countdownWindow,null)!;var second=(Task)recordMethod.Invoke(countdownWindow,null)!;
             if(!service.IsActive || !second.IsCompleted)throw new Exception("Multiple recording countdowns accepted");
             typeof(AutomationWindow).GetMethod("StopRecording",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(countdownWindow,null);
             await first.WaitAsync(TimeSpan.FromSeconds(1));countdownWindow.Close();
+            var closeDuringCountdown=new AutomationWindow(service);closeDuringCountdown.Show();
+            var closingTask=(Task)recordMethod.Invoke(closeDuringCountdown,null)!;await Task.Delay(120);closeDuringCountdown.Close();
+            await closingTask.WaitAsync(TimeSpan.FromSeconds(1));if(service.IsActive)throw new Exception("Closing countdown leaked recording state");
             if(!AutomationService.RequiresStableTarget(AutomationKind.Click)||!AutomationService.RequiresStableTarget(AutomationKind.Drag)||AutomationService.RequiresStableTarget(AutomationKind.Wait))
                 throw new Exception("Pointer target stability policy is incomplete");
             var launchOwner=new Window{Title="Automation test launcher",Width=320,Height=120,Content=new TextBlock{Text="Synthetic input target"}};launchOwner.Show();launchOwner.Activate();await Task.Delay(100);
@@ -67,7 +90,27 @@ internal static class AutomationChecks
                 await service.RunAsync(new(){Name="Synthetic Unicode",Steps=[new(){Kind=AutomationKind.Click,X=x,Y=y},new(){Kind=AutomationKind.Repeat,Value=2},new(){Kind=AutomationKind.Text,Text="Hello Привет "},new(){Kind=AutomationKind.EndRepeat}]});
                 await Task.Delay(120);state=await State(statePath);
                 if(state.Text!="Hello Привет Hello Привет ")throw new Exception("Unicode/repeat playback failed: "+File.ReadAllText(Path.Combine(folder,"status.txt")));
+                var clipboard=Clipboard.GetDataObject();
+                try{
+                    service.Target=target;
+                    await service.RunAsync(new(){Name="Clipboard fixture",Steps=[new(){Kind=AutomationKind.ClipboardText,Text="Clipboard Привет"},new(){Kind=AutomationKind.Keys,Text="Ctrl+A"},new(){Kind=AutomationKind.PasteClipboard}]});
+                    await Task.Delay(150);state=await State(statePath);if(state.Text!="Clipboard Привет")throw new Exception("Clipboard playback failed");
+                }finally{if(clipboard!=null)Clipboard.SetDataObject(clipboard,true);else Clipboard.Clear();}
+                Console.WriteLine("PASS native click, Unicode, repeat, clipboard and paste");
                 }
+                string title=AutomationInput.Title(target);string lastStatus="";void Observe(string message)=>lastStatus=message;service.StatusChanged+=Observe;
+                try{
+                    await service.RunAsync(new(){Steps=[new(){Kind=AutomationKind.WaitWindow,Text=title,Value=1000}]});
+                    if(lastStatus!=L.T("Automation completed."))throw new Exception("WaitWindow failed: "+lastStatus);
+                    await service.RunAsync(new(){Steps=[new(){Kind=AutomationKind.WaitWindow,Text="missing-"+Guid.NewGuid(),Value=150}]});
+                    if(!lastStatus.Contains("Action 1:")||!lastStatus.Contains("timed out"))throw new Exception("Wait timeout did not identify the failed action");
+                    foreach(var kind in new[]{AutomationKind.MaximizeWindow,AutomationKind.MinimizeWindow,AutomationKind.RestoreWindow}){
+                        await service.RunAsync(new(){Steps=[new(){Kind=kind,Text=title}]});await Task.Delay(150);
+                        if(lastStatus!=L.T("Automation completed."))throw new Exception("Window operation failed: "+lastStatus);
+                        if(kind==AutomationKind.MaximizeWindow&&!IsZoomed(target)||kind==AutomationKind.MinimizeWindow&&!AutomationInput.IsIconic(target)||kind==AutomationKind.RestoreWindow&&(IsZoomed(target)||AutomationInput.IsIconic(target)))throw new Exception($"Window state action failed: {kind}, target={target}, found={AutomationInput.FindWindow(title,true)}, zoom={IsZoomed(target)}, iconic={AutomationInput.IsIconic(target)}");
+                    }
+                    Console.WriteLine("PASS window waiting, bounded timeout, minimize/maximize/restore");
+                }finally{service.StatusChanged-=Observe;}
                 var cancelScript=new AutomationScript{Steps=[new(){Kind=AutomationKind.Wait,Value=30000}]};service.Target=target;
                 var running=service.RunAsync(cancelScript);await Task.Delay(180);service.Stop();await running.WaitAsync(TimeSpan.FromSeconds(3));if(service.IsActive)throw new Exception("Cancel left active service");
                 // Recorder callbacks reject injected events and unregister on every disposal.
@@ -84,5 +127,6 @@ internal static class AutomationChecks
         for(int i=0;i<100;i++){try{if(File.Exists(path))return JsonSerializer.Deserialize<NativeInputChecks.TargetState>(File.ReadAllText(path))!;}catch(IOException){}catch(JsonException){}await Task.Delay(50);}
         throw new Exception("Native target did not respond");
     }
+    private static void Snapshot(Window window,string path){var bitmap=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(window);Save(bitmap,path);}
     private static void Save(BitmapSource bitmap,string path){var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var stream=File.Create(path);encoder.Save(stream);}
 }

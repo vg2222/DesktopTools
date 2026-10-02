@@ -154,3 +154,13 @@ Use a disposable Windows account or VM with two stable published versions and th
 ### Wrapped secrets beside a browser sidebar
 
 Capture the whole browser with navigation rows whose vertical positions fall between a key prefix and its continuation in the body column. Include `sk-` and `sk-test-` at a row end, a prefix recognized as its own native line, and an invented mixed-case password such as `Example#Access!` followed by four digits on the next row. Confirm both pieces are covered under English and Russian OCR. An intervening ordinary body-column row must stop the association. Check that a URL ending with the same password-like fragment followed by a year is not classified as a password. Suggestions can still include OCR false positives; inspect before applying all covers.
+## Desktop Automation revision
+
+- Open the action library, search by action or help text, and insert after the selected row. Add inside Repeat and both If branches; move, duplicate and remove entire blocks from either boundary. Undo an edit. Try the nesting and 500-action limits without losing the existing workflow.
+- Choose a target window from the list; shorten its title, record a shortcut, type multiline text, browse for an executable, and select a physical point on each monitor. Check negative origins and mixed DPI. After opening an app, insert Focus window before input actions.
+- Test selected action independently; run the full workflow and stop with Esc. Change foreground or cover the click point during playback: stop instead of sending to another app. Move or close the target and confirm a clear action-number error.
+- Record a short click/keyboard sequence including switching applications. Cancel during countdown, stop via Esc, close during recording, and review/save recorded steps. Reopen and replay. Never type private data into a test recording.
+- Enable and save shortcut, interval, window-appearance, daily and startup triggers. Check while busy, around midnight, with a missing target and after restart. Daily runs missed while closed are not replayed. Disabling automatic triggers leaves manual Run available.
+- Exercise wait-for-window/color success, timeout and cancellation; clipboard set/paste; minimize, maximize then minimize/restore. A stalled or elevated target may reject input; verify an error and released modifiers.
+- Import/export a workflow containing user text and nested blocks; import must remain disarmed. Open a schema-1 store, save and reopen without losing original workflows. Keep real user settings and translations unchanged.
+- Review en/ru/de/fr/es in light, dark and custom backgrounds, including 1040-pixel-wide window, run settings and action library. Check keyboard focus and scrolling on small screens.

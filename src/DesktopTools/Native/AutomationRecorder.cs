@@ -29,10 +29,10 @@ internal sealed class AutomationRecorder : IDisposable
         mouse=SetWindowsHookEx(14,mouseCallback,GetModuleHandle(null),0);
         if(keyboard==0||mouse==0){Dispose();throw new System.ComponentModel.Win32Exception();}
     }
-    private void Add(AutomationStep step)
+    private void Add(AutomationStep step,nint clickedWindow=0)
     {
         if(Steps.Count>=490){StopRequested?.Invoke();return;}
-        nint target=NativeWindowService.GetForegroundWindowHandle();
+        nint target=clickedWindow!=0?clickedWindow:NativeWindowService.GetForegroundWindowHandle();
         if(!AutomationInput.External(target))return;
         if(lastWindow!=target){lastWindow=target;string title=AutomationInput.Title(target);if(title.Length>0)Steps.Add(new(){Kind=AutomationKind.FocusWindow,Text=title});}
         long elapsed=clock.ElapsedMilliseconds;
@@ -45,7 +45,7 @@ internal sealed class AutomationRecorder : IDisposable
         if(code>=0){var e=Marshal.PtrToStructure<KeyEvent>(data);int m=message.ToInt32();
             if((e.Flags&0x10)==0){
                 if(e.Key==27 && m is 0x100 or 0x104)StopRequested?.Invoke();
-                else if(e.Key!=27){
+                else if(e.Key!=27&&AutomationInput.External(NativeWindowService.GetForegroundWindowHandle())){
                     if(m is 0x100 or 0x104 && held.Add(e.Key))Add(new(){Kind=AutomationKind.KeyDown,Value=(int)e.Key});
                     else if(m is 0x101 or 0x105 && held.Remove(e.Key))Add(new(){Kind=AutomationKind.KeyUp,Value=(int)e.Key});
                 }
@@ -60,9 +60,9 @@ internal sealed class AutomationRecorder : IDisposable
                 nint hit=AutomationInput.GetAncestor(AutomationInput.WindowFromPoint(new(){X=e.X,Y=e.Y}),2);
                 if(!AutomationInput.External(hit))return CallNextHookEx(0,code,message,data);
                 int button=m switch{0x201 or 0x202=>1,0x204 or 0x205=>2,0x207 or 0x208=>3,_=>0};
-                if(button!=0){bool down=m is 0x201 or 0x204 or 0x207;if(down)buttons.Add(button);else buttons.Remove(button);Add(new(){Kind=down?AutomationKind.MouseDown:AutomationKind.MouseUp,Value=button,X=e.X,Y=e.Y});}
-                else if(m==0x20A)Add(new(){Kind=AutomationKind.Scroll,Value=unchecked((short)(e.Data>>16)),X=e.X,Y=e.Y});
-                else if(m==0x200 && buttons.Count>0 && clock.ElapsedMilliseconds-lastMove>35){lastMove=clock.ElapsedMilliseconds;Add(new(){Kind=AutomationKind.Move,X=e.X,Y=e.Y});}
+                if(button!=0){bool down=m is 0x201 or 0x204 or 0x207;if(down)buttons.Add(button);else buttons.Remove(button);Add(new(){Kind=down?AutomationKind.MouseDown:AutomationKind.MouseUp,Value=button,X=e.X,Y=e.Y},hit);}
+                else if(m==0x20A)Add(new(){Kind=AutomationKind.Scroll,Value=unchecked((short)(e.Data>>16)),X=e.X,Y=e.Y},hit);
+                else if(m==0x200 && buttons.Count>0 && clock.ElapsedMilliseconds-lastMove>35){lastMove=clock.ElapsedMilliseconds;Add(new(){Kind=AutomationKind.Move,X=e.X,Y=e.Y},hit);}
             }
         }
         return CallNextHookEx(0,code,message,data);
