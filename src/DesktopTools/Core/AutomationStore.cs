@@ -10,7 +10,7 @@ public sealed class AutomationStore(string directory)
     private string PathName=>Path.Combine(directory,"automation.json");
     private bool writable;
     public string? RecoveryMessage { get; private set; }
-    private sealed class Document { public int Version {get;set;}=1; public List<AutomationScript> Scripts {get;set;}=[]; }
+    private sealed class Document { public int Version {get;set;}=2; public List<AutomationScript> Scripts {get;set;}=[]; }
     public List<AutomationScript> Load()
     {
         writable=false; RecoveryMessage=null;
@@ -20,11 +20,11 @@ public sealed class AutomationStore(string directory)
             string text=File.ReadAllText(PathName);
             using var parsed=JsonDocument.Parse(text);
             if(parsed.RootElement.ValueKind!=JsonValueKind.Object)throw new JsonException();
-            if(parsed.RootElement.TryGetProperty("Version",out var version) && version.TryGetInt32(out int number) && number>1)
+            if(parsed.RootElement.TryGetProperty("Version",out var version) && version.TryGetInt32(out int number) && number>2)
             {RecoveryMessage=L.T("Automation uses a newer format. Saving is disabled.");return [];}
             if(!parsed.RootElement.TryGetProperty("Version",out _) || !parsed.RootElement.TryGetProperty("Scripts",out _)) throw new JsonException();
             var doc=JsonSerializer.Deserialize<Document>(text)??throw new JsonException();
-            if(doc.Version!=1)throw new JsonException();
+            if(doc.Version is not (1 or 2))throw new JsonException();
             try{Validate(doc.Scripts);}catch(ArgumentException e){throw new JsonException(e.Message);}
             writable=true; return doc.Scripts;
         }catch(JsonException){

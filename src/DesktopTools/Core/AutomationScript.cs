@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DesktopTools.Localization;
 namespace DesktopTools.Core;
-public enum AutomationKind { Click, DoubleClick, RightClick, Scroll, Drag, Keys, Text, Wait, Launch, FocusWindow, Repeat, EndRepeat, IfWindow, IfPixel, Else, EndIf, KeyDown, KeyUp, MouseDown, MouseUp, Move }
+public enum AutomationKind { Click, DoubleClick, RightClick, Scroll, Drag, Keys, Text, Wait, Launch, FocusWindow, Repeat, EndRepeat, IfWindow, IfPixel, Else, EndIf, KeyDown, KeyUp, MouseDown, MouseUp, Move, WaitWindow, WaitPixel, ClipboardText, PasteClipboard, MaximizeWindow, MinimizeWindow, RestoreWindow }
 public sealed class AutomationStep
 {
     public AutomationKind Kind { get; set; } = AutomationKind.Wait;
@@ -26,29 +26,37 @@ public sealed class AutomationScript
     public bool Armed { get; set; }
     public int IntervalMinutes { get; set; }
     public string WindowTrigger { get; set; } = "";
-    public AutomationScript Copy() => new() {Id=Id, Name=Name, Steps=Steps.Select(s=>s.Copy()).ToList(),Shortcut=Shortcut,Armed=Armed,IntervalMinutes=IntervalMinutes,WindowTrigger=WindowTrigger};
+    public string DailyTime {get;set;}="";
+    public bool RunOnStartup {get;set;}
+    public string TargetWindow {get;set;}="";
+    public int StepDelayMs {get;set;}=120;
+    public AutomationScript Copy() => new() {Id=Id, Name=Name, Steps=Steps.Select(s=>s.Copy()).ToList(),Shortcut=Shortcut,Armed=Armed,IntervalMinutes=IntervalMinutes,WindowTrigger=WindowTrigger,DailyTime=DailyTime,RunOnStartup=RunOnStartup,TargetWindow=TargetWindow,StepDelayMs=StepDelayMs};
 }
 public static class AutomationProgram
 {
-    public static IReadOnlyDictionary<int,int> Compile(AutomationScript script)
+    public static IReadOnlyDictionary<int,int> Compile(AutomationScript script,bool validateValues=true)
     {
-        if(script.Name == null || script.Name.Length>120 || script.Steps==null || script.Steps.Count>500 || script.Shortcut==null || script.WindowTrigger==null || script.WindowTrigger.Length>512 || script.IntervalMinutes is <0 or >10080)
+        if(script.Steps==null || script.Steps.Count>500 || validateValues&&(script.Name == null || script.Name.Length>120 || script.Shortcut==null || script.WindowTrigger==null || script.WindowTrigger.Length>512 || script.IntervalMinutes is <0 or >10080 || script.TargetWindow==null || script.TargetWindow.Length>1024 || script.StepDelayMs is <0 or >10000 || script.DailyTime==null))
             throw new ArgumentException(L.T("Invalid or oversized automation."));
+        if(validateValues&&script.DailyTime.Length>0&&!TimeOnly.TryParseExact(script.DailyTime,"HH:mm",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None,out _))throw new ArgumentException(L.T("Enter a time in HH:mm format."));
         var jumps=new Dictionary<int,int>(); var blocks=new Stack<(int Index, AutomationKind Kind, int Else)>();
         for(int i=0;i<script.Steps.Count;i++)
         {
             var step=script.Steps[i];
+            if(step==null||!Enum.IsDefined(step.Kind))throw new ArgumentException(L.T("Invalid or oversized automation."));
+            if(validateValues){
             if(step==null || !Enum.IsDefined(step.Kind) || step.Text==null || step.Text.Length>20000 || Math.Abs((long)step.X)>100000 || Math.Abs((long)step.Y)>100000 || Math.Abs((long)step.EndX)>100000 || Math.Abs((long)step.EndY)>100000)
                 throw new ArgumentException(L.T("Invalid or oversized automation."));
-            if(step.Kind==AutomationKind.Repeat && step.Value is <1 or >1000 || step.Kind==AutomationKind.Wait && step.Value is <1 or >600000 ||
+            if(step.Kind==AutomationKind.Repeat && step.Value is <1 or >1000 || step.Kind is AutomationKind.Wait or AutomationKind.WaitWindow or AutomationKind.WaitPixel && step.Value is <1 or >600000 ||
                 step.Kind==AutomationKind.Scroll && step.Value is <-12000 or >12000 ||
                 step.Kind is AutomationKind.KeyDown or AutomationKind.KeyUp && step.Value is <1 or >254 ||
                 step.Kind is AutomationKind.MouseDown or AutomationKind.MouseUp && step.Value is <1 or >3)
                 throw new ArgumentException(L.T("Invalid action value."));
-            if(step.Kind is AutomationKind.IfWindow or AutomationKind.FocusWindow or AutomationKind.Launch or AutomationKind.Keys && string.IsNullOrWhiteSpace(step.Text))
+            if(step.Kind is AutomationKind.IfWindow or AutomationKind.FocusWindow or AutomationKind.WaitWindow or AutomationKind.MaximizeWindow or AutomationKind.MinimizeWindow or AutomationKind.RestoreWindow or AutomationKind.Launch or AutomationKind.Keys && string.IsNullOrWhiteSpace(step.Text))
                 throw new ArgumentException(L.T("This action needs text."));
-            if(step.Kind==AutomationKind.IfPixel && !System.Text.RegularExpressions.Regex.IsMatch(step.Text, "^#[0-9A-Fa-f]{6}$"))
+            if(step.Kind is AutomationKind.IfPixel or AutomationKind.WaitPixel && !System.Text.RegularExpressions.Regex.IsMatch(step.Text, "^#[0-9A-Fa-f]{6}$"))
                 throw new ArgumentException(L.T("Use a pixel color such as #FF8800."));
+            }
             if(step.Kind is AutomationKind.Repeat or AutomationKind.IfWindow or AutomationKind.IfPixel) blocks.Push((i,step.Kind,-1));
             else if(step.Kind==AutomationKind.Else)
             {
