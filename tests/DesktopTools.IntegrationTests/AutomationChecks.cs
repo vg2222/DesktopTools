@@ -43,6 +43,12 @@ internal static class AutomationChecks
                     w.Width=1040;w.Height=700;w.UpdateLayout();Snapshot(w,"automation-min-"+theme+"-"+language+".png");
                     typeof(AutomationWindow).GetField("settingsMode",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(w,true);
                     typeof(AutomationWindow).GetMethod("RefreshEditor",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);w.UpdateLayout();Snapshot(w,"automation-settings-"+theme+"-"+language+".png");
+                    var settingsPanel=(StackPanel)typeof(AutomationWindow).GetField("details",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(w)!;
+                    var toggles=settingsPanel.Children.OfType<Grid>().SelectMany(g=>g.Children.OfType<CheckBox>()).ToArray();
+                    if(toggles.Length!=2||toggles.Any(c=>string.IsNullOrWhiteSpace(System.Windows.Automation.AutomationProperties.GetName(c))))throw new Exception("Run trigger switches need visible accessible labels");
+                    DependencyObject scrollParent=settingsPanel;while(scrollParent is not ScrollViewer)scrollParent=VisualTreeHelper.GetParent(scrollParent);
+                    ((ScrollViewer)scrollParent).ScrollToEnd();w.UpdateLayout();Snapshot(w,"automation-settings-bottom-"+theme+"-"+language+".png");
+                    ((ScrollViewer)scrollParent).ScrollToTop();
                     var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(250)};Exception? dialogError=null;
                     timer.Tick+=(_,_)=>{timer.Stop();var dialog=Application.Current.Windows.Cast<Window>().FirstOrDefault(x=>x.Owner==w);try{if(dialog==null)throw new Exception("Action library did not open");dialog.UpdateLayout();Snapshot(dialog,"automation-library-"+theme+"-"+language+".png");}catch(Exception e){dialogError=e;}finally{dialog?.Close();}};
                     timer.Start();typeof(AutomationWindow).GetMethod("OpenActions",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);timer.Stop();if(dialogError!=null)throw dialogError;

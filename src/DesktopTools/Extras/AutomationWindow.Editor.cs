@@ -80,7 +80,7 @@ internal sealed partial class AutomationWindow
         Number(details,"Every N minutes (0 = off)",s.IntervalMinutes,v=>s.IntervalMinutes=v);
         Field(details,"Daily at (HH:mm, blank = off)",s.DailyTime,v=>s.DailyTime=v);
         var trigger=Field(details,"When window appears",s.WindowTrigger,v=>s.WindowTrigger=v);details.Children.Add(Ui.Button(L.T("Choose window"),()=>ChooseWindow(v=>trigger.Text=v)));
-        void Check(string label,bool value,Action<bool> change){var checkbox=new CheckBox{Content=L.T(label),IsChecked=value,Margin=new Thickness(0,14,0,0)};checkbox.Checked+=(_,_)=>{RememberEdit();change(true);};checkbox.Unchecked+=(_,_)=>{RememberEdit();change(false);};details.Children.Add(checkbox);}
+        void Check(string label,bool value,Action<bool> change){var checkbox=Ui.Toggle(value,v=>{RememberEdit();change(v);});details.Children.Add(Ui.Row(L.T(label),null,checkbox));}
         Check("Run when DesktopTools starts",s.RunOnStartup,v=>s.RunOnStartup=v);
         Check("Enable automatic triggers",s.Armed,v=>s.Armed=v);
         Note("Schedules run while DesktopTools is open. Window triggers use part of a title.");
