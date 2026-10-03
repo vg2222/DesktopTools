@@ -88,9 +88,9 @@ internal sealed class TextToolsWindow : Window
         translate = Ui.Button(L.T("Translate"), async () => await TranslateAsync(), true);
         translate.Width = 150; DockPanel.SetDock(translate, Dock.Right); actions.Children.Add(translate);
         cancel = Ui.IconButton("Close", L.T("Cancel"), () => operation?.Cancel()); cancel.Visibility = Visibility.Collapsed; DockPanel.SetDock(cancel, Dock.Right); actions.Children.Add(cancel);
-        copy = Ui.IconButton("Copy", L.T("Copy result"), () => Copy(ocrMode ? source.Text : output.Text)); copy.IsEnabled = false;
+        copy = Ui.IconButton("Copy", L.T("Copy result"), () => { if (Copy(ocrMode ? source.Text : output.Text)) Ui.Flash(copy!); }); copy.IsEnabled = false;
         scan = Ui.Button(L.T("Scan screen text"), async () => await controller.CaptureAsync(textOnly: true)); scan.Content = Ui.IconLabel("ScanText", L.T("Scan screen text")); scan.HorizontalAlignment = HorizontalAlignment.Left; actions.Children.Add(scan);
-        copySource = Ui.IconButton("Copy", L.T("Copy source"), () => Copy(source.Text));
+        copySource = Ui.IconButton("Copy", L.T("Copy source"), () => { if (Copy(source.Text)) Ui.Flash(copySource!); });
         footer.Children.Add(actions); DockPanel.SetDock(footer, Dock.Bottom); root.Children.Add(footer);
         fields.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); fields.RowDefinitions.Add(new RowDefinition());
         fields.ColumnDefinitions.Add(new ColumnDefinition()); fields.ColumnDefinitions.Add(new ColumnDefinition());
@@ -135,7 +135,7 @@ internal sealed class TextToolsWindow : Window
         System.Windows.Automation.AutomationProperties.SetName(source, L.T(ocr ? "Recognized text" : "Source text")); RefreshButtons();
         RefreshRuntimeWarning();
     }
-    private void Copy(string text) { try { if (!string.IsNullOrWhiteSpace(text)) { Clipboard.SetText(text); status.Text = L.T("Text copied."); } } catch (Exception ex) { controller.Report(L.T("Could not copy text: ") + ex.Message); } }
+    private bool Copy(string text) { try { if (!string.IsNullOrWhiteSpace(text)) { Clipboard.SetText(text); status.Text = L.T("Text copied."); return true; } } catch (Exception ex) { controller.Report(L.T("Could not copy text: ") + ex.Message); } return false; }
     private void SettingsChanged()
     {
         if (closed) return;

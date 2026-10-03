@@ -69,10 +69,10 @@ internal sealed partial class MainWindow
             : L.F($"{registered.Count} of {requested.Count} enabled shortcuts are active.") + "\n"
                 + L.T("Close another app using these keys, retry, or choose a different shortcut.");
         var shortcutActions = new WrapPanel { Margin = new Thickness(0, 12, 0, 0) };
-        var retry = Ui.Button(L.T("Retry shortcuts"), () => { controller.RetryShortcuts(); Navigate("Diagnostics"); });
+        var retry = Ui.ActionButton("Refresh", L.T("Retry shortcuts"), () => { controller.RetryShortcuts(); Navigate("Diagnostics"); });
         retry.Tag = "diagnostics-retry-shortcuts";
         shortcutActions.Children.Add(retry);
-        var settings = Ui.Button(L.T("Open shortcut settings"), () => Navigate("Shortcuts"));
+        var settings = Ui.ActionButton("Shortcuts", L.T("Open shortcut settings"), () => Navigate("Shortcuts"));
         settings.Tag = "diagnostics-shortcuts";
         shortcutActions.Children.Add(settings);
         var shortcutCard = DiagnosticCard("Global shortcuts", inactive.Length == 0, shortcutDetail, "Shortcuts", shortcutActions);
@@ -85,7 +85,7 @@ internal sealed partial class MainWindow
                 var row = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
                 if (entry != null)
                 {
-                    var open = Ui.Button(L.T("Feature settings"), () => Navigate("Feature:" + entry.FeatureId));
+                    var open = Ui.ActionButton("Settings", L.T("Feature settings"), () => Navigate("Feature:" + entry.FeatureId));
                     open.Tag = "diagnostics-feature-" + entry.FeatureId;
                     DockPanel.SetDock(open, Dock.Right);
                     row.Children.Add(open);
@@ -107,7 +107,7 @@ internal sealed partial class MainWindow
         var content = new StackPanel();
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 9) };
         var badge = Ui.Text(L.T(ready ? "Ready" : "Needs attention"), 12, true);
-        badge.SetResourceReference(TextBlock.ForegroundProperty, ready ? "Accent" : "Text");
+        badge.SetResourceReference(TextBlock.ForegroundProperty, ready ? "Accent" : "Warning");
         DockPanel.SetDock(badge, Dock.Right); header.Children.Add(badge);
         var label = new StackPanel { Orientation = Orientation.Horizontal };
         var symbol = Ui.Icon(icon, 18); symbol.Margin = new Thickness(0, 0, 9, 0);

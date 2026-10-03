@@ -45,9 +45,9 @@ internal sealed partial class MainWindow
         updateProgressBar.Margin = new Thickness(0, 0, 0, 14);
         body.Children.Add(updateProgressBar);
         var actions = new WrapPanel();
-        updateCheckButton = Ui.Button(L.T("Check for updates"), async () => await controller.CheckForUpdatesAsync()); updateCheckButton.Tag = "check-updates";
-        updateDownloadButton = Ui.Button(L.T("Update in background"), async () => await controller.BeginBackgroundUpdateAsync(), true); updateDownloadButton.Tag = "download-update";
-        updateNotesButton = Ui.Button(L.T("Release notes"), controller.OpenUpdateNotes);
+        updateCheckButton = Ui.ActionButton("Refresh", L.T("Check for updates"), async () => await controller.CheckForUpdatesAsync()); updateCheckButton.Tag = "check-updates";
+        updateDownloadButton = Ui.ActionButton("Save", L.T("Update in background"), async () => await controller.BeginBackgroundUpdateAsync(), ButtonKind.Primary); updateDownloadButton.Tag = "download-update";
+        updateNotesButton = Ui.ActionButton("File", L.T("Release notes"), controller.OpenUpdateNotes);
         actions.Children.Add(updateCheckButton); actions.Children.Add(updateDownloadButton); actions.Children.Add(updateNotesButton); body.Children.Add(actions);
         if (preferences)
         {

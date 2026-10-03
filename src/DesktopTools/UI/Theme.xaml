@@ -7,10 +7,11 @@
  <SolidColorBrush x:Key="Stroke" Color="#1C293A55"/><SolidColorBrush x:Key="Divider" Color="#D2D9E5"/><SolidColorBrush x:Key="Hover" Color="#E8EDF6"/>
  <SolidColorBrush x:Key="Selected" Color="#DFE9FC"/><SolidColorBrush x:Key="Accent" Color="#2563EB"/>
  <SolidColorBrush x:Key="AccentText" Color="White"/>
+ <SolidColorBrush x:Key="Danger" Color="#DC2626"/><SolidColorBrush x:Key="Warning" Color="#D97706"/>
  <SolidColorBrush x:Key="GlassSurface" Color="#F3F5FA"/>
  <SolidColorBrush x:Key="GlassRim" Color="#1C293A55"/>
  <Style x:Key="ModeTab" TargetType="RadioButton">
-  <Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/>
+  <Setter Property="Background" Value="{DynamicResource Field}"/><Setter Property="BorderBrush" Value="{DynamicResource Stroke}"/>
   <Setter Property="Padding" Value="16,12"/><Setter Property="Cursor" Value="Hand"/>
   <Setter Property="HorizontalContentAlignment" Value="Center"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
@@ -37,7 +38,7 @@
   <Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="SemiBold"/>
   <Setter Property="Padding" Value="12,7"/><Setter Property="MinHeight" Value="36"/><Setter Property="Cursor" Value="Hand"/>
   <Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Grid>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Grid RenderTransformOrigin=".5,.5"><Grid.RenderTransform><ScaleTransform x:Name="PressScale" ScaleX="1" ScaleY="1"/></Grid.RenderTransform>
    <Border x:Name="Body" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}"/>
    <Border x:Name="Feedback" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}" IsHitTestVisible="False"/>
    <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/>
@@ -50,10 +51,11 @@
  <Style TargetType="CheckBox"><Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
   <Setter Property="ui:Motion.Feedback" Value="True"/>
   <Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox"><Border x:Name="Track" Width="44" Height="24" Background="{DynamicResource Muted}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource Stroke}">
-   <Ellipse x:Name="Thumb" Width="18" Height="18" Fill="White" Margin="2" HorizontalAlignment="Left"><Ellipse.RenderTransform><TranslateTransform X="{Binding Path=(ui:Motion.TogglePosition), RelativeSource={RelativeSource TemplatedParent}}"/></Ellipse.RenderTransform></Ellipse>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox"><Border x:Name="Track" Width="44" Height="24" Background="{DynamicResource Hover}" CornerRadius="12" BorderThickness="1.5" BorderBrush="{DynamicResource Muted}">
+   <Ellipse x:Name="Thumb" Width="14" Height="14" Fill="{DynamicResource Muted}" Margin="3.5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"><Ellipse.RenderTransform><TranslateTransform X="{Binding Path=(ui:Motion.TogglePosition), RelativeSource={RelativeSource TemplatedParent}}"/></Ellipse.RenderTransform></Ellipse>
   </Border><ControlTemplate.Triggers>
-   <Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}"/></Trigger>
+   <Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}"/><Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}"/><Setter TargetName="Thumb" Property="Fill" Value="White"/></Trigger>
+   <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Thumb" Property="Width" Value="16"/><Setter TargetName="Thumb" Property="Height" Value="16"/></Trigger>
    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Text}"/></Trigger>
    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.42"/></Trigger>
   </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>

@@ -130,6 +130,13 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         var timing = new StackPanel(); timing.Children.Add(Ui.Text(L.T("Keep range"), 15, true));
         var trim = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 6) };
         trim.Children.Add(Field(L.T("Start (seconds)"), trimStart)); trim.Children.Add(Field(L.T("End (seconds)"), trimEnd)); timing.Children.Add(trim);
+        var markers = new WrapPanel { Margin = new Thickness(0, 0, 0, 10) };
+        foreach (var (label, box) in new[] { ("Start at playhead", trimStart), ("End at playhead", trimEnd) })
+        {
+            var target = box; var marker = Ui.ActionButton("Timer", L.T(label), () => { if (source != null) target.Text = seek.Value.ToString("0.###", CultureInfo.CurrentCulture); }, ButtonKind.Secondary, 12);
+            marker.Margin = new Thickness(0, 0, 8, 6); marker.MinHeight = 32; marker.Padding = new Thickness(10, 4, 12, 4); markers.Children.Add(marker);
+        }
+        timing.Children.Add(markers);
         removeSection = Ui.Toggle(false, _ => Changed());
         timing.Children.Add(ToggleLabel(L.T("Remove a middle section"), removeSection));
         cutFields.Margin = new Thickness(0, 6, 0, 0);
@@ -152,11 +159,11 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
 
         var feedback = new StackPanel { Margin = new Thickness(0, 8, 0, 6) }; feedback.Children.Add(progress); feedback.Children.Add(status); AddRow(root, feedback, 5);
         var actions = new WrapPanel();
-        resetButton = Ui.IconButton("RotateLeft", L.T("Reset"), Reset);
-        originalButton = Ui.IconButton("Video", L.T("Show original"), ToggleBeforeAfter);
+        resetButton = Ui.ActionButton("RotateLeft", L.T("Reset"), Reset, ButtonKind.Ghost);
+        originalButton = Ui.ActionButton("Video", L.T("Show original"), ToggleBeforeAfter, ButtonKind.Ghost);
         previewButton = Ui.Button(L.T("Update preview"), async () => await RenderAsync(previewOnly: true)); previewButton.Content = Ui.IconLabel("Refresh", L.T("Update preview"));
         exportButton = Ui.Button(L.T("Export MP4"), async () => await RenderAsync(previewOnly: false), true);
-        cancelButton = Ui.Button(L.T("Cancel"), () => { previewPending = false; previewTimer.Stop(); operation?.Cancel(); });
+        cancelButton = Ui.ActionButton("Close", L.T("Cancel"), () => { previewPending = false; previewTimer.Stop(); operation?.Cancel(); }, ButtonKind.Ghost);
         foreach (var button in new[] { resetButton, originalButton, previewButton, exportButton, cancelButton }) actions.Children.Add(button);
         AddRow(root, actions, 6);
         // Preserve the existing editing model while placing controls in the selected C composition.
@@ -689,6 +696,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         originalButton.IsEnabled = ready && (showingEdited || renderedPreview != null);
         string previewAction = L.T(showingEdited ? "Show original" : "Show edited");
         Ui.Tip(originalButton, previewAction);
+        originalButton.Content = Ui.IconLabel("Video", previewAction, 16, false, 13);
         System.Windows.Automation.AutomationProperties.SetName(originalButton, previewAction);
         playButton.IsEnabled = ready && mediaOpened;
         seek.IsEnabled = ready && mediaOpened; cutFields.IsEnabled = removeSection.IsChecked == true;

@@ -74,7 +74,7 @@ internal sealed partial class MainWindow : Window
 
         {
 
-            var content = new Grid(); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.Children.Add(Ui.Icon(NavigationIcon(item), 18)); var label = Ui.Text(L.T(item), 13, true); label.Margin = new Thickness(12, 0, 0, 0); Grid.SetColumn(label, 1); content.Children.Add(label);
+            var content = new Grid(); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.Children.Add(Ui.Icon(NavigationIcon(item), 18)); var label = Ui.Text(L.T(item), 13, true); label.FontWeight = FontWeights.Medium; label.Margin = new Thickness(12, 0, 0, 0); Grid.SetColumn(label, 1); content.Children.Add(label);
             if (item == "News") { content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); var badge = new Border { Width = 7, Height = 7, CornerRadius = new CornerRadius(4), VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed }; badge.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumn(badge, 2); content.Children.Add(badge); newsBadge = badge; }
 
             var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
@@ -546,9 +546,12 @@ internal sealed partial class MainWindow : Window
 
         catch (Exception ex) { selectedDetails.Children.Add(Ui.Card(Ui.Text(ex.Message, 13, muted: true))); }
 
-        var input = new TextBox { Width = 180, Margin = new Thickness(0, 0, 8, 0) }; System.Windows.Automation.AutomationProperties.SetName(input, L.T("New profile name"));
+        var input = new TextBox { Width = 220 }; System.Windows.Automation.AutomationProperties.SetName(input, L.T("New profile name"));
 
-        var add = new WrapPanel(); add.Children.Add(input); add.Children.Add(Ui.Button(L.T("Create profile"), () => { try { if (controller.Profiles.ListNames().Contains(input.Text, StringComparer.OrdinalIgnoreCase)) { controller.Report(L.T("That profile already exists. Choose another name.")); return; } controller.Profiles.Save(input.Text, controller.Settings); selectedProfile = input.Text; Navigate("Profiles"); } catch (Exception ex) { controller.Report(ex.Message); } })); Group(L.T("Save as a new profile"), add);
+        var inputField = new Grid { Margin = new Thickness(0, 0, 8, 0) }; inputField.Children.Add(input);
+        var inputHint = Ui.Text(L.T("New profile name"), 13, muted: true); inputHint.Margin = new Thickness(14, 0, 14, 0); inputHint.IsHitTestVisible = false; inputField.Children.Add(inputHint);
+        input.TextChanged += (_, _) => inputHint.Visibility = input.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        var add = new WrapPanel(); add.Children.Add(inputField); add.Children.Add(Ui.Button(L.T("Create profile"), () => { try { if (controller.Profiles.ListNames().Contains(input.Text, StringComparer.OrdinalIgnoreCase)) { controller.Report(L.T("That profile already exists. Choose another name.")); return; } controller.Profiles.Save(input.Text, controller.Settings); selectedProfile = input.Text; Navigate("Profiles"); } catch (Exception ex) { controller.Report(ex.Message); } })); Group(L.T("Save as a new profile"), add);
 
         var help = Ui.Text(L.T("Profiles keep your appearance, startup and save location unchanged. Shortcut conflicts leave the current profile active."), 12, muted: true); help.Margin = new Thickness(0, 16, 0, 0); page.Children.Add(help);
 

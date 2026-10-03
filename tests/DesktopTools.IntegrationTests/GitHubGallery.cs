@@ -91,7 +91,7 @@ internal static class GitHubGallery
             var scene = new Window { Title = "Presentation demo", Width = 1000, Height = 600, Content = new Image { Source = sample, Stretch = Stretch.Uniform }, Background = Brushes.White, ShowInTaskbar = false };
             scene.Show();
             var source = new RecordingWindowInfo(new WindowInteropHelper(scene).Handle, (uint)Environment.ProcessId, scene.Title);
-            var recorder = new ScreenRecorderWindow(controller) { Width = 1000, Height = 660 };
+            var recorder = new ScreenRecorderWindow(controller) { Width = 1120, Height = 800 };
             recorder.SetSource(new RecordingSelection("Presentation demo · application window", Window: source), sample);
             recorder.Show(); await Capture(recorder, "09-screen-recorder-dark"); recorder.Close(); scene.Close();
             var quality = new RecordingQualityWindow(controller.Settings, (_, _, _) => true);

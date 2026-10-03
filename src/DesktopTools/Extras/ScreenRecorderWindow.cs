@@ -27,8 +27,8 @@ internal sealed class ScreenRecorderWindow : Window
     private readonly FrameworkElement sourceKinds;
     private readonly CheckBox microphone, systemAudio;
     private readonly Button start, testRecording, playTest, pause, stop, runtimeHelp;
-    private readonly ProgressBar microphoneMeter = RecordingAudioMeter.Create(7, new Thickness(0, 5, 0, 8));
-    private readonly ProgressBar systemMeter = RecordingAudioMeter.Create(7, new Thickness(0, 5, 0, 8));
+    private readonly ProgressBar microphoneMeter = RecordingAudioMeter.Create(6, new Thickness(0, -2, 0, 8));
+    private readonly ProgressBar systemMeter = RecordingAudioMeter.Create(6, new Thickness(0, -2, 0, 8));
     private readonly DispatcherTimer meterTimer = new() { Interval = TimeSpan.FromMilliseconds(180) };
     private readonly TextBlock status = Ui.Text(L.T("Choose a display, then start recording."), 13, muted: true);
     private readonly TextBlock time = Ui.Text("00:00:00", 32, true);
@@ -53,42 +53,37 @@ internal sealed class ScreenRecorderWindow : Window
     {
         this.readMonitors = readMonitors ?? MonitorService.GetAll;
         this.readMissingRuntime = readMissingRuntime ?? RecordingPrerequisites.FindMissingVisualCppRuntimeFiles;
-        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 1120; Height = 690; MinWidth = 900; MinHeight = 590; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        this.controller = controller; this.chooseOutput = chooseOutput; Title = L.T("Screen recorder"); Width = 1120; Height = 800; MinWidth = 900; MinHeight = 640; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip; Topmost = false; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close recorder"), 13, allowMinimize: true); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
-        var panel = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
-        var setupHeading = Ui.Text(L.T("Recording setup"), 17, true); setupHeading.Margin = new Thickness(0, 0, 0, 9); panel.Children.Add(setupHeading);
+        var panel = new StackPanel { Margin = new Thickness(12, 0, 6, 0) };
         sourceChoice = Ui.Button(L.T("Recording source"), async () => await ChooseSourceAsync()); sourceChoice.Content = Ui.IconLabel("Monitor", L.T("Recording source"));
         microphone = Ui.Toggle(controller.Settings.RecordingMicrophone, value => controller.UpdateSettings(s => s.RecordingMicrophone = value));
         systemAudio = Ui.Toggle(controller.Settings.RecordingSystemAudio, value => controller.UpdateSettings(s => s.RecordingSystemAudio = value));
-        panel.Children.Add(Ui.Row(L.T("Microphone"), L.T("Default Windows input device."), microphone));
-        System.Windows.Automation.AutomationProperties.SetName(microphoneMeter, L.T("Microphone activity")); panel.Children.Add(microphoneMeter);
-        panel.Children.Add(Ui.Row(L.T("System audio"), L.T("Default Windows output device."), systemAudio));
-        System.Windows.Automation.AutomationProperties.SetName(systemMeter, L.T("System audio activity")); panel.Children.Add(systemMeter);
-        var meterExplanation = Ui.Text(L.T("Meters show device activity. Use a test clip to verify recorded sound."), 11, muted: true);
-        meterExplanation.TextWrapping = TextWrapping.Wrap; panel.Children.Add(meterExplanation);
-        testRecording = Ui.Button(L.T("Record 5-second test"), () => StartRecording(test: true));
-        testRecording.Content = Ui.IconLabel("Record", L.T("Record 5-second test"));
-        playTest = Ui.IconButton("Play", L.T("Play test clip"), PlayTestClip); playTest.Visibility = Visibility.Collapsed;
-        var testActions = new DockPanel { Margin = new Thickness(0, 9, 0, 0) };
-        DockPanel.SetDock(playTest, Dock.Right); testActions.Children.Add(playTest); testActions.Children.Add(testRecording);
-        panel.Children.Add(testActions);
-        var outputHeading = Ui.Text(L.T("Recording quality"), 13, true); outputHeading.Margin = new Thickness(0, 10, 0, 8); panel.Children.Add(outputHeading);
+        System.Windows.Automation.AutomationProperties.SetName(microphoneMeter, L.T("Microphone activity"));
+        System.Windows.Automation.AutomationProperties.SetName(systemMeter, L.T("System audio activity"));
+        testRecording = Ui.ActionButton("Record", L.T("Record 5-second test"), () => StartRecording(test: true));
+        testRecording.HorizontalContentAlignment = HorizontalAlignment.Center;
+        playTest = Ui.ActionButton("Play", L.T("Play test clip"), PlayTestClip); playTest.Visibility = Visibility.Collapsed; playTest.Margin = new Thickness(8, 0, 0, 0);
+        var testActions = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
+        DockPanel.SetDock(playTest, Dock.Right); testActions.Children.Add(playTest); testRecording.Margin = new Thickness(0); testActions.Children.Add(testRecording);
+        panel.Children.Add(Ui.Group("Audio", L.T("Sound"), L.T("Meters show device activity. Use a test clip to verify recorded sound."),
+            Ui.Row(L.T("Microphone"), L.T("Default Windows input device."), microphone), microphoneMeter,
+            Ui.Row(L.T("System audio"), L.T("Default Windows output device."), systemAudio), systemMeter,
+            testActions));
         var qualityGrid = new Grid(); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.2, GridUnitType.Star) }); qualityGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(.8, GridUnitType.Star) });
         var qualityColumn = new StackPanel { Margin = new Thickness(0, 0, 8, 0) };
-        qualityColumn.Children.Add(Ui.Text(L.T("Quality"), 12));
+        qualityColumn.Children.Add(Ui.Text(L.T("Quality"), 12, muted: true));
         qualityChoice = Ui.Choice(new[] { "Economy", "Balanced", "High" }, controller.Settings.RecordingQuality, value => controller.UpdateSettings(s => s.RecordingQuality = value));
         qualityChoice.HorizontalAlignment = HorizontalAlignment.Stretch; qualityChoice.Margin = new Thickness(0, 6, 0, 0); qualityColumn.Children.Add(qualityChoice); qualityGrid.Children.Add(qualityColumn);
         var fpsColumn = new StackPanel { Margin = new Thickness(8, 0, 0, 0) };
-        fpsColumn.Children.Add(Ui.Text("FPS", 12));
+        fpsColumn.Children.Add(Ui.Text("FPS", 12, muted: true));
         fpsChoice = Ui.Choice(new[] { "24", "30", "60", "90", "120", "144" }, controller.Settings.RecordingFramesPerSecond.ToString(), value => controller.UpdateSettings(s => s.RecordingFramesPerSecond = int.Parse(value)), translate: false);
         fpsChoice.MinWidth = 100; fpsChoice.HorizontalAlignment = HorizontalAlignment.Stretch; fpsChoice.Margin = new Thickness(0, 6, 0, 0); fpsColumn.Children.Add(fpsChoice); Grid.SetColumn(fpsColumn, 1); qualityGrid.Children.Add(fpsColumn);
-        panel.Children.Add(qualityGrid);
         var fpsHint = Ui.Text(L.T("Frame rate is a target. Actual smoothness depends on the display, source and computer."), 11, muted: true);
-        fpsHint.TextWrapping = TextWrapping.Wrap; fpsHint.Margin = new Thickness(0, 9, 0, 0); panel.Children.Add(fpsHint);
+        fpsHint.TextWrapping = TextWrapping.Wrap; fpsHint.Margin = new Thickness(0, 9, 0, 2);
         hardwareAcceleration = Ui.Toggle(controller.Settings.RecordingHardwareAcceleration, value => controller.UpdateSettings(s => s.RecordingHardwareAcceleration = value));
-        var hardwareRow = new DockPanel { Margin = new Thickness(0, 10, 0, 0) };
-        DockPanel.SetDock(hardwareAcceleration, Dock.Right); hardwareRow.Children.Add(hardwareAcceleration);
-        hardwareRow.Children.Add(Ui.Text(L.T("Hardware acceleration"), 13, true)); panel.Children.Add(hardwareRow);
+        panel.Children.Add(Ui.Group("Video", L.T("Recording quality"), null, qualityGrid, fpsHint,
+            Ui.Row(L.T("Hardware acceleration"), L.T("Uses the graphics card to encode. Turn off if recordings stutter."), hardwareAcceleration)));
         var guide = FeatureTourButton.Create(this, "recorder", () => new GuidedTour.Step[]
         {
             new(() => sourceChoice, "Recording source", "Choose a display, window or region. Selecting a source does not start recording."),
@@ -96,9 +91,11 @@ internal sealed class ScreenRecorderWindow : Window
             new(() => systemAudio, "System audio", "System audio records sounds played by the computer."),
             new(() => qualityGrid, "Recording quality", "Choose quality and target FPS before starting. Stop in the floating capsule finishes the MP4.")
         }, controller.Settings, controller.UpdateSettings); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
-        start = Ui.Button(L.T("Start recording"), StartRecording, true);
-        start.Content = Ui.IconLabel("Record", L.T("Start recording"), primary: true);
-        pause = Ui.IconButton("Pause", L.T("Pause"), TogglePause); stop = Ui.IconButton("Stop", L.T("Stop and save"), () => _ = StopAsync());
+        start = Ui.ActionButton("Record", L.T("Start recording"), StartRecording, ButtonKind.Primary, 14);
+        start.MinHeight = 44; start.Margin = new Thickness(0);
+        pause = Ui.ActionButton("Pause", L.T("Pause"), TogglePause); pause.Margin = new Thickness(0, 0, 4, 0);
+        stop = Ui.ActionButton("Stop", L.T("Stop and save"), () => _ = StopAsync()); stop.Margin = new Thickness(4, 0, 0, 0);
+        SetPauseContent();
         runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenVisualCppRuntimeDownloadPage); runtimeHelp.Visibility = Visibility.Collapsed;
         var transport = new StackPanel();
         var recordingState = new StackPanel();
@@ -107,11 +104,15 @@ internal sealed class ScreenRecorderWindow : Window
         runtimeHelp.Margin = new Thickness(0, 8, 0, 0); runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left; recordingState.Children.Add(runtimeHelp);
         recordingState.Children.Add(new ScrollViewer { Content = markerList, MaxHeight = 100, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         transport.Children.Add(recordingState);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
-        start.MinWidth = 154; pause.Margin = new Thickness(4, 0, 4, 0); actions.Children.Add(start); actions.Children.Add(pause); actions.Children.Add(stop); transport.Children.Add(actions);
+        var actions = new Grid { Margin = new Thickness(0, 12, 0, 0) };
+        actions.RowDefinitions.Add(new RowDefinition()); actions.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        actions.ColumnDefinitions.Add(new ColumnDefinition()); actions.ColumnDefinitions.Add(new ColumnDefinition());
+        Grid.SetColumnSpan(start, 2); actions.Children.Add(start);
+        Grid.SetRow(pause, 1); Grid.SetRow(stop, 1); Grid.SetColumn(stop, 1); pause.Margin = new Thickness(0, 8, 4, 0); stop.Margin = new Thickness(4, 8, 0, 0);
+        actions.Children.Add(pause); actions.Children.Add(stop); transport.Children.Add(actions);
         var transportSurface = new Border { Child = transport, Padding = new Thickness(14), Margin = new Thickness(12, 10, 0, 0), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1) };
         transportSurface.SetResourceReference(Border.BackgroundProperty, "Field"); transportSurface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
-        var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(370) }); root.Children.Add(columns);
+        var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition()); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(392) }); root.Children.Add(columns);
         var inspectorPanel = new DockPanel(); Grid.SetColumn(inspectorPanel, 1); columns.Children.Add(inspectorPanel);
         DockPanel.SetDock(transportSurface, Dock.Bottom); inspectorPanel.Children.Add(transportSurface);
         var inspector = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; inspectorPanel.Children.Add(inspector);
@@ -362,7 +363,7 @@ internal sealed class ScreenRecorderWindow : Window
     {
         if (service == null || stopping || service.SourceSuspended || service.Status is not ("Recording" or "Paused")) return;
         if (paused) service.Resume(); else service.Pause();
-        paused = !paused; pause.Content = Ui.Icon(paused ? "Play" : "Pause"); Ui.Tip(pause, L.T(paused ? "Resume" : "Pause"));
+        paused = !paused; SetPauseContent();
         UpdateRecordingUi();
     }
     private void UpdateRecordingUi()
@@ -393,7 +394,13 @@ internal sealed class ScreenRecorderWindow : Window
         sourcePreview.IsEnabled = sourceChoice.IsEnabled = microphone.IsEnabled = systemAudio.IsEnabled = !busy;
         qualityChoice.IsEnabled = fpsChoice.IsEnabled = hardwareAcceleration.IsEnabled = !busy;
         refreshPreview.IsEnabled = !busy && selectedSource != null;
-        pause.Content = Ui.Icon(paused ? "Play" : "Pause");
+        SetPauseContent();
+    }
+    private void SetPauseContent()
+    {
+        string label = L.T(paused ? "Resume" : "Pause");
+        pause.Content = Ui.IconLabel(paused ? "Play" : "Pause", label, 16, false, 13);
+        System.Windows.Automation.AutomationProperties.SetName(pause, label);
     }
     private void UpdateMeters()
     {

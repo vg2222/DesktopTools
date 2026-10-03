@@ -13,24 +13,23 @@ internal sealed partial class MainWindow
     private void FeatureSettingsSearch()
     {
         var content = new StackPanel();
-        var heading = Ui.IconLabel("Search", L.T("Find feature settings"), 19);
-        heading.Margin = new Thickness(0, 0, 0, 12);
-        content.Children.Add(heading);
         var field = new Grid();
         var search = new TextBox { Text = featureSettingsQuery, Tag = "settings-feature-search",
-            Padding = new Thickness(14, 8, 48, 8), MinHeight = 46 };
+            Padding = new Thickness(44, 8, 48, 8), MinHeight = 46 };
         System.Windows.Automation.AutomationProperties.SetName(search, L.T("Find feature settings"));
         field.Children.Add(search);
         var hint = Ui.Text(L.T("Search tools, options or shortcuts"), 14, muted: true);
-        hint.Margin = new Thickness(16, 0, 15, 0);
+        hint.Margin = new Thickness(46, 0, 15, 0);
         hint.IsHitTestVisible = false;
         field.Children.Add(hint);
+        var searchIcon = Ui.Icon("Search", 18); searchIcon.HorizontalAlignment = HorizontalAlignment.Left;
+        searchIcon.Margin = new Thickness(15, 0, 0, 0); searchIcon.IsHitTestVisible = false; field.Children.Add(searchIcon);
         var clearSearch = Ui.SearchClearButton(search); clearSearch.Tag = "search-clear-settings";
         field.Children.Add(clearSearch);
         content.Children.Add(field);
         var results = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
         content.Children.Add(results);
-        page.Children.Add(Ui.Card(content, 18));
+        page.Children.Add(Ui.Card(content, 12));
 
         DashboardTool[] matches = [];
         int previousState = 0; // 0: no query, 1: results, 2: empty

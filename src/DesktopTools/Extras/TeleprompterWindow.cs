@@ -38,7 +38,7 @@ internal sealed class TeleprompterWindow : Window
         scroll = new ScrollViewer { Content = script, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Visibility = Visibility.Collapsed };
         var toolbar = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         play = Ui.IconButton("Play", L.T("Start"), TogglePlayback); play.Width = play.Height = 42; play.SetResourceReference(Control.BackgroundProperty, "Accent"); DesignTokens.SetButtonRadius(play, new CornerRadius(21)); toolbar.Children.Add(play);
-        var restart = Ui.IconButton("Stop", L.T("Restart"), () => { Pause(); scroll.ScrollToTop(); }); restart.Margin = new Thickness(8, 0, 14, 0); toolbar.Children.Add(restart);
+        var restart = Ui.ActionButton("RotateLeft", L.T("Restart"), () => { Pause(); scroll.ScrollToTop(); }, ButtonKind.Ghost); restart.Margin = new Thickness(8, 0, 10, 0); toolbar.Children.Add(restart);
         StackPanel Group(string label, FrameworkElement control)
         {
             var group = new StackPanel { Margin = new Thickness(10, 0, 18, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -53,7 +53,7 @@ internal sealed class TeleprompterWindow : Window
         font.SelectedItem = script.FontSize; font.ToolTip = L.T("Text size"); System.Windows.Automation.AutomationProperties.SetName(font, L.T("Text size"));
         font.SelectionChanged += (_, _) => { if (font.SelectedItem is double value && save(s => s.TeleprompterFontSize = value)) script.FontSize = editor.FontSize = value; }; toolbar.Children.Add(Group("Text size", font));
         bool mirrored = false;
-        toolbar.Children.Add(Ui.IconButton("FlipHorizontal", L.T("Mirror"), () => { mirrored = !mirrored; script.RenderTransformOrigin = new Point(.5, .5); script.RenderTransform = new ScaleTransform(mirrored ? -1 : 1, 1); }));
+        toolbar.Children.Add(Ui.ActionButton("FlipHorizontal", L.T("Mirror"), () => { mirrored = !mirrored; script.RenderTransformOrigin = new Point(.5, .5); script.RenderTransform = new ScaleTransform(mirrored ? -1 : 1, 1); }, ButtonKind.Ghost));
         mode = Ui.IconButton("Maximize", L.T("Presentation mode"), () => SetPresentation(!presentation)); DockPanel.SetDock(mode, Dock.Right); header.Children.Insert(header.Children.Count - 1, mode);
         var guide = FeatureTourButton.Create(this, "teleprompter", () => new GuidedTour.Step[]
         {
@@ -63,7 +63,7 @@ internal sealed class TeleprompterWindow : Window
             new(() => mode, "Presentation mode", "Switch between the studio and the compact reading window without losing your place.")
         }, settings, save); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         AddHandler(FeatureTourButton.SetupAppliedEvent, new RoutedEventHandler((_, _) => { velocity.SelectedItem = settings.TeleprompterSpeed; font.SelectedItem = settings.TeleprompterFontSize; Topmost = settings.TeleprompterTopmost; }));
-        var edit = Ui.IconButton("Text", L.T("Edit text"), () => { Pause(); if (presentation) SetPresentation(false); scroll.Visibility = Visibility.Collapsed; editor.Visibility = Visibility.Visible; editor.Focus(); });
+        var edit = Ui.ActionButton("Text", L.T("Edit text"), () => { Pause(); if (presentation) SetPresentation(false); scroll.Visibility = Visibility.Collapsed; editor.Visibility = Visibility.Visible; editor.Focus(); });
         var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) }; DockPanel.SetDock(edit, Dock.Right); footer.Children.Add(edit); footer.Children.Add(toolbar);
         var footerCard = Ui.Card(footer, 10); footerCard.Margin = new Thickness(0, 12, 0, 0); DockPanel.SetDock(footerCard, Dock.Bottom); root.Children.Add(footerCard);
         var content = new Grid(); content.ColumnDefinitions.Add(outlineColumn); content.ColumnDefinitions.Add(new ColumnDefinition());

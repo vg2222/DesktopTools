@@ -61,10 +61,8 @@ internal sealed partial class MainWindow
     }
     private void Home()
     {
-        var header = new DockPanel(); var customize = Ui.IconButton("Star", L.T("Edit favorites"), () => DashboardCategory(null));
-        customize.Tag = "edit-favorites"; customize.Width = customize.Height = customize.MinHeight = 40;
-        customize.SetResourceReference(BackgroundProperty, "Field");
-        customize.SetResourceReference(BorderBrushProperty, "Stroke"); customize.BorderThickness = new Thickness(1);
+        var header = new DockPanel(); var customize = Ui.ActionButton("Star", L.T("Edit favorites"), () => DashboardCategory(null));
+        customize.Tag = "edit-favorites"; customize.VerticalAlignment = VerticalAlignment.Center; customize.Margin = new Thickness(0);
         DockPanel.SetDock(customize, Dock.Right); header.Children.Add(customize); header.Children.Add(Ui.Text(L.T("My dashboard"), 30, true)); page.Children.Add(header);
         newsHomeButton = Ui.Button(L.T("News"), () => Navigate("News"));
         newsHomeButton.Tag = "home-news"; newsHomeButton.HorizontalContentAlignment = HorizontalAlignment.Left;
@@ -126,6 +124,7 @@ internal sealed partial class MainWindow
         foreach (string id in controller.Settings.HomeFavorites)
             if (all.FirstOrDefault(t => t.Id == id) is { } tool) pins.Children.Add(DashboardTile(tool));
         normal.Children.Add(pins);
+        Motion.Stagger(pins.Children.OfType<FrameworkElement>());
         if (pins.Children.Count == 0) normal.Children.Add(Ui.Text(L.T("Use the star beside a tool to pin it here."), 13, muted: true));
         var groupTitle = Ui.Text(L.T("Tool collections"), 17, true); groupTitle.Margin = new Thickness(0, 16, 0, 10); normal.Children.Add(groupTitle);
         var groups = new UniformGrid { Columns = 3, Margin = new Thickness(0, 0, -10, 0) };
@@ -136,9 +135,10 @@ internal sealed partial class MainWindow
             var copy = new StackPanel { VerticalAlignment = VerticalAlignment.Center }; copy.Children.Add(Ui.Text(L.T(group), 16, true));
             var detail = Ui.Text(L.T(GroupDescription(group)), 12, muted: true); detail.Margin = new Thickness(0, 8, 6, 0); copy.Children.Add(detail); body.Children.Add(copy);
             var art = DashboardArt(NavigationIcon(group), 60); Grid.SetColumn(art, 1); body.Children.Add(art);
-            var button = Ui.Button(L.T(group), () => Navigate(group)); button.Content = body; button.HorizontalContentAlignment = HorizontalAlignment.Stretch; button.Padding = new Thickness(16); button.MinHeight = 106; button.Margin = new Thickness(0, 0, 10, 10); groups.Children.Add(button);
+            var button = Ui.Button(L.T(group), () => Navigate(group)); button.Content = body; button.HorizontalContentAlignment = HorizontalAlignment.Stretch; button.Padding = new Thickness(16); button.MinHeight = 106; button.Margin = new Thickness(0, 0, 10, 10); Motion.HoverLift(button); groups.Children.Add(button);
         }
         normal.Children.Add(groups);
+        Motion.Stagger(groups.Children.OfType<FrameworkElement>(), 45);
         var recentTitle = Ui.Text(L.T("Recent screenshots"), 17, true); recentTitle.Margin = new Thickness(0, 14, 0, 12); normal.Children.Add(recentTitle);
         var recent = new UniformGrid { Columns = 3, Margin = new Thickness(0, 0, -10, 0) };
         foreach (var entry in controller.CaptureHistory.Entries.Take(3))
@@ -148,7 +148,14 @@ internal sealed partial class MainWindow
             var button = Ui.Button(L.T("Open screenshot"), () => controller.OpenRecentCapture(entry.Image)); button.Content = contents; button.HorizontalContentAlignment = HorizontalAlignment.Stretch; button.Padding = new Thickness(10); button.Margin = new Thickness(0, 0, 10, 0); recent.Children.Add(button);
         }
         normal.Children.Add(recent);
-        if (recent.Children.Count == 0) normal.Children.Add(Ui.Card(Ui.Text(L.T("Your recent screenshots appear here until you quit."), 12, muted: true), 16));
+        if (recent.Children.Count == 0)
+        {
+            var emptyRecent = new DockPanel();
+            var takeOne = Ui.ActionButton("Capture", L.T("Region capture"), () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(); }, ButtonKind.Primary);
+            takeOne.Margin = new Thickness(16, 0, 0, 0); takeOne.VerticalAlignment = VerticalAlignment.Center; DockPanel.SetDock(takeOne, Dock.Right); takeOne.IsEnabled = controller.Settings.CaptureEnabled;
+            emptyRecent.Children.Add(takeOne); emptyRecent.Children.Add(Ui.Text(L.T("Your recent screenshots appear here until you quit."), 12, muted: true));
+            normal.Children.Add(Ui.Card(emptyRecent, 16));
+        }
     }
     private static string GroupDescription(string group) => group switch
     {
@@ -170,12 +177,14 @@ internal sealed partial class MainWindow
         breadcrumb.Inlines.Add(new System.Windows.Documents.Run("   /   " + L.T(group ?? "Edit favorites")));
         breadcrumb.SetResourceReference(TextBlock.ForegroundProperty, "Muted"); page.Children.Add(breadcrumb);
         PageBanner(group ?? "Edit favorites", group == null ? "Use the star beside a tool to pin it here." : GroupDescription(group), NavigationIcon(group ?? "Star"));
-        foreach (var tool in DashboardTools().Where(t => group == null || t.Group == group)) page.Children.Add(DashboardRow(tool));
+        var categoryRows = new List<FrameworkElement>();
+        foreach (var tool in DashboardTools().Where(t => group == null || t.Group == group)) { var row = DashboardRow(tool); categoryRows.Add(row); page.Children.Add(row); }
+        Motion.Stagger(categoryRows, 30, 8);
     }
     private FrameworkElement DashboardRow(DashboardTool tool, bool trackState = true)
     {
         var row = new Grid { Margin = new Thickness(0, 10, 0, 0) }; row.ColumnDefinitions.Add(new ColumnDefinition()); row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var launch = Ui.Button(L.T(tool.Title), tool.Launch); launch.Tag = "launch-" + tool.Id; launch.Padding = new Thickness(12, 10, 12, 10); launch.MinHeight = 72; launch.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        var launch = Ui.Button(L.T(tool.Title), tool.Launch); launch.Tag = "launch-" + tool.Id; launch.Padding = new Thickness(12, 10, 12, 10); launch.MinHeight = 72; launch.HorizontalContentAlignment = HorizontalAlignment.Stretch; Motion.HoverLift(launch, 1.5);
         var contents = new DockPanel(); var art = ToolArtwork(tool.Id, tool.Icon, 48, plain: true); art.Margin = new Thickness(0, 0, 14, 0); DockPanel.SetDock(art, Dock.Left); contents.Children.Add(art);
         var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center }; text.Children.Add(Ui.Text(L.T(tool.Title), 14, true)); text.Children.Add(Ui.Text(L.T(tool.Detail), 12, muted: true)); contents.Children.Add(text); launch.Content = contents;
         row.Children.Add(launch);
@@ -193,6 +202,7 @@ internal sealed partial class MainWindow
     {
         var content = new StackPanel(); content.Children.Add(DashboardArt(tool.Icon, 64)); var title = Ui.Text(L.T(tool.Title), 13, true); title.Margin = new Thickness(0, 12, 0, 0); content.Children.Add(title);
         var button = Ui.Button(L.T(tool.Title), tool.Launch); button.Tag = "launch-" + tool.Id; button.Content = content; button.HorizontalContentAlignment = HorizontalAlignment.Stretch; button.Padding = new Thickness(12); button.Margin = new Thickness(0, 0, 10, 10);
+        Motion.HoverLift(button);
         void Refresh() => button.IsEnabled = tool.Enabled(); stateRefreshers.Add(Refresh); Refresh(); return button;
     }
     private static FrameworkElement DashboardArt(string icon, double size)

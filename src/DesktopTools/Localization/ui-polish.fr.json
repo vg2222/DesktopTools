@@ -1,0 +1,7 @@
+{
+  "Sound": "Son",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Encode avec la carte graphique. Désactivez si l'enregistrement saccade.",
+  "Start at playhead": "Début ici",
+  "End at playhead": "Fin ici",
+  "Resume": "Reprendre"
+}

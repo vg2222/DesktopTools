@@ -12,6 +12,8 @@ using System.Globalization;
 
 namespace DesktopTools.UI;
 
+internal enum ButtonKind { Secondary, Primary, Danger, Ghost }
+
 internal static class Ui
 {
     public static readonly DependencyProperty TrackPopupProperty = DependencyProperty.RegisterAttached("TrackPopup", typeof(bool), typeof(Ui),
@@ -44,6 +46,66 @@ internal static class Ui
         System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(b, true);
         if (primary) { b.SetResourceReference(Control.BackgroundProperty, "Accent"); b.SetResourceReference(Control.ForegroundProperty, "AccentText"); }
         Motion.ButtonFeedback(b); AutomationProperties.SetName(b, label); b.Click += (_, _) => action(); return b;
+    }
+    public static Button Button(string label, Action action, ButtonKind kind)
+    {
+        var b = Button(label, action, kind == ButtonKind.Primary);
+        switch (kind)
+        {
+            case ButtonKind.Danger:
+                b.BorderThickness = new Thickness(0); b.SetResourceReference(Control.BackgroundProperty, "Danger"); b.SetResourceReference(Control.ForegroundProperty, "AccentText"); break;
+            case ButtonKind.Ghost:
+                b.BorderThickness = new Thickness(0); b.Background = Brushes.Transparent; break;
+        }
+        return b;
+    }
+    /// <summary>Button with a leading icon so actions read at a glance instead of relying on tooltips.</summary>
+    public static Button ActionButton(string icon, string label, Action action, ButtonKind kind = ButtonKind.Secondary, double textSize = 13)
+    {
+        var b = Button(label, action, kind);
+        bool filled = kind is ButtonKind.Primary or ButtonKind.Danger;
+        b.Content = IconLabel(icon, label, 16, filled, textSize);
+        if (b.Content is StackPanel row && row.Children.Count == 2 && row.Children[1] is TextBlock text) text.FontWeight = FontWeights.SemiBold;
+        b.Padding = new Thickness(14, 7, 16, 7);
+        return b;
+    }
+    /// <summary>Titled settings block: tinted icon badge, heading, optional one-line help, then content.</summary>
+    public static Border Group(string icon, string title, string? help, params UIElement[] content)
+    {
+        var stack = new StackPanel();
+        var header = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
+        var badge = new Border { Width = 30, Height = 30, CornerRadius = new CornerRadius(9), Margin = new Thickness(0, 0, 11, 0), VerticalAlignment = VerticalAlignment.Top };
+        badge.SetResourceReference(Border.BackgroundProperty, "Selected");
+        var symbol = Icon(icon, 16); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.VerticalAlignment = VerticalAlignment.Center;
+        symbol.SetResourceReference(Shape.FillProperty, "Accent"); badge.Child = symbol; DockPanel.SetDock(badge, Dock.Left); header.Children.Add(badge);
+        var labels = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        labels.Children.Add(Text(title, 14, true));
+        if (help != null) { var hint = Text(help, 12, muted: true); hint.Margin = new Thickness(0, 2, 0, 0); labels.Children.Add(hint); }
+        header.Children.Add(labels); stack.Children.Add(header);
+        foreach (var child in content) stack.Children.Add(child);
+        var surface = new Border { Child = stack, Padding = new Thickness(16, 14, 16, 12), Margin = new Thickness(0, 0, 0, 12), CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1) };
+        surface.SetResourceReference(Border.BackgroundProperty, "Field"); surface.SetResourceReference(Border.BorderBrushProperty, "Stroke");
+        AutomationProperties.SetName(surface, title);
+        return surface;
+    }
+    /// <summary>Briefly swaps an icon button's glyph for a check mark to confirm a copy or save.</summary>
+    public static void Flash(Button button, string icon = "Check")
+    {
+        var original = button.Content;
+        var mark = Icon(icon, 19); button.Content = mark;
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1300) };
+        timer.Tick += (_, _) => { timer.Stop(); if (ReferenceEquals(button.Content, mark)) button.Content = original; };
+        timer.Start();
+    }
+    /// <summary>Slider with its caption on the left and the live value on the right.</summary>
+    public static StackPanel SliderField(string label, Slider slider, Func<double, string> format)
+    {
+        var head = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
+        var value = Text(format(slider.Value), 12, true, muted: true); DockPanel.SetDock(value, Dock.Right); head.Children.Add(value);
+        head.Children.Add(Text(label, 12));
+        slider.ValueChanged += (_, _) => value.Text = format(slider.Value);
+        AutomationProperties.SetName(slider, label);
+        var field = new StackPanel(); field.Children.Add(head); field.Children.Add(slider); return field;
     }
     public static Button IconButton(string icon, string label, Action action)
     {

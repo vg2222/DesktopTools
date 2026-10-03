@@ -13,8 +13,11 @@ internal static class MediaWorkspaceLayout
     {
         var stack = new StackPanel();
         var heading = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
-        var glyph = Ui.Icon(icon, 18); glyph.Margin = new Thickness(0, 1, 10, 0);
-        DockPanel.SetDock(glyph, Dock.Left); heading.Children.Add(glyph);
+        var glyph = Ui.Icon(icon, 16); glyph.HorizontalAlignment = HorizontalAlignment.Center; glyph.VerticalAlignment = VerticalAlignment.Center;
+        glyph.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "Accent");
+        var badge = new Border { Width = 32, Height = 32, CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 11, 0), VerticalAlignment = VerticalAlignment.Top, Child = glyph };
+        badge.SetResourceReference(Border.BackgroundProperty, "Selected");
+        DockPanel.SetDock(badge, Dock.Left); heading.Children.Add(badge);
         var copy = new StackPanel();
         copy.Children.Add(Ui.Text(L.T(title), 14, true));
         if (!string.IsNullOrWhiteSpace(detail))

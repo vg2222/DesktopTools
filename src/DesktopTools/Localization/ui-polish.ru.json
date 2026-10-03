@@ -1,0 +1,7 @@
+{
+  "Sound": "Звук",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Кодирует видео на видеокарте. Отключите, если запись подтормаживает.",
+  "Start at playhead": "Начало здесь",
+  "End at playhead": "Конец здесь",
+  "Resume": "Продолжить"
+}

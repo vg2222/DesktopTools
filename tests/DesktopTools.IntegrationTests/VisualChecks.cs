@@ -64,7 +64,7 @@ internal static class VisualChecks
                         if (page == "Shortcuts")
                         {
                             Check(Descendants(main).OfType<TextBox>().All(t => Equals(t.Tag, "shortcut-search")), "Shortcuts page exposes a binding text editor.");
-                            Check(Descendants(main).OfType<Button>().Count(b => b.Content is Border) >= 6, "Shortcut recorder launch buttons are missing.");
+                            Check(Descendants(main).OfType<Button>().Count(b => b.Content is Border || (b.Content is DependencyObject content && Descendants(content).OfType<Border>().Any())) >= 6, "Shortcut recorder launch buttons are missing.");
                         }
                         if (page == "Draw")
                         {
