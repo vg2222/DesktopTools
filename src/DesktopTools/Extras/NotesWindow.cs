@@ -23,6 +23,7 @@ internal sealed class NotesWindow : Window
     private readonly Border sheet;
     private readonly StackPanel empty;
     private readonly MenuItem delete;
+    private readonly DockPanel footer;
     private FloatingNote? selected;
 
     internal NotesWindow(IReadOnlyList<FloatingNote> notes, Action create, Action<FloatingNote> remove,
@@ -64,11 +65,11 @@ internal sealed class NotesWindow : Window
         floating.Content = Ui.IconLabel("Pin", L.T("Open as floating note")); floating.HorizontalAlignment = HorizontalAlignment.Left;
         floating.BorderThickness = new Thickness(0); floating.Background = Brushes.Transparent; toolbar.Children.Add(floating);
         var menu = new ContextMenu();
-        delete = new MenuItem { Header = L.T("Delete note") }; delete.Click += (_, _) => { if (selected != null) remove(selected); };
+        delete = new MenuItem { Header = L.T("Delete note"), Icon = Ui.Icon("Clear", 16) }; delete.SetResourceReference(Control.ForegroundProperty, "Danger"); delete.Click += (_, _) => { if (selected != null) remove(selected); };
         menu.Items.Add(delete);
         options.ContextMenu = menu; options.Click += (_, _) => { menu.PlacementTarget = options; menu.Placement = PlacementMode.Bottom; menu.IsOpen = true; };
         DockPanel.SetDock(toolbar, Dock.Top); content.Children.Add(toolbar);
-        var footer = new DockPanel { Margin = new Thickness(10, 16, 0, 0) };
+        footer = new DockPanel { Margin = new Thickness(10, 12, 0, 0), Visibility = Visibility.Collapsed };
         retry = Ui.Button(L.T("Retry saving"), () => { flush(); }); retry.Visibility = Visibility.Collapsed;
         DockPanel.SetDock(retry, Dock.Right); footer.Children.Add(retry); footer.Children.Add(status);
         DockPanel.SetDock(footer, Dock.Bottom); content.Children.Add(footer); content.Children.Add(editor);
@@ -97,8 +98,10 @@ internal sealed class NotesWindow : Window
     internal void Select(FloatingNote note) { selected = note; Refresh(); editor.BodyEditor.Focus(); }
     internal void SetSaved(bool saved, bool failed = false)
     {
-        status.Text = L.T(saved ? "Saved on this device" : failed ? "Could not save your changes" : "Saving…");
+        // Saving is automatic; only show the footer when something needs attention.
+        status.Text = failed ? L.T("Could not save your changes") : "";
         retry.Visibility = failed ? Visibility.Visible : Visibility.Collapsed;
+        footer.Visibility = failed ? Visibility.Visible : Visibility.Collapsed;
     }
     internal void Refresh()
     {
