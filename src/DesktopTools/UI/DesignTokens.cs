@@ -16,9 +16,6 @@ internal static class DesignTokens
     internal static void ApplySurfaces(ResourceDictionary resources, bool transparency)
     {
         var surface = ((SolidColorBrush)resources["Surface"]).Color;
-        // A custom background tints the shell, rather than hiding the native backdrop.
-        byte shellAlpha = transparency && !SystemParameters.HighContrast ? (byte)150 : (byte)255;
-        resources["Shell"] = new SolidColorBrush(Color.FromArgb(shellAlpha, surface.R, surface.G, surface.B));
         if (!transparency || SystemParameters.HighContrast)
         {
             resources["GlassSurface"] = resources["Surface"];

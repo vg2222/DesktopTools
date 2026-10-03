@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +9,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Automation;
 using System.Windows.Threading;
-using System.Windows.Interop;
 using DesktopTools;
 using DesktopTools.Core;
 using DesktopTools.Extras;
@@ -20,7 +18,6 @@ using DesktopTools.UI;
 
 internal static class AutomationUiChecks
 {
-    [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(nint window,int attribute,out int value,int size);
     internal static async Task RunAsync()
     {
         string language=L.Language;var failures=new System.Collections.Generic.List<string>();
@@ -29,10 +26,11 @@ internal static class AutomationUiChecks
         service.Save([new(){Name="Workflow fixture",Steps=[new(){Kind=AutomationKind.Wait,Value=2000},new(){Kind=AutomationKind.Repeat,Value=2},new(){Kind=AutomationKind.Wait,Value=1000},new(){Kind=AutomationKind.EndRepeat}]}]);
         controller.UpdateSettings(s=>{s.Theme="Dark";s.UseCustomBackground=true;s.BackgroundColor="#101827";s.Transparency=true;s.Animations=false;});
         try{
-            if(Application.Current.Resources["Shell"] is SolidColorBrush shell&&shell.Color.A==255)failures.Add("Custom background blocks desktop transparency");
+            var expectedCustom=Color.FromRgb(16,24,39);
+            if(Application.Current.Resources["Shell"] is not SolidColorBrush shell||shell.Color!=expectedCustom)failures.Add("Custom shell color differs from the previous appearance");
             L.Use("ru");
             var window=new AutomationWindow(service);window.Show();await Task.Delay(100);window.UpdateLayout();Save(window,"automation-ui-polished.png");
-            if(window.Content is Border surface&&surface.Background is SolidColorBrush solid&&solid.Color.A==255)failures.Add("Automation root blocks acrylic");
+            if(window.Content is not Border surface||surface.Background is not SolidColorBrush solid||solid.Color!=expectedCustom)failures.Add("Automation background changes the selected color");
             var steps=(ListBox)typeof(AutomationWindow).GetField("steps",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(window)!;
             var first=(ListBoxItem)steps.Items[0];
             var move=Descendants(first).OfType<Button>().Single(b=>AutomationProperties.GetName(b)==L.T("Move down"));move.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.UpdateLayout();
@@ -83,33 +81,28 @@ internal static class AutomationUiChecks
                     var scroll=Descendants(settings).OfType<ScrollViewer>().First();if(scroll.ScrollableHeight<=0)failures.Add("Small settings cannot scroll");scroll.ScrollToEnd();settings.UpdateLayout();Save(settings,"automation-settings-small-"+locale+".png");
                 }finally{settings.Close();}
             }
-            await BackdropPixels(controller,service);
-            controller.UpdateSettings(s=>s.Transparency=false);
-            if(Application.Current.Resources["Shell"] is not SolidColorBrush opaque||opaque.Color.A!=255)failures.Add("Transparency off must be opaque");
+            await BackgroundColors(controller,service);
             if(failures.Count>0)throw new Exception(string.Join("; ",failures));
         }finally{L.Use(language);}
     }
-    private static async Task BackdropPixels(AppController controller,AutomationService service)
+    private static async Task BackgroundColors(AppController controller,AutomationService service)
     {
-        var monitor=MonitorService.GetCurrent();
-        var background=new Window{Title="Owned backdrop fixture",WindowStyle=WindowStyle.None,Left=monitor.WorkingArea.Left/monitor.ScaleX,Top=monitor.WorkingArea.Top/monitor.ScaleY,Width=monitor.WorkingArea.Width/monitor.ScaleX,Height=monitor.WorkingArea.Height/monitor.ScaleY,ShowInTaskbar=false,Background=new SolidColorBrush(Color.FromRgb(30,130,220))};
-        background.Show();
-        var window=new AutomationWindow(service){Width=1040,Height=650,Topmost=true};window.Show();window.Activate();await Task.Delay(250);
-        try{
-            nint handle=new WindowInteropHelper(window).Handle;NativeWindowService.TryExcludeFromCapture(window,false,out _);NativeWindowService.TryExcludeFromCapture(background,false,out _);
-            var p=window.PointToScreen(new Point(40,window.ActualHeight-110));
-            byte[] Pixel(){NativeWindowService.SynchronizeDesktop();var source=CaptureService.Capture(new MonitorInfo("Owned pixel",new Rect(p.X,p.Y,1,1),Rect.Empty,1,1));var bytes=new byte[4];new FormatConvertedBitmap(source,PixelFormats.Bgra32,null,0).CopyPixels(bytes,4,0);return bytes;}
-            byte[] first=Pixel();var firstOrigin=window.PointToScreen(new Point());var firstDpi=VisualTreeHelper.GetDpi(window);SaveBitmap(CaptureService.Capture(new MonitorInfo("Owned window",new Rect(firstOrigin.X,firstOrigin.Y,Math.Floor(window.ActualWidth*firstDpi.DpiScaleX),Math.Floor(window.ActualHeight*firstDpi.DpiScaleY)),Rect.Empty,1,1)),"automation-native-acrylic-first.png");background.Background=new SolidColorBrush(Color.FromRgb(220,60,120));await Task.Delay(400);byte[] second=Pixel();
-            DwmGetWindowAttribute(handle,38,out int backdrop,sizeof(int));
-            Console.WriteLine($"Backdrop fixture: type={backdrop}, foreground={NativeWindowService.GetForegroundWindowHandle()}, window={handle}, first={string.Join(",",first)}, second={string.Join(",",second)}, brush={((Border)window.Content).Background}");
-            if(backdrop==3 && NativeWindowService.GetForegroundWindowHandle()==handle){
-                if(first.Take(3).Zip(second.Take(3),(a,b)=>Math.Abs(a-b)).Sum()<5)throw new Exception("Native backdrop is enabled but an opaque layer still hides desktop color");
-                Console.WriteLine("PASS native acrylic changes with the owned background color");
-            }else Console.WriteLine("NOT TESTED: active acrylic pixels (system unavailable or Windows refused foreground ownership); translucent resources and opaque fallback verified");
-            var origin=window.PointToScreen(new Point());var dpi=VisualTreeHelper.GetDpi(window);SaveBitmap(CaptureService.Capture(new MonitorInfo("Owned window",new Rect(origin.X,origin.Y,Math.Floor(window.ActualWidth*dpi.DpiScaleX),Math.Floor(window.ActualHeight*dpi.DpiScaleY)),Rect.Empty,1,1)),"automation-native-acrylic.png");
-            controller.UpdateSettings(s=>s.Transparency=false);NativeWindowService.ApplyBackdrop(window,true,false);
-            if(window.Background is not SolidColorBrush solid||solid.Color.A!=255)throw new Exception("Native opaque fallback missing");
-        }finally{window.Close();background.Close();}
+        foreach(string theme in new[]{"Light","Dark"})foreach(bool custom in new[]{false,true})foreach(bool transparent in new[]{false,true}){
+            controller.UpdateSettings(s=>{s.Theme=theme;s.UseCustomBackground=custom;s.BackgroundColor="#101827";s.Transparency=transparent;s.Animations=false;});
+            Color expected=(Color)ColorConverter.ConvertFromString(custom?"#101827":theme=="Dark"?"#060606":"#F3F5FA");
+            Color expectedShell=custom?expected:(Color)ColorConverter.ConvertFromString(theme=="Dark"?"#D0121316":"#B3F3F5FA");
+            if(Application.Current.Resources["Shell"] is not SolidColorBrush shell||shell.Color!=expectedShell)throw new Exception("Original shell palette changed");
+            var window=new AutomationWindow(service);window.Show();await Task.Delay(40);window.UpdateLayout();
+            try{
+                if(window.Content is not Border root||root.Background is not SolidColorBrush fill||fill.Color!=expected||root.Margin!=new Thickness(0))throw new Exception("Original tool background color or no-gap layout changed");
+                if(Descendants(window).OfType<Border>().Any(b=>b.Background is LinearGradientBrush))throw new Exception("Automation inspector still uses the rejected background gradient");
+                var inspector=Descendants(window).OfType<Border>().Single(b=>b.Child is ScrollViewer&&b.Padding==new Thickness(16));
+                if(!ReferenceEquals(inspector.Background,Application.Current.Resources["Card"]))throw new Exception("Original inspector card palette changed");
+                Save(window,$"automation-background-{theme}-{custom}-{transparent}.png");
+                NativeWindowService.ApplyBackdrop(window,theme=="Dark",false);
+                if(window.Background is not SolidColorBrush fallback||fallback.Color!=expected)throw new Exception("Opaque fallback differs from the selected color");
+            }finally{window.Close();}
+        }
     }
     internal static async Task PreviewAsync()
     {

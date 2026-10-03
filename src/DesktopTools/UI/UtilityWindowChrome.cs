@@ -35,12 +35,11 @@ internal static class UtilityWindowChrome
     private static void LoadedBackdrop(object sender, RoutedEventArgs args)
     {
         var window = (Window)sender; window.Loaded -= LoadedBackdrop;
-        // The outer surface must fill the client area and allow the native material to show.
+        // Preserve the selected app color and fill the client area without a footer gap.
         if (window.Content is Border surface)
         {
             surface.Margin = new Thickness(0);
-            surface.SetResourceReference(Border.BackgroundProperty, "GlassSurface");
-            surface.SetResourceReference(Border.BorderBrushProperty, "GlassRim");
+            surface.SetResourceReference(Border.BackgroundProperty, "Surface");
         }
         ApplyBackdrop(window); ClipContent(window);
     }

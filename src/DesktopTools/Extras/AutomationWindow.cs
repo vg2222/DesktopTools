@@ -64,7 +64,7 @@ internal sealed partial class AutomationWindow : Window
         var help=Ui.Text(L.T("Add an action, record your inputs or choose a template."),12,muted:true);help.TextAlignment=TextAlignment.Center;help.Margin=new Thickness(0,8,0,16);hint.Children.Add(help);
         var add=EditButton("Add action",OpenActions,true,"Plus");add.HorizontalAlignment=HorizontalAlignment.Center;hint.Children.Add(add);empty=hint;canvas.Children.Add(hint);
         center.Children.Add(canvas);Grid.SetColumn(center,1);columns.Children.Add(center);
-        var inspector=Ui.Card(Scroll(details),16);inspector.Margin=new Thickness(0);inspector.CornerRadius=new CornerRadius(12);inspector.SetResourceReference(Border.BackgroundProperty,"GlassSurface");Grid.SetColumn(inspector,2);columns.Children.Add(inspector);
+        var inspector=Ui.Card(Scroll(details),16);inspector.Margin=new Thickness(0);inspector.CornerRadius=new CornerRadius(12);Grid.SetColumn(inspector,2);columns.Children.Add(inspector);
         root.Children.Add(columns);
         var card=Ui.Card(root,18);card.Margin=new Thickness(0);Content=card;
         editable.AddRange([scripts,steps,name,details]);
