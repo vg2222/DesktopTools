@@ -3,5 +3,13 @@
   "Uses the graphics card to encode. Turn off if recordings stutter.": "Kodiert mit der Grafikkarte. Ausschalten, wenn die Aufnahme ruckelt.",
   "Start at playhead": "Start hier",
   "End at playhead": "Ende hier",
-  "Resume": "Fortsetzen"
+  "Resume": "Fortsetzen",
+  "Lock in place (click through)    Ctrl+L": "Fixieren (Klicks durchlassen)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Screenshots lassen sich wieder bewegen.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "Der Screenshot ist fixiert: Klicks gehen hindurch. Zum Entsperren klicken Sie mit der rechten Maustaste auf das DesktopTools-Symbol im Infobereich und wählen „Angeheftete Screenshots entsperren“.",
+  "Unlock": "Entsperren",
+  "Close screenshot": "Screenshot schließen",
+  "Unlock pinned screenshots": "Angeheftete Screenshots entsperren",
+  "Close pinned screenshots": "Angeheftete Screenshots schließen",
+  "A pinned screenshot is locked and ignores the mouse.": "Ein angehefteter Screenshot ist gesperrt und ignoriert die Maus."
 }

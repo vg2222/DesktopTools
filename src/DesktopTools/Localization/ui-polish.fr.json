@@ -3,5 +3,13 @@
   "Uses the graphics card to encode. Turn off if recordings stutter.": "Encode avec la carte graphique. Désactivez si l'enregistrement saccade.",
   "Start at playhead": "Début ici",
   "End at playhead": "Fin ici",
-  "Resume": "Reprendre"
+  "Resume": "Reprendre",
+  "Lock in place (click through)    Ctrl+L": "Verrouiller (clics traversants)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Les captures épinglées sont de nouveau déplaçables.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "La capture est verrouillée : les clics la traversent. Pour la déverrouiller, faites un clic droit sur l'icône DesktopTools de la zone de notification et choisissez « Déverrouiller les captures épinglées ».",
+  "Unlock": "Déverrouiller",
+  "Close screenshot": "Fermer la capture",
+  "Unlock pinned screenshots": "Déverrouiller les captures épinglées",
+  "Close pinned screenshots": "Fermer les captures épinglées",
+  "A pinned screenshot is locked and ignores the mouse.": "Une capture épinglée est verrouillée et ignore la souris."
 }

@@ -9,7 +9,9 @@ namespace DesktopTools.UI;
 
 internal sealed class TrayMenuPopup : Popup
 {
-    internal TrayMenuPopup(Action open, Action recorder, Action pinScreenshot, Action quickActions, Action quit)
+    private readonly List<UIElement> lockedPinActions = [];
+    internal TrayMenuPopup(Action open, Action recorder, Action pinScreenshot, Action quickActions, Action quit,
+        Action? unlockPins = null, Action? closePins = null, Func<bool>? hasLockedPins = null)
     {
         AllowsTransparency = true;
         StaysOpen = false;
@@ -25,6 +27,8 @@ internal sealed class TrayMenuPopup : Popup
         AddAction("Home", "Open DesktopTools", open, true);
         AddAction("Record", "Screen recorder", recorder);
         AddAction("Pin", "Pin screenshot", pinScreenshot);
+        if (unlockPins != null) lockedPinActions.Add(AddAction("Pin", "Unlock pinned screenshots", unlockPins, accent: true));
+        if (closePins != null) lockedPinActions.Add(AddAction("Close", "Close pinned screenshots", closePins));
         AddAction("More", "Quick actions", quickActions);
 
         var divider = new Border { Height = 1, Margin = new Thickness(4, 9, 4, 8) };
@@ -35,9 +39,12 @@ internal sealed class TrayMenuPopup : Popup
         card.SetResourceReference(Border.BackgroundProperty, "Card"); card.SetResourceReference(Border.BorderBrushProperty, "Stroke");
         Child = card;
         Opened += (_, _) => Ui.ExcludePopup(card);
+        // Only offer the unlock actions while a screenshot is actually locked.
+        Opened += (_, _) => { foreach (var action in lockedPinActions) action.Visibility = hasLockedPins?.Invoke() == true ? Visibility.Visible : Visibility.Collapsed; };
+        foreach (var action in lockedPinActions) action.Visibility = Visibility.Collapsed;
         card.PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { IsOpen = false; e.Handled = true; } };
 
-        void AddAction(string icon, string label, Action action, bool primary = false)
+        Button AddAction(string icon, string label, Action action, bool primary = false, bool accent = false)
         {
             var button = Ui.Button(L.T(label), () =>
             {
@@ -48,7 +55,9 @@ internal sealed class TrayMenuPopup : Popup
             button.HorizontalContentAlignment = HorizontalAlignment.Left;
             button.Margin = new Thickness(0, 2, 0, 2);
             button.MinHeight = 39;
+            if (accent) { button.SetResourceReference(Control.BackgroundProperty, "Selected"); button.SetResourceReference(Control.BorderBrushProperty, "Accent"); }
             content.Children.Add(button);
+            return button;
         }
     }
 }

@@ -177,6 +177,17 @@ internal sealed partial class MainWindow
         breadcrumb.Inlines.Add(new System.Windows.Documents.Run("   /   " + L.T(group ?? "Edit favorites")));
         breadcrumb.SetResourceReference(TextBlock.ForegroundProperty, "Muted"); page.Children.Add(breadcrumb);
         PageBanner(group ?? "Edit favorites", group == null ? "Use the star beside a tool to pin it here." : GroupDescription(group), NavigationIcon(group ?? "Star"));
+        if ((group == "Capture tools") && controller.HasLockedPins)
+        {
+            // A locked (click-through) screenshot cannot be clicked, so offer the way back here as well.
+            var lockedNotice = new StackPanel();
+            lockedNotice.Children.Add(Ui.Text(L.T("A pinned screenshot is locked and ignores the mouse."), 14, true));
+            var lockedActions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+            lockedActions.Children.Add(Ui.ActionButton("Pin", L.T("Unlock"), () => { controller.UnlockPinnedImages(); Navigate("Capture tools"); }, ButtonKind.Primary));
+            lockedActions.Children.Add(Ui.ActionButton("Close", L.T("Close screenshot"), () => { controller.ClosePinnedImages(); Navigate("Capture tools"); }));
+            lockedNotice.Children.Add(lockedActions);
+            page.Children.Add(Ui.Card(lockedNotice, 16));
+        }
         var categoryRows = new List<FrameworkElement>();
         foreach (var tool in DashboardTools().Where(t => group == null || t.Group == group)) { var row = DashboardRow(tool); categoryRows.Add(row); page.Children.Add(row); }
         Motion.Stagger(categoryRows, 30, 8);

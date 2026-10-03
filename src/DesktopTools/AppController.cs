@@ -209,7 +209,7 @@ internal sealed partial class AppController : IDisposable
                 if (e.Button == Forms.MouseButtons.Left) { trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); OpenMain(); }
                 else if (e.Button == Forms.MouseButtons.Right)
                 {
-                    trayMenu ??= new TrayMenuPopup(OpenMain, OpenScreenRecorder, PinLast, () => OpenQuickWheel(), () => _ = QuitAsync());
+                    trayMenu ??= new TrayMenuPopup(OpenMain, OpenScreenRecorder, PinLast, () => OpenQuickWheel(), () => _ = QuitAsync(), UnlockPinnedImages, ClosePinnedImages, () => HasLockedPins);
                     trayMenu.IsOpen = !trayMenu.IsOpen;
                 }
             };
@@ -706,7 +706,28 @@ internal sealed partial class AppController : IDisposable
         notice.Closed += (_, _) => { if (captureNotice == notice) captureNotice = null; };
         notice.Show();
     }
-    public void PinLast() { if (!FeatureAvailability.IsAvailable(Settings, "pin")) return; if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; } var window = new PinnedImageWindow(LastCapture, Report); window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window); }
+    private readonly List<PinnedImageWindow> pinnedImages = [];
+    internal bool HasLockedPins => pinnedImages.Any(pin => pin.IsLocked);
+    /// <summary>Makes every click-through screenshot interactive again.</summary>
+    public void UnlockPinnedImages()
+    {
+        var locked = pinnedImages.Where(pin => pin.IsLocked).ToArray();
+        foreach (var pin in locked) pin.SetLocked(false);
+        if (locked.Length > 0) Report(L.T("Pinned screenshots unlocked."));
+    }
+    /// <summary>Closes the screenshots that are click-through (they cannot be closed by clicking them).</summary>
+    public void ClosePinnedImages() { foreach (var pin in pinnedImages.Where(pin => pin.IsLocked).ToArray()) pin.Close(); }
+    private void ShowPinLockedNotice()
+    {
+        if (smoke) return;
+        statusNotice?.Close();
+        var notice = new NotificationWindow(L.T("The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots."),
+            NotificationKind.Info, main, Settings.MessageNotificationStyle,
+            actions: new (string, Action)[] { (L.T("Unlock"), UnlockPinnedImages), (L.T("Close screenshot"), ClosePinnedImages) }, seconds: 14);
+        notice.Closed += (_, _) => { if (statusNotice == notice) statusNotice = null; };
+        statusNotice = notice; notice.Show();
+    }
+    public void PinLast() { if (!FeatureAvailability.IsAvailable(Settings, "pin")) return; if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; } var window = new PinnedImageWindow(LastCapture, Report); pinnedImages.Add(window); window.Locked += _ => ShowPinLockedNotice(); window.Closed += (_, _) => pinnedImages.Remove(window); window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window); }
     public void RedactLast()
     {
         if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; }
