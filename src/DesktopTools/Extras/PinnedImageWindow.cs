@@ -21,6 +21,10 @@ public sealed class PinnedImageWindow : Window
     private readonly Button _compact;
     private readonly ContextMenu _menu;
     private readonly Action<string> _report;
+    /// <summary>True while mouse input passes straight through the screenshot to the window underneath.</summary>
+    public bool IsLocked { get; private set; }
+    /// <summary>Raised after the screenshot becomes click-through, so the app can tell the user how to undo it.</summary>
+    public event Action<PinnedImageWindow>? Locked;
 
     public PinnedImageWindow(BitmapSource image, Action<string> report)
     {
@@ -58,6 +62,7 @@ public sealed class PinnedImageWindow : Window
             item.SetResourceReference(Control.BackgroundProperty, "Card"); item.SetResourceReference(Control.ForegroundProperty, "Text");
             item.Click += (_, _) => action(); _menu.Items.Add(item);
         }
+        MenuAction(L.T("Lock in place (click through)    Ctrl+L"), () => SetLocked(true)); _menu.Items.Add(new Separator());
         MenuAction(L.T("Copy image    Ctrl+C"), Copy); MenuAction(L.T("Save PNG    Ctrl+S"), Save);
         MenuAction(L.T("Opacity 100%"), () => opacity.Value = 1); MenuAction(L.T("Opacity 75%"), () => opacity.Value = .75); MenuAction(L.T("Opacity 50%"), () => opacity.Value = .5);
         MenuAction(L.T("Enlarge    Ctrl++"), () => ScaleImage(1.1)); MenuAction(L.T("Shrink    Ctrl+-"), () => ScaleImage(1 / 1.1)); MenuAction(L.T("Close    Esc"), Close);
@@ -84,6 +89,17 @@ public sealed class PinnedImageWindow : Window
         double width = Math.Clamp(Width + change, Math.Min(10000, Math.Max(24, 24 * _ratio)), 10000);
         Width = width; Height = width / _ratio;
     }
+    /// <summary>Makes the screenshot ignore the mouse (it cannot be moved, hovered or clicked) or restores normal behaviour.</summary>
+    public void SetLocked(bool locked)
+    {
+        if (IsLocked == locked) return;
+        _menu.IsOpen = false;
+        try { NativeWindowService.SetClickThrough(this, locked); }
+        catch (System.ComponentModel.Win32Exception ex) { _report(ex.Message); return; }
+        IsLocked = locked;
+        UpdateControls();
+        if (locked) Locked?.Invoke(this);
+    }
     private void Hover(object sender, MouseEventArgs e) => UpdateControls();
     private void FocusChanged(object sender, DependencyPropertyChangedEventArgs e) => UpdateControls();
     private void Resized(object sender, SizeChangedEventArgs e) => UpdateControls();
@@ -94,7 +110,7 @@ public sealed class PinnedImageWindow : Window
     private void ScaleImage(double scale) { Width = Math.Clamp(Width * scale, Math.Min(10000, Math.Max(24, 24 * _ratio)), 10000); Height = Width / _ratio; }
     private void UpdateControls()
     {
-        var visible = IsMouseOver || IsKeyboardFocusWithin;
+        var visible = !IsLocked && (IsMouseOver || IsKeyboardFocusWithin);
         bool full = ActualWidth >= 320 && ActualHeight >= 90;
         _toolbar.Visibility = visible && full ? Visibility.Visible : Visibility.Collapsed;
         _compact.Visibility = visible && !full && ActualWidth >= 32 && ActualHeight >= 32 ? Visibility.Visible : Visibility.Collapsed;
@@ -104,6 +120,7 @@ public sealed class PinnedImageWindow : Window
     {
         if (e.Key == Key.Apps || (e.Key == Key.F10 && Keyboard.Modifiers == ModifierKeys.Shift)) { _menu.PlacementTarget = this; _menu.Placement = PlacementMode.MousePoint; _menu.IsOpen = true; e.Handled = true; }
         else if (e.Key == Key.Escape) { Close(); e.Handled = true; }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.L) { SetLocked(true); e.Handled = true; }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C) { Copy(); e.Handled = true; }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S) { Save(); e.Handled = true; }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.Add or Key.Subtract or Key.OemPlus or Key.OemMinus)

@@ -3,5 +3,13 @@
   "Uses the graphics card to encode. Turn off if recordings stutter.": "Кодирует видео на видеокарте. Отключите, если запись подтормаживает.",
   "Start at playhead": "Начало здесь",
   "End at playhead": "Конец здесь",
-  "Resume": "Продолжить"
+  "Resume": "Продолжить",
+  "Lock in place (click through)    Ctrl+L": "Закрепить на месте (сквозной клик)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Скриншоты снова можно двигать.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "Скриншот закреплён: клики проходят сквозь него. Чтобы вернуть управление, нажмите правой кнопкой на значок DesktopTools в трее и выберите «Разблокировать закреплённые скриншоты».",
+  "Unlock": "Разблокировать",
+  "Close screenshot": "Закрыть скриншот",
+  "Unlock pinned screenshots": "Разблокировать закреплённые скриншоты",
+  "Close pinned screenshots": "Закрыть закреплённые скриншоты",
+  "A pinned screenshot is locked and ignores the mouse.": "Закреплённый скриншот заблокирован и не реагирует на мышь."
 }
