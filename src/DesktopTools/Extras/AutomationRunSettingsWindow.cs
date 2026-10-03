@@ -26,23 +26,18 @@ internal sealed class AutomationRunSettingsWindow : Window
                 AutomationProgram.Compile(draft);
                 if(draft.Shortcut.Length>0&&!HotkeyGesture.TryParse(draft.Shortcut,out _,out var message))throw new ArgumentException(message);
                 string? failure=apply(draft);if(failure!=null)throw new InvalidOperationException(failure);Close();
-            }catch(Exception e){error.Text=e.Message;errorBox.Visibility=Visibility.Visible;}
+            }catch(Exception e){error.Text=e.Message;errorBox.Visibility=Visibility.Visible;Motion.Transition(errorBox);}
         },true);save.IsDefault=true;save.Content=Ui.IconLabel("Save",L.T("Save"),16,true,12);buttons.Children.Add(save);footer.Children.Add(buttons);DockPanel.SetDock(footer,Dock.Bottom);root.Children.Add(footer);
         var fields=new StackPanel();
         void Heading(string icon,string label){var text=Ui.IconLabel(icon,L.T(label),18,textSize:15);text.Margin=new Thickness(0,12,0,8);fields.Children.Add(text);}
         TextBox Field(Panel panel,string label,string value,Action<string> change,string? hint=null){
             var text=Ui.Text(L.T(label),12,muted:true);text.Margin=new Thickness(0,10,0,5);panel.Children.Add(text);
-            var input=new TextBox{Text=value,MinHeight=36};AutomationProperties.SetName(input,L.T(label));input.TextChanged+=(_,_)=>change(input.Text);
-            if(hint==null)panel.Children.Add(input);
-            else{
-                var field=new Grid();field.Children.Add(input);var watermark=Ui.Text(hint,11,muted:true);watermark.Margin=new Thickness(12,0,12,0);watermark.IsHitTestVisible=false;field.Children.Add(watermark);
-                void Refresh()=>watermark.Visibility=input.Text.Length==0?Visibility.Visible:Visibility.Collapsed;
-                input.TextChanged+=(_,_)=>Refresh();Refresh();panel.Children.Add(field);
-            }
+            var input=new TextBox{Text=value,MinHeight=40,Padding=new Thickness(12,7,12,7)};AutomationProperties.SetName(input,L.T(label));input.TextChanged+=(_,_)=>change(input.Text);
+            if(hint!=null)AutomationTextInput.Hint(input,hint);panel.Children.Add(input);
             return input;
         }
         void Picker(Panel panel,TextBox input,string icon,string label,Action click){
-            UIElement content=input.Parent is Grid field?field:input;
+            UIElement content=input;
             panel.Children.Remove(content);var row=new DockPanel();var button=Ui.IconButton(icon,L.T(label),click);button.Margin=new Thickness(6,0,0,0);DockPanel.SetDock(button,Dock.Right);row.Children.Add(button);row.Children.Add(content);panel.Children.Add(row);
         }
         Heading("Window","Target window");
@@ -62,6 +57,6 @@ internal sealed class AutomationRunSettingsWindow : Window
         fields.Children.Add(Ui.Row(L.T("Run when DesktopTools starts"),null,Ui.Toggle(draft.RunOnStartup,v=>draft.RunOnStartup=v)));
         var hint=Ui.Text(L.T("Triggers run while DesktopTools is open."),11,muted:true);hint.Margin=new Thickness(0,10,0,8);Ui.Tip(hint,L.T("Save to apply triggers. Missed daily runs are not replayed after restarting."));fields.Children.Add(hint);
         var scroll=new ScrollViewer{Content=fields,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled};scroll.SetResourceReference(StyleProperty,"PageScroller");SmoothScroll.Enable(scroll);root.Children.Add(scroll);
-        var card=Ui.Card(root,20);card.Margin=new Thickness(0);Content=card;
+        var card=Ui.Card(root,20);card.Margin=new Thickness(0);Content=card;Loaded+=(_,_)=>Motion.ModalEntrance(card);
     }
 }

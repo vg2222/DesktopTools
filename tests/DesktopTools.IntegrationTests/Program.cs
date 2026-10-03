@@ -37,6 +37,7 @@ internal static class Program
             {
                 if (args.Contains("--auto-redact-only")) await Test("Auto Redact manual review and capture privacy", AutoRedactChecks.RunAsync);
                 else if (args.Contains("--automation-ui-preview")) await Test("Automation UI preview", AutomationUiChecks.PreviewAsync);
+                else if (args.Contains("--automation-interaction-only")) await Test("Automation motion and custom save prompt", AutomationInteractionChecks.RunAsync);
                 else if (args.Contains("--automation-ui-only")) await Test("Automation controls, HUD and background colors", AutomationUiChecks.RunAsync);
                 else if (args.Contains("--automation-only")) await Test("Desktop Automation UI, playback and lifecycle", AutomationChecks.RunAsync);
                 else if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);

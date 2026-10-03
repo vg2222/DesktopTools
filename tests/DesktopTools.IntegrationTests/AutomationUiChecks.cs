@@ -58,7 +58,7 @@ internal static class AutomationUiChecks
             var libraryTimer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(160)};Exception? libraryError=null;
             libraryTimer.Tick+=(_,_)=>{libraryTimer.Stop();var dialog=Application.Current.Windows.OfType<Window>().Single(w=>w.Owner==window);try{
                 dialog.Width=dialog.MinWidth;dialog.Height=dialog.MinHeight;dialog.UpdateLayout();
-                var search=Descendants(dialog).OfType<TextBox>().Single(t=>AutomationProperties.GetName(t)==L.T("Search actions"));search.Text="no-such-action-unique";dialog.UpdateLayout();
+                var search=Descendants(dialog).OfType<TextBox>().Single(t=>AutomationProperties.GetName(t)==L.T("Search actions"));CheckInputAlignment(search,L.T("Search actions"),failures);search.Text="no-such-action-unique";dialog.UpdateLayout();
                 if(!Descendants(dialog).OfType<TextBlock>().Any(t=>t.Text==L.T("No matching actions")))throw new Exception("Action search lost its empty state");
                 Save(dialog,"automation-library-small-empty.png");search.Clear();dialog.UpdateLayout();Save(dialog,"automation-library-small.png");
                 if(dialog.Content is not Border surface||surface.Margin!=new Thickness(0))throw new Exception("Action library has a footer gap");
@@ -73,6 +73,7 @@ internal static class AutomationUiChecks
                 hud.Close();
                 var settings=new AutomationRunSettingsWindow(new AutomationScript(),_=>null,(_,_)=>{});settings.Width=settings.MinWidth;settings.Height=settings.MinHeight;settings.Show();await Task.Delay(60);settings.UpdateLayout();
                 try{
+                    CheckInputAlignment(Descendants(settings).OfType<TextBox>().Single(t=>AutomationProperties.GetName(t)==L.T("Daily at")),"HH:mm",failures);
                     foreach(var label in new[]{"Cancel","Save"}){
                         var button=Descendants(settings).OfType<Button>().Single(b=>AutomationProperties.GetName(b)==L.T(label));var position=button.TranslatePoint(new Point(),settings);
                         if(position.X<0||position.Y<0||position.X+button.ActualWidth>settings.ActualWidth||position.Y+button.ActualHeight>settings.ActualHeight-8)failures.Add("Run settings footer is clipped: "+locale+" "+label);
@@ -103,6 +104,16 @@ internal static class AutomationUiChecks
                 if(window.Background is not SolidColorBrush fallback||fallback.Color!=expected)throw new Exception("Opaque fallback differs from the selected color");
             }finally{window.Close();}
         }
+    }
+    private static void CheckInputAlignment(TextBox input,string hint,System.Collections.Generic.List<string> failures)
+    {
+        string original=input.Text;input.Clear();var window=Window.GetWindow(input);window.UpdateLayout();
+        var placeholder=Descendants(window).OfType<TextBlock>().Single(t=>t.Text==hint);var caret=input.GetRectFromCharacterIndex(0);var origin=placeholder.TranslatePoint(new Point(),input);
+        Console.WriteLine($"Field spacing {AutomationProperties.GetName(input)}: font={input.FontSize}/{placeholder.FontSize}, caret={caret}, hint={origin}, height={input.ActualHeight}");
+        if(Math.Abs(input.FontSize-placeholder.FontSize)>.01||input.FontFamily.Source!=placeholder.FontFamily.Source||Math.Abs(caret.X-origin.X)>1.5||Math.Abs(caret.Y-origin.Y)>2)failures.Add("Placeholder differs from text/caret alignment: "+AutomationProperties.GetName(input));
+        input.Text="18:30";window.UpdateLayout();var typed=input.GetRectFromCharacterIndex(0);
+        if(Math.Abs(typed.X-caret.X)>.5||Math.Abs(typed.Y-caret.Y)>.5)failures.Add("Typing moves text inside the field: "+AutomationProperties.GetName(input));
+        input.Text=original;
     }
     internal static async Task PreviewAsync()
     {

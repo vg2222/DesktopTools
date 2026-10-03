@@ -16,7 +16,7 @@ internal sealed partial class AutomationWindow
     private TextBox Field(Panel panel,string label,string text,Action<string> change,bool multiline=false)
     {
         var title=Ui.Text(L.T(label),12,muted:true);title.Margin=new Thickness(0,14,0,6);panel.Children.Add(title);
-        var input=new TextBox{Text=text,MinHeight=multiline?110:36,MaxHeight=multiline?200:36,MaxLength=20000,AcceptsReturn=multiline,TextWrapping=multiline?TextWrapping.Wrap:TextWrapping.NoWrap,VerticalScrollBarVisibility=multiline?ScrollBarVisibility.Auto:ScrollBarVisibility.Hidden};
+        var input=new TextBox{Text=text,MinHeight=multiline?110:40,MaxHeight=multiline?200:40,Padding=new Thickness(12,7,12,7),MaxLength=20000,AcceptsReturn=multiline,TextWrapping=multiline?TextWrapping.Wrap:TextWrapping.NoWrap,VerticalScrollBarVisibility=multiline?ScrollBarVisibility.Auto:ScrollBarVisibility.Hidden};
         input.TextChanged+=(_,_)=>{RememberEdit();change(input.Text);UpdateSelectedSummary();};input.LostKeyboardFocus+=(_,_)=>editingSession=false;AutomationProperties.SetName(input,L.T(label));panel.Children.Add(input);return input;
     }
     private void Number(Panel panel,string label,int value,Action<int> change)

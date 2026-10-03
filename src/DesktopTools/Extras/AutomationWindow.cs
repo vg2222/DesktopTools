@@ -26,7 +26,8 @@ internal sealed partial class AutomationWindow : Window
     private readonly FrameworkElement empty;
     private readonly Border notice=new(){Visibility=Visibility.Collapsed,CornerRadius=new CornerRadius(10),Padding=new Thickness(12,10,8,10),BorderThickness=new Thickness(1),Margin=new Thickness(0,10,0,0)};
     private readonly ContentControl noticeIcon=new(){Width=18,Height=18,Margin=new Thickness(0,0,10,0),VerticalAlignment=VerticalAlignment.Center};
-    private bool closed,closingWindow,refreshing,dirty,editingSession;
+    private bool closed,closingWindow,refreshing,dirty,editingSession,savePromptOpen;
+    private int noticeVersion;
     internal AutomationWindow(AutomationService service)
     {
         this.service=service;drafts=service.Scripts.Select(s=>s.Copy()).ToList();
@@ -68,13 +69,20 @@ internal sealed partial class AutomationWindow : Window
         root.Children.Add(columns);
         var card=Ui.Card(root,18);card.Margin=new Thickness(0);Content=card;
         editable.AddRange([scripts,steps,name,details]);
-        scripts.SelectionChanged+=(_,_)=>{if(refreshing)return;editingSession=false;current=(scripts.SelectedItem as ListBoxItem)?.Tag as AutomationScript;RefreshSteps();};
-        steps.SelectionChanged+=(_,_)=>{if(refreshing)return;editingSession=false;RefreshEditor();};
+        scripts.SelectionChanged+=(_,_)=>{if(refreshing)return;editingSession=false;current=(scripts.SelectedItem as ListBoxItem)?.Tag as AutomationScript;RefreshSteps();if(IsLoaded&&!service.IsActive){Motion.PageTransition(steps);Motion.Transition(details);}};
+        steps.SelectionChanged+=(_,_)=>{if(refreshing)return;editingSession=false;RefreshEditor();if(details.IsVisible&&!service.IsActive)Motion.Transition(details);};
         service.Changed+=ServiceChanged;service.Progress+=StepProgress;service.StatusChanged+=Report;
         PreviewKeyDown+=(_,e)=>{if(Keyboard.Modifiers==ModifierKeys.Control&&e.Key==Key.S){e.Handled=true;if(!service.IsActive)Save();}else if(Keyboard.Modifiers==ModifierKeys.Control&&e.Key==Key.Z&&Keyboard.FocusedElement is not TextBox){e.Handled=true;Undo();}};
         Closing+=(_,e)=>{
+            if(savePromptOpen){e.Cancel=true;return;}
             closingWindow=true;StopRecording();pickCancellation?.Cancel();
-            if(dirty&&!closed){var answer=MessageBox.Show(this,L.T("Save automation before closing?"),Title,MessageBoxButton.YesNoCancel,MessageBoxImage.Question);if(answer==MessageBoxResult.Cancel||answer==MessageBoxResult.Yes&&!Save())e.Cancel=true;}
+            if(dirty&&!closed){
+                savePromptOpen=true;
+                try{
+                    var dialog=new AutomationSaveChangesWindow(()=>Save()?null:status.Text){Owner=this};dialog.ShowDialog();
+                    if(dialog.Choice==AutomationSaveChoice.Cancel)e.Cancel=true;
+                }finally{savePromptOpen=false;}
+            }
             if(e.Cancel)Dispatcher.BeginInvoke(()=>{closingWindow=false;Show();RefreshSteps();Activate();});
         };
         Closed+=(_,_)=>{closed=true;pickCancellation?.Cancel();service.Stop();StopRecording();service.Changed-=ServiceChanged;service.Progress-=StepProgress;service.StatusChanged-=Report;};
@@ -114,7 +122,7 @@ internal sealed partial class AutomationWindow : Window
     private void Delete(){if(current==null)return;if(MessageBox.Show(this,L.T("Delete this automation?"),Title,MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;Remember();drafts.Remove(current);current=drafts.FirstOrDefault();RefreshScripts();}
     private bool Save(){try{service.Save(drafts);dirty=false;Report(L.T("Automation saved."));return true;}catch(Exception e){ReportError(e.Message);return false;}}
     private async Task RunAsync(){if(current==null||!Save())return;await service.RunAsync(current.Copy());if(!closed){Show();Activate();}}
-    private void EditStructure(Func<int> action){if(current==null)return;try{Remember();int index=action();RefreshSteps(index>=0&&index<current.Steps.Count?current.Steps[index]:null);}catch(Exception e){ReportError(e.Message);}}
+    private void EditStructure(Func<int> action){if(current==null)return;try{var positions=AutomationMotion.CaptureRows(steps);Remember();int index=action();RefreshSteps(index>=0&&index<current.Steps.Count?current.Steps[index]:null);AutomationMotion.MoveRows(steps,positions);if(details.IsVisible)Motion.Transition(details);}catch(Exception e){ReportError(e.Message);}}
     private void Templates()
     {
         var menu=new ContextMenu();
