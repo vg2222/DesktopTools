@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DesktopTools.Extras;
+using DesktopTools.Native;
 using ScreenRecorderLib;
 using Drawing = System.Drawing;
 using Forms = System.Windows.Forms;
@@ -20,7 +22,11 @@ internal static class RecordingThroughputChecks
         {
             SetStyle(Forms.ControlStyles.AllPaintingInWmPaint | Forms.ControlStyles.UserPaint | Forms.ControlStyles.OptimizedDoubleBuffer, true);
             ClientSize = new Drawing.Size(640, 360); FormBorderStyle = Forms.FormBorderStyle.None;
-            StartPosition = Forms.FormStartPosition.CenterScreen; TopMost = true;
+            StartPosition = Forms.FormStartPosition.Manual; TopMost = true;
+            bool primary = Environment.GetEnvironmentVariable("DESKTOPTOOLS_TEST_PRIMARY") == "1";
+            var testScreen = primary ? Forms.Screen.PrimaryScreen! : Forms.Screen.AllScreens.FirstOrDefault(screen => !screen.Primary) ?? Forms.Screen.PrimaryScreen!;
+            Location = new Drawing.Point(testScreen.Bounds.Left + (testScreen.Bounds.Width - ClientSize.Width) / 2,
+                testScreen.Bounds.Top + (testScreen.Bounds.Height - ClientSize.Height) / 2);
             Text = "DesktopTools numbered recording fixture";
         }
         protected override void OnPaint(Forms.PaintEventArgs e)
@@ -35,7 +41,14 @@ internal static class RecordingThroughputChecks
     }
     internal static Task RunAsync() => RunAsync(false);
     internal static Task RunSustainedAsync() => RunAsync(true);
-    private static async Task RunAsync(bool sustainedOnly)
+    internal static Task RunDisplayAsync() => RunAsync(false, true);
+    internal static async Task RunPrimaryDisplayAsync()
+    {
+        Environment.SetEnvironmentVariable("DESKTOPTOOLS_TEST_PRIMARY", "1");
+        try { await RunAsync(false, true); }
+        finally { Environment.SetEnvironmentVariable("DESKTOPTOOLS_TEST_PRIMARY", null); }
+    }
+    private static async Task RunAsync(bool sustainedOnly, bool displayOnly = false)
     {
         string directory = Path.GetFullPath("throughput-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(directory);
         File.WriteAllText("throughput-directory.txt", directory);
@@ -43,23 +56,30 @@ internal static class RecordingThroughputChecks
         bool resolution = timeBeginPeriod(1) == 0;
         try
         {
-            foreach (var run in new[] { (Name: "hardware-144", Hardware: true, Fps: 144, Seconds: 8),
-                (Name: "software-144", Hardware: false, Fps: 144, Seconds: 8),
-                (Name: "sustained-60", Hardware: true, Fps: 60, Seconds: 60) })
+            foreach (var run in new[] { (Name: "display-hardware-144", Hardware: true, Fps: 144, Seconds: 8, Display: true, PaintDelay: 1),
+                (Name: "display-regular-144", Hardware: true, Fps: 144, Seconds: 8, Display: true, PaintDelay: 6),
+                (Name: "hardware-144", Hardware: true, Fps: 144, Seconds: 8, Display: false, PaintDelay: 1),
+                (Name: "software-144", Hardware: false, Fps: 144, Seconds: 8, Display: false, PaintDelay: 1),
+                (Name: "sustained-60", Hardware: true, Fps: 60, Seconds: 60, Display: false, PaintDelay: 1) })
             {
                 if (sustainedOnly && run.Fps != 60) continue;
+                if (displayOnly && run.Name != "display-regular-144") continue;
                 target.Frame = 0; target.Refresh(); await Task.Delay(200);
                 string path = Path.Combine(directory, run.Name + ".mp4");
                 await using var service = new ScreenRecordingService();
                 service.StatusChanged += state => File.AppendAllText(Path.Combine(directory, run.Name + ".states.txt"), $"{DateTime.UtcNow:O} {state}\n");
-                var result = service.StartSource(new WindowRecordingSource(target.Handle) { IsCursorCaptureEnabled = false, IsBorderRequired = true },
-                    path, framesPerSecond: run.Fps, hardwareAcceleration: run.Hardware);
+                var monitor = MonitorService.GetAll().Single(item => item.Id == Forms.Screen.FromControl(target).DeviceName);
+                var region = new System.Windows.Rect(target.Left - monitor.Bounds.Left, target.Top - monitor.Bounds.Top, target.Width, target.Height);
+                var result = run.Display
+                    ? service.Start(monitor, region, path, false, false, run.Fps, hardwareAcceleration: run.Hardware)
+                    : service.StartSource(new WindowRecordingSource(target.Handle) { IsCursorCaptureEnabled = false, IsBorderRequired = true },
+                        path, framesPerSecond: run.Fps, hardwareAcceleration: run.Hardware);
                 var clock = Stopwatch.StartNew();
                 int lastProgress = -1;
                 while (clock.Elapsed.TotalSeconds < run.Seconds)
                 {
                     if (result.IsCompleted) { await result; throw new Exception("Recording stopped before the requested interval."); }
-                    target.Frame++; target.Refresh(); await Task.Delay(1);
+                    target.Frame++; target.Refresh(); await Task.Delay(run.PaintDelay);
                     int progress = (int)clock.Elapsed.TotalSeconds / 10;
                     if (progress != lastProgress) { lastProgress = progress; File.AppendAllText(Path.Combine(directory, run.Name + ".states.txt"), $"{DateTime.UtcNow:O} Source paints={target.Frame}; elapsed={service.Elapsed.TotalSeconds:0.00}; state={service.Status}\n"); }
                 }

@@ -16,7 +16,17 @@ public sealed class FloatingNotesService : IDisposable
     private bool disposed;
     private bool dirty;
     private bool saveFailed;
-    public bool DefaultTopmost { get; set; } = true;
+    private bool defaultTopmost;
+    public bool DefaultTopmost
+    {
+        get => defaultTopmost;
+        set
+        {
+            defaultTopmost = value;
+            if (manager != null) manager.Topmost = value;
+            foreach (var window in windows.Values) window.Topmost = value;
+        }
+    }
 
     public FloatingNotesService(string directory, Action<string> report)
     {

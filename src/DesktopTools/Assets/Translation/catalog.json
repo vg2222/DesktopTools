@@ -1,0 +1,1712 @@
+[
+  {
+    "Direction": "af-en",
+    "Repository": "Xenova/opus-mt-af-en",
+    "Revision": "0eba4e40af86c6ad316a58fc9a7ed1134b05fd90",
+    "Upstream": "Helsinki-NLP/opus-mt-af-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/config.json",
+        "Sha256": "3AC0FA21CE4AB056CBDF5C19AC83FFD464AB4106BD4FC2F920B4117ECA51FC73",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/source.spm",
+        "Sha256": "2C0775610306D171B4F98A32F28024D0B24927D42C305FDB72D03C551908280D",
+        "Bytes": 826387
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/vocab.json",
+        "Sha256": "775116DB1E1B3B684A4E40986E8BDBE77708D43C82A111F5AA8791C86FCAFBBF",
+        "Bytes": 1435344
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/README.md",
+        "Sha256": "AB9001368B32BBB51E3BBAE45F5B6BE65FFCFD9015B498A05BA88AC2DBC42383",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/onnx/encoder_model_quantized.onnx",
+        "Sha256": "2C368395D19937152EE8FF9F6F04BE1A4101ACDD84293FFB7C414958A2AB8EAD",
+        "Bytes": 49031070
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-af-en/resolve/0eba4e40af86c6ad316a58fc9a7ed1134b05fd90/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "78BE35401AA8C7CCD0598395A0642BFCD7B441CBDFDC47AA02DD60E4AB2A9D2B",
+        "Bytes": 56313908
+      }
+    ]
+  },
+  {
+    "Direction": "ar-en",
+    "Repository": "Xenova/opus-mt-ar-en",
+    "Revision": "09c7556866400dcc53562ba8d7035119e7d9a2c1",
+    "Upstream": "Helsinki-NLP/opus-mt-ar-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/config.json",
+        "Sha256": "451EE0DA95B01FE58D78F05C47E9AD89F0A17A4C03DCECB389136A12248EF9AA",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/source.spm",
+        "Sha256": "484F7210E5F4466F7E5B99B660717C6EF2A6F90746196DABA507795B69DC02A2",
+        "Bytes": 917407
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/vocab.json",
+        "Sha256": "87B78C097C331672CA22A522C3BA24C5DC2CDFF90495DCB52CF742635439A3A0",
+        "Bytes": 2257246
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/README.md",
+        "Sha256": "6F601027AC36D64D7E5423AAF45281D07D9B8F32CEF2DCA415778A89EF532931",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/onnx/encoder_model_quantized.onnx",
+        "Sha256": "D9B0D612ACFF86CF87634B49BDA566D1EF39B312837DE549786EA18FECEFC708",
+        "Bytes": 51790238
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "CDB25AE736AFE9D48035B0EA311AB4B25F315810FAB7F3C6F6CB0D8D87AF35FA",
+        "Bytes": 59094632
+      }
+    ]
+  },
+  {
+    "Direction": "cs-en",
+    "Repository": "Xenova/opus-mt-cs-en",
+    "Revision": "c9f7336d1cf49ba5b7a412cba3b86999fa781716",
+    "Upstream": "Helsinki-NLP/opus-mt-cs-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/config.json",
+        "Sha256": "DB113AB9487DA89FF417E50033D87FE084EBC18465677DDBAAE62BD323A8D461",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/source.spm",
+        "Sha256": "A2E6D98CDD54D80AD404AD493A7755E723C8D619E998840EBA682E3E3FE25E33",
+        "Bytes": 829548
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/vocab.json",
+        "Sha256": "47EF94974271468A6D5DFDDD40DB2C5251FF5BFCCB8B9FE4EEE17ED28ED3E663",
+        "Bytes": 1721470
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/README.md",
+        "Sha256": "2938FB6D1E8C089674B1232F5901EED1EE5199B67B56F4D92C6FFCA57D555FA5",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/onnx/encoder_model_quantized.onnx",
+        "Sha256": "DF08C5A2382CF5A801862F5BC8064CFA5665442DB8E7A560D6E580A3D2222E4C",
+        "Bytes": 51623838
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-cs-en/resolve/c9f7336d1cf49ba5b7a412cba3b86999fa781716/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "811D43692EC5D65FF1DD9DA69044B68CB867D225346F912309CD2BE834115E66",
+        "Bytes": 58926932
+      }
+    ]
+  },
+  {
+    "Direction": "da-en",
+    "Repository": "Xenova/opus-mt-da-en",
+    "Revision": "6496d5e47a016552357be8f06294096609256ac4",
+    "Upstream": "Helsinki-NLP/opus-mt-da-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/config.json",
+        "Sha256": "AE9BD343D197231B82CB92382199F820665E75D0D26EE9B51C9881782D4E3640",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/source.spm",
+        "Sha256": "C97D12D35FE411947392D927F0BE14985E2EA0E5CF258164DB7F37780563CA15",
+        "Bytes": 819654
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/vocab.json",
+        "Sha256": "C329AACDC29F1F83DF0A4D32DED5858405CCCB3FF45558FB2DD0F07D04AD558B",
+        "Bytes": 1499868
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/README.md",
+        "Sha256": "2D2A9ABA51B33C95FBCE7F895BC9AA7FF03140BAF7324A4CC524EC896E552056",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/onnx/encoder_model_quantized.onnx",
+        "Sha256": "0C4522C24F540C82A3E5AE58A079A9919448ADF23798142A1821F189646715D7",
+        "Bytes": 49791389
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-da-en/resolve/6496d5e47a016552357be8f06294096609256ac4/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "871E5ED856E41B95F1A7B32FF4CDB683E1092963BF2300D502298A1FCB4FB0ED",
+        "Bytes": 57080167
+      }
+    ]
+  },
+  {
+    "Direction": "de-en",
+    "Repository": "Xenova/opus-mt-de-en",
+    "Revision": "399dfd68706739fffd503f876093e455ae268a06",
+    "Upstream": "Helsinki-NLP/opus-mt-de-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/config.json",
+        "Sha256": "6754743EC4754957D8552DAD869D1314F3AF6626B67446EC4CEBE5E2FBAA0FC4",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/source.spm",
+        "Sha256": "BBD1F495EEA99C8E21AE086D9146E0FA7B096C3DFDD9BA07AB8B631889DF5C9B",
+        "Bytes": 796845
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/vocab.json",
+        "Sha256": "D5ACEA957B265A78554999144459C5E391E0DF525864EDC8287BC090290BAA44",
+        "Bytes": 1389436
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/README.md",
+        "Sha256": "F50D3C985208D2012D0F369997D531F61C31EA485BF498A11F6AB3F7A1617B74",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/onnx/encoder_model_quantized.onnx",
+        "Sha256": "4CEDDA8F8C89B72A42B3C6CD1E7A27F2DE24457093E3BF80CB3E46829641FCD8",
+        "Bytes": 49366942
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-de-en/resolve/399dfd68706739fffd503f876093e455ae268a06/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "4712800584B2D77C2F9E620BF29523E2B20B62F65ADE5011EE01780E2B0EA5D3",
+        "Bytes": 56652404
+      }
+    ]
+  },
+  {
+    "Direction": "en-af",
+    "Repository": "Xenova/opus-mt-en-af",
+    "Revision": "3d48312617d092d77cb5aef9f9e9636ad639dd8d",
+    "Upstream": "Helsinki-NLP/opus-mt-en-af",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/config.json",
+        "Sha256": "66FE38DC7257E006EA94DE2A68C62F44F295FDF41203DF1FCF1F9DB75A635693",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/source.spm",
+        "Sha256": "C32B593EFA15F5E22D81934ADB3A44FBFA0B6BFC112A2A62FFB1B3C4C164EF33",
+        "Bytes": 819272
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/vocab.json",
+        "Sha256": "775116DB1E1B3B684A4E40986E8BDBE77708D43C82A111F5AA8791C86FCAFBBF",
+        "Bytes": 1435344
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/README.md",
+        "Sha256": "BBEB146832FB6AEE88FF9FD46D0B5EC79AC42AF24034BB5F111CB15A56F006BC",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/onnx/encoder_model_quantized.onnx",
+        "Sha256": "C29F3691405596F3DC2862DDFFF435305E0BE5FF5C2D027ABDF41B0E1384FDD5",
+        "Bytes": 49031070
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-af/resolve/3d48312617d092d77cb5aef9f9e9636ad639dd8d/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "683C221CB12E509FA2E0B6E55C1C6B52C936CD0979B52958DD31961836CD15B2",
+        "Bytes": 56313908
+      }
+    ]
+  },
+  {
+    "Direction": "en-ar",
+    "Repository": "Xenova/opus-mt-en-ar",
+    "Revision": "034a684356c19021a187cda4d7f823298b913921",
+    "Upstream": "Helsinki-NLP/opus-mt-en-ar",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/config.json",
+        "Sha256": "8135D646CD810090349E8833B7BA593AC3B72D632F8858CB34925BDBCB6A1BEA",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/source.spm",
+        "Sha256": "81AC8F4D4EE271F4109EAC67560A31F9C2D555463BA5EB95C32C6DEEE8AE819D",
+        "Bytes": 801074
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/vocab.json",
+        "Sha256": "8B74AF9E4C1EC122B8D06362DB6C38795E10CA2B0156B2110CF08D4716744B76",
+        "Bytes": 2243581
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/README.md",
+        "Sha256": "0B00622929763683170F04E9D44350E3080660622760B9A0D188355CB4849624",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/onnx/encoder_model_quantized.onnx",
+        "Sha256": "53C354D87CED44B39085FE8A46A25F09EA4578D442DBCE9663F3977228F8A04E",
+        "Bytes": 51773854
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "C0E553B0C26611780C70417C9B4C1CA7169E9CDB18BA9E649197EFB017AF9F02",
+        "Bytes": 59078120
+      }
+    ]
+  },
+  {
+    "Direction": "en-cs",
+    "Repository": "Xenova/opus-mt-en-cs",
+    "Revision": "ed163ca109a93297e2f055eb3397bd33230141ad",
+    "Upstream": "Helsinki-NLP/opus-mt-en-cs",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/config.json",
+        "Sha256": "48AC9F080FF079B5A10AE477482917DA6606D2A0743E800C0E87980D54564836",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/source.spm",
+        "Sha256": "8CB772D24CBD559A9E0C5DFD4726E1201B07497AF59189F107DD812BFF1909E7",
+        "Bytes": 788721
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/vocab.json",
+        "Sha256": "47EF94974271468A6D5DFDDD40DB2C5251FF5BFCCB8B9FE4EEE17ED28ED3E663",
+        "Bytes": 1721470
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/README.md",
+        "Sha256": "2C0FE78BCB9CC9C7B62412F7457EBB75923FF58A36C503B39BA09AA7F4D6F76A",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/onnx/encoder_model_quantized.onnx",
+        "Sha256": "5CA546C92ABB310FC14E5DCFC421252A83B1595CA91D117CAC9AFDA7AB7D7C38",
+        "Bytes": 51623838
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-cs/resolve/ed163ca109a93297e2f055eb3397bd33230141ad/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "A56FDBDE5EE225F0E318CAD4A1DAE98A4831B8F283A2128E72353849A7F614F6",
+        "Bytes": 58926932
+      }
+    ]
+  },
+  {
+    "Direction": "en-da",
+    "Repository": "Xenova/opus-mt-en-da",
+    "Revision": "33862dc071a5cc43e821e60742553c501c587e77",
+    "Upstream": "Helsinki-NLP/opus-mt-en-da",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/config.json",
+        "Sha256": "9C4C6652A8BFD906673B85194060E4FC13BB5521F7357F3CB573C6D6C37C7947",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/source.spm",
+        "Sha256": "08D1D21EA3F6F80F06484DB753C1A60238B2ACFE4AA0FAFD496BE869857F697F",
+        "Bytes": 788462
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/vocab.json",
+        "Sha256": "C329AACDC29F1F83DF0A4D32DED5858405CCCB3FF45558FB2DD0F07D04AD558B",
+        "Bytes": 1499868
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/README.md",
+        "Sha256": "6F224A6E9D753E79D1639FF990923862A58CBC7E2702E18C010910868321197F",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/onnx/encoder_model_quantized.onnx",
+        "Sha256": "0B607ADDD3D4EB4AB6560CBCDAC6F0018BF90B52EEE2069412BA9F4A2E00F2F6",
+        "Bytes": 49791390
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-da/resolve/33862dc071a5cc43e821e60742553c501c587e77/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "0E612107B64044539D273234C9BAEEA724F47D0523156443426CC781BC9834D0",
+        "Bytes": 57080168
+      }
+    ]
+  },
+  {
+    "Direction": "en-de",
+    "Repository": "Xenova/opus-mt-en-de",
+    "Revision": "1ca130c44c4c5441ef16d48aae521a424ab644f7",
+    "Upstream": "Helsinki-NLP/opus-mt-en-de",
+    "License": "cc-by-4.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/config.json",
+        "Sha256": "517955EBF66CD6523F9982851DD41771B74FB2D9C00B4933BA2922AC7A63336F",
+        "Bytes": 1411
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/source.spm",
+        "Sha256": "678F2A1177D8389F67B66299762DCC4FC567E89B07E212BA91B0C56DAECF47CE",
+        "Bytes": 768489
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/vocab.json",
+        "Sha256": "D5ACEA957B265A78554999144459C5E391E0DF525864EDC8287BC090290BAA44",
+        "Bytes": 1389436
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/README.md",
+        "Sha256": "6BE646EE05128AA4C9E0D89602781A78ED2C353CB7E80250FAF2985931FB4BE3",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/onnx/encoder_model_quantized.onnx",
+        "Sha256": "15834B45FABD2DFB8C6C029B3CA3E7289AEEFD90ECE798CE42BCF548D1BD3B8D",
+        "Bytes": 49366942
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-de/resolve/1ca130c44c4c5441ef16d48aae521a424ab644f7/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "8B46A825964CDD182FE47CC780F0FB87D357EAE1F47CF20AA63C1C09BE5B510C",
+        "Bytes": 56652404
+      }
+    ]
+  },
+  {
+    "Direction": "en-es",
+    "Repository": "Xenova/opus-mt-en-es",
+    "Revision": "4b002a4c7edd54a7ced58877258b87f7efd3f892",
+    "Upstream": "Helsinki-NLP/opus-mt-en-es",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/config.json",
+        "Sha256": "499EAE1F97EEBA63172FC884F92FD727AE803B7CEB79C0F653AA4B011152AF2F",
+        "Bytes": 1468
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/source.spm",
+        "Sha256": "4DD547C24816A335E7B0B2E63376A8F1B3CBFC671EDA5AB808DD44FDADAA8791",
+        "Bytes": 801636
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/vocab.json",
+        "Sha256": "B074B4CCA0036ADE5A39EA97FAABD534E1015482C480FC2CB02C6481983EB163",
+        "Bytes": 1720044
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/README.md",
+        "Sha256": "5A226BF2FF9F0845D582E074CDDBC8E69D6172058126CDCBE3998BB00E033D1A",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/onnx/encoder_model_quantized.onnx",
+        "Sha256": "03434EDD1147E6C49E22066E9DC5888235E99CC35A6711D1C4EA5B06455D5DA9",
+        "Bytes": 52899742
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-es/resolve/4b002a4c7edd54a7ced58877258b87f7efd3f892/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "58EE5DDD6E22D1693D8722B90C1486AFB93700A4376CF28FD74175052AD530AE",
+        "Bytes": 60212804
+      }
+    ]
+  },
+  {
+    "Direction": "en-fi",
+    "Repository": "Xenova/opus-mt-en-fi",
+    "Revision": "4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb",
+    "Upstream": "Helsinki-NLP/opus-mt-en-fi",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/config.json",
+        "Sha256": "AE3B9D95D8E812898F9FDF6B18D0C8A594B2514B604DFB391947BF1086093BE4",
+        "Bytes": 1356
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/source.spm",
+        "Sha256": "412535C7EB38271082F86D9574881AF46057DDDAF17BE876DA8021557104A488",
+        "Bytes": 803110
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/vocab.json",
+        "Sha256": "5B96EB2965F1F9E0D52408BF83BFA113B3AE32CEFD1F6D4F8529966DB5938AD1",
+        "Bytes": 1722260
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/README.md",
+        "Sha256": "B26DAB6034349645E5538176BFE75FD3E079303243EBD0F445CE7CEFF50D9020",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/onnx/encoder_model_quantized.onnx",
+        "Sha256": "874D962BE7B3D5DADAE3E98A156B2DF0344FEBAA17809F6F0411CE23A59FF4C3",
+        "Bytes": 52899742
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fi/resolve/4e5799273dbd7cce94c1e99cc9d3acb9f191b8eb/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "58759988D510656029EF9EA744EFDDA9FD66DBFB689333ABE7FB29BCA7B239F3",
+        "Bytes": 60212804
+      }
+    ]
+  },
+  {
+    "Direction": "en-fr",
+    "Repository": "Xenova/opus-mt-en-fr",
+    "Revision": "28726206f80896b90035bd99cccd5cc1e151f916",
+    "Upstream": "Helsinki-NLP/opus-mt-en-fr",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/config.json",
+        "Sha256": "B522B73FCC86F77981349C1DF2A2E041EED0DBCBEA4ACF2635019CF21D51FFC0",
+        "Bytes": 1411
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/source.spm",
+        "Sha256": "173E9F493A668FE396D599E28D414A201193094E6FFD7A4678E5AAB0F6D3D838",
+        "Bytes": 778395
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/vocab.json",
+        "Sha256": "F2BA9C69AE20F96B8BD821239A9152BE422394F980350B77907CFFC183DB5F2D",
+        "Bytes": 1458196
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/README.md",
+        "Sha256": "65F615CA321427BFD06B8024F387AB308C118FF236D7A556970C75415A6083EC",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/onnx/encoder_model_quantized.onnx",
+        "Sha256": "0A81BDBA62F53223740A8C6C6F58E716EBA8EA1F92DFA569CAF27ED5E3B6A0F7",
+        "Bytes": 50090398
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-fr/resolve/28726206f80896b90035bd99cccd5cc1e151f916/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "333B244BCE16023DF04541C8CF9FD60AEC9B0569DA393C4B831D561897B0BDA8",
+        "Bytes": 57381512
+      }
+    ]
+  },
+  {
+    "Direction": "en-hi",
+    "Repository": "Xenova/opus-mt-en-hi",
+    "Revision": "7aad72006a1588a9c3485ed6203aed99eebbc872",
+    "Upstream": "Helsinki-NLP/opus-mt-en-hi",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/config.json",
+        "Sha256": "2F7015BBF571018AFD1A365D1ADE99A648BC89EDF3146BE93EC0E23CBFFD6302",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/source.spm",
+        "Sha256": "FD4E951487AED00BAE6A6C2EE4EF5D8D1DB05FD098B19B608046C9334B58D24D",
+        "Bytes": 812240
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/vocab.json",
+        "Sha256": "BE02F5DFB85054D4F25089F6B347B69D32E98ED4C3D181ED0C789904EB1E3D3B",
+        "Bytes": 2221738
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/README.md",
+        "Sha256": "243A807F8135C727AA576C216094A2FA3541A0E2B57C230F66CF92EB48A3FF28",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/onnx/encoder_model_quantized.onnx",
+        "Sha256": "3045CD6EAF06DB96CFF853204D6F0FFEB0C5AF238A4F5A87A19FCAA94F7493C4",
+        "Bytes": 51337630
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hi/resolve/7aad72006a1588a9c3485ed6203aed99eebbc872/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "8BABA43A14B15CA4543D30AB36E7D34F2E516FB9AF7E0B83B77A5E6A6F66D198",
+        "Bytes": 58638488
+      }
+    ]
+  },
+  {
+    "Direction": "en-hu",
+    "Repository": "Xenova/opus-mt-en-hu",
+    "Revision": "1b7df958c1bd8f094eff1ce76d536468923ed7e3",
+    "Upstream": "Helsinki-NLP/opus-mt-en-hu",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/config.json",
+        "Sha256": "83A2546555E427AB63C2AFB161D5C4FF2E2CA4BC108C186750F7D2B7F3A4488B",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/source.spm",
+        "Sha256": "13CC9FB7021C19589DA645E49EFE801AC51E9563DB22DA262156903DDB98CEA6",
+        "Bytes": 792289
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/vocab.json",
+        "Sha256": "A298C9BCEFB63D18F091EF18D674A6B78A424B910AA6C0DF1698DFBB3FB79252",
+        "Bytes": 1690844
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/README.md",
+        "Sha256": "276E140F127869291E18030D66044F8639199E8C1A919E64858265B8E105F835",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/onnx/encoder_model_quantized.onnx",
+        "Sha256": "F78D4AF0A91FC534B0D0267E85FC7164D326A7B8FB18F46472E2F70D443230AF",
+        "Bytes": 51630494
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-hu/resolve/1b7df958c1bd8f094eff1ce76d536468923ed7e3/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "B9D9F644444B8CF89AA24E8C4347D247537A25D8D850919843082CE7F44EA9EE",
+        "Bytes": 58933640
+      }
+    ]
+  },
+  {
+    "Direction": "en-id",
+    "Repository": "Xenova/opus-mt-en-id",
+    "Revision": "b3b41f654c2fb3286d007dee1da7b0f47fd27d82",
+    "Upstream": "Helsinki-NLP/opus-mt-en-id",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/config.json",
+        "Sha256": "DC133CD3B445E4AF3808FB7BFAC9A0424611A10DA64B94668F6865B28D4214F4",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/source.spm",
+        "Sha256": "E88300911C2C573EC5526777A1E84BAE698D20925B82DCEF9C7248BB0E537ED0",
+        "Bytes": 795925
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/vocab.json",
+        "Sha256": "CDA834905A5D478C54A73ABC98CC9155DC58217BAA130CDF165411265B760D6B",
+        "Bytes": 1366984
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/README.md",
+        "Sha256": "EB9E3020F584254DD0C65CCBA6AB9B1E6C965E6311467B782CA96F9933541BD7",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/onnx/encoder_model_quantized.onnx",
+        "Sha256": "9BFC9CF0F400F86EC11DA24B2F56380FCFABAB17FB2DBCF7BB4C1754B7076E24",
+        "Bytes": 47674781
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-id/resolve/b3b41f654c2fb3286d007dee1da7b0f47fd27d82/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "0A59EBFE85137A21055D9F73D9F83A59487F0CFF31DB452C7DB3B6CDECA8E7C2",
+        "Bytes": 54947023
+      }
+    ]
+  },
+  {
+    "Direction": "en-it",
+    "Repository": "Xenova/opus-mt-en-it",
+    "Revision": "075406e3c8c2c30634d4a1bd8f00c21d9e162011",
+    "Upstream": "Helsinki-NLP/opus-mt-en-it",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/config.json",
+        "Sha256": "1CF40AB3AA16E8B6EA7C9766981DE1DA705A161564C0D5AD187C1E62E5C8EE85",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/source.spm",
+        "Sha256": "2EFFF2C37E51842C2817A6770280979B5DD803CEBBE2928E576D42A888F89537",
+        "Bytes": 789468
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/vocab.json",
+        "Sha256": "40C98FFC0013F2F09ED9127418131738AD9C2DE4D8F7F52D52532332BB2BF78C",
+        "Bytes": 2511647
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/README.md",
+        "Sha256": "0AE9C0C1BB49901DE0C800543F0FF213B97A30C960B7B0560FD0EB622D7103FD",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/onnx/encoder_model_quantized.onnx",
+        "Sha256": "B51C5110C7BA356EF01EE400D427AFE162E657DE1D7A2E9A40DEEDD811B49E6F",
+        "Bytes": 60597150
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-it/resolve/075406e3c8c2c30634d4a1bd8f00c21d9e162011/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "F9DB146ED7665EA7D437DC4DF564E3AF5DF923366DE4D52AAF2C4B4E3E4AE4F1",
+        "Bytes": 67970348
+      }
+    ]
+  },
+  {
+    "Direction": "en-nl",
+    "Repository": "Xenova/opus-mt-en-nl",
+    "Revision": "c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc",
+    "Upstream": "Helsinki-NLP/opus-mt-en-nl",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/config.json",
+        "Sha256": "3469CAF791A6A038451E418D4254434087C94AFC7D9676C03D38B9C64CE258C5",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/source.spm",
+        "Sha256": "D05781FDE84B8793191528A7A176E1B17F96265388F602379EE6AE3139F59141",
+        "Bytes": 789525
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/vocab.json",
+        "Sha256": "B1FBA91C620564D90848C5F77B03F13D17949790F8E7C7741E4A8EA13B8B0D91",
+        "Bytes": 1794274
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/README.md",
+        "Sha256": "BED4DF014CE384A1BD9836533B0096A62F90F7F3258442D64BABDD373D11F7AA",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/onnx/encoder_model_quantized.onnx",
+        "Sha256": "0FEBB990F8CA8ED9FD3E0017DFCB55EC5293999F20EAD81D2BB4370E9E3120FF",
+        "Bytes": 53937565
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-nl/resolve/c3a0541231a7329b4492809fc2bd7ab7d2ceb0bc/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "5F8034FDDC4CDCB6FA6C3B64A06E1CD9B1955C0C6DCD13E0E47610AB99AC4A99",
+        "Bytes": 61258735
+      }
+    ]
+  },
+  {
+    "Direction": "en-ru",
+    "Repository": "Xenova/opus-mt-en-ru",
+    "Revision": "e050376e960175e8ddc5cff85025dc8436cddd68",
+    "Upstream": "Helsinki-NLP/opus-mt-en-ru",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/config.json",
+        "Sha256": "DB16BF0EA7BAC239273214C3B9AB44577884227371A9A25E0191B7BAF8D6F167",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/source.spm",
+        "Sha256": "16BEBEF1389A0B8AB452772C4E35B9E605E5713F8AC7BAA71CA701394EAA086D",
+        "Bytes": 802781
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/vocab.json",
+        "Sha256": "5CF0D95D930D8D3E783C9E2F46A72F08B43A18060DAB4DDEFBCB66A733EFEDCB",
+        "Bytes": 2726796
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/README.md",
+        "Sha256": "C0299A4627E3CA84AB9D4FAE027B62FD2C846F8B7804D14368A3977DE8DC8C2A",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/onnx/encoder_model_quantized.onnx",
+        "Sha256": "97F28D8295D231B7DA721DED06FA8C034787DF2122CD8F85B904ABDC4D15BD53",
+        "Bytes": 51628446
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-ru/resolve/e050376e960175e8ddc5cff85025dc8436cddd68/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "7EFEFCD793A5663BC204224A92A123524F3DFE2FFAD59E5F73D6734D1B11AD04",
+        "Bytes": 58931576
+      }
+    ]
+  },
+  {
+    "Direction": "en-sv",
+    "Repository": "Xenova/opus-mt-en-sv",
+    "Revision": "33d522d806c041cdebecd549c558d22a2b9b4ea4",
+    "Upstream": "Helsinki-NLP/opus-mt-en-sv",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/config.json",
+        "Sha256": "5E2D3CF07DC92AA6C6DD82B9D552A4C1D7EF43F60C5054804AC2E4EE232E552D",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/source.spm",
+        "Sha256": "70D69A2C08A7A2C18E4529C8FF62886AAD2F8FD0E94FEDEAFE4BAFC47A5F0D69",
+        "Bytes": 790085
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/vocab.json",
+        "Sha256": "460D831EC477916C208F144B0D2368385D78626B946DCA077A3E86AE33F0F644",
+        "Bytes": 1404356
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/README.md",
+        "Sha256": "EBAEAA928143D25E3DF712545643C9447B107CDBFA004F2EF272766F97349E9F",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/onnx/encoder_model_quantized.onnx",
+        "Sha256": "2477C172F2001EE486F2D21E452C4D74838AF973DFB58D00CF53632C2E3F3DBA",
+        "Bytes": 48513438
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-sv/resolve/33d522d806c041cdebecd549c558d22a2b9b4ea4/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "9AA80D76A5C67A89E208367CB0B3315DFFBEDCC685CE86DA0EF9B99442695EE3",
+        "Bytes": 55792232
+      }
+    ]
+  },
+  {
+    "Direction": "en-uk",
+    "Repository": "Xenova/opus-mt-en-uk",
+    "Revision": "e6ca587292984b343fd829b6430ed55858496525",
+    "Upstream": "Helsinki-NLP/opus-mt-en-uk",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/config.json",
+        "Sha256": "EBC0566353109870E23F338060577D54803CA5D6EB97F1752D53F7402AB92DFB",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/source.spm",
+        "Sha256": "4DC9157E60A15B157C2F3D5F892379B03AED111C9FE8AC7CECBA5F2AA56379EF",
+        "Bytes": 808645
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/vocab.json",
+        "Sha256": "E8B45188B1DB6A4E0F960813E1BD493948AB0BC4D57B069EA03E77A78B7567D4",
+        "Bytes": 2490886
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/README.md",
+        "Sha256": "79EF821445E1057594AFE797E0B9AC25E4ECA52F352DF70F9C940660E113CEFE",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/onnx/encoder_model_quantized.onnx",
+        "Sha256": "234C3738C258B3B7C913452A4AB6203B1A24F459355AF8EF563DD4D94792D087",
+        "Bytes": 51151774
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-uk/resolve/e6ca587292984b343fd829b6430ed55858496525/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "0892312EA1D359FB749B16DEB5005246EB17974BD2B5424344B0E9AE83E0A142",
+        "Bytes": 58451180
+      }
+    ]
+  },
+  {
+    "Direction": "en-vi",
+    "Repository": "Xenova/opus-mt-en-vi",
+    "Revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+    "Upstream": "Helsinki-NLP/opus-mt-en-vi",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/config.json",
+        "Sha256": "0C5AB981C2F5A4878C78522C8A61E3D733F5E3BE6B1F83B68BBFB7F00E604637",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/source.spm",
+        "Sha256": "FDD9AB486CA8EA060967105E30DB7D8928729C78A67448711D2DD7C3153B37CD",
+        "Bytes": 808612
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/vocab.json",
+        "Sha256": "BCC8BBAFEB0B6B58FECF244F8DA996DA9AA45DBEA7871164F9C8CE480507F9FE",
+        "Bytes": 1299764
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/README.md",
+        "Sha256": "C67D16DB154FD911F9CB2741C45CC1794FF06C3802493422FFEAD1D1B89E1CF4",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/onnx/encoder_model_quantized.onnx",
+        "Sha256": "DFCD7A32BE3FDD21CBCF5D354520D626F1768FD6E205CA62A6A11A4641D31F36",
+        "Bytes": 47105950
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-vi/resolve/30bcd461c0d7338ad106b36314d3eedc2d4e998c/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "1CFC6A84F9C189E6928C9710B281FAE3F1F42D4FFBBA109E7B4EC8E31CEB06DD",
+        "Bytes": 54373748
+      }
+    ]
+  },
+  {
+    "Direction": "en-xh",
+    "Repository": "Xenova/opus-mt-en-xh",
+    "Revision": "1ab9c4f4400ea4805f220ff5d551d3d0169b7a96",
+    "Upstream": "Helsinki-NLP/opus-mt-en-xh",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/config.json",
+        "Sha256": "782D88CA3A56FB131AEBED5982CFCE294544737073102D6F64CEE7B0CBB41179",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/source.spm",
+        "Sha256": "DBB63CE8CE4F7EA863915FB95EA115A512346A67E48B3060A3B218408F50413E",
+        "Bytes": 818779
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/vocab.json",
+        "Sha256": "427D6EDB422E0148DC7ACB27FA2CC46F77AB2838583B06B823C9BBF05DC35714",
+        "Bytes": 1482102
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/README.md",
+        "Sha256": "EF9AEFCD7EBD79ED63C394DFC79A3E8D310E04D389B7464A295430DD08F44C9F",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/onnx/encoder_model_quantized.onnx",
+        "Sha256": "7D990146186A54ADC6E8FF0E362B30EC248ACE4CAEDDA489AEC98D93FAD6D1B0",
+        "Bytes": 50997150
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-xh/resolve/1ab9c4f4400ea4805f220ff5d551d3d0169b7a96/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "3982753CBE9533B914BE3424D6AA1B08B838E58ECD20F025664D9563D49A16A2",
+        "Bytes": 58295348
+      }
+    ]
+  },
+  {
+    "Direction": "en-zh",
+    "Repository": "Xenova/opus-mt-en-zh",
+    "Revision": "046f55aec303cdee3e0318604406d4df20f1e8ea",
+    "Upstream": "Helsinki-NLP/opus-mt-en-zh",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/config.json",
+        "Sha256": "4727D1229A04F95BF6F39ABF949D8080615433D99D6EBD85F81C09EDD247D5FA",
+        "Bytes": 1503
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/source.spm",
+        "Sha256": "5775DDC9E3FF2FAE91554DA56468AD35FF56EDABA870FEA74447BC7234BFDAA8",
+        "Bytes": 806435
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/vocab.json",
+        "Sha256": "22C957348EED495EE925AFC40A36DA3E387C8A34A734C8486967C2DCA271613E",
+        "Bytes": 1747795
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/README.md",
+        "Sha256": "4AEB4D31C2B0AB8DD06AAA6C8705F8BDADA6869CA67DEF9C2E1F5475FF007530",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/onnx/encoder_model_quantized.onnx",
+        "Sha256": "D3B7912BF6A9BD27E4C074C2DF91D4FF3D5B4BC5F7F6C8D7CC9C805C98FBAFEE",
+        "Bytes": 52899742
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-en-zh/resolve/046f55aec303cdee3e0318604406d4df20f1e8ea/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "023BE4F841F4C47CD65FFFCBAA81C0D99D7F7E0138F7BA0E03FA220A4E688AFF",
+        "Bytes": 60212804
+      }
+    ]
+  },
+  {
+    "Direction": "es-en",
+    "Repository": "Xenova/opus-mt-es-en",
+    "Revision": "eadfd7c658a9d8929ac3b8e996b68a68e2c7d480",
+    "Upstream": "Helsinki-NLP/opus-mt-es-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/config.json",
+        "Sha256": "FAB3A7F93185BC5AA7B419F6A1E6E74D98C8F2A506C94493D3019BF46DA3478D",
+        "Bytes": 1433
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/source.spm",
+        "Sha256": "E236EE6D866B635C0142114F8647F39831F9D92534AA2AAD75C942F6A78AD0E3",
+        "Bytes": 825924
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/vocab.json",
+        "Sha256": "B074B4CCA0036ADE5A39EA97FAABD534E1015482C480FC2CB02C6481983EB163",
+        "Bytes": 1720044
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/README.md",
+        "Sha256": "DFD10182D98DB755495900A0FAEAE3CB71B4FDF029265045B7EF463A85ADBD4A",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/onnx/encoder_model_quantized.onnx",
+        "Sha256": "C01E70F8455EFC350831AA2AF7ED187B16829241F0018BA07D1BA643A391BC18",
+        "Bytes": 52899742
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-es-en/resolve/eadfd7c658a9d8929ac3b8e996b68a68e2c7d480/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "4CD91AB30240D295CE907B5100826031838C672005E57E524D711122D75605FA",
+        "Bytes": 60212804
+      }
+    ]
+  },
+  {
+    "Direction": "fi-en",
+    "Repository": "Xenova/opus-mt-fi-en",
+    "Revision": "a623e4812687be788e3ab720c8a950ab64704793",
+    "Upstream": "Helsinki-NLP/opus-mt-fi-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/config.json",
+        "Sha256": "9FF0E3A1C47345550BC568858B9E2817011F20A798886E31F2610D4D179D370D",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/source.spm",
+        "Sha256": "82FCB74F79C5F5B5BF0FE73F7DFB6A646EFA50FFB4B2A0CD564A1193C78A032E",
+        "Bytes": 831865
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/vocab.json",
+        "Sha256": "DF0FF4337B256C5A4709F0C427430D3FC9977FE8CF03B89AD4A45E02FAEFD6D2",
+        "Bytes": 1497241
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/README.md",
+        "Sha256": "C335866F495190F28BCD483BF00899B54DC35E7ED54745E9C1970295CEF03837",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/onnx/encoder_model_quantized.onnx",
+        "Sha256": "3891D400CFE8693A6F590078302DABC15CBC7289E194A9261D90ECEEE573DC82",
+        "Bytes": 50164638
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fi-en/resolve/a623e4812687be788e3ab720c8a950ab64704793/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "320FB97FED0F0989A3A1A4777F77A8B236F41C2B59C4503F659F5EEA5B5F01C6",
+        "Bytes": 57456332
+      }
+    ]
+  },
+  {
+    "Direction": "fr-en",
+    "Repository": "Xenova/opus-mt-fr-en",
+    "Revision": "6b166a182780e118c997879d0ad5be4b53671644",
+    "Upstream": "Helsinki-NLP/opus-mt-fr-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/config.json",
+        "Sha256": "6C2851F154D7B88C7767E4FDCF8A5694A36A456BFA6CBCDE1B13FDBADE3B56F6",
+        "Bytes": 1411
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/source.spm",
+        "Sha256": "78D0E717C77053F1C4B856D8661D9CB87C64F083A35418C087B9146300E4F585",
+        "Bytes": 802397
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/vocab.json",
+        "Sha256": "F2BA9C69AE20F96B8BD821239A9152BE422394F980350B77907CFFC183DB5F2D",
+        "Bytes": 1458196
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/README.md",
+        "Sha256": "B0003B63BD7BF4718B56A2DD5D9BC83FFCCD437504E554B1A94E8F9F8D393625",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/onnx/encoder_model_quantized.onnx",
+        "Sha256": "E727CB26AC6BF816394C49671AF69C9AE5798868FED1E40849872415DFFC1772",
+        "Bytes": 50090398
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-fr-en/resolve/6b166a182780e118c997879d0ad5be4b53671644/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "73BC7AC8E29C42E6F212EBCC29A2991D3646A04AABB642C0036AA54B40E4E1A9",
+        "Bytes": 57381512
+      }
+    ]
+  },
+  {
+    "Direction": "hi-en",
+    "Repository": "Xenova/opus-mt-hi-en",
+    "Revision": "99853100ed9d932987a6816e8cf7b1b6742a6116",
+    "Upstream": "Helsinki-NLP/opus-mt-hi-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/config.json",
+        "Sha256": "871AF963159A6D00721312FC21782633A389461B6DAB23C76CD7C0E68236764D",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/source.spm",
+        "Sha256": "DD20C408EC4568361D32B41080E3F6FA5B82895135BD25C2747B2C145E42D07B",
+        "Bytes": 1057690
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/vocab.json",
+        "Sha256": "83BF3EF5541C374F1796405A135FFA24D50665F1FCFDB5825F603C70166B4740",
+        "Bytes": 2179709
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/README.md",
+        "Sha256": "BCFEB67D4E8990076940898E09962EF693935FD94DC618525730EF17FC463C52",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/onnx/encoder_model_quantized.onnx",
+        "Sha256": "DC5A1B084A83019BBB9798809DEA5F2D16CC30A9A257238EC93120B3C2892EBF",
+        "Bytes": 50916254
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hi-en/resolve/99853100ed9d932987a6816e8cf7b1b6742a6116/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "52655659006C8CE742CC761282D49B3BE4E73BFBF080F1B6A546AA96170D5813",
+        "Bytes": 58213820
+      }
+    ]
+  },
+  {
+    "Direction": "hu-en",
+    "Repository": "Xenova/opus-mt-hu-en",
+    "Revision": "c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b",
+    "Upstream": "Helsinki-NLP/opus-mt-hu-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/config.json",
+        "Sha256": "5A93F022DE4C82B858D12DF9DFAFEFF11142C2861CFE5009C420060F9FDF7EB4",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/source.spm",
+        "Sha256": "E53F2BEE88BE1541F17929195532B2C77E5BBD6DFB69AEB0589D8FE457A2B6B0",
+        "Bytes": 849914
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/vocab.json",
+        "Sha256": "A298C9BCEFB63D18F091EF18D674A6B78A424B910AA6C0DF1698DFBB3FB79252",
+        "Bytes": 1690844
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/README.md",
+        "Sha256": "F56798C1AAF4075228F9213743E9A9F17E4121F402C0C32AABC1ED7B989A5BD6",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/onnx/encoder_model_quantized.onnx",
+        "Sha256": "F0DCE998A12CE35D4880D5F6AC153807BE88BB50691244E512E9605B2CABD6FE",
+        "Bytes": 51630494
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-hu-en/resolve/c9e8a7617fb4cb4fca3785c5bb22cfe457cde00b/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "C8D9338328FEECF6B21CA74A075A8FA6484C45B2FECE2B96D2CF65C4CC7C31DD",
+        "Bytes": 58933640
+      }
+    ]
+  },
+  {
+    "Direction": "id-en",
+    "Repository": "Xenova/opus-mt-id-en",
+    "Revision": "c38ef36c843b71177da903442835c3c870975fd6",
+    "Upstream": "Helsinki-NLP/opus-mt-id-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/config.json",
+        "Sha256": "E8FE07EA417E891275CE8E44588B34148BC04861BE03ED8A3287E34E99E91BF6",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/source.spm",
+        "Sha256": "2A8FEFE71C7F26CB0C6AA1B9F0CC0F8D18006B20FE41C547AF7F25B9C8333465",
+        "Bytes": 800687
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/vocab.json",
+        "Sha256": "CDA834905A5D478C54A73ABC98CC9155DC58217BAA130CDF165411265B760D6B",
+        "Bytes": 1366984
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/README.md",
+        "Sha256": "123CC8CF5217F529B4DEE8F0D90330A83756A3CADF5E29FF5942220F9F982AD3",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/onnx/encoder_model_quantized.onnx",
+        "Sha256": "C5AB889ECF81E120E53F0F39800C0609D8D77B6C4A32212D73A85E3CFEB66293",
+        "Bytes": 47674782
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-id-en/resolve/c38ef36c843b71177da903442835c3c870975fd6/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "D65EEAB370C2873BDF22A7B2B311F0F636AA693B8EDD55C60B6B1DB8473268DD",
+        "Bytes": 54947024
+      }
+    ]
+  },
+  {
+    "Direction": "it-en",
+    "Repository": "Xenova/opus-mt-it-en",
+    "Revision": "fd0b89b9c052adc1f2f64152f555aa17353728be",
+    "Upstream": "Helsinki-NLP/opus-mt-it-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/config.json",
+        "Sha256": "4B82A23B7A91B213A934DB70D0A33712A739FDD7C5686B02D89642D7DCFC7AC4",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/source.spm",
+        "Sha256": "1BD307E2756991D470E4B40172147F7889B46A323B1A9A2150E66274825B1F21",
+        "Bytes": 813709
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/vocab.json",
+        "Sha256": "08E5B03AB20B2B9B85D41AED1B36DCE2650AFCB6E96274A06B7869B2E06884D5",
+        "Bytes": 2530593
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/README.md",
+        "Sha256": "FE54C15BFAA53879D6F9B4935B54EF69862D35B259763D04F1769915FE8C01AD",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/onnx/encoder_model_quantized.onnx",
+        "Sha256": "A025D2D85C90DA23880116B67175E43E71921D8D2BF446B9F1EACDC86015AA4C",
+        "Bytes": 60773278
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-it-en/resolve/fd0b89b9c052adc1f2f64152f555aa17353728be/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "AEBC2789CD2EF8062FBDA020BAC90B61E68458BA98A4C43CEA63C1D2310BA2B8",
+        "Bytes": 68147852
+      }
+    ]
+  },
+  {
+    "Direction": "nl-en",
+    "Repository": "Xenova/opus-mt-nl-en",
+    "Revision": "82c42d95d1508037cbe7172d85fd4e940a2f3584",
+    "Upstream": "Helsinki-NLP/opus-mt-nl-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/config.json",
+        "Sha256": "E03F36D5475954F1C09B08D0DA68D6EA06A051E299A399E740554ED768D2A99C",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/source.spm",
+        "Sha256": "F538D23D4B30641CD97C608D2A83890D503AA1286A5560F19EF949404A786E94",
+        "Bytes": 813866
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/vocab.json",
+        "Sha256": "B1FBA91C620564D90848C5F77B03F13D17949790F8E7C7741E4A8EA13B8B0D91",
+        "Bytes": 1794274
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/README.md",
+        "Sha256": "5DC601EB4D2F4138BCCB546A4D01A6F59A29C557428CEFE4C1C64B3A916102D6",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/onnx/encoder_model_quantized.onnx",
+        "Sha256": "7B8B1E9071BED8E2394E3BD2F65B952700B1DD1293D087141134C8BAC018653B",
+        "Bytes": 53937566
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-nl-en/resolve/82c42d95d1508037cbe7172d85fd4e940a2f3584/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "AD4DF9A08F16952C0D9EE06807F54D62FCD07A9109C2C0B8EA05A4422D7BF4D7",
+        "Bytes": 61258736
+      }
+    ]
+  },
+  {
+    "Direction": "ru-en",
+    "Repository": "Xenova/opus-mt-ru-en",
+    "Revision": "afe8c6c738ec81b6d033fd8f44f9678a639a7c67",
+    "Upstream": "Helsinki-NLP/opus-mt-ru-en",
+    "License": "cc-by-4.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/config.json",
+        "Sha256": "60DC7D0906DBE42A1D740CDD7E84CE1534685B81FBE16005A0301ADAC69086CE",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/source.spm",
+        "Sha256": "745998E51BA5B058E38B7AC7765C25C43ED5C1C39CC92B27163B9B2E323C9D7C",
+        "Bytes": 1080169
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/vocab.json",
+        "Sha256": "5CF0D95D930D8D3E783C9E2F46A72F08B43A18060DAB4DDEFBCB66A733EFEDCB",
+        "Bytes": 2726796
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/README.md",
+        "Sha256": "1E1C206311D158F485FC1C4BE8D9E9AB2629D37979289A39F232C6665C32EE55",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/onnx/encoder_model_quantized.onnx",
+        "Sha256": "C10DF0466540534BB70C4402D539C349B8BFA9968184CAD89F51408CF13E7EB7",
+        "Bytes": 51628446
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-ru-en/resolve/afe8c6c738ec81b6d033fd8f44f9678a639a7c67/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "25E7FF97B201BCE64AB9C39749761D657B70B8602BCBC1CE01C67F713E90FFDF",
+        "Bytes": 58931576
+      }
+    ]
+  },
+  {
+    "Direction": "sv-en",
+    "Repository": "Xenova/opus-mt-sv-en",
+    "Revision": "63a40256869b6a2b29a84e47aa7f03524fa5f3a2",
+    "Upstream": "Helsinki-NLP/opus-mt-sv-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/config.json",
+        "Sha256": "DFCD75781057F34A0FE027F3C85336B88B8A0C9AE788575BB8057281872623D5",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/source.spm",
+        "Sha256": "845278915AE2A708063110903D08C1E75EBB36607EF16EC9530955E1E95E62B8",
+        "Bytes": 815294
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/vocab.json",
+        "Sha256": "460D831EC477916C208F144B0D2368385D78626B946DCA077A3E86AE33F0F644",
+        "Bytes": 1404356
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/README.md",
+        "Sha256": "B635EAF48246588D4D1BE85C15A69F3CDD46DE83C88AC0A4D74F4CE2E8FEED41",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/onnx/encoder_model_quantized.onnx",
+        "Sha256": "07AE6446EF6520117DA869986E396EE55B05C471124FF851399701253FB306CC",
+        "Bytes": 48513438
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-sv-en/resolve/63a40256869b6a2b29a84e47aa7f03524fa5f3a2/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "29973AFCD575CC61D17133D432FA1A81D8BA1F4B717B247384C2EB11342A472D",
+        "Bytes": 55792232
+      }
+    ]
+  },
+  {
+    "Direction": "uk-en",
+    "Repository": "Xenova/opus-mt-uk-en",
+    "Revision": "b2ad6afa424aaeff8913ff350860b7a7b7c0a607",
+    "Upstream": "Helsinki-NLP/opus-mt-uk-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/config.json",
+        "Sha256": "40ACEB41A0B2D5822100B08CF6B80F13A246E1104EC4BDF0904D62661B75063A",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/source.spm",
+        "Sha256": "7ABD810B2DF512E6FE177F8732F6A0B3107614C84CC52ABA20D805B4CB0D7B6B",
+        "Bytes": 1007605
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/vocab.json",
+        "Sha256": "E8B45188B1DB6A4E0F960813E1BD493948AB0BC4D57B069EA03E77A78B7567D4",
+        "Bytes": 2490886
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/README.md",
+        "Sha256": "0739E424B90897B1D56AB5B54720CE3445308B4B4353E1A4D5340C0C90EA38D2",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/onnx/encoder_model_quantized.onnx",
+        "Sha256": "5E8C4C7E88742EFA0A8E013F3897F17E29357D54B8C86A13472669546D6ED561",
+        "Bytes": 51151774
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-uk-en/resolve/b2ad6afa424aaeff8913ff350860b7a7b7c0a607/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "FFA6D28D5FA0FF4ED930969D9CA4BAC2D80FF11172198E93DC6332DB49DDB36B",
+        "Bytes": 58451180
+      }
+    ]
+  },
+  {
+    "Direction": "vi-en",
+    "Repository": "Xenova/opus-mt-vi-en",
+    "Revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+    "Upstream": "Helsinki-NLP/opus-mt-vi-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/config.json",
+        "Sha256": "C62A203A0183755AF37B96A33CC125E7F74F97C1E90AAAE1D1F404FD8A42EEA8",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/source.spm",
+        "Sha256": "9DEB4F9E7BEBD3876F4BF238A9EB52F2F95A1FBA2210A4A8239167C55C15E67D",
+        "Bytes": 756168
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/vocab.json",
+        "Sha256": "F84F995B939F2411294D0723DF4AAF7853D0BD07143B530EDEC0697C7D75AA5D",
+        "Bytes": 1301077
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/README.md",
+        "Sha256": "0309DBABDA663D5083661A9240E74B637D7F3CD8D05326617493CF34A7FF5E62",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/onnx/encoder_model_quantized.onnx",
+        "Sha256": "FA7BD78E8BED6BDC03728F62F1592C4BB52D9E12795496604C1E990E102ABDB2",
+        "Bytes": 47133597
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-vi-en/resolve/541dfd72ec07e8f1563795e0224408ad8d729e80/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "540EDBCC08BAB0B42C03576A759FD9B4D5FC99996AC3178630733916DC2325CB",
+        "Bytes": 54401611
+      }
+    ]
+  },
+  {
+    "Direction": "xh-en",
+    "Repository": "Xenova/opus-mt-xh-en",
+    "Revision": "f2950c1503ae17ba532ea858914ea13838bc2ab1",
+    "Upstream": "Helsinki-NLP/opus-mt-xh-en",
+    "License": "apache-2.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/config.json",
+        "Sha256": "24081910DB35B27FFD6460DA2F3A669A66B9E615B495283E9B234D1BBF379680",
+        "Bytes": 1376
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/source.spm",
+        "Sha256": "7583F4E0E494A5CA26C637E63489641A46FF8E18F4B87C61D65EE666C6FCA727",
+        "Bytes": 813935
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/vocab.json",
+        "Sha256": "427D6EDB422E0148DC7ACB27FA2CC46F77AB2838583B06B823C9BBF05DC35714",
+        "Bytes": 1482102
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/README.md",
+        "Sha256": "400FB68CDA3AE6314C44F409819ADC33BEFE176FB8361AF28DD50C1C3DEFA43F",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/onnx/encoder_model_quantized.onnx",
+        "Sha256": "91340A48FD07EF1AFBD5C185C63DE983ABF98B2C2B62F1814429A37F73B00A01",
+        "Bytes": 50997150
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-xh-en/resolve/f2950c1503ae17ba532ea858914ea13838bc2ab1/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "F2D6680C914BF98C26F26A856160E1FDEB8E48A1CC0119507FBA63E45A3347DA",
+        "Bytes": 58295348
+      }
+    ]
+  },
+  {
+    "Direction": "zh-en",
+    "Repository": "Xenova/opus-mt-zh-en",
+    "Revision": "39d480d52a9ea3065a1f117adfe4dbc55de10e6f",
+    "Upstream": "Helsinki-NLP/opus-mt-zh-en",
+    "License": "cc-by-4.0",
+    "Files": [
+      {
+        "File": "config.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/config.json",
+        "Sha256": "293D318FCE41DBF04114EAC45037BB88A32D7C4EE21011A75E24A8B98CA45AD1",
+        "Bytes": 1389
+      },
+      {
+        "File": "source.spm",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/source.spm",
+        "Sha256": "E27A3A1B539F4959EC72EA60E453F49156289F95D4E6000B29332EFC45616203",
+        "Bytes": 804677
+      },
+      {
+        "File": "vocab.json",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/vocab.json",
+        "Sha256": "08A119A1DEFD522FA047CB5E3BFE3E89633E96CAA38CED0DC9CEE7EF1021A011",
+        "Bytes": 1747906
+      },
+      {
+        "File": "README.md",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/README.md",
+        "Sha256": "5CA823749AD58D6FAE244198CF3C3C5A7F319793B6D8904AF3029012A76CD589",
+        "Bytes": 571
+      },
+      {
+        "File": "encoder_model_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/onnx/encoder_model_quantized.onnx",
+        "Sha256": "84D5E171B626BC8B6B220D022AC58696E9528C25DEEACCA62B5CBF4364547A99",
+        "Bytes": 52899742
+      },
+      {
+        "File": "decoder_model_merged_quantized.onnx",
+        "Url": "https://huggingface.co/Xenova/opus-mt-zh-en/resolve/39d480d52a9ea3065a1f117adfe4dbc55de10e6f/onnx/decoder_model_merged_quantized.onnx",
+        "Sha256": "C6B7F04FF1BA0FBD1BF6852599B4C0CAD6FE512D57CD887F44EF36CF705424CB",
+        "Bytes": 60212804
+      }
+    ]
+  }
+]

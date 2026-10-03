@@ -31,7 +31,7 @@ Sicherheit: [SHA-256-Prüfsummen](https://github.com/vg2222/DesktopTools/release
 
 **Halte die Aufmerksamkeit deines Publikums.** Zeichne über den Bildschirm, zeige mit einem Laserpointer auf etwas, hebe ein Detail mit dem Scheinwerfer hervor oder bleibe mit Teleprompter und Timern auf Kurs.
 
-**Erledige auch die kleinen Aufgaben.** Lies Text aus einem Screenshot, übersetze Englisch und Russisch lokal, halte Notizen griffbereit, erstelle einen QR-Code oder schneide ein Bild vor dem Teilen zu.
+**Erledige auch die kleinen Aufgaben.** Lies Text aus einem Screenshot, übersetze lokal mit Offline-Sprachpaketen, halte Notizen griffbereit, erstelle einen QR-Code oder schneide ein Bild vor dem Teilen zu.
 
 ## 📸 Drei Wege für den Einstieg
 
@@ -55,7 +55,7 @@ Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualitä
 
 ## 🔒 Von Grund auf lokal
 
-Kein Konto. Keine Telemetrie. Keine Verarbeitung deiner Inhalte in der Cloud. Deine Screenshots, Notizen, Texterkennung, Englisch-Russisch-Übersetzungen und Hintergrundentfernungen werden auf deinem PC verarbeitet.
+Kein Konto. Keine Telemetrie. Keine Verarbeitung deiner Inhalte in der Cloud. Deine Screenshots, Notizen, Texterkennung, Übersetzungen und Hintergrundentfernungen werden auf deinem PC verarbeitet. Zusätzliche Übersetzungspakete werden einmal heruntergeladen; dein Text wird nie an den Modellserver gesendet.
 
 Du entscheidest, wo Bilder und Aufnahmen gespeichert werden. Automatische Updateprüfungen rufen Versionsinformationen von GitHub ab; deine Medien oder Notizen werden dabei nicht hochgeladen. Unter **Einstellungen → Updates** kannst du das Prüfintervall ändern oder automatische Prüfungen deaktivieren. Die Seite **Neuigkeiten** kann stündlich Ankündigungen aus diesem Repository abrufen; dafür gibt es einen eigenen Schalter. Sicherheitshinweise installieren Updates niemals ohne deine Bestätigung.
 
@@ -86,7 +86,7 @@ Unter **Diagnose** kannst du Systemkomponenten, Windows-OCR-Sprachen und Konflik
 
 Für Bildschirmaufnahmen, Offline-Übersetzung und Hintergrundentfernung wird Microsoft Visual C++ x64 Redistributable benötigt. Aufnahme und Videoschnitt verwenden Windows Media Foundation. Aufnahmeraten bis 144 FPS sind Zielwerte; die tatsächliche Leistung hängt von Quelle, Encoder und Hardware ab. Unter [Kompatibilität](docs/compatibility.md) findest du Einschränkungen bei der Aufnahme und den aktuellen Testumfang. Das Setup prüft die Visual-C++-Laufzeit und bietet bei Bedarf die Downloadseite von Microsoft an.
 
-Die App unterstützt **Englisch, Russisch, Deutsch, Französisch und Spanisch** sowie helle, dunkle und systemabhängige Darstellung. Die Oberflächensprachen sind unabhängig vom derzeit unterstützten Übersetzungspaar Englisch–Russisch.
+Die App unterstützt **Englisch, Russisch, Deutsch, Französisch und Spanisch** sowie helle, dunkle und systemabhängige Darstellung. Text tools bietet [20 Offline-Übersetzungssprachen](docs/offline-languages.md); Englisch–Russisch ist enthalten. Kompatible Windows-Sprachen stehen zuerst. OCR verwendet die in Windows installierten Erkennungsprogramme.
 
 <details>
 <summary><strong>🛠️ Bauen und mitwirken</strong></summary>

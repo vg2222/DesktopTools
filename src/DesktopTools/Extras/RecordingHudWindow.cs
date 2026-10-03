@@ -15,19 +15,20 @@ internal sealed class RecordingHudWindow : Window
 {
     private readonly TextBlock time = Ui.Text("00:00", 21, true);
     private readonly Ellipse indicator = new() { Width = 14, Height = 14, Fill = Brushes.Coral, Margin = new Thickness(0, 0, 14, 0) };
-    private readonly Button pause, stop;
+    private readonly Button pause, stop, marker;
     private readonly TextBlock sourceName;
     private readonly ProgressBar microphoneMeter = RecordingAudioMeter.Create(5, new Thickness(0));
     private readonly ProgressBar systemMeter = RecordingAudioMeter.Create(5, new Thickness(0));
     private readonly StackPanel meterRow = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 5, 0, 0) };
     private readonly string sourceLabel;
     private bool completed;
+    private bool markerShortcutAvailable;
     private readonly ColumnDefinition timeColumn;
     private (bool Paused, bool Stopping, bool Suspended, bool Starting)? displayedState;
 
-    internal RecordingHudWindow(string source, Action togglePause, Action requestStop, bool excludeFromCapture, MonitorInfo? display = null)
+    internal RecordingHudWindow(string source, Action togglePause, Action requestStop, bool excludeFromCapture, MonitorInfo? display = null, Action? addMarker = null)
     {
-        Title = L.T("Screen recorder"); Width = 470; Height = 78; ResizeMode = ResizeMode.NoResize;
+        Title = L.T("Screen recorder"); Width = addMarker == null ? 470 : 518; Height = 78; ResizeMode = ResizeMode.NoResize;
         WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent;
         ShowInTaskbar = false; Topmost = true; ShowActivated = false; WindowStartupLocation = WindowStartupLocation.Manual;
         MonitorInfo monitor;
@@ -45,7 +46,7 @@ internal sealed class RecordingHudWindow : Window
             NativeMethods.SetWindowPos(new WindowInteropHelper(this).Handle, new nint(-1),
                 (int)bounds.X, (int)bounds.Y, (int)bounds.Width, (int)bounds.Height, 0x10);
         };
-        var row = new Grid(); foreach (var width in new[] { 28d, 91, 1, double.NaN, 48, 48 }) row.ColumnDefinitions.Add(new ColumnDefinition { Width = double.IsNaN(width) ? new GridLength(1, GridUnitType.Star) : new GridLength(width) });
+        var row = new Grid(); foreach (var width in new[] { 28d, 91, 1, double.NaN, 48, 48, 48 }) row.ColumnDefinitions.Add(new ColumnDefinition { Width = double.IsNaN(width) ? new GridLength(1, GridUnitType.Star) : new GridLength(width) });
         timeColumn = row.ColumnDefinitions[1]; time.TextWrapping = TextWrapping.NoWrap;
         void Add(UIElement child, int column) { Grid.SetColumn(child, column); row.Children.Add(child); }
         Add(indicator, 0); Add(time, 1);
@@ -58,10 +59,13 @@ internal sealed class RecordingHudWindow : Window
         AutomationProperties.SetName(microphoneMeter, L.T("Microphone activity")); AutomationProperties.SetName(systemMeter, L.T("System audio activity"));
         meterRow.Children.Add(microphoneMeter); systemMeter.Margin = new Thickness(8, 0, 0, 0); meterRow.Children.Add(systemMeter); meterRow.Visibility = Visibility.Collapsed;
         sourceStack.Children.Add(meterRow); label.Children.Add(sourceStack); Add(label, 3);
+        marker = Ui.IconButton("Pin", L.T("Add marker"), () => addMarker?.Invoke());
+        marker.Visibility = addMarker == null ? Visibility.Collapsed : Visibility.Visible;
         pause = Ui.IconButton("Pause", L.T("Pause"), togglePause); stop = Ui.IconButton("Stop", L.T("Stop"), requestStop);
-        foreach (var button in new[] { pause, stop }) { button.Width = button.Height = 42; button.Margin = new Thickness(3, 0, 3, 0); button.VerticalAlignment = VerticalAlignment.Center; DesignTokens.SetButtonRadius(button, new CornerRadius(21)); }
+        foreach (var button in new[] { marker, pause, stop }) { button.Width = button.Height = 42; button.Margin = new Thickness(3, 0, 3, 0); button.VerticalAlignment = VerticalAlignment.Center; DesignTokens.SetButtonRadius(button, new CornerRadius(21)); }
+        marker.SetResourceReference(Control.BackgroundProperty, "Card");
         pause.SetResourceReference(Control.BackgroundProperty, "Card"); stop.Background = new SolidColorBrush(Color.FromRgb(222, 53, 65)); ((Shape)stop.Content).Fill = Brushes.White;
-        Add(pause, 4); Add(stop, 5);
+        Add(marker, 4); Add(pause, 5); Add(stop, 6);
         var card = Ui.Card(row, 16); card.Margin = new Thickness(0); card.CornerRadius = new CornerRadius(39); card.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); card.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = card;
         card.MouseLeftButtonDown += (_, e) => { if (e.LeftButton == MouseButtonState.Pressed) DragMove(); };
         SourceInitialized += (_, _) => NativeWindowService.TryExcludeFromCapture(this, excludeFromCapture, out _);
@@ -80,11 +84,18 @@ internal sealed class RecordingHudWindow : Window
         if (!stateChanged) return;
         displayedState = (paused, stopping, sourceSuspended, starting);
         indicator.Fill = stopping || paused || starting ? Brushes.Goldenrod : Brushes.Coral; Ui.Tip(time, label);
-        pause.Content = Ui.Icon(paused ? "Play" : "Pause"); string action = L.T(paused ? "Resume" : "Pause"); Ui.Tip(pause, action); AutomationProperties.SetName(pause, action); pause.IsEnabled = stop.IsEnabled = !stopping;
+        pause.Content = Ui.Icon(paused ? "Play" : "Pause"); string action = L.T(paused ? "Resume" : "Pause"); Ui.Tip(pause, action); AutomationProperties.SetName(pause, action); pause.IsEnabled = stop.IsEnabled = !stopping; marker.IsEnabled = !paused && !stopping && !starting && !sourceSuspended;
         if (sourceSuspended || starting) pause.IsEnabled = false;
         sourceName.Text = sourceSuspended ? L.T("Source paused") : sourceLabel; sourceName.ToolTip = sourceSuspended ? L.T("Source window is minimized or hidden. Recording is paused.") : sourceLabel;
     }
     internal void Finish() { completed = true; Close(); }
+    internal void SetMarkerShortcut(bool available) { markerShortcutAvailable = available; SetMarkerCount(0); }
+    internal void SetMarkerCount(int count)
+    {
+        string label = L.T("Add marker") + (markerShortcutAvailable ? " (Ctrl+Alt+M)" : "") + (count > 0 ? $" · {count}" : "");
+        Ui.Tip(marker, label);
+        AutomationProperties.SetName(marker, label);
+    }
     internal void UpdateMeters(double? microphone, double? systemAudio)
     {
         microphoneMeter.Visibility = microphone.HasValue ? Visibility.Visible : Visibility.Collapsed;

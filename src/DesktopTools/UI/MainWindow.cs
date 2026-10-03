@@ -206,7 +206,7 @@ internal sealed partial class MainWindow : Window
 
         Group(L.T("Text tools"),
             Ui.Row(L.T("Open text tools"), L.T("Review, copy or translate recognized text."), UtilityButton(L.T("Open"), controller.OpenTextToolsWindow, () => controller.Settings.TranslationEnabled || controller.Settings.ScreenTextEnabled)),
-            Ui.Row(L.T("Translation direction"), null, Ui.Choice(new[] { "English → Russian", "Russian → English" }, s.TranslationDirection == "ru-en" ? "Russian → English" : "English → Russian", v => Change(x => x.TranslationDirection = v == "Russian → English" ? "ru-en" : "en-ru"))));
+            Ui.Row(L.T("Translation direction"), null, new TranslationLanguagePicker(s.TranslationDirection, v => Change(x => x.TranslationDirection = v))));
         Group(L.T("Screen recorder"), Ui.Row(L.T("Screen recorder"), L.T("Record a monitor or region to MP4."), Ui.Button(L.T("Open"), controller.OpenScreenRecorder)));
         var wheelRows = new List<UIElement> { Ui.Row(L.T("Using the wheel"), L.T("Hold the shortcut, point to an action, then release. Escape or the center cancels."), Ui.Button(L.T("Open"), () => controller.OpenQuickWheel())) };
         for (int index=0;index<8;index++) { int slot=index; wheelRows.Add(Ui.Row(L.F($"Slot {index+1}"),L.T(index==0 ? "Clockwise from the top" : null), Ui.Choice(QuickWheelActions.Available, s.QuickWheelItems[index], value => Change(x => x.QuickWheelItems[slot]=value)))); }
@@ -219,7 +219,7 @@ internal sealed partial class MainWindow : Window
         Group(L.T("Image tools"), Ui.Row(L.T("Editor"), L.T("Resize, rotate, mirror and export PNG, JPEG or BMP."), Ui.Button(L.T("Open image tools"), controller.OpenImageTools)));
         Group(L.T("File shelf"), Ui.Row(L.T("Keep above other windows"), null, Ui.Toggle(s.FileShelfTopmost, v => Change(x => x.FileShelfTopmost = v))), Ui.Row(L.T("Open shelf"), L.T("Drop files and folders into a temporary shelf. Originals stay in place."), Ui.Button(L.T("Open file shelf"), controller.OpenFileShelf)));
 
-        Group(L.T("Floating notes"), Ui.Row(L.T("New notes stay above other windows"), null, Ui.Toggle(s.NotesTopmost, v => Change(x => x.NotesTopmost = v))), Ui.Row(L.T("Manage notes"), L.T("Closing a note keeps its text saved."), Ui.Button(L.T("Open notes"), controller.OpenFloatingNotes)));
+        Group(L.T("Floating notes"), Ui.Row(L.T("Always on top"), L.T("Applies to the notes window and floating notes."), Ui.Toggle(s.NotesTopmost, v => Change(x => x.NotesTopmost = v))), Ui.Row(L.T("Manage notes"), L.T("Closing a note keeps its text saved."), Ui.Button(L.T("Open notes"), controller.OpenFloatingNotes)));
 
         Group(L.T("Audio controls"), Ui.Row(L.T("Application mixer"), L.T("Apps appear when they create an audio session."), Ui.Button(L.T("Open audio controls"), controller.OpenAudioControls)));
 
@@ -443,6 +443,7 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
 
+        AutoRedactSettings();
         Group(L.T("Latest screenshot"), Ui.Row(L.T("Pin above applications"),L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)), Ui.Row(L.T("Edit screenshot"),L.T("Annotate, crop, or cover private details before sharing."), Ui.Button(L.T("Open editor"), controller.RedactLast)), Ui.Row(L.T("Save a copy"), null, Ui.Button(L.T("Save PNG"), controller.SaveLast)));
 
         var repeat = Ui.Button(L.T("Repeat region"), () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(true); }); repeat.IsEnabled = controller.CanRepeatCapture && s.CaptureEnabled;

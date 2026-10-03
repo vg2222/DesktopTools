@@ -10,7 +10,7 @@ using DesktopTools.UI;
 
 namespace DesktopTools.Extras;
 
-public sealed class ScreenshotEditorWindow : Window
+public sealed partial class ScreenshotEditorWindow : Window
 {
     private readonly ScreenshotEditDocument _document;
     private readonly BitmapSource _image;
@@ -35,11 +35,13 @@ public sealed class ScreenshotEditorWindow : Window
     private AnnotationTextEditor? _editor;
     private Point _textOrigin;
 
-    public ScreenshotEditorWindow(BitmapSource image, Action<BitmapSource> onExport, Action<string> report, bool applyToImage = false, string? editorLayout = null)
+    public ScreenshotEditorWindow(BitmapSource image, Action<BitmapSource> onExport, Action<string> report, bool applyToImage = false, string? editorLayout = null,
+        string? applyLabel = null, bool offerOriginal = false, AutoRedactOptions? autoRedact = null, bool reviewBeforeOutput = false,
+        Func<BitmapSource, ScreenshotExportAction, Task<bool>>? exportAsync = null)
     {
         editorLayout ??= "B";
         _image = image; _document = new(image); _onExport = onExport; _report = report;
-        Title = L.T("Edit screenshot · DesktopTools"); Width = 1060; Height = 760; MinWidth = 640; MinHeight = 480;
+        Title = L.T(applyLabel == null ? "Edit screenshot · DesktopTools" : "Edit guide image"); Width = 1060; Height = 760; MinWidth = 640; MinHeight = 480;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         SetResourceReference(BackgroundProperty, "Surface"); SetResourceReference(ForegroundProperty, "Text");
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; ResizeMode = ResizeMode.CanResizeWithGrip;
@@ -49,8 +51,10 @@ public sealed class ScreenshotEditorWindow : Window
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         layout.RowDefinitions.Add(new RowDefinition());
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T("Edit screenshot"), Close, L.T("Close"), 13, allowMinimize: true); layout.Children.Add(header);
-        var work = new Grid(); work.ColumnDefinitions.Add(new ColumnDefinition()); work.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(230) }); Grid.SetRow(work, 2); layout.Children.Add(work);
+        var header = UtilityWindowChrome.Header(this, "DesktopTools — " + L.T(applyLabel == null ? "Edit screenshot" : "Edit guide image"), Close, L.T("Close"), 13, allowMinimize: true); layout.Children.Add(header);
+        var work = new Grid(); work.ColumnDefinitions.Add(new ColumnDefinition { MinWidth = 250 }); work.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(6) }); work.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300), MinWidth = 240 }); Grid.SetRow(work, 2); layout.Children.Add(work);
+        var divider = new GridSplitter { Width = 6, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch, ResizeDirection = GridResizeDirection.Columns, ResizeBehavior = GridResizeBehavior.PreviousAndNext, Background = Brushes.Transparent };
+        Grid.SetColumn(divider, 1); work.Children.Add(divider);
         _surface = new Canvas { Width = image.PixelWidth, Height = image.PixelHeight, Background = Brushes.Transparent, ClipToBounds = true, Cursor = Cursors.Cross };
         _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
         _surface.Children.Add(_originalLayer);
@@ -74,7 +78,7 @@ public sealed class ScreenshotEditorWindow : Window
         var opacityLabel = Ui.Text(L.T("Opacity"), 12); opacityLabel.Margin = new Thickness(0, 18, 0, 8); properties.Children.Add(opacityLabel);
         var opacity = new Slider { Minimum = .1, Maximum = 1, Value = 1 }; System.Windows.Automation.AutomationProperties.SetName(opacity, L.T("Annotation opacity")); opacity.ValueChanged += (_, _) => _opacity = opacity.Value; properties.Children.Add(opacity);
         _status = Ui.Text("", 11, muted: true); _status.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(_status);
-        var propertyCard = Ui.Card(properties, 14); propertyCard.VerticalAlignment = VerticalAlignment.Top; propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 1); work.Children.Add(propertyCard);
+        var propertyCard = Ui.Card(new ScrollViewer { Content = properties, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }, 14); propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 2); work.Children.Add(propertyCard);
         var tools = new WrapPanel();
         void SelectTool(string tool) { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = tool; Update(); }
         foreach (var tool in new[] { "Select", "Pen", "Highlighter", "Arrow", "Rectangle", "Ellipse", "Text", "Eraser", "Crop" })
@@ -94,7 +98,16 @@ public sealed class ScreenshotEditorWindow : Window
         var toolCard = Ui.Card(tools, 6); toolCard.Margin = new Thickness(0, 0, 12, 0); toolCard.VerticalAlignment = VerticalAlignment.Center;
         var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
         var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; DockPanel.SetDock(actions, Dock.Right); footer.Children.Add(actions);
-        if (applyToImage) { var apply = Ui.Button(L.T("Apply to image"), () => Export("Apply"), true); apply.Content = Ui.IconLabel("Check", L.T("Apply to image"), primary: true); actions.Children.Add(apply); }
+        if (applyToImage)
+        {
+            if (offerOriginal)
+            {
+                var original = Ui.Button(L.T("Add original"), () => { _onExport(_image); Close(); });
+                original.Content = Ui.IconLabel("Image", L.T("Add original")); actions.Children.Add(original);
+            }
+            string label = applyLabel == null ? L.T("Apply to image") : L.T(applyLabel);
+            var apply = Ui.Button(label, () => Export("Apply"), true); apply.Content = Ui.IconLabel("Check", label, primary: true); actions.Children.Add(apply);
+        }
         else
         {
             var copy = Ui.Button(L.T("Copy screenshot"), () => Export("Copy")); copy.Content = Ui.IconLabel("Copy", L.T("Copy image")); actions.Children.Add(copy);
@@ -108,21 +121,38 @@ public sealed class ScreenshotEditorWindow : Window
             new(() => toolCard, "Annotation toolbar", "Choose a drawing tool, selection, eraser or crop. More tools are available in the menu."),
             new(() => backdrop, "Image canvas", "Draw on the image. Select moves an annotation; Undo restores the previous change."),
             new(() => propertyCard, "Properties", "Choose color, thickness and opacity for your annotations."),
-            new(() => actions, "Export image", applyToImage ? "Apply returns the edited image to the image editor without saving a file." : "Copy sends the result to the clipboard. Save creates a PNG file.")
+            new(() => actions, "Export image", applyLabel != null ? "Use the edited copy in the guide; the source image stays unchanged." : applyToImage ? "Apply returns the edited image to the image editor without saving a file." : "Copy sends the result to the clipboard. Save creates a PNG file.")
         }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         var shell = Ui.Card(layout, 14); shell.Margin = new Thickness(0); shell.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); shell.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = shell;
+        Loaded += InitializeEditorSize;
+        InitializeRedaction(properties, tools, actions, autoRedact, reviewBeforeOutput, exportAsync);
         Loaded += (_, _) => Motion.Reveal(layout);
         _surface.MouseLeftButtonDown += Begin; _surface.MouseMove += Move; _surface.MouseLeftButtonUp += Finish;
         _surface.LostMouseCapture += LostCapture; PreviewKeyDown += OnKey; Closed += Cleanup;
         Update();
     }
+    private void InitializeEditorSize(object sender, RoutedEventArgs args)
+    {
+        Loaded -= InitializeEditorSize;
+        var monitor = MonitorService.GetForWindow(this);
+        var area = monitor.WorkingArea;
+        int width = Math.Max(1, (int)Math.Round(area.Width * .75)), height = Math.Max(1, (int)Math.Round(area.Height * .75));
+        MinWidth = Math.Min(860, width / monitor.ScaleX); MinHeight = Math.Min(500, height / monitor.ScaleY);
+        Width = width / monitor.ScaleX; Height = height / monitor.ScaleY;
+        // Work area and HWND placement use physical pixels, including monitors
+        // with negative origins; WPF dimensions above remain monitor-local DIPs.
+        NativeMethods.SetWindowPos(new System.Windows.Interop.WindowInteropHelper(this).Handle, IntPtr.Zero,
+            (int)Math.Round(area.Left + (area.Width - width) / 2), (int)Math.Round(area.Top + (area.Height - height) / 2),
+            width, height, 0x0004 | 0x0010);
+    }
     private Point Position(MouseEventArgs e) { var p = e.GetPosition(_surface); return new(Math.Clamp(p.X, 0, _image.PixelWidth), Math.Clamp(p.Y, 0, _image.PixelHeight)); }
-    private Annotation Current() => new() { Kind = _tool == "Crop" ? AnnotationKind.Rectangle : Enum.Parse<AnnotationKind>(_tool), Points = _points.ToArray(), Color = _color, Thickness = _thickness, Opacity = _opacity };
+    private Annotation Current() => new() { Kind = _tool == "Crop" ? AnnotationKind.Rectangle : Enum.Parse<AnnotationKind>(_tool), Points = _points.ToArray(), Color = _color, Thickness = _thickness, Opacity = _opacity, RedactionStyle = _redactionStyle };
     private void Begin(object sender, MouseButtonEventArgs e)
     {
         if (_showingOriginal) { e.Handled = true; return; }
         if (_editor != null && _editor.IsMouseOver) return;
         CommitText(); CancelGesture(); var point = Position(e);
+        if (TryBeginRedactionResize(point)) { e.Handled = true; return; }
         if (_tool is "Select" or "Eraser")
         {
             var hit = _document.Items.LastOrDefault(a => AnnotationRenderer.Hit(a, point));
@@ -162,6 +192,7 @@ public sealed class ScreenshotEditorWindow : Window
     {
         if (!_gesture) return;
         var point = Position(e);
+        if (ResizeRedaction(point)) { e.Handled = true; return; }
         if (_tool == "Select" && _movingOriginal != null)
         {
             var bounds = AnnotationRenderer.Bounds(_movingOriginal); var delta = point - _points[0];
@@ -205,7 +236,7 @@ public sealed class ScreenshotEditorWindow : Window
         if (!string.IsNullOrWhiteSpace(_editor.Text)) _document.Add(new Annotation { Kind = AnnotationKind.Text, Points = [_textOrigin], Text = _editor.Text, TextWidth = _editor.ExportWidth, FontFamily = _editor.FontFamily.Source, FontSize = _editor.FontSize, Bold = _editor.FontWeight == FontWeights.Bold, Italic = _editor.FontStyle == FontStyles.Italic, Color = ((SolidColorBrush)_editor.Foreground).Color, Opacity = _opacity });
         _surface.Children.Remove(_editor); _editor = null; Update();
     }
-    private void CancelGesture() { _gesture = false; _movingOriginal = null; _erasing.Clear(); _drawing.HiddenIds = null; _points.Clear(); _drawing.Pending = null; if (_surface.IsMouseCaptured) _surface.ReleaseMouseCapture(); _drawing.InvalidateVisual(); }
+    private void CancelGesture() { _gesture = false; _movingOriginal = null; _resizeHandle = -1; _erasing.Clear(); _drawing.HiddenIds = null; _points.Clear(); _drawing.Pending = null; if (_surface.IsMouseCaptured) _surface.ReleaseMouseCapture(); _drawing.InvalidateVisual(); }
     private void LostCapture(object sender, MouseEventArgs e) { if (_gesture) CancelGesture(); }
     private void Undo() { CommitText(); CancelGesture(); _document.Undo(); Update(); }
     private void Redo() { CommitText(); CancelGesture(); _document.Redo(); Update(); }
@@ -227,6 +258,7 @@ public sealed class ScreenshotEditorWindow : Window
         _status.Text = _showingOriginal ? L.T("Viewing original. Edits are still in your working copy.")
             : L.F($"{_document.Crop.Width} × {_document.Crop.Height} pixels   •   {hint}");
         _drawing.InvalidateVisual();
+        UpdateRedactionReview();
     }
     private void ExtractText()
     {
@@ -234,18 +266,24 @@ public sealed class ScreenshotEditorWindow : Window
         try { new OcrTextWindow(_document.Export(), _report) { Owner = this }.ShowDialog(); }
         catch (Exception ex) { _report(L.T("Could not extract text: ") + ex.Message); }
     }
-    private void Export(string action)
+    private async void Export(string action)
     {
         if (_showingOriginal) ToggleOriginal();
         CommitText(); CancelGesture();
+        UpdateRedactionReview();
+        if (!_reviewState.CanExport || _exporting) return;
+        _exporting = true; RefreshReviewControls();
         try
         {
             var result = _document.Export();
-            if (action == "Save") ImageOutput.Save(this, result, _report);
-            else _onExport(result);
-            if (action == "Apply") { Close(); return; }
+            bool success;
+            if (_exportAsync != null) success = await _exportAsync(result, Enum.Parse<ScreenshotExportAction>(action));
+            else if (action == "Save") success = ImageOutput.Save(this, result, _report);
+            else { _onExport(result); success = true; }
+            if (success && (action == "Apply" || _reviewBeforeOutput)) { Close(); return; }
         }
         catch (Exception ex) { _report(L.T("Could not export the screenshot: ") + ex.Message); }
+        finally { _exporting = false; if (!_reviewClosed) RefreshReviewControls(); }
     }
     private void OnKey(object sender, KeyEventArgs e)
     {
@@ -259,6 +297,7 @@ public sealed class ScreenshotEditorWindow : Window
     }
     private void Cleanup(object? sender, EventArgs args)
     {
+        CloseRedactionReview();
         CancelGesture(); _surface.MouseLeftButtonDown -= Begin; _surface.MouseMove -= Move; _surface.MouseLeftButtonUp -= Finish; _surface.LostMouseCapture -= LostCapture;
         PreviewKeyDown -= OnKey; Closed -= Cleanup; _surface.Children.Clear(); _editor = null; Content = null;
     }
@@ -267,15 +306,31 @@ public sealed class ScreenshotEditorWindow : Window
         public Annotation? Pending { get; set; }
         public Guid? SelectedId { get; set; }
         public HashSet<Guid>? HiddenIds { get; set; }
+        public IReadOnlyList<SensitiveFinding> Suggestions { get; set; } = [];
+        public Guid? SelectedFinding { get; set; }
+        internal double HandleRadius
+        {
+            get { var window = Window.GetWindow(this); double scale = window == null ? 1 : TransformToAncestor(window).TransformBounds(new Rect(0, 0, 1, 1)).Width; return 5 / Math.Max(.01, scale); }
+        }
         protected override void OnRender(DrawingContext dc)
         {
-            dc.DrawImage(image, new Rect(0, 0, image.PixelWidth, image.PixelHeight));
-            AnnotationRenderer.Draw(dc, document.Items.Where(a => a.Kind != AnnotationKind.Redaction && a.Id != Pending?.Id && HiddenIds?.Contains(a.Id) != true));
-            if (Pending != null && Pending.Kind != AnnotationKind.Redaction) AnnotationRenderer.Draw(dc, [Pending]);
-            foreach (var cover in document.Items.Where(a => a.Kind == AnnotationKind.Redaction && a.Id != Pending?.Id && HiddenIds?.Contains(a.Id) != true).Concat(Pending?.Kind == AnnotationKind.Redaction ? new[] { Pending } : Array.Empty<Annotation>()))
-                if (cover.Points.Count > 1) dc.DrawRectangle(Brushes.Black, null, new Rect(cover.Points[0], cover.Points[^1]));
+            dc.DrawImage(document.RenderPreview(Pending, HiddenIds), new Rect(0, 0, image.PixelWidth, image.PixelHeight));
+            var accent = (TryFindResource("Accent") as Brush) ?? (TryFindResource("Selected") as Brush) ?? SystemColors.HighlightBrush;
+            int number = 0;
+            foreach (var finding in Suggestions)
+            {
+                dc.DrawRectangle(null, new Pen(accent, finding.Id == SelectedFinding ? HandleRadius / 2 : HandleRadius / 4) { DashStyle = DashStyles.Dash }, new Rect(finding.Bounds.X, finding.Bounds.Y, finding.Bounds.Width, finding.Bounds.Height));
+                var label = new FormattedText((++number).ToString(System.Globalization.CultureInfo.CurrentCulture), System.Globalization.CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, new Typeface((FontFamily)FindResource("BodyFont"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal), HandleRadius * 2.4,
+                    (Brush)FindResource("AccentText"), VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                var badge = new Rect(finding.Bounds.X, Math.Max(0, finding.Bounds.Y - label.Height - HandleRadius), label.Width + HandleRadius * 2, label.Height + HandleRadius);
+                dc.DrawRoundedRectangle(accent, null, badge, HandleRadius / 2, HandleRadius / 2);
+                dc.DrawText(label, new Point(badge.X + HandleRadius, badge.Y + HandleRadius / 2));
+            }
             var selected = Pending?.Id == SelectedId ? Pending : document.Items.FirstOrDefault(a => a.Id == SelectedId);
             if (selected != null) dc.DrawRectangle(null, new Pen(Brushes.DodgerBlue, 1.5) { DashStyle = DashStyles.Dash }, AnnotationRenderer.Bounds(selected));
+            if (selected?.Kind == AnnotationKind.Redaction && selected.Points.Count >= 2)
+                foreach (var point in RedactionHandles(new Rect(selected.Points[0], selected.Points[^1]))) dc.DrawRectangle(accent, new Pen(SystemColors.WindowBrush, HandleRadius / 5), new Rect(point.X - HandleRadius, point.Y - HandleRadius, HandleRadius * 2, HandleRadius * 2));
             var crop = document.Crop;
             var bounds = new Rect(crop.X, crop.Y, crop.Width, crop.Height);
             var mask = new CombinedGeometry(GeometryCombineMode.Exclude, new RectangleGeometry(new Rect(RenderSize)), new RectangleGeometry(bounds));

@@ -11,7 +11,7 @@ internal sealed partial class MainWindow
 {
     private static string FeatureSettingsSection(string id) => id switch
     {
-        "capture" => "Capture behavior", "pin" => "Pin screenshot", "draw" => "Drawing defaults",
+        "capture" => "Capture behavior", "pin" => "Pin screenshot", "guide" => "Step-by-step guide", "draw" => "Drawing defaults",
         "laser" => "Laser pointer", "spotlight" => "Cursor spotlight", "freeze" => "Freeze frame",
         "record" => "Screen recorder", "prompter" => "Teleprompter", "images" => "Image tools",
         "video" => "Video editor", "color" => "Screen eyedropper", "ocr" => "Scan screen text",
@@ -45,9 +45,16 @@ internal sealed partial class MainWindow
                 Ui.Row(L.T("Pin above applications"), L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)));
             return;
         }
+        if (id == "guide")
+        {
+            Group(L.T("Step-by-step guide"),
+                Ui.Row(L.T("Build a guide"), L.T("Arrange screenshots, write captions, and export one PNG."),
+                    Ui.Button(L.T("Open guide builder"), controller.OpenStepGuide)));
+            return;
+        }
         if (id == "capture")
         {
-            visibleFeatureSections = [L.T("Capture behavior"), L.T("Capture again")];
+            visibleFeatureSections = [L.T("Capture behavior"), L.T("Sensitive data"), L.T("Capture again")];
             Capture();
             return;
         }
@@ -63,9 +70,7 @@ internal sealed partial class MainWindow
             var settings = controller.Settings;
             Group(L.T("Local translation"),
                 Ui.Row(L.T("Translation direction"), null,
-                    Ui.Choice(new[] { "English → Russian", "Russian → English" },
-                        settings.TranslationDirection == "ru-en" ? "Russian → English" : "English → Russian",
-                        value => Change(state => state.TranslationDirection = value == "Russian → English" ? "ru-en" : "en-ru"))),
+                    new TranslationLanguagePicker(settings.TranslationDirection, value => Change(state => state.TranslationDirection = value))),
                 Ui.Row(L.T("Open text tools"), L.T("Review, copy or translate recognized text."),
                     Ui.Button(L.T("Open"), controller.OpenTextToolsWindow)));
             return;
@@ -77,7 +82,7 @@ internal sealed partial class MainWindow
             if (languages.Count > 0)
             {
                 var choice = new ComboBox { ItemsSource = languages,
-                    SelectedItem = languages.FirstOrDefault(language => language.Tag == controller.Settings.ScreenTextLanguage) ?? languages[0],
+                    SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage),
                     MinWidth = 180 };
                 choice.SelectionChanged += (_, _) =>
                 {

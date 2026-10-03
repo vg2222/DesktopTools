@@ -48,11 +48,13 @@ internal static class NotesCollectionChecks
         }
         string directory = Path.Combine(Environment.CurrentDirectory, "notes-collection-" + Guid.NewGuid().ToString("N"));
         var store = new NotesStore(directory); store.Load();
-        store.Save(new List<FloatingNote> { new FloatingNote { Title = "План встречи", Body = "Обсудить макеты\nПроверить запись" }, new FloatingNote { Title = "Ideas", Body = "Release notes" } });
+        store.Save(new List<FloatingNote> { new FloatingNote { Title = "План встречи", Body = "Обсудить макеты\nПроверить запись", AttachedProcess = "missing-app", AttachedWindow = "Closed window" }, new FloatingNote { Title = "Ideas", Body = "Release notes" } });
         using (var service = new FloatingNotesService(directory, _ => { }))
         {
             service.Show(); await Task.Delay(80);
             var window = Field<NotesWindow>(service, "manager");
+            Check(!window.Topmost, "Notes manager is on top by default");
+            Check(!Children(window).OfType<Button>().Any(x => x.Name is "NewWindowNote" or "AttachNoteToWindow"), "Removed window-attachment controls are still visible");
             var controls = Children(window).OfType<TextBox>().ToArray();
             var search = controls.Single(x => x.Name == "NotesSearch"); var title = controls.Single(x => x.Name == "NoteTitle"); var body = controls.Single(x => x.Name == "NoteBody");
             search.Text = "release";
@@ -70,6 +72,11 @@ internal static class NotesCollectionChecks
             body.Undo(); Check(second.Body == "Release notes", "Undo crossed between notes"); window.Select(model);
             typeof(FloatingNotesService).GetMethod("Open", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(service, new object[] { model });
             var floating = Field<Dictionary<Guid, Window>>(service, "windows")[model.Id];
+            Check(floating.IsVisible && !floating.Topmost, "Legacy attached note was hidden or stayed on top by default");
+            service.DefaultTopmost = true;
+            Check(window.Topmost && floating.Topmost, "Notes topmost setting did not update open windows");
+            service.DefaultTopmost = false;
+            Check(!window.Topmost && !floating.Topmost, "Notes windows did not return to normal z-order");
             title.Text = "Совещание • café"; body.Text = "One\nДва\n三"; await Task.Delay(30);
             var floatingEditors = Children(floating).OfType<TextBox>().ToArray();
             Check(floatingEditors.Any(x => x.Text == body.Text), "Collection edit did not reach floating editor");

@@ -34,12 +34,14 @@ public static class FeatureAvailability
     public static bool IsAvailable(AppSettings settings, string id) => id switch
     {
         "pin" => settings.CaptureEnabled,
+        "guide" => settings.CaptureEnabled,
         "freeze" => settings.FreezeEnabled && settings.DrawingEnabled,
         _ => All.FirstOrDefault(f => f.Id == id)?.Read(settings) ?? false
     };
     public static void Enable(AppSettings settings, string id)
     {
         if (id == "pin") id = "capture";
+        if (id == "guide") id = "capture";
         if (id == "freeze") settings.DrawingEnabled = true;
         All.FirstOrDefault(f => f.Id == id)?.Write(settings, true);
     }

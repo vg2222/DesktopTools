@@ -2,6 +2,7 @@ namespace DesktopTools.Core;
 
 public sealed class AppSettings
 {
+    public AutoRedactOptions AutoRedact { get; set; } = new();
     public bool AutomaticUpdateChecks { get; set; } = true;
     public double UpdateCheckHours { get; set; } = 1;
     public bool AutomaticNewsChecks { get; set; } = true;
@@ -55,7 +56,7 @@ public sealed class AppSettings
     public bool FileShelfEnabled { get; set; } = true;
     public bool FloatingNotesEnabled { get; set; } = true;
     public bool AudioControlsEnabled { get; set; } = true;
-    public bool NotesTopmost { get; set; } = true;
+    public bool NotesTopmost { get; set; } = false;
     public bool FileShelfTopmost { get; set; } = true;
 
     public int Version { get; set; } = 1;

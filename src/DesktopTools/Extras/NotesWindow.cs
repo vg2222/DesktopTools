@@ -23,7 +23,6 @@ internal sealed class NotesWindow : Window
     private readonly Border sheet;
     private readonly StackPanel empty;
     private readonly MenuItem delete;
-    private readonly MenuItem detach;
     private FloatingNote? selected;
 
     internal NotesWindow(IReadOnlyList<FloatingNote> notes, Action create, Action<FloatingNote> remove,
@@ -65,12 +64,8 @@ internal sealed class NotesWindow : Window
         floating.Content = Ui.IconLabel("Pin", L.T("Open as floating note")); floating.HorizontalAlignment = HorizontalAlignment.Left;
         floating.BorderThickness = new Thickness(0); floating.Background = Brushes.Transparent; toolbar.Children.Add(floating);
         var menu = new ContextMenu();
-        var pin = new MenuItem { Header = L.T("Always on top"), IsCheckable = true, IsChecked = Topmost };
-        pin.Click += (_, _) => Topmost = pin.IsChecked;
         delete = new MenuItem { Header = L.T("Delete note") }; delete.Click += (_, _) => { if (selected != null) remove(selected); };
-        detach = new MenuItem { Header = L.T("Detach from window") };
-        detach.Click += (_, _) => { if (selected != null) { selected.AttachedProcess = null; selected.AttachedWindow = null; Refresh(); } };
-        menu.Items.Add(pin); menu.Items.Add(new Separator()); menu.Items.Add(detach); menu.Items.Add(delete);
+        menu.Items.Add(delete);
         options.ContextMenu = menu; options.Click += (_, _) => { menu.PlacementTarget = options; menu.Placement = PlacementMode.Bottom; menu.IsOpen = true; };
         DockPanel.SetDock(toolbar, Dock.Top); content.Children.Add(toolbar);
         var footer = new DockPanel { Margin = new Thickness(10, 16, 0, 0) };
@@ -109,7 +104,6 @@ internal sealed class NotesWindow : Window
     {
         if (selected == null || !notes.Contains(selected)) selected = notes.FirstOrDefault();
         editor.SetNote(selected); delete.IsEnabled = floating.IsEnabled = selected != null;
-        detach.IsEnabled = selected?.AttachedWindow != null;
         sheet.Visibility = selected != null ? Visibility.Visible : Visibility.Collapsed;
         empty.Visibility = selected == null ? Visibility.Visible : Visibility.Collapsed;
         RefreshList();
@@ -133,7 +127,7 @@ internal sealed class NotesWindow : Window
             item.Title.Text = string.IsNullOrWhiteSpace(note.Title) ? L.T("Untitled note") : note.Title;
             string previewText = note.Body.Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ');
             string body = string.IsNullOrWhiteSpace(previewText) ? L.T("Empty note") : previewText[..Math.Min(75, previewText.Length)];
-            item.Preview.Text = note.AttachedWindow == null ? body : L.T("Attached to") + " " + note.AttachedWindow + " · " + body;
+            item.Preview.Text = body;
             item.Row.SetResourceReference(BackgroundProperty, note == selected ? "Selected" : "GlassSurface");
             AutomationProperties.SetName(item.Row, item.Title.Text);
             bool matches = note.Title.Contains(query, StringComparison.CurrentCultureIgnoreCase) || note.Body.Contains(query, StringComparison.CurrentCultureIgnoreCase);

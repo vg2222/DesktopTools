@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -27,6 +28,7 @@ internal static class VideoWindowChecks
     public static Task RunFrameLayoutAsync()
     {
         var window = new VideoEditorWindow(_ => { }) { Width = 900, Height = 600 };
+        TestDisplayPlacement.OnSecondary(window);
         try
         {
             window.Show();
@@ -56,10 +58,12 @@ internal static class VideoWindowChecks
         try
         {
             foreach (var language in focused ? new[] { "en" } : L.Languages)
-            foreach (var theme in focused ? new[] { "Light" } : new[] { "Light", "Dark" })
+            foreach (var theme in new[] { "Light", "Dark" })
             {
                 L.Use(language); controller.UpdateSettings(s => { s.Theme = theme; s.Animations = false; });
-                string? error = null; var window = new VideoEditorWindow(message => error = message) { Width = 800, Height = 650 };
+                string? error = null; var window = new VideoEditorWindow(message => error = message,
+                    focused ? _ => [new RecordingMarker(1, TimeSpan.FromSeconds(1)), new RecordingMarker(2, TimeSpan.FromSeconds(3))] : null) { Width = 800, Height = 650 };
+                TestDisplayPlacement.OnSecondary(window);
                 window.Show(); await window.LoadAsync(source);
                 Check(!Field<bool>(window, "busy"), "Thumbnail loading blocked video editing");
                 await Field<Task>(window, "thumbnailTask").WaitAsync(TimeSpan.FromSeconds(15));
@@ -69,6 +73,24 @@ internal static class VideoWindowChecks
                 Check(!Field<DispatcherTimer>(window, "playbackTimer").IsEnabled, "Opening video autoplayed");
                 var timeline = Field<DesktopTools.UI.VideoTrimTimeline>(window, "timeline");
                 Check(Math.Abs(timeline.End - Field<VideoInfo>(window, "source").Duration) < .01, "Timeline did not initialize with source duration");
+                if (focused)
+                {
+                    Check(timeline.Markers.Count == 2 && timeline.MarkerAt(10 + (timeline.ActualWidth - 20) / 4)?.Number == 1,
+                        "Recording markers are not mapped to their timeline positions");
+                    var splitter = Walk(window).OfType<GridSplitter>().Single();
+                    var workspace = (Grid)splitter.Parent; double previousWidth = workspace.ColumnDefinitions[2].ActualWidth;
+                    splitter.RaiseEvent(new DragStartedEventArgs(0, 0) { RoutedEvent = Thumb.DragStartedEvent });
+                    splitter.RaiseEvent(new DragDeltaEventArgs(-50, 0) { RoutedEvent = Thumb.DragDeltaEvent });
+                    splitter.RaiseEvent(new DragCompletedEventArgs(-50, 0, false) { RoutedEvent = Thumb.DragCompletedEvent });
+                    window.UpdateLayout();
+                    Check(workspace.ColumnDefinitions[2].ActualWidth > previousWidth + 40, "Dragging did not resize the video settings panel");
+                    var speed = Field<ComboBox>(window, "playbackSpeed"); speed.SelectedItem = "1.5×";
+                    Check(Math.Abs(Field<MediaElement>(window, "media").SpeedRatio - 1.5) < .001, "Preview playback speed is not applied");
+                    Field<Slider>(window, "audioVolume").Value = 65;
+                    Field<ComboBox>(window, "outputQuality").SelectedItem = "High";
+                    var edit = (VideoEdit)typeof(VideoEditorWindow).GetMethod("ReadEdit", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null)!;
+                    Check(edit.VolumePercent == 65 && edit.OutputQuality == "High", "Video audio and quality settings did not reach the edit model");
+                }
                 Check(timeline.Thumbnails.Count == 10 && timeline.Thumbnails.All(t => t.IsFrozen && t.PixelWidth == 128), "Timeline thumbnails missing or not bounded");
                 var firstColor = ScreenshotPixel.Read(timeline.Thumbnails[0], 32, 24); var lastColor = ScreenshotPixel.Read(timeline.Thumbnails[^1], 32, 24);
                 Check(firstColor.R > 200 && firstColor.G < 40 && lastColor.G > 200, "Thumbnails do not represent distinct video times");
@@ -79,6 +101,9 @@ internal static class VideoWindowChecks
                     Check(!caret.IsEmpty && caret.Top >= 0 && caret.Bottom <= input.ActualHeight, "Video numeric text is clipped");
                 }
                 Render(window, "video-ui-" + language + "-" + theme);
+                Walk(window).OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == L.T("Output"))
+                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                window.UpdateLayout(); Render(window, "video-output-options-" + language + "-" + theme);
                 var aspectPreset = Field<ComboBox>(window, "cropRatio");
                 Walk(window).OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == L.T("Frame")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Expander? cropOptions = null;

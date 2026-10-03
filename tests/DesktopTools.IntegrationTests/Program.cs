@@ -35,7 +35,8 @@ internal static class Program
         {
             try
             {
-                if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);
+                if (args.Contains("--auto-redact-only")) await Test("Auto Redact manual review and capture privacy", AutoRedactChecks.RunAsync);
+                else if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);
                 else if (args.Contains("--record-prerequisites-only")) await Test("Recorder prerequisite UI guard and retry", RecordingPrerequisiteChecks.RunAsync);
                 else if (args.Contains("--native-runtime-features-only")) await Test("Native runtime warnings for translation and background removal", NativeRuntimeFeatureChecks.RunAsync);
                 else if (args.Contains("--updates-only")) await Test("Update discovery, persistent controls, notes feedback and progress", UpdateChecks.RunAsync);
@@ -46,6 +47,8 @@ internal static class Program
                 else if (args.Contains("--release-polish-only")) await Test("Release window, setup and recorder corrections", ReleasePolishChecks.RunAsync);
                 else if (args.Contains("--codec-compatibility-only")) await Test("Generated codec import and trimmed exports", CodecCompatibilityChecks.RunAsync);
                 else if (args.Contains("--record-sustained-only")) await Test("Sustained numbered recording", RecordingThroughputChecks.RunSustainedAsync);
+                else if (args.Contains("--record-display-only")) await Test("MSI display recording with regular source painting", RecordingThroughputChecks.RunDisplayAsync);
+                else if (args.Contains("--record-primary-display-only")) await Test("Primary display recording with regular source painting", RecordingThroughputChecks.RunPrimaryDisplayAsync);
                 else if (args.Contains("--record-throughput-only")) await Test("Numbered recording frames and sustained capture", RecordingThroughputChecks.RunAsync);
                 else if (args.Contains("--record-state-only")) await Test("Recorder clock, source changes and pending-start cancellation", RecordingStateChecks.RunAsync);
                 else if (args.Contains("--record-encoding-only")) await Test("Hardware-requested and software recording, preferences and profiles", RecordingChecks.EncodingAsync);
@@ -72,6 +75,7 @@ internal static class Program
                 else if (args.Contains("--prompter-only")) await Test("Prompter studio, presentation and persistence", PrompterStudioChecks.RunAsync);
                 else if (args.Contains("--collection-utilities-only")) await Test("Shelf originals and audio mixer lifecycle", CollectionUtilitiesChecks.RunAsync);
                 else if (args.Contains("--notes-only")) await Test("Notes collection search, synchronization and persistence", NotesCollectionChecks.RunAsync);
+                else if (args.Contains("--step-guide-only")) await Test("Numbered screenshot guide export and original safety", StepGuideChecks.RunAsync);
                 else if (args.Contains("--setup-transitions-only")) await Test("Setup forward, back, rapid and reduced-motion transitions", SetupTransitionChecks.RunAsync);
                 else if (args.Contains("--setup-only")) await Test("Setup resume, completion, skip and preference preservation", SetupChecks.RunAsync);
                 else if (args.Contains("--chrome-pointer-order-only")) await Test("Isolated Chrome pointer drags and explicit pin", ChromeWindowOrderChecks.RunPointerAsync);
@@ -96,6 +100,7 @@ internal static class Program
                 else if (args.Contains("--recorder-only")) await Test("Screen recording lifecycle and MP4 output", RecordingChecks.RunAsync);
                 else if (args.Contains("--text-tools-only")) await Test("Text tools animation, translation, OCR and cancellation", TextToolsChecks.RunAsync);
                 else if (args.Contains("--translation-only")) await Test("Local EN-RU translation", TranslationChecks.RunAsync);
+                else if (args.Contains("--offline-packs-only")) await Test("Offline model downloads, pivot translation, integrity and Windows OCR language matching", OfflineLanguageChecks.RunAsync);
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);
                 else if (args.Contains("--toggles-only")) await Test("Switch animations survive Home, utility and aid updates", ToggleAnimationChecks.RunAsync);
                 else if (args.Contains("--blackout-only")) await Test("Sharing blackout capture, cancellation and settings", BlackoutChecks.RunAsync);

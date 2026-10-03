@@ -14,35 +14,53 @@ internal static class LocalTranslation
     private static readonly SemaphoreSlim gate = new(1, 1);
     internal const int MaxCharacters = 4000, MaxTokens = 256;
     private sealed record Asset(string File, string Sha256);
-    internal static async Task<string> TranslateAsync(string text, string direction, CancellationToken token = default)
+    internal static async Task<string> TranslateAsync(string text, string direction, CancellationToken token = default, string? packRoot = null)
     {
-        if (direction is not "en-ru" and not "ru-en") throw new ArgumentException("Unsupported translation direction.");
+        string[] route = TranslationPacks.Route(direction);
         if (string.IsNullOrWhiteSpace(text)) throw new ArgumentException(L.T("Enter text to translate."));
         if (text.Length > MaxCharacters) throw new ArgumentException(L.T("Select a shorter passage (up to 4,000 characters)."));
         await gate.WaitAsync(token);
         try { return await Task.Run(() =>
         {
-            // OPUS-MT is sentence-trained. Preserve separators and avoid losing short opening sentences.
-            var parts = Regex.Split(text, @"(?<=[.!?。！？])(\s+)|(\r?\n+)");
-            if (parts.Count(p => !string.IsNullOrWhiteSpace(p)) > 32) throw new ArgumentException(L.T("Translate up to 32 sentences at a time."));
-            var result = new StringBuilder();
-            foreach (string part in parts) { token.ThrowIfCancellationRequested(); result.Append(string.IsNullOrWhiteSpace(part) ? part : Translate(part, direction, token)); }
-            return result.ToString();
+            string result = text;
+            foreach (string pair in route)
+            {
+                string directory = TranslationPacks.DirectoryFor(pair, packRoot) ?? throw new FileNotFoundException(L.T("Download the offline language pack first."));
+                Verify(directory, pair, token);
+                // OPUS-MT is sentence-trained. Preserve separators in each stage of a pivot translation.
+                var parts = Regex.Split(result, @"(?<=[.!?。！？])(\s+)|(\r?\n+)");
+                if (parts.Count(p => !string.IsNullOrWhiteSpace(p)) > 32) throw new ArgumentException(L.T("Translate up to 32 sentences at a time."));
+                var builder = new StringBuilder();
+                foreach (string part in parts) { token.ThrowIfCancellationRequested(); builder.Append(string.IsNullOrWhiteSpace(part) ? part : Translate(part, directory, token)); }
+                result = builder.ToString();
+            }
+            return result;
         }, token); }
         finally { gate.Release(); }
     }
-    private static string Translate(string text, string direction, CancellationToken token)
+    private static void Verify(string directory, string direction, CancellationToken token)
     {
         string root = Path.Combine(AppContext.BaseDirectory, "Assets", "Translation");
-        string directory = Path.Combine(root, direction);
-        if (!File.Exists(Path.Combine(root, "manifest.json"))) throw new FileNotFoundException(L.T("Translation models are missing. Extract the complete DesktopTools package."));
-        var assets = JsonSerializer.Deserialize<Asset[]>(File.ReadAllText(Path.Combine(root, "manifest.json")))!;
-        foreach (var asset in assets.Where(a => a.File.StartsWith(direction + "/", StringComparison.Ordinal)))
+        IEnumerable<Asset> assets = string.Equals(directory, Path.Combine(root, direction), StringComparison.OrdinalIgnoreCase)
+            ? JsonSerializer.Deserialize<Asset[]>(File.ReadAllText(Path.Combine(root, "manifest.json")))!
+                .Where(asset => asset.File.StartsWith(direction + "/", StringComparison.Ordinal)).Select(asset => new Asset(Path.GetFileName(asset.File), asset.Sha256))
+            : TranslationPacks.Find(direction).Files.Select(asset => new Asset(asset.File, asset.Sha256));
+        foreach (var asset in assets)
         {
-            token.ThrowIfCancellationRequested(); using var file = File.OpenRead(Path.Combine(root, asset.File));
+            token.ThrowIfCancellationRequested(); using var file = File.OpenRead(Path.Combine(directory, asset.File));
             if (!Convert.ToHexString(SHA256.HashData(file)).Equals(asset.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                // Make a damaged downloaded pack available for re-download in Text tools.
+                TranslationPacks.MarkDamaged(directory);
                 throw new InvalidDataException(L.T("Translation models are damaged. Extract a fresh DesktopTools package."));
+            }
         }
+    }
+    private static string Translate(string text, string directory, CancellationToken token)
+    {
+        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "config.json")));
+        int heads = config.RootElement.GetProperty("decoder_attention_heads").GetInt32();
+        int headSize = config.RootElement.GetProperty("d_model").GetInt32() / heads;
         var vocabulary = JsonSerializer.Deserialize<Dictionary<string, int>>(File.ReadAllText(Path.Combine(directory, "vocab.json")))!;
         var reverse = vocabulary.ToDictionary(p => p.Value, p => p.Key);
         using var spm = File.OpenRead(Path.Combine(directory, "source.spm"));
@@ -76,7 +94,7 @@ internal static class LocalTranslation
                 foreach (string name in decoder.InputMetadata.Keys.Where(n => n.StartsWith("past_key_values.", StringComparison.Ordinal)))
                 {
                     string outputName = name.Replace("past_key_values.", "present.", StringComparison.Ordinal);
-                    Tensor<float> cache = step == 0 ? new DenseTensor<float>(Array.Empty<float>(), new[] { 1, 8, 0, 64 }) :
+                    Tensor<float> cache = step == 0 ? new DenseTensor<float>(Array.Empty<float>(), new[] { 1, heads, 0, headSize }) :
                         (name.Contains(".encoder.", StringComparison.Ordinal) ? first! : previous!).First(v => v.Name == outputName).AsTensor<float>();
                     inputs.Add(NamedOnnxValue.CreateFromTensor(name, cache));
                 }

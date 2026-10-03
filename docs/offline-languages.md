@@ -1,0 +1,11 @@
+# Offline translation and Windows OCR
+
+Open **Text tools → Translate text**, choose the source and target languages, then select **Download offline packs** if prompted. English–Russian works with the bundled models. Other packs require a one-time download from Hugging Face; the app verifies their pinned SHA-256 checksums before installation. Translation always runs on this PC, including when disconnected. Input text is never sent to a translation service or model host.
+
+The current catalog supports Afrikaans, Arabic, Chinese, Czech, Danish, Dutch, English, Finnish, French, German, Hindi, Hungarian, Indonesian, Italian, Russian, Spanish, Swedish, Ukrainian, Vietnamese and Xhosa. Compatible languages from Windows preferences appear first. Installing a Windows display language does not itself install a translation model; Windows languages outside this catalog are not yet supported for translation.
+
+Models connect each language with English. Other pairs, such as German–French, use two local models through English. Review the result, especially names and specialist terms; a second translation can introduce additional errors. Each direction generally needs about 100–120 MB. Packs are stored in `%LOCALAPPDATA%\DesktopTools\Translation`, preserved across normal updates, and removed by the app's explicit full-data reset.
+
+For screenshots, **Text tools → Text from screenshot** lists the actual Windows OCR recognizers, which may differ from installed display languages. Add the needed OCR language component in Windows Settings, then use **Refresh Windows OCR languages** or reopen/activate Text tools. DesktopTools does not install Windows components automatically. Saved generic language codes such as `ru` match available regional recognizers such as `ru-RU`.
+
+For maintainers: `scripts/update-translation-catalog.py` refreshes metadata from the model authors without downloading weights. Review repository revisions, compatible Marian configurations and upstream licenses before accepting a catalog update. Runtime URLs and checksums come from the embedded catalog. Bundled English–Russian model checksums remain in `manifest.json`; they are not replaced by optional-pack metadata. See [third-party notices](../THIRD-PARTY-NOTICES.md).

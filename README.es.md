@@ -31,7 +31,7 @@ Seguridad: [sumas de comprobación SHA-256](https://github.com/vg2222/DesktopToo
 
 **Mantén la atención de tu audiencia.** Dibuja sobre la pantalla, señala con un puntero láser, ilumina un detalle o sigue el guion con un teleprónter y temporizadores.
 
-**Resuelve también las tareas pequeñas.** Extrae texto de una captura, traduce entre inglés y ruso de forma local, ten tus notas a mano, genera un código QR o recorta una imagen antes de compartirla.
+**Resuelve también las tareas pequeñas.** Extrae texto de una captura, traduce localmente con paquetes sin conexión, ten tus notas a mano, genera un código QR o recorta una imagen antes de compartirla.
 
 ## 📸 Tres formas de empezar
 
@@ -55,7 +55,7 @@ Elige un monitor, una ventana o una zona y configura el sonido y la calidad ante
 
 ## 🔒 Diseñado para trabajar de forma local
 
-Sin cuenta. Sin telemetría. Sin procesar tu contenido en la nube. Tus capturas, notas, reconocimiento de texto, traducciones entre inglés y ruso y eliminación de fondos se procesan en tu PC.
+Sin cuenta. Sin telemetría. Sin procesar tu contenido en la nube. Tus capturas, notas, reconocimiento de texto, traducciones y eliminación de fondos se procesan en tu PC. Los paquetes adicionales se descargan una sola vez; tu texto nunca se envía al servidor de modelos.
 
 Tú eliges dónde guardar las imágenes y grabaciones. La comprobación automática de actualizaciones consulta GitHub para obtener información sobre las versiones; no sube tus archivos multimedia ni tus notas. Cambia el intervalo o desactiva las comprobaciones automáticas en **Configuración → Actualizaciones**. La página **Noticias** puede consultar cada hora los anuncios de este repositorio y tiene su propio interruptor. Los avisos de seguridad nunca instalan una actualización sin tu confirmación.
 
@@ -86,7 +86,7 @@ La página **Atajos** muestra todas las asignaciones de funciones. Las asignacio
 
 La grabación de pantalla, la traducción sin conexión y la eliminación de fondos necesitan Microsoft Visual C++ x64 Redistributable. La grabación y edición de vídeo usan Windows Media Foundation. Las frecuencias de grabación de hasta 144 FPS son objetivos; el rendimiento real depende de la fuente, el codificador y el hardware. Consulta la página de [compatibilidad](docs/compatibility.md) para conocer las limitaciones de captura y la cobertura actual de las pruebas. El instalador comprueba el componente Visual C++ y ofrece la página de descarga de Microsoft si es necesario.
 
-La aplicación admite **inglés, ruso, alemán, francés y español**, además de los modos claro, oscuro y del sistema. Los idiomas de la interfaz son independientes del par de traducción inglés–ruso que se admite actualmente.
+La aplicación admite **inglés, ruso, alemán, francés y español**, además de los modos claro, oscuro y del sistema. Las herramientas de texto ofrecen [20 idiomas de traducción sin conexión](docs/offline-languages.md); inglés–ruso está incluido. Los idiomas compatibles de Windows aparecen primero. El OCR utiliza los reconocedores instalados en Windows.
 
 <details>
 <summary><strong>🛠️ Compilar y contribuir</strong></summary>

@@ -35,6 +35,14 @@ internal static class TextToolsChecks
         await processing; Check(Field<TextBox>(text, "output").Text.Contains("окно"), "Translation UI did not receive result: " + Field<TextBlock>(text, "status").Text);
         var stale = text.TranslateAsync(); Field<TextBox>(text, "source").Text = "Changed source"; await stale;
         Check(Field<TextBox>(text, "output").Text == "" && !text.IsProcessing, "Stale translation replaced edited text");
+        controller.UpdateSettings(s => s.TranslationDirection = "de-fr");
+        text.Width = text.MinWidth; text.SetSource("Open the window."); text.UpdateLayout();
+        Check(Field<Button>(text, "downloadPack").IsVisible && !Field<Button>(text, "translate").IsEnabled,
+            "Missing packs did not offer download or prevent translation");
+        var compact = new RenderTargetBitmap((int)text.ActualWidth, (int)text.ActualHeight, 96, 96, PixelFormats.Pbgra32); compact.Render(text);
+        var compactEncoder = new PngBitmapEncoder(); compactEncoder.Frames.Add(BitmapFrame.Create(compact));
+        using (var compactFile = File.Create("text-tools-download-compact.png")) compactEncoder.Save(compactFile);
+        controller.UpdateSettings(s => s.TranslationDirection = "en-ru");
         foreach (string language in L.Languages)
         {
             text.Close(); L.Use(language); controller.UpdateSettings(s => { s.Theme = language == "ru" ? "Dark" : "Light"; }); text = controller.OpenTextTools()!;

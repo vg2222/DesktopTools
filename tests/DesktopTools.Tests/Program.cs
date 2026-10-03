@@ -111,6 +111,10 @@ internal static class Program
             settings.TranslationEnabled = false; settings.ScreenTextEnabled = true; settings.CaptureEnabled = false; store.Save(settings);
             var restored = new SettingsStore(path).Load();
             Check(restored.TranslationEnabled && restored.ScreenTextEnabled && restored.CaptureEnabled && restored.TranslationDirection == "ru-en" && restored.ScreenTextLanguage == "ru-RU");
+            restored.TranslationDirection = "de-fr"; store.Save(restored);
+            Check(store.Load().TranslationDirection == "de-fr", "Offline language pair did not persist");
+            restored.TranslationDirection = "de-de"; SettingsStore.Validate(restored);
+            Check(restored.TranslationDirection == "en-ru", "Identical translation languages accepted");
             restored.TranslationDirection = "invalid"; restored.TranslationShortcut = ""; restored.ScreenTextShortcut = ""; SettingsStore.Validate(restored);
             Check(restored.TranslationDirection == "en-ru" && restored.TranslationShortcut == "Ctrl+Alt+R" && restored.ScreenTextShortcut == "Ctrl+Alt+E");
         }));
@@ -180,6 +184,7 @@ internal static class Program
             store.Load(); store.Save(new());
             Check(new SettingsStore(path).Load().DrawingEnabled);
         }));
+        AutoRedactTests.Run(Test, Check);
         DrawingEditTests.Run(Test, Check);
         DrawingBindingTests.Run(Test, Check);
         RenderingTests.Run(Test, Check);

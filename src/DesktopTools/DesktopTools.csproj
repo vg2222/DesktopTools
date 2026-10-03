@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings>
-    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.6</Version><RootNamespace>DesktopTools</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.7</Version><RootNamespace>DesktopTools</RootNamespace>
     <ApplicationIcon>Assets/DesktopTools.ico</ApplicationIcon>
     <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
@@ -10,6 +10,7 @@
   <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /></ItemGroup>
   <ItemGroup><Content Include="Assets/Translation/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Assets/Models/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><EmbeddedResource WithCulture="false" Include="Localization/*.json" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Assets/Translation/catalog.json" LogicalName="DesktopTools.TranslationPacks" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="../../news/announcements.json" LogicalName="DesktopTools.Announcements" /></ItemGroup>
   <ItemGroup><Compile Include="../../shared/GitHubReleaseClient.cs" Link="Updates/GitHubReleaseClient.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../shared/WindowDismissal.cs" Link="UI/WindowDismissal.cs" /></ItemGroup>

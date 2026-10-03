@@ -78,7 +78,19 @@ internal sealed partial class AppController : IDisposable
         if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
         Application.Current.Shutdown();
     }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report) { WindowState = WindowState.Maximized }); }
+    internal RecordingMarkerStore RecordingMarkers { get; }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
+    internal async void OpenVideoEditorAt(string path, TimeSpan position)
+    {
+        if (!Settings.VideoEditorEnabled) return;
+        try
+        {
+            OpenVideoEditor();
+            if (utilityWindows.TryGetValue("Video", out var window) && window is VideoEditorWindow editor)
+                await editor.LoadAndSeekAsync(path, position);
+        }
+        catch (Exception ex) { Report(L.T("Could not open recording marker: ") + ex.Message); }
+    }
     internal TextToolsWindow? OpenTextTools()
     {
         if (!Settings.TranslationEnabled && !Settings.ScreenTextEnabled) return null;
@@ -94,7 +106,8 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact) { WindowState = WindowState.Maximized }); }
+    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report, () => Settings.AutoRedact)); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
@@ -169,6 +182,7 @@ internal sealed partial class AppController : IDisposable
     public AppController(bool smoke)
     {
         this.smoke = smoke; AppCapturePrivacy.Initialize();
+        RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
         Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool;
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)
@@ -306,6 +320,7 @@ internal sealed partial class AppController : IDisposable
             if (!Settings.FileShelfEnabled) { fileShelf?.Shutdown(); fileShelf = null; }
             else if (fileShelf != null) fileShelf.Topmost = Settings.FileShelfTopmost;
             if (!Settings.FloatingNotesEnabled) { floatingNotes?.Dispose(); floatingNotes = null; }
+            else if (floatingNotes != null) floatingNotes.DefaultTopmost = Settings.NotesTopmost;
             if (!Settings.AudioControlsEnabled) audioControls?.Close();
             ApplyHudSettings(); if (themeChanged) ApplyTheme();
             if (exclusionChanged) { Palette?.ApplyExclusion(); foreach (Window window in Application.Current.Windows) AppCapturePrivacy.Apply(window, Settings); }
@@ -537,7 +552,7 @@ internal sealed partial class AppController : IDisposable
     public async Task CaptureAsync(bool repeat = false, bool textOnly = false)
     {
         if (IsBusy || (textOnly ? !Settings.ScreenTextEnabled : !Settings.CaptureEnabled)) return;
-        BitmapSource? textImage = null; scanningText = textOnly; if (textOnly) textRequestVersion++;
+        BitmapSource? textImage = null; bool autoReviewOpened = false; scanningText = textOnly; if (textOnly) textRequestVersion++;
         nint captureForeground = State == OverlayState.Draw ? previousForeground : NativeWindowService.GetForegroundWindowHandle();
         IsBusy = true; using var cancellation = new CancellationTokenSource(); captureCancellation = cancellation;
         overlay?.CommitText(); overlay?.CancelPending(); StopPresentation(); machine.BeginCapture(); Palette?.Hide(); UpdateEscape();
@@ -594,10 +609,10 @@ internal sealed partial class AppController : IDisposable
             var inkMonitor = overlay?.Monitor;
             bool includeInk = Settings.IncludeAnnotations && inkMonitor != null && (sameSession || monitor.Id == "VirtualDesktop");
             var offset = inkMonitor == null ? new Vector() : inkMonitor.Bounds.TopLeft - monitor.Bounds.TopLeft;
-            LastCapture = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
-            CaptureHistory.Add(LastCapture); lastRegion = (monitor, r);
+            var capturedImage = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
+            lastRegion = (monitor, r); autoReviewOpened = Settings.AutoRedact.Enabled;
             statusNotice?.Close();
-            if (Settings.CaptureOutput == "Save") SaveLast(); else { await CopyAsync(LastCapture); ShowCaptureNotice(); }
+            await HandleCapturedImageAsync(capturedImage);
         }
         catch (OperationCanceledException) { statusNotice?.Close(); Report(L.T("Capture cancelled.")); }
         catch (Exception ex) { Report(L.T("Capture failed: ") + ex.Message); }
@@ -606,7 +621,7 @@ internal sealed partial class AppController : IDisposable
             selector?.Close(); selector = null; captureCancellation = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
             if (overlay != null) { if (State == OverlayState.Hidden) overlay.Hide(); else { overlay.Show(); overlay.Mode(State == OverlayState.Draw); } }
             if (State == OverlayState.Draw) Palette?.Show();
-            else if (!disposed) NativeWindowService.RestoreForeground(captureForeground);
+            else if (!disposed && !autoReviewOpened) NativeWindowService.RestoreForeground(captureForeground);
             scanningText = false;
             if (!disposed && !cancellation.IsCancellationRequested && textImage != null && Settings.ScreenTextEnabled) { var textWindow = OpenTextTools(); if (textWindow != null) _ = textWindow.RecognizeScreenAsync(textImage); }
         }
@@ -627,39 +642,56 @@ internal sealed partial class AppController : IDisposable
         return new Int32Rect(x, y, right - x, bottom - y);
     }
     public void OpenRecentCapture(BitmapSource image) { LastCapture = image; RedactLast(); }
-    public async Task CopyAsync(BitmapSource image)
+    public async Task CopyAsync(BitmapSource image) => await TryCopyAsync(image);
+    internal async Task<bool> TryCopyAsync(BitmapSource image, CancellationToken cancellationToken = default,
+        Action<DataObject>? writeClipboard = null)
     {
         Exception? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
+            if (cancellationToken.IsCancellationRequested) return false;
             try
             {
                 var data = new DataObject(); data.SetImage(image);
                 using var stream = new MemoryStream(); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); stream.Position = 0;
-                data.SetData("PNG", stream); Clipboard.SetDataObject(data, true); Report(L.T("Screenshot copied to clipboard.")); return;
+                data.SetData("PNG", stream);
+                if (writeClipboard == null) Clipboard.SetDataObject(data, true); else writeClipboard(data);
+                Report(L.T("Screenshot copied to clipboard.")); return true;
             }
-            catch (System.Runtime.InteropServices.ExternalException ex) { last = ex; await Task.Delay(80); }
+            catch (System.Runtime.InteropServices.ExternalException ex)
+            {
+                last = ex;
+                try { await Task.Delay(80, cancellationToken); }
+                catch (OperationCanceledException) { return false; }
+            }
         }
         Report(L.T("Clipboard is busy. Your screenshot is retained; use Save PNG. ") + last?.Message);
+        return false;
     }
     public void SaveLast() => SaveLast((dialog, owner) => dialog.ShowDialog(owner));
     internal void SaveLast(Func<SaveFileDialog, Window, bool?> showDialog)
     {
         var image = LastCapture;
         if (image == null) { Report(L.T("Capture a screenshot first.")); return; }
+        TrySaveImage(image, EnsureMainWindow(), showDialog);
+    }
+    internal bool TrySaveImage(BitmapSource image, Window owner, Func<SaveFileDialog, Window, bool?> showDialog,
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested) return false;
         bool wasBusy = IsBusy; IsBusy = true;
         var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = $"DesktopTools-{DateTime.Now:yyyyMMdd-HHmmss}.png", DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
         try
         {
             // A notification can expire inside the native dialog's nested message loop.
             // Explicitly own it with the persistent main window, even when hidden in the tray.
-            var owner = EnsureMainWindow();
             _ = new System.Windows.Interop.WindowInteropHelper(owner).EnsureHandle();
-            if (showDialog(dialog, owner) != true) return;
+            if (showDialog(dialog, owner) != true || cancellationToken.IsCancellationRequested) return false;
             using (var stream = File.Create(dialog.FileName)) { var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); }
             UpdateSettings(s => s.SaveDirectory = Path.GetDirectoryName(dialog.FileName)!); Report(L.T("Saved ") + Path.GetFileName(dialog.FileName));
+            return true;
         }
-        catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); }
+        catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); return false; }
         finally { IsBusy = wasBusy; if (!IsBusy && State == OverlayState.Draw) overlay?.Activate(); }
     }
     private void ShowCaptureNotice()
@@ -676,7 +708,10 @@ internal sealed partial class AppController : IDisposable
     public void RedactLast()
     {
         if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; }
-        var window = new ScreenshotEditorWindow(LastCapture, image => { LastCapture = image; CaptureHistory.Add(image); _ = CopyAsync(image); ShowCaptureNotice(); }, Report); window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window);
+        ScreenshotEditorWindow? window = null;
+        window = new ScreenshotEditorWindow(LastCapture, _ => { }, Report, autoRedact: Settings.AutoRedact,
+            exportAsync: (image, action) => ExportReviewedImageAsync(image, action, window!, cancellationToken: window!.ExportCancellationToken));
+        window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window);
     }
     public void TogglePresentation(string mode)
     {
@@ -746,7 +781,7 @@ internal sealed partial class AppController : IDisposable
         Color accent = (Color)ColorConverter.ConvertFromString(accentHex); accent.A = 255;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         Application.Current.Resources["AccentText"] = new SolidColorBrush(.2126 * accent.R + .7152 * accent.G + .0722 * accent.B > 160 ? Colors.Black : Colors.White);
-        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#17181C"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
+        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
         if (Settings.UseCustomBackground)
         {
             Color background = (Color)ColorConverter.ConvertFromString(Settings.BackgroundColor); background.A = 255;
@@ -793,6 +828,7 @@ internal sealed partial class AppController : IDisposable
     }
     public void Dispose()
     {
+        CloseScreenshotReviews();
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         StopUpdateChecks();

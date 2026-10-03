@@ -48,7 +48,7 @@ The compact U2NetP model implements [U²-Net](https://github.com/xuebinqin/U-2-N
 
 ## Local translation models and tokenization
 
-Text tools bundle OPUS-MT models developed by the Language Technology Research Group at the University of Helsinki, converted and quantized to ONNX by Xenova. English→Russian is Apache-2.0; Russian→English is CC BY 4.0. Full attribution, source links, modification descriptions and licenses are included in `Assets/Translation/ATTRIBUTION.md`, `EN-RU-APACHE-2.0.txt` and `CC-BY-4.0.txt`. Exact revisions and checksums are recorded in the bundled manifest. These assets retain their own licenses; DesktopTools source is MIT.
+Text tools bundle OPUS-MT models developed by the Language Technology Research Group at the University of Helsinki, converted and quantized to ONNX by Xenova. English→Russian is Apache-2.0; Russian→English is CC BY 4.0. Full attribution, source links, modification descriptions and licenses are included in `Assets/Translation/ATTRIBUTION.md`, `EN-RU-APACHE-2.0.txt` and `CC-BY-4.0.txt`. Exact revisions and checksums are recorded in the bundled manifest. Optional language packs come from the same authors; their repositories, pinned revisions, licenses, sizes and SHA-256 checksums are recorded in `Assets/Translation/catalog.json`. Each downloaded pack includes its upstream README, attribution and license text. These assets retain their own licenses; DesktopTools source is MIT.
 
 Microsoft.ML.Tokenizers 2.0.0 is MIT licensed. Its complete license and third-party notices are included under `Assets/Translation/TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`. ONNX Runtime notices are documented above.
 

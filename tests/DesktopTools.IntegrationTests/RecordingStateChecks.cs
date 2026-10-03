@@ -16,6 +16,11 @@ internal static class RecordingStateChecks
 {
     internal static async Task RunAsync()
     {
+        var markerTimeline = new RecordingMarkerTimeline();
+        Check(markerTimeline.Add(TimeSpan.FromSeconds(3), recording: true), "Active recording marker was rejected");
+        Check(!markerTimeline.Add(TimeSpan.FromSeconds(3), recording: false), "Paused recording accepted a marker");
+        Check(markerTimeline.Markers.Count == 1 && markerTimeline.Markers[0].Number == 1 && markerTimeline.Markers[0].Position == TimeSpan.FromSeconds(3), "Marker time or numbering is wrong");
+        markerTimeline.Clear(); Check(markerTimeline.Markers.Count == 0, "New recording inherited previous markers");
         // Read endpoint availability only; never open capture, play audio or change volume.
         using (var audio = new AudioSessionService())
         {
@@ -53,6 +58,18 @@ internal static class RecordingStateChecks
             Text = "DesktopTools recorder state helper", BackColor = Drawing.Color.RoyalBlue };
         target.Show(); target.Refresh(); await Task.Delay(150);
         string directory = Path.GetFullPath("recording-state-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(directory);
+        string markerVideo = Path.Combine(directory, "marker-sample.mp4"); File.WriteAllBytes(markerVideo, [1, 2, 3]);
+        var markerStore = new RecordingMarkerStore(Path.Combine(directory, "markers"));
+        markerTimeline.Add(TimeSpan.FromSeconds(8), recording: true);
+        markerStore.Save(markerVideo, markerTimeline.Markers);
+        Check(markerStore.Load(markerVideo).Count == 1 && markerStore.Load(markerVideo)[0].Position == TimeSpan.FromSeconds(8), "Saved marker did not survive reopening");
+        string blockedMarkerDirectory = Path.Combine(directory, "blocked-markers"); File.WriteAllText(blockedMarkerDirectory, "not a directory");
+        bool saveFailed = false;
+        try { new RecordingMarkerStore(blockedMarkerDirectory).Save(markerVideo, markerTimeline.Markers); }
+        catch (IOException) { saveFailed = true; }
+        Check(saveFailed, "Marker-store failure was silently ignored");
+        File.WriteAllBytes(markerVideo, [1, 2, 3, 4]);
+        Check(markerStore.Load(markerVideo).Count == 0, "Markers from an overwritten video were reused");
         var actualMonitors = MonitorService.GetAll(); IReadOnlyList<MonitorInfo> monitors = actualMonitors;
         string path = Path.Combine(directory, "window.mp4"); Action? choosing = null;
         var studio = new ScreenRecorderWindow(controller, _ => { choosing?.Invoke(); return path; }, () => monitors);
@@ -62,10 +79,15 @@ internal static class RecordingStateChecks
             studio.SetSource(new RecordingSelection("Owned window", Window: RecordingWindows.Identify(target.Handle)));
             Click(studio, "start"); await Until(() => Field<ScreenRecordingService?>(studio, "service")?.Status == "Recording");
             var service = Field<ScreenRecordingService>(studio, "service");
+            var activeHud = Application.Current.Windows.OfType<RecordingHudWindow>().Single();
+            Click(activeHud, "marker");
+            Check(Field<RecordingMarkerTimeline>(studio, "markerTimeline").Markers.Count == 1, "HUD marker action did not store a timestamp");
             monitors = []; await studio.RefreshDisplaysAsync();
             Check(studio.IsRecording, "Unrelated display change stopped the window source");
             await Task.Delay(750); Click(Application.Current.Windows.OfType<RecordingHudWindow>().Single(), "pause");
             await Until(() => service.Status == "Paused"); TimeSpan pausedTime = service.Elapsed;
+            Click(activeHud, "marker");
+            Check(Field<RecordingMarkerTimeline>(studio, "markerTimeline").Markers.Count == 1, "Paused recording accepted a marker");
             target.WindowState = Forms.FormWindowState.Minimized; await Until(() => service.SourceSuspended);
             target.WindowState = Forms.FormWindowState.Normal; await Until(() => !service.SourceSuspended);
             await Task.Delay(250);

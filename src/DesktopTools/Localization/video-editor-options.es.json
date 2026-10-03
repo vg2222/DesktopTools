@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "Velocidad de reproducción de la vista previa; la exportación conserva la velocidad original.",
+  "Preview speed": "Velocidad de vista previa",
+  "Resize editor settings": "Cambiar el ancho de los ajustes del editor",
+  "Drag to resize editor settings": "Arrastra para cambiar el ancho de los ajustes del editor",
+  "Audio volume": "Volumen de audio",
+  "Export quality": "Calidad de exportación",
+  "Standard": "Estándar",
+  "Maximum": "Máxima",
+  "Save current frame as PNG": "Guardar el fotograma actual como PNG",
+  "Save frame PNG": "Fotograma PNG",
+  "Saving frame…": "Guardando fotograma…",
+  "Frame saved as PNG.": "Fotograma guardado como PNG.",
+  "Choose an audio volume between 0% and 200%.": "Elige un volumen de audio entre 0 % y 200 %.",
+  "Choose a valid output quality.": "Elige una calidad de exportación válida.",
+  "Save the frame as a PNG file.": "Guarda el fotograma como archivo PNG.",
+  "Choose a new filename. Existing images are not overwritten.": "Elige otro nombre de archivo. No se sobrescriben las imágenes existentes."
+}
