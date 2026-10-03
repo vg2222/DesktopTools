@@ -72,11 +72,12 @@ public sealed partial class ScreenshotEditorWindow : Window
         properties.Children.Add(colors);
         _colorButton = Ui.Button("", () => { CommitText(); new ColorPickerWindow(_color.ToString(), value => { _color = (Color)ColorConverter.ConvertFromString(value); Update(); return true; }) { Owner = this }.ShowDialog(); }); properties.Children.Add(_colorButton);
         System.Windows.Automation.AutomationProperties.SetName(_colorButton, L.T("Annotation color"));
-        var strokeLabel = Ui.Text(L.T("Stroke thickness"), 12); strokeLabel.Margin = new Thickness(0, 18, 0, 8); properties.Children.Add(strokeLabel);
         var widthChoice = new Slider { Minimum = 1, Maximum = 32, Value = _thickness, TickFrequency = 1, IsSnapToTickEnabled = true, SmallChange = 1, LargeChange = 4 };
-        System.Windows.Automation.AutomationProperties.SetName(widthChoice, L.T("Stroke thickness")); widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value; properties.Children.Add(widthChoice);
-        var opacityLabel = Ui.Text(L.T("Opacity"), 12); opacityLabel.Margin = new Thickness(0, 18, 0, 8); properties.Children.Add(opacityLabel);
-        var opacity = new Slider { Minimum = .1, Maximum = 1, Value = 1 }; System.Windows.Automation.AutomationProperties.SetName(opacity, L.T("Annotation opacity")); opacity.ValueChanged += (_, _) => _opacity = opacity.Value; properties.Children.Add(opacity);
+        widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value;
+        var strokeField = Ui.SliderField(L.T("Stroke thickness"), widthChoice, v => $"{v:0} px"); strokeField.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(strokeField);
+        var opacity = new Slider { Minimum = .1, Maximum = 1, Value = 1 }; opacity.ValueChanged += (_, _) => _opacity = opacity.Value;
+        var opacityField = Ui.SliderField(L.T("Opacity"), opacity, v => $"{v * 100:0}%"); opacityField.Margin = new Thickness(0, 14, 0, 0); properties.Children.Add(opacityField);
+        System.Windows.Automation.AutomationProperties.SetName(opacity, L.T("Annotation opacity"));
         _status = Ui.Text("", 11, muted: true); _status.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(_status);
         var propertyCard = Ui.Card(new ScrollViewer { Content = properties, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }, 14); propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 2); work.Children.Add(propertyCard);
         var tools = new WrapPanel();
@@ -93,7 +94,9 @@ public sealed partial class ScreenshotEditorWindow : Window
         var resetCrop = new MenuItem { Header = L.T("Reset crop"), Icon = Ui.Icon("Crop", 16) }; resetCrop.Click += (_, _) => { CommitText(); CancelGesture(); _document.SetCrop(new(0, 0, image.PixelWidth, image.PixelHeight)); Update(); }; menu.Items.Add(resetCrop);
         var ocr = new MenuItem { Header = L.T("Extract text"), Icon = Ui.Icon("ScanText", 16) }; ocr.Click += (_, _) => ExtractText(); menu.Items.Add(ocr);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; tools.Children.Add(more); Closed += (_, _) => menu.IsOpen = false;
+        tools.Children.Add(ToolbarDivider());
         _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); _undo.Width = _redo.Width = 32; tools.Children.Add(_undo); tools.Children.Add(_redo);
+        tools.Children.Add(ToolbarDivider());
         _originalButton = Ui.IconButton("Image", L.T("Show original"), ToggleOriginal); _originalButton.Width = 32; tools.Children.Add(_originalButton);
         var toolCard = Ui.Card(tools, 6); toolCard.Margin = new Thickness(0, 0, 12, 0); toolCard.VerticalAlignment = VerticalAlignment.Center;
         var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
@@ -144,6 +147,11 @@ public sealed partial class ScreenshotEditorWindow : Window
         NativeMethods.SetWindowPos(new System.Windows.Interop.WindowInteropHelper(this).Handle, IntPtr.Zero,
             (int)Math.Round(area.Left + (area.Width - width) / 2), (int)Math.Round(area.Top + (area.Height - height) / 2),
             width, height, 0x0004 | 0x0010);
+    }
+    private static Border ToolbarDivider()
+    {
+        var divider = new Border { Width = 1, Height = 22, Margin = new Thickness(7, 5, 7, 5), VerticalAlignment = VerticalAlignment.Center };
+        divider.SetResourceReference(Border.BackgroundProperty, "Divider"); return divider;
     }
     private Point Position(MouseEventArgs e) { var p = e.GetPosition(_surface); return new(Math.Clamp(p.X, 0, _image.PixelWidth), Math.Clamp(p.Y, 0, _image.PixelHeight)); }
     private Annotation Current() => new() { Kind = _tool == "Crop" ? AnnotationKind.Rectangle : Enum.Parse<AnnotationKind>(_tool), Points = _points.ToArray(), Color = _color, Thickness = _thickness, Opacity = _opacity, RedactionStyle = _redactionStyle };
@@ -252,7 +260,7 @@ public sealed partial class ScreenshotEditorWindow : Window
         _undo.IsEnabled = _document.CanUndo; _redo.IsEnabled = _document.CanRedo;
         var colorContent = new StackPanel { Orientation = Orientation.Horizontal };
         colorContent.Children.Add(new Border { Width = 18, Height = 18, CornerRadius = new CornerRadius(5), Background = new SolidColorBrush(_color), BorderBrush = Ui.Brush("Stroke"), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 8, 0) });
-        colorContent.Children.Add(Ui.Text(_color.ToString(), 12)); _colorButton.Content = colorContent;
+        colorContent.Children.Add(Ui.Text(_color.A == 255 ? $"#{_color.R:X2}{_color.G:X2}{_color.B:X2}" : _color.ToString(), 12)); _colorButton.Content = colorContent;
         foreach (var (tool, button) in _tools) button.SetResourceReference(BackgroundProperty, tool == _tool ? "Selected" : "Field");
         var hint = _tool switch { "Crop" => L.T("Drag an area to keep. The crop applies on release; Undo restores it."), "Text" => L.T("Click to add text. Ctrl+Enter to finish."), "Number" => L.T("Click to add the next numbered step."), "Eyedropper" => L.T("Click inside the crop to choose its pixel color."), "Redaction" => L.T("Drag an opaque cover over private details."), _ => L.T("Drag on the image to annotate.") };
         _status.Text = _showingOriginal ? L.T("Viewing original. Edits are still in your working copy.")

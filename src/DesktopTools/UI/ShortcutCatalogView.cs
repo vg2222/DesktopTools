@@ -35,14 +35,16 @@ internal static class ShortcutCatalogView
     {
         var controls = new StackPanel { Orientation = Orientation.Horizontal };
         var change = Ui.Button(L.T("Change shortcut"), () => { });
-        change.Padding = new Thickness(8, 5, 4, 5);
+        change.Padding = new Thickness(10, 5, 6, 5); change.MinWidth = 214; change.HorizontalContentAlignment = HorizontalAlignment.Stretch;
         AutomationProperties.SetName(change, L.T("Change shortcut") + ": " + L.T(entry.Title));
         void Refresh()
         {
             string value = entry.Read(controller.Settings);
-            var label = new StackPanel { Orientation = Orientation.Horizontal };
-            var icon = Ui.Icon("Pen", 14); icon.Margin = new Thickness(0, 0, 8, 0); label.Children.Add(icon);
-            label.Children.Add(string.IsNullOrWhiteSpace(value) ? Ui.Text(L.T("Unassigned"), 12, muted: true) : Ui.Shortcut(value));
+            // Fixed-width button: icon on the left, key caps right-aligned so every row lines up.
+            var label = new DockPanel { LastChildFill = true };
+            var icon = Ui.Icon("Pen", 14); icon.Margin = new Thickness(0, 0, 12, 0); icon.VerticalAlignment = VerticalAlignment.Center; DockPanel.SetDock(icon, Dock.Left); label.Children.Add(icon);
+            FrameworkElement keys = string.IsNullOrWhiteSpace(value) ? Ui.Text(L.T("Unassigned"), 12, muted: true) : Ui.Shortcut(value);
+            keys.HorizontalAlignment = HorizontalAlignment.Right; label.Children.Add(keys);
             change.Content = label;
         }
         change.Click += (_, _) => { controller.RecordFeatureShortcut(entry); Refresh(); refreshPage?.Invoke(); };

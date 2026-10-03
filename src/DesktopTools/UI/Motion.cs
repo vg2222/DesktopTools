@@ -115,6 +115,44 @@ public static class Motion
             if (window.Content is FrameworkElement content) Reveal(content);
         };
     }
+    private static TranslateTransform Offset(FrameworkElement element)
+    {
+        if (element.RenderTransform is not TranslateTransform offset) element.RenderTransform = offset = new TranslateTransform();
+        return offset;
+    }
+    /// <summary>Raises tiles a couple of pixels under the pointer. Not for ink or capture surfaces.</summary>
+    public static void HoverLift(FrameworkElement element, double lift = 2)
+    {
+        var offset = Offset(element);
+        void MoveTo(double y)
+        {
+            double from = offset.Y;
+            offset.BeginAnimation(TranslateTransform.YProperty, null); offset.Y = y;
+            if (Enabled) offset.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(from, y, TimeSpan.FromMilliseconds(140))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        }
+        element.MouseEnter += (_, _) => { if (element.IsEnabled) MoveTo(-lift); };
+        element.MouseLeave += (_, _) => MoveTo(0);
+    }
+    /// <summary>Fades and slides a set of elements in one after another; does nothing when motion is off.</summary>
+    public static void Stagger(IEnumerable<FrameworkElement> items, int stepMilliseconds = 35, double distance = 10)
+    {
+        if (!Enabled) return;
+        int index = 0;
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        foreach (var item in items)
+        {
+            var offset = Offset(item);
+            var delay = TimeSpan.FromMilliseconds(Math.Min(index++, 12) * stepMilliseconds);
+            var duration = TimeSpan.FromMilliseconds(260);
+            item.Opacity = 0; offset.Y = distance;
+            var fade = new DoubleAnimation(0, 1, duration) { BeginTime = delay, EasingFunction = ease, FillBehavior = FillBehavior.HoldEnd };
+            fade.Completed += (_, _) => { item.BeginAnimation(UIElement.OpacityProperty, null); item.Opacity = 1; };
+            var slide = new DoubleAnimation(distance, 0, duration) { BeginTime = delay, EasingFunction = ease, FillBehavior = FillBehavior.HoldEnd };
+            slide.Completed += (_, _) => { offset.BeginAnimation(TranslateTransform.YProperty, null); offset.Y = 0; };
+            item.BeginAnimation(UIElement.OpacityProperty, fade); offset.BeginAnimation(TranslateTransform.YProperty, slide);
+        }
+    }
     public static void ButtonFeedback(Button button)
     {
         if ((bool)button.GetValue(FeedbackAttachedProperty)) return;
@@ -126,6 +164,15 @@ public static class Motion
             double current = feedback.Opacity;
             feedback.BeginAnimation(UIElement.OpacityProperty, null); feedback.Opacity = target;
             if (Enabled) feedback.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(current, target, TimeSpan.FromMilliseconds(button.IsPressed ? 55 : 110)) { FillBehavior = FillBehavior.Stop });
+            // Small press-in so clicks feel physical; large content (preview tiles, cards) is left alone.
+            if (button.Template.FindName("PressScale", button) is ScaleTransform press && button.ActualWidth <= 420 && button.ActualHeight <= 120)
+            {
+                double scale = button.IsEnabled && button.IsPressed ? .965 : 1;
+                press.BeginAnimation(ScaleTransform.ScaleXProperty, null); press.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                double from = press.ScaleX; press.ScaleX = press.ScaleY = scale;
+                if (Enabled) foreach (var property in new[] { ScaleTransform.ScaleXProperty, ScaleTransform.ScaleYProperty })
+                    press.BeginAnimation(property, new DoubleAnimation(from, scale, TimeSpan.FromMilliseconds(button.IsPressed ? 70 : 160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+            }
         }
         button.MouseEnter += (_, _) => Respond(); button.MouseLeave += (_, _) => Respond();
         button.IsEnabledChanged += (_, _) => Respond();

@@ -106,11 +106,11 @@ internal sealed class SampledColorWindow : Window
         samples.Children.Add(new Border { Background = new SolidColorBrush(color), Height = 104, CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 12, 0) });
         if (pixels != null) { var magnifier = ScreenEyedropperWindow.PixelZoom(new Image { Source = pixels, Width = 104, Height = 104, Stretch = Stretch.Fill }); Grid.SetColumn(magnifier, 1); samples.Children.Add(magnifier); }
         panel.Children.Add(samples);
-        void Copy(string value) { try { Clipboard.SetText(value); report(L.T("Color copied.")); } catch (Exception ex) { report(L.T("Could not copy color: ") + ex.Message); } }
+        bool Copy(string value) { try { Clipboard.SetText(value); report(L.T("Color copied.")); return true; } catch (Exception ex) { report(L.T("Could not copy color: ") + ex.Message); return false; } }
         void ColorValue(string label, string value)
         {
             var row = new DockPanel { Margin = new Thickness(0, 0, 0, 10) }; var name = Ui.Text(label, 12); name.Width = 42; DockPanel.SetDock(name, Dock.Left); row.Children.Add(name);
-            var field = new DockPanel(); var copy = Ui.IconButton("Copy", L.T(label == "HEX" ? "Copy HEX" : "Copy RGB"), () => Copy(value)); DockPanel.SetDock(copy, Dock.Right); field.Children.Add(copy);
+            var field = new DockPanel(); Button copy = null!; copy = Ui.IconButton("Copy", L.T(label == "HEX" ? "Copy HEX" : "Copy RGB"), () => { if (Copy(value)) Ui.Flash(copy); }); DockPanel.SetDock(copy, Dock.Right); field.Children.Add(copy);
             var text = new TextBox { Text = value, IsReadOnly = true, Background = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(10, 6, 0, 6), MinHeight = 34, FontSize = 13 }; System.Windows.Automation.AutomationProperties.SetName(text, label); field.Children.Add(text);
             var frame = new Border { Child = field, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(1) }; frame.SetResourceReference(Border.BackgroundProperty, "Field"); frame.SetResourceReference(Border.BorderBrushProperty, "Stroke"); row.Children.Add(frame); panel.Children.Add(row);
         }

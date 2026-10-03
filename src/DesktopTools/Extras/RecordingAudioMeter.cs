@@ -11,6 +11,7 @@ internal static class RecordingAudioMeter
     {
         var bar = NotificationSurface.CreateProgressBar(0, null);
         bar.Name = "";
+        bar.SetResourceReference(Control.BackgroundProperty, "Hover");
         bar.Height = height;
         bar.Margin = margin;
         AutomationProperties.SetHelpText(bar, "");

@@ -40,7 +40,7 @@ internal sealed partial class MainWindow
                 var icon = Ui.Icon(item.Icon, 28); icon.VerticalAlignment = VerticalAlignment.Top; icon.Margin = new Thickness(0, 3, 12, 0); grid.Children.Add(icon);
                 var content = new StackPanel(); content.Children.Add(Ui.Text(L.T(item.Title), 14, true));
                 var detail = Ui.Text(L.T(item.Detail), 12, muted: true); detail.Margin = new Thickness(0, 6, 0, 12); content.Children.Add(detail);
-                var start = Ui.Button(L.T("Start"), item.Launch, primary: true); start.Tag = "help-start-" + item.Id; start.HorizontalAlignment = HorizontalAlignment.Left; start.MinWidth = 100; start.IsEnabled = item.Enabled(); content.Children.Add(start);
+                var start = Ui.ActionButton("Play", L.T("Start"), item.Launch, ButtonKind.Primary); start.Tag = "help-start-" + item.Id; start.HorizontalAlignment = HorizontalAlignment.Left; start.MinWidth = 100; start.IsEnabled = item.Enabled(); content.Children.Add(start);
                 Grid.SetColumn(content, 1); grid.Children.Add(content);
                 var card = Ui.Card(grid, 18); card.Margin = new Thickness(0, 0, 12, 12);
                 if (!start.IsEnabled) Ui.Tip(card, L.T("Enable this feature in Settings to start its guide."));

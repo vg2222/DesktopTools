@@ -105,14 +105,17 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         aspect.Checked += (_, _) => UpdateRatio(); aspect.Unchecked += (_, _) => UpdateRatio(); UpdateRatio(); sizeRow.Children.Add(ratio);
         void TransformRow(string label, Button first, Button second)
         {
-            var row = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
-            var controls = new StackPanel { Orientation = Orientation.Horizontal }; controls.Children.Add(first); controls.Children.Add(second);
-            DockPanel.SetDock(controls, Dock.Right); row.Children.Add(controls); row.Children.Add(Ui.Text(L.T(label), 12)); sizeRow.Children.Add(row);
+            var row = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
+            row.Children.Add(Ui.Text(L.T(label), 12, muted: true));
+            var controls = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2, Margin = new Thickness(-3, 6, -3, 0) };
+            foreach (var button in new[] { first, second }) { button.Width = double.NaN; button.Height = double.NaN; button.MinHeight = 36; button.Margin = new Thickness(3, 0, 3, 0); button.HorizontalContentAlignment = HorizontalAlignment.Center; controls.Children.Add(button); }
+            row.Children.Add(controls); sizeRow.Children.Add(row);
         }
-        TransformRow("Rotation", Icon("RotateLeft", "Rotate left", () => Edit(() => ImageTransforms.Rotate(ImageTransforms.Rotate(ImageTransforms.Rotate(bitmap!))))),
-            Icon("RotateRight", "Rotate 90°", () => Edit(() => ImageTransforms.Rotate(bitmap!))));
-        TransformRow("Mirror", Icon("FlipHorizontal", "Mirror horizontal", () => Edit(() => ImageTransforms.Mirror(bitmap!, true))),
-            Icon("FlipVertical", "Mirror vertical", () => Edit(() => ImageTransforms.Mirror(bitmap!, false))));
+        Button Labeled(string symbol, string label, Action action) { var button = Ui.ActionButton(symbol, L.T(label), action, ButtonKind.Secondary, 12); button.Padding = new Thickness(8, 5, 10, 5); return button; }
+        TransformRow("Rotation", Labeled("RotateLeft", "Rotate left", () => Edit(() => ImageTransforms.Rotate(ImageTransforms.Rotate(ImageTransforms.Rotate(bitmap!))))),
+            Labeled("RotateRight", "Rotate 90°", () => Edit(() => ImageTransforms.Rotate(bitmap!))));
+        TransformRow("Mirror", Labeled("FlipHorizontal", "Mirror horizontal", () => Edit(() => ImageTransforms.Mirror(bitmap!, true))),
+            Labeled("FlipVertical", "Mirror vertical", () => Edit(() => ImageTransforms.Mirror(bitmap!, false))));
         var applySize = Ui.Button(L.T("Apply size"), ResizeImage); applySize.Content = Ui.IconLabel("Check", L.T("Apply size")); applySize.Margin = new Thickness(0, 4, 0, 0); sizeRow.Children.Add(applySize);
         foreach (var field in new[] { width, height }) field.KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Enter) { ResizeImage(); e.Handled = true; } };
         var cropRow = new StackPanel();

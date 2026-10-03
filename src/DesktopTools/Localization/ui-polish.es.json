@@ -1,0 +1,7 @@
+{
+  "Sound": "Sonido",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Codifica con la tarjeta gráfica. Desactívalo si la grabación va a tirones.",
+  "Start at playhead": "Inicio aquí",
+  "End at playhead": "Fin aquí",
+  "Resume": "Reanudar"
+}

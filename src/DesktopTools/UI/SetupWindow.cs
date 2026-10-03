@@ -112,9 +112,11 @@ internal sealed class SetupWindow : Window
             foreach (string theme in new[] { "System", "Light", "Dark" })
             {
                 var choice = Ui.Button(L.T(theme), () => { Change(x => x.Theme = theme); RenderStep(); });
-                choice.MinWidth = 92; if (s.Theme == theme) choice.SetResourceReference(BackgroundProperty, "Selected"); themes.Children.Add(choice);
+                choice.MinWidth = 84; choice.Margin = new Thickness(6, 0, 0, 0);
+                if (s.Theme == theme) { choice.SetResourceReference(BackgroundProperty, "Selected"); choice.SetResourceReference(BorderBrushProperty, "Accent"); }
+                themes.Children.Add(choice);
             }
-            content.Children.Add(themes);
+            content.Children.Add(Ui.Row(L.T("Theme"), null, themes));
             content.Children.Add(Ui.Row(L.T("Transparency"), L.T("Let a little desktop color show through floating windows."), Ui.Toggle(s.Transparency, value => Change(x => x.Transparency = value))));
             content.Children.Add(Ui.Row(L.T("Animations"), L.T("Smooth transitions when you open tools and change settings."), Ui.Toggle(s.Animations, value => Change(x => x.Animations = value))));
             content.Children.Add(Ui.Row(L.T("Start at login"), L.T("Keep your tools and shortcuts ready after you sign in."), Ui.Toggle(s.StartAtLogin, value => Change(x => x.StartAtLogin = value))));
