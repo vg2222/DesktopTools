@@ -42,3 +42,6 @@
 # Existing published media stays tracked; new working exports stay local
 /assets/
 /docs/screenshots/gallery/
+
+# Local planning notes stay off GitHub
+/docs/superpowers/
