@@ -385,11 +385,12 @@ internal static class AutoRedactOcrChecks
                         if (finding == null || finding.Bounds.X > target.X + 3 || finding.Bounds.X + finding.Bounds.Width < target.Right - 3)
                             failures.Add($"{rows[i].Category} row {i + 1}, font={size}, OCR={selected}; region={finding?.Bounds}");
                     }
-                    if (found.Count != neededRows) failures.Add($"Region count {found.Count}/{neededRows}, font={size}, OCR={selected}");
-                    if (found.Count != neededRows && size == 10 && selected == english)
+                    // Without Russian OCR, values behind unreadable Russian labels may still be found by pattern; require the readable ones, allow the rest.
+                    if (found.Count < neededRows || found.Count > rows.Length) failures.Add($"Region count {found.Count} (expected {neededRows}..{rows.Length}), font={size}, OCR={selected}");
+                    if ((found.Count < neededRows || failures.Count > 0) && size == 10 && selected == english)
                     {
                         var diagnostic = Task.Run(() => LocalOcr.RecognizeLayoutAsync(image, english)).GetAwaiter().GetResult();
-                        foreach (int index in new[] { 3, 4, 21 })
+                        foreach (int index in new[] { 3, 4, 9, 21 })
                             Console.WriteLine("Generated row " + (index + 1) + ": " + string.Join(" | ", diagnostic.Words.Where(w => w.Bounds.Y < expected[index].Y + 22 && w.Bounds.Bottom > expected[index].Y).Select(w => w.Text)));
                     }
                     Console.WriteLine($"Full 25-value privacy sample: font={size}, OCR={selected}, regions={found.Count}");
