@@ -35,9 +35,12 @@ internal static class UtilityWindowChrome
     private static void LoadedBackdrop(object sender, RoutedEventArgs args)
     {
         var window = (Window)sender; window.Loaded -= LoadedBackdrop;
-        // Tool windows use the selected app background, including custom colors.
-        // Keep glass on smaller controls, but do not tint the whole window gray.
-        if (window.Content is Border surface) surface.SetResourceReference(Border.BackgroundProperty, "Surface");
+        // Preserve the selected app color and fill the client area without a footer gap.
+        if (window.Content is Border surface)
+        {
+            surface.Margin = new Thickness(0);
+            surface.SetResourceReference(Border.BackgroundProperty, "Surface");
+        }
         ApplyBackdrop(window); ClipContent(window);
     }
     internal static void ClipContent(Window window)

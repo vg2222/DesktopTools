@@ -9,6 +9,9 @@ internal static class Program
         int checks = 0;
         void Check(bool condition, string name) { if (!condition) throw new Exception(name); Console.WriteLine("PASS " + name); checks++; }
         ShortcutRecorderTests.Run(Check);
+        Check(AutomationInput.ParseKeys("Ctrl+Insert").SequenceEqual(new ushort[]{17,45}),"automation supports Insert shortcut");
+        Check(AutomationInput.ParseKeys("Ctrl+OemPlus").Length==2&&AutomationInput.ParseKeys("NumPad2")[0]==98,"automation supports recorded OEM and numpad keys");
+        bool escapeRejected=false;try{AutomationInput.ParseKeys("Escape");}catch(ArgumentException){escapeRejected=true;}Check(escapeRejected,"automation reserves Escape");
         var missingRecorderRuntime = RecordingPrerequisites.FindMissingVisualCppRuntimeFiles(
             _ => false,
             "C:/DesktopTools",

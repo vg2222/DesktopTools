@@ -13,7 +13,7 @@ $releaseRoot = if ([IO.Path]::IsPathRooted($OutputDirectory)) { [IO.Path]::GetFu
 $repoRoot = [IO.Path]::GetFullPath($repo).TrimEnd('\') + '\'
 $artifactRoot = [IO.Path]::GetFullPath((Join-Path $repo 'artifacts')).TrimEnd('\') + '\'
 if (-not $releaseRoot.StartsWith($repoRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Release output must stay inside the repository.' }
-if ([IO.Path]::GetFileName($releaseRoot) -ne "${version}-preview" -or
+if ([IO.Path]::GetFileName($releaseRoot) -notmatch ('^' + [regex]::Escape($version) + '-preview(?:-[a-z0-9-]+)?$') -or
     [IO.Path]::GetFileName([IO.Path]::GetDirectoryName($releaseRoot)) -ne 'App releases') {
     throw "Release output must be App releases/${version}-preview."
 }

@@ -1,0 +1,21 @@
+{
+  "Run": "Запустить",
+  "Select an action": "Выберите действие",
+  "Action help": "О действии",
+  "Test action": "Проверить",
+  "Automatic triggers": "Автоматический запуск",
+  "Target window": "Целевое окно",
+  "Leave blank to use the current window.": "Оставьте пустым для текущего окна.",
+  "Use a value from 0 to 10000.": "Допустимое значение: от 0 до 10000.",
+  "Daily at": "Ежедневно в",
+  "HH:mm; leave blank to disable.": "ЧЧ:мм; пусто — выключено.",
+  "Triggers run while DesktopTools is open.": "Триггеры работают, пока открыт DesktopTools.",
+  "Esc to stop": "Esc — остановить",
+  "Automation running": "Сценарий выполняется",
+  "Recording actions": "Запись действий",
+  "Recording starts in {0} seconds": "Запись начнётся через {0} с",
+  "Action {0} of {1}": "Действие {0} из {1}",
+  "Action {0}: {1}": "Действие {0}: {1}",
+  "No matching actions": "Действия не найдены",
+  "Try another search.": "Попробуйте другой запрос."
+}
