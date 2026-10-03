@@ -61,11 +61,17 @@ internal static class AutoRedactOcrChecks
         if (privateCode.Any(f => f.Bounds.Y < 100 || f.Bounds.Y + f.Bounds.Height > 250)) throw new Exception("Sensitive code boxes lost physical source coordinates");
         Console.WriteLine("PASS local OCR detects monospace IP, API key and labelled password on dark code strip");
         FullSample(language.Tag);
-        TableSample(language.Tag);
-        HandleListSample(language.Tag);
-        NarrativeJournalSample(language.Tag);
-        NarrativeJournalSample(language.Tag, desktop: true);
-        WrappedInlineSample(language.Tag);
+        // These samples are written in Russian (labels or whole paragraphs), so they need the Russian recognizer;
+        // hosted CI images only ship en-US.
+        if (LocalOcr.Languages.Any(l => l.Tag.StartsWith("ru", StringComparison.OrdinalIgnoreCase)))
+        {
+            TableSample(language.Tag);
+            HandleListSample(language.Tag);
+            NarrativeJournalSample(language.Tag);
+            NarrativeJournalSample(language.Tag, desktop: true);
+            WrappedInlineSample(language.Tag);
+        }
+        else Console.WriteLine("SKIP Russian-text privacy samples (table, handle list, narrative, wrapped inline): Russian OCR recognizer is not installed");
         DesktopSidebarWrappedSample(language.Tag);
     }
 
