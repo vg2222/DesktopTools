@@ -14,6 +14,10 @@ internal static class AutomaticGuideChecks
 {
     private static IEnumerable<DependencyObject> Walk(DependencyObject root)
     { yield return root; for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) foreach (var child in Walk(VisualTreeHelper.GetChild(root, i))) yield return child; }
+    private static async Task Until(Func<bool> condition, int milliseconds = 4000)
+    {
+        for (int waited = 0; waited < milliseconds && !condition(); waited += 20) await Task.Delay(20);
+    }
     internal static async Task RunAsync()
     {
         using var controller = new AppController(true); controller.ApplyTheme(); DesktopTools.Localization.L.Use("en");
@@ -35,20 +39,23 @@ internal static class AutomaticGuideChecks
             setups++;
             Walk(setup).OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == "Continue to guide").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         };
-        closer.Start(); var window = Create(); window.Show(); await Task.Delay(100); closer.Stop();
-        if (setups != 1 || window.GetValue(FeatureTourButton.CurrentTourProperty) is not GuidedTour { IsOpen: true } || settings.FeatureSetup["recorder"].Status != SetupStatus.Completed) throw new Exception("First entry did not transition from setup into tour");
+        closer.Start(); var window = Create(); window.Show();
+        // Opening the setup window can take longer than a fixed delay on a cold start; wait for the outcome instead.
+        await Until(() => setups >= 1 && window.GetValue(FeatureTourButton.CurrentTourProperty) is GuidedTour { IsOpen: true } && settings.FeatureSetup.TryGetValue("recorder", out var done) && done.Status == SetupStatus.Completed);
+        closer.Stop();
+        if (setups != 1 || window.GetValue(FeatureTourButton.CurrentTourProperty) is not GuidedTour { IsOpen: true } || settings.FeatureSetup["recorder"].Status != SetupStatus.Completed) throw new Exception($"First entry did not transition from setup into tour (setups={setups}, tourOpen={(window.GetValue(FeatureTourButton.CurrentTourProperty) as GuidedTour)?.IsOpen}, status={(settings.FeatureSetup.TryGetValue("recorder", out var progress) ? progress.Status.ToString() : "none")})");
         window.Close();
-        window = Create(); window.Show(); await Task.Delay(80);
+        window = Create(); window.Show(); await Until(() => window.GetValue(FeatureTourButton.CurrentTourProperty) is GuidedTour { IsOpen: true });
         var tour = window.GetValue(FeatureTourButton.CurrentTourProperty) as GuidedTour;
         if (tour?.IsOpen != true || settings.FeatureTours["recorder"].Step != 0) throw new Exception("Pending tour did not start after completed setup");
         tour.Next(); if (settings.FeatureTours["recorder"].Step != 1 || !tour.IsOpen) throw new Exception("Disabled export target was omitted");
         window.Close();
-        window = Create(); window.Show(); await Task.Delay(80); tour = window.GetValue(FeatureTourButton.CurrentTourProperty) as GuidedTour;
+        window = Create(); window.Show(); await Until(() => window.GetValue(FeatureTourButton.CurrentTourProperty) is GuidedTour { IsOpen: true }); tour = window.GetValue(FeatureTourButton.CurrentTourProperty) as GuidedTour;
         if (tour?.IsOpen != true || settings.FeatureTours["recorder"].Step != 1) throw new Exception("Interrupted tour did not resume its step");
         tour.Next(); window.Close();
         foreach (var status in new[] { SetupStatus.Completed, SetupStatus.Skipped })
         {
-            settings.FeatureTours["recorder"] = new OnboardingProgress { Status = status }; window = Create(); window.Show(); await Task.Delay(60);
+            settings.FeatureTours["recorder"] = new OnboardingProgress { Status = status }; window = Create(); window.Show(); await Task.Delay(400);
             if (window.GetValue(FeatureTourButton.CurrentTourProperty) != null) throw new Exception("Completed or skipped tour opened automatically"); window.Close();
         }
         if (settings.FeatureTours.Count != 1 || settings.FeatureSetup.Count != 1) throw new Exception("Guide modified unrelated feature progress");

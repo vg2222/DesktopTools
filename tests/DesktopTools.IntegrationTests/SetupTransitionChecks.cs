@@ -97,7 +97,10 @@ internal static class SetupTransitionChecks
         Click(surface, "setup-back");
         Click(surface, "setup-next");
         var latestPage = Field<StackPanel>(setup, "content");
-        await Task.Delay(260);
+        // Wait for the latest animation to finish instead of a fixed delay (its clock can start a frame late),
+        // then give any stale transition time to fire so the assertions below still catch it.
+        for (int i = 0; i < 100 && pageHost.Children.Count != 1; i++) await Task.Delay(20);
+        await Task.Delay(300);
         surface.UpdateLayout();
         Check(controller.Settings.Setup.Step == 2, "Rapid navigation lost the latest requested page");
         Check(pageHost.Children.Count == 1 && ReferenceEquals(pageHost.Children[0], latestPage),
