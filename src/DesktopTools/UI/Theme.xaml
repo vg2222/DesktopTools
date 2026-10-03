@@ -79,6 +79,7 @@
   </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style TargetType="ComboBox"><Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+  <Setter Property="UseLayoutRounding" Value="True"/><Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
   <Setter Property="ui:Ui.TrackPopup" Value="True"/>
   <Setter Property="MinHeight" Value="38"/><Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="SemiBold"/>
   <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="Cursor" Value="Hand"/>
@@ -109,14 +110,18 @@
   </Grid><ControlTemplate.Triggers><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value=".42"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style TargetType="ContextMenu">
-  <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="FontFamily" Value="{DynamicResource BodyFont}"/>
-  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu"><Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="10" Padding="5"><ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="400"><ItemsPresenter Grid.IsSharedSizeScope="True" KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer></Border></ControlTemplate></Setter.Value></Setter>
+  <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="FontFamily" Value="{DynamicResource BodyFont}"/><Setter Property="FontSize" Value="14"/>
+  <!-- Popups live outside the window, so they need the same pixel snapping and text mode as Window or they blur and clip a pixel at the edges. -->
+  <Setter Property="UseLayoutRounding" Value="True"/><Setter Property="SnapsToDevicePixels" Value="True"/><Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+  <Setter Property="Padding" Value="0"/><Setter Property="MinWidth" Value="190"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu"><Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="12" Padding="6" Margin="0,0,1,1"><ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="396"><ItemsPresenter Grid.IsSharedSizeScope="True" KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer></Border></ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style TargetType="MenuItem">
-  <Setter Property="FontSize" Value="13"/><Setter Property="Foreground" Value="{DynamicResource Text}"/>
+  <Setter Property="FontSize" Value="14"/><Setter Property="Foreground" Value="{DynamicResource Text}"/>
+  <Setter Property="UseLayoutRounding" Value="True"/><Setter Property="SnapsToDevicePixels" Value="True"/><Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem"><Grid>
-   <Border x:Name="Item" Background="Transparent" Padding="10,8" CornerRadius="6"><Grid>
-    <Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition Width="*" SharedSizeGroup="MenuHeader"/><ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture"/><ColumnDefinition Width="16"/></Grid.ColumnDefinitions>
+   <Border x:Name="Item" Background="Transparent" Padding="10,9" CornerRadius="8" MinHeight="36"><Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition Width="*" SharedSizeGroup="MenuHeader"/><ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture"/><ColumnDefinition Width="16"/></Grid.ColumnDefinitions>
     <ContentPresenter x:Name="MenuIcon" Content="{TemplateBinding Icon}" Width="16" Height="16" VerticalAlignment="Center"/>
     <Path x:Name="Checkmark" Data="M1,6 L5,10 13,2" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.6" Width="14" Height="12" Visibility="Collapsed" VerticalAlignment="Center"/>
     <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
@@ -124,7 +129,7 @@
     <Path x:Name="SubmenuArrow" Grid.Column="3" Data="M0,0 L4,4 0,8" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.3" Width="4" Height="8" Visibility="Collapsed" HorizontalAlignment="Right" VerticalAlignment="Center"/>
    </Grid></Border>
    <Popup x:Name="PART_Popup" Placement="Right" PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}" HorizontalOffset="4" AllowsTransparency="True" Focusable="False" IsOpen="{TemplateBinding IsSubmenuOpen}">
-    <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="11" Padding="5"><ScrollViewer MaxHeight="400" CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><ItemsPresenter Grid.IsSharedSizeScope="True" KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer></Border>
+    <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="12" Padding="6" Margin="0,0,1,1"><ScrollViewer MaxHeight="400" CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><ItemsPresenter Grid.IsSharedSizeScope="True" KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer></Border>
    </Popup>
   </Grid><ControlTemplate.Triggers>
    <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Item" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
@@ -134,6 +139,7 @@
   </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>
  </Style>
+ <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Separator"><Border Height="1" Margin="8,5" Background="{DynamicResource Stroke}"/></ControlTemplate></Setter.Value></Setter></Style>
  <Style TargetType="Separator"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Separator"><Border Height="1" Margin="8,5" Background="{DynamicResource Stroke}"/></ControlTemplate></Setter.Value></Setter></Style>
  <Style TargetType="ScrollBar">
   <Setter Property="Width" Value="10"/><Setter Property="Background" Value="Transparent"/>
