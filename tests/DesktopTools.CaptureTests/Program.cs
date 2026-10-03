@@ -9,6 +9,8 @@ internal static class Program
     static int Main()
     {
         QrChecks.Run();
+        try { AutoRedactOcrChecks.Run(); }
+        catch (Exception ex) { Console.Error.WriteLine("FAIL privacy OCR: " + ex.Message); return 1; }
         var pixels = new byte[] { 1, 2, 3, 255, 44, 55, 66, 255 };
         var image = BitmapSource.Create(2, 1, 144, 144, PixelFormats.Bgra32, null, pixels, 8);
         var color = ScreenshotPixel.Read(image, 1, 0);

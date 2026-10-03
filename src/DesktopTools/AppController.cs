@@ -106,8 +106,8 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report) { WindowState = WindowState.Maximized }); }
-    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report)); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact) { WindowState = WindowState.Maximized }); }
+    public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report, () => Settings.AutoRedact)); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
@@ -552,7 +552,7 @@ internal sealed partial class AppController : IDisposable
     public async Task CaptureAsync(bool repeat = false, bool textOnly = false)
     {
         if (IsBusy || (textOnly ? !Settings.ScreenTextEnabled : !Settings.CaptureEnabled)) return;
-        BitmapSource? textImage = null; scanningText = textOnly; if (textOnly) textRequestVersion++;
+        BitmapSource? textImage = null; bool autoReviewOpened = false; scanningText = textOnly; if (textOnly) textRequestVersion++;
         nint captureForeground = State == OverlayState.Draw ? previousForeground : NativeWindowService.GetForegroundWindowHandle();
         IsBusy = true; using var cancellation = new CancellationTokenSource(); captureCancellation = cancellation;
         overlay?.CommitText(); overlay?.CancelPending(); StopPresentation(); machine.BeginCapture(); Palette?.Hide(); UpdateEscape();
@@ -609,10 +609,10 @@ internal sealed partial class AppController : IDisposable
             var inkMonitor = overlay?.Monitor;
             bool includeInk = Settings.IncludeAnnotations && inkMonitor != null && (sameSession || monitor.Id == "VirtualDesktop");
             var offset = inkMonitor == null ? new Vector() : inkMonitor.Bounds.TopLeft - monitor.Bounds.TopLeft;
-            LastCapture = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
-            CaptureHistory.Add(LastCapture); lastRegion = (monitor, r);
+            var capturedImage = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
+            lastRegion = (monitor, r); autoReviewOpened = Settings.AutoRedact.Enabled;
             statusNotice?.Close();
-            if (Settings.CaptureOutput == "Save") SaveLast(); else { await CopyAsync(LastCapture); ShowCaptureNotice(); }
+            await HandleCapturedImageAsync(capturedImage);
         }
         catch (OperationCanceledException) { statusNotice?.Close(); Report(L.T("Capture cancelled.")); }
         catch (Exception ex) { Report(L.T("Capture failed: ") + ex.Message); }
@@ -621,7 +621,7 @@ internal sealed partial class AppController : IDisposable
             selector?.Close(); selector = null; captureCancellation = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
             if (overlay != null) { if (State == OverlayState.Hidden) overlay.Hide(); else { overlay.Show(); overlay.Mode(State == OverlayState.Draw); } }
             if (State == OverlayState.Draw) Palette?.Show();
-            else if (!disposed) NativeWindowService.RestoreForeground(captureForeground);
+            else if (!disposed && !autoReviewOpened) NativeWindowService.RestoreForeground(captureForeground);
             scanningText = false;
             if (!disposed && !cancellation.IsCancellationRequested && textImage != null && Settings.ScreenTextEnabled) { var textWindow = OpenTextTools(); if (textWindow != null) _ = textWindow.RecognizeScreenAsync(textImage); }
         }
@@ -642,39 +642,56 @@ internal sealed partial class AppController : IDisposable
         return new Int32Rect(x, y, right - x, bottom - y);
     }
     public void OpenRecentCapture(BitmapSource image) { LastCapture = image; RedactLast(); }
-    public async Task CopyAsync(BitmapSource image)
+    public async Task CopyAsync(BitmapSource image) => await TryCopyAsync(image);
+    internal async Task<bool> TryCopyAsync(BitmapSource image, CancellationToken cancellationToken = default,
+        Action<DataObject>? writeClipboard = null)
     {
         Exception? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
+            if (cancellationToken.IsCancellationRequested) return false;
             try
             {
                 var data = new DataObject(); data.SetImage(image);
                 using var stream = new MemoryStream(); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); stream.Position = 0;
-                data.SetData("PNG", stream); Clipboard.SetDataObject(data, true); Report(L.T("Screenshot copied to clipboard.")); return;
+                data.SetData("PNG", stream);
+                if (writeClipboard == null) Clipboard.SetDataObject(data, true); else writeClipboard(data);
+                Report(L.T("Screenshot copied to clipboard.")); return true;
             }
-            catch (System.Runtime.InteropServices.ExternalException ex) { last = ex; await Task.Delay(80); }
+            catch (System.Runtime.InteropServices.ExternalException ex)
+            {
+                last = ex;
+                try { await Task.Delay(80, cancellationToken); }
+                catch (OperationCanceledException) { return false; }
+            }
         }
         Report(L.T("Clipboard is busy. Your screenshot is retained; use Save PNG. ") + last?.Message);
+        return false;
     }
     public void SaveLast() => SaveLast((dialog, owner) => dialog.ShowDialog(owner));
     internal void SaveLast(Func<SaveFileDialog, Window, bool?> showDialog)
     {
         var image = LastCapture;
         if (image == null) { Report(L.T("Capture a screenshot first.")); return; }
+        TrySaveImage(image, EnsureMainWindow(), showDialog);
+    }
+    internal bool TrySaveImage(BitmapSource image, Window owner, Func<SaveFileDialog, Window, bool?> showDialog,
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested) return false;
         bool wasBusy = IsBusy; IsBusy = true;
         var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = $"DesktopTools-{DateTime.Now:yyyyMMdd-HHmmss}.png", DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
         try
         {
             // A notification can expire inside the native dialog's nested message loop.
             // Explicitly own it with the persistent main window, even when hidden in the tray.
-            var owner = EnsureMainWindow();
             _ = new System.Windows.Interop.WindowInteropHelper(owner).EnsureHandle();
-            if (showDialog(dialog, owner) != true) return;
+            if (showDialog(dialog, owner) != true || cancellationToken.IsCancellationRequested) return false;
             using (var stream = File.Create(dialog.FileName)) { var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); }
             UpdateSettings(s => s.SaveDirectory = Path.GetDirectoryName(dialog.FileName)!); Report(L.T("Saved ") + Path.GetFileName(dialog.FileName));
+            return true;
         }
-        catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); }
+        catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); return false; }
         finally { IsBusy = wasBusy; if (!IsBusy && State == OverlayState.Draw) overlay?.Activate(); }
     }
     private void ShowCaptureNotice()
@@ -691,7 +708,10 @@ internal sealed partial class AppController : IDisposable
     public void RedactLast()
     {
         if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; }
-        var window = new ScreenshotEditorWindow(LastCapture, image => { LastCapture = image; CaptureHistory.Add(image); _ = CopyAsync(image); ShowCaptureNotice(); }, Report); window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window);
+        ScreenshotEditorWindow? window = null;
+        window = new ScreenshotEditorWindow(LastCapture, _ => { }, Report, autoRedact: Settings.AutoRedact,
+            exportAsync: (image, action) => ExportReviewedImageAsync(image, action, window!, cancellationToken: window!.ExportCancellationToken));
+        window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window);
     }
     public void TogglePresentation(string mode)
     {
@@ -808,6 +828,7 @@ internal sealed partial class AppController : IDisposable
     }
     public void Dispose()
     {
+        CloseScreenshotReviews();
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         StopUpdateChecks();

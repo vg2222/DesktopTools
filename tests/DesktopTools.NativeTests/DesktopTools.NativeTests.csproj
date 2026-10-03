@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Include="../../src/DesktopTools/Native/*.cs" Link="Native/%(Filename)%(Extension)" />
     <Compile Include="../../src/DesktopTools/Core/AppSettings.cs" Link="Core/AppSettings.cs" />
+    <Compile Include="../../src/DesktopTools/Core/AutoRedactOptions.cs" Link="Core/AutoRedactOptions.cs" />
     <Compile Include="../../src/DesktopTools/Core/DrawingBindings.cs" Link="Core/DrawingBindings.cs" />
     <Compile Include="../../src/DesktopTools/Core/SettingsStore.cs" Link="Core/SettingsStore.cs" />
     <Compile Include="../../src/DesktopTools/Core/FeatureAvailability.cs" Link="Core/FeatureAvailability.cs" />

@@ -35,7 +35,8 @@ internal static class Program
         {
             try
             {
-                if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);
+                if (args.Contains("--auto-redact-only")) await Test("Auto Redact manual review and capture privacy", AutoRedactChecks.RunAsync);
+                else if (args.Contains("--github-gallery")) await Test("GitHub screenshot gallery", GitHubGallery.RunAsync);
                 else if (args.Contains("--record-prerequisites-only")) await Test("Recorder prerequisite UI guard and retry", RecordingPrerequisiteChecks.RunAsync);
                 else if (args.Contains("--native-runtime-features-only")) await Test("Native runtime warnings for translation and background removal", NativeRuntimeFeatureChecks.RunAsync);
                 else if (args.Contains("--updates-only")) await Test("Update discovery, persistent controls, notes feedback and progress", UpdateChecks.RunAsync);

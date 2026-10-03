@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using DesktopTools.Localization;
+using DesktopTools.Core;
 using DesktopTools.Native;
 using DesktopTools.UI;
 using Microsoft.Win32;
@@ -32,15 +33,16 @@ internal sealed class StepGuideWindow : Window
     private readonly Func<BitmapSource?> latestCapture;
     private readonly Func<IReadOnlyList<CaptureHistoryEntry>> recentCaptures;
     private readonly Action<string> report;
+    private readonly Func<AutoRedactOptions>? getAutoRedact;
     private readonly Button customColorButton;
     private int columns = 3;
     private string backgroundMode;
     private string customExportColor = "#32405A";
     private string? selectedFolder;
 
-    internal StepGuideWindow(Func<BitmapSource?> latestCapture, Func<IReadOnlyList<CaptureHistoryEntry>> recentCaptures, string screenshotFolder, Action<string> report)
+    internal StepGuideWindow(Func<BitmapSource?> latestCapture, Func<IReadOnlyList<CaptureHistoryEntry>> recentCaptures, string screenshotFolder, Action<string> report, Func<AutoRedactOptions>? getAutoRedact = null)
     {
-        this.latestCapture = latestCapture; this.recentCaptures = recentCaptures; this.report = report;
+        this.latestCapture = latestCapture; this.recentCaptures = recentCaptures; this.report = report; this.getAutoRedact = getAutoRedact;
         backgroundMode = Application.Current.Resources["Surface"] is SolidColorBrush surface && surface.Color.R < 100 ? "Dark" : "Light";
         titleInput.MaxLength = 120; titleInput.MinHeight = 40;
         Title = L.T("Step-by-step guide"); Tag = "Step-by-step guide";
@@ -242,7 +244,7 @@ internal sealed class StepGuideWindow : Window
         var editor = new ScreenshotEditorWindow(image, result =>
         {
             steps.Add(new Entry(result, sourcePath: sourcePath)); Refresh();
-        }, report, applyToImage: true, applyLabel: "Add edited image", offerOriginal: true)
+        }, report, applyToImage: true, applyLabel: "Add edited image", offerOriginal: true, autoRedact: getAutoRedact?.Invoke())
         { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
         editor.ShowDialog();
     }
@@ -260,7 +262,7 @@ internal sealed class StepGuideWindow : Window
         {
             if (!steps.Contains(step)) return;
             step.Image = result; Refresh();
-        }, report, applyToImage: true, applyLabel: "Apply to step")
+        }, report, applyToImage: true, applyLabel: "Apply to step", autoRedact: getAutoRedact?.Invoke())
         { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
         editor.ShowDialog();
     }

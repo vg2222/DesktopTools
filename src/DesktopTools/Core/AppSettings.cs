@@ -2,6 +2,7 @@ namespace DesktopTools.Core;
 
 public sealed class AppSettings
 {
+    public AutoRedactOptions AutoRedact { get; set; } = new();
     public bool AutomaticUpdateChecks { get; set; } = true;
     public double UpdateCheckHours { get; set; } = 1;
     public bool AutomaticNewsChecks { get; set; } = true;

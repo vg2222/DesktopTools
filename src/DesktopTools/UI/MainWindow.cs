@@ -443,6 +443,7 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
 
+        AutoRedactSettings();
         Group(L.T("Latest screenshot"), Ui.Row(L.T("Pin above applications"),L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)), Ui.Row(L.T("Edit screenshot"),L.T("Annotate, crop, or cover private details before sharing."), Ui.Button(L.T("Open editor"), controller.RedactLast)), Ui.Row(L.T("Save a copy"), null, Ui.Button(L.T("Save PNG"), controller.SaveLast)));
 
         var repeat = Ui.Button(L.T("Repeat region"), () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(true); }); repeat.IsEnabled = controller.CanRepeatCapture && s.CaptureEnabled;

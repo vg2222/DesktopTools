@@ -62,7 +62,8 @@ internal static class CaptureLifecycleChecks
         var bounds = new Rect(Math.Ceiling(origin.X), Math.Ceiling(origin.Y), 160, 100);
         var capture = CaptureService.Capture(new MonitorInfo("Owned helper interior", bounds, bounds, 1, 1));
         var pixel = new byte[4]; capture.CopyPixels(new Int32Rect(0, 0, 1, 1), pixel, 4, 0);
-        Check(pixel[0] == color.B && pixel[1] == color.G && pixel[2] == color.R, "Native capture did not contain the current helper frame");
+        Check(pixel[0] == color.B && pixel[1] == color.G && pixel[2] == color.R,
+            $"Native capture did not contain the current helper frame at cycle {index}: expected RGB {color.R},{color.G},{color.B}, actual {pixel[2]},{pixel[1]},{pixel[0]}");
         BitmapSource? exported = null; string? error = null;
         var editor = new ScreenshotEditorWindow(capture, image => exported = image, message => error = message,
             applyToImage: true, editorLayout: index % 2 == 0 ? "A" : "B") { Width = 860, Height = 500, ShowActivated = false };

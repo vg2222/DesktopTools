@@ -54,7 +54,7 @@ internal sealed partial class MainWindow
         }
         if (id == "capture")
         {
-            visibleFeatureSections = [L.T("Capture behavior"), L.T("Capture again")];
+            visibleFeatureSections = [L.T("Capture behavior"), L.T("Sensitive data"), L.T("Capture again")];
             Capture();
             return;
         }

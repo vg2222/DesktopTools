@@ -94,6 +94,7 @@ public sealed class SettingsStore
 
     public static void Validate(AppSettings s)
     {
+        s.AutoRedact ??= new(); s.AutoRedact.Normalize();
         // Tool availability is no longer a preference. Retain the old fields for
         // reading existing settings and profiles, but migrate every tool to ready.
         // ShortcutEnabled remains independent and is never changed here.

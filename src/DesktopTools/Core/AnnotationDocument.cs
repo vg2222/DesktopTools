@@ -12,6 +12,7 @@ public sealed record Annotation
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public AnnotationKind Kind { get; init; }
+    public RedactionStyle RedactionStyle { get; init; } = RedactionStyle.Solid;
     public IReadOnlyList<Point> Points { get; init; } = [];
     public Color Color { get; init; } = System.Windows.Media.Color.FromRgb(40, 112, 255);
     public double Thickness { get; init; } = 3;

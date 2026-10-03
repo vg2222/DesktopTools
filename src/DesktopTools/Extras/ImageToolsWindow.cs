@@ -1,4 +1,5 @@
 using DesktopTools.Localization;
+using DesktopTools.Core;
 using DesktopTools.Native;
 using System.IO;
 using System.Windows;
@@ -61,7 +62,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private readonly Button emptyImport;
 
 
-    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null)
+    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null, Func<AutoRedactOptions>? getAutoRedact = null)
     {
         this.report = report; this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles; preview = editCanvas.Image;
         Title = L.T("Image tools"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 560;
@@ -229,7 +230,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             System.Windows.Automation.AutomationProperties.SetName(button, L.T(key));
             tabButtons[key] = button; tabStrip.Children.Add(button);
         }
-        var annotate = Ui.Button(L.T("Annotate"), () => { if (bitmap != null && removal == null) new ScreenshotEditorWindow(bitmap, result => Edit(() => result), report, applyToImage: true) { Owner = this }.ShowDialog(); });
+        var annotate = Ui.Button(L.T("Annotate"), () => { if (bitmap != null && removal == null) new ScreenshotEditorWindow(bitmap, result => Edit(() => result), report, applyToImage: true, autoRedact: getAutoRedact?.Invoke()) { Owner = this }.ShowDialog(); });
         annotate.Content = Ui.IconLabel("Pen", L.T("Annotate")); annotate.Margin = new Thickness(0, 8, 0, 0);
         var exportActions = new StackPanel(); exportActions.Children.Add(annotate); exportActions.Children.Add(export);
         DockPanel.SetDock(exportActions, Dock.Bottom); edits.Children.Add(exportActions);
