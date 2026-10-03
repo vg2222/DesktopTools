@@ -29,7 +29,7 @@ internal static class RecorderTrayLayoutChecks
             var playTest = Field<Button>("playTest");
             if (recorder.Topmost) throw new Exception("Recorder setup should not stay above other applications.");
             if (quality.ActualWidth < 180 || fps.ActualWidth < 105 || Math.Abs(quality.PointToScreen(new Point()).Y - fps.PointToScreen(new Point()).Y) > 2)
-                throw new Exception("Quality and FPS controls do not fit side by side.");
+                throw new Exception($"Quality and FPS controls do not fit side by side (quality {quality.ActualWidth:0}px, fps {fps.ActualWidth:0}px, window {recorder.ActualWidth:0}px).");
             if (testRecording.PointToScreen(new Point()).Y >= quality.PointToScreen(new Point()).Y)
                 throw new Exception("The test clip action should sit with audio setup, not in the bottom recording controls.");
             if (start.PointToScreen(new Point()).Y <= fps.PointToScreen(new Point()).Y + fps.ActualHeight)

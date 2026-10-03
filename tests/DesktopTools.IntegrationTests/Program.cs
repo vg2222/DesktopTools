@@ -31,6 +31,8 @@ internal static class Program
         Environment.CurrentDirectory = output;
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/DesktopTools;component/UI/Theme.xaml", UriKind.Relative) });
+        // Optional: DESKTOPTOOLS_CHECK_MONITOR=DISPLAY1 keeps harness windows on that monitor (see CheckMonitor).
+        if (Environment.GetEnvironmentVariable("DESKTOPTOOLS_CHECK_MONITOR") is { Length: > 0 } wanted) CheckMonitor.Enable(wanted);
         app.Startup += async (_, _) =>
         {
             try
@@ -127,6 +129,7 @@ internal static class Program
             catch (Exception ex) { failed++; Results.Add("FAIL harness: " + ex); }
             finally
             {
+                CheckMonitor.Finish();
                 Results.Add($"Failures: {failed}"); File.WriteAllLines(Path.Combine(output, "results.txt"), Results);
                 foreach (var result in Results) Console.WriteLine(result);
                 Environment.CurrentDirectory = root; app.Shutdown(failed == 0 ? 0 : 1);

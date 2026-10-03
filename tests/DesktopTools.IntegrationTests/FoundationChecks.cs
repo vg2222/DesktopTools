@@ -17,16 +17,19 @@ internal static class FoundationChecks
     internal static async Task RunAsync()
     {
         using var controller = new AppController(true);
-        controller.UpdateSettings(s => { s.Animations = false; s.Transparency = false; });
-        controller.UpdateSettings(s =>
-        {
-            foreach (var feature in DesktopTools.Core.FeatureAvailability.All.Where(f => f.Id.StartsWith("aid-", StringComparison.Ordinal))) feature.Write(s, false);
-        });
+        // Button names below are English; a machine with another Windows UI language must not change the result.
+        controller.UpdateSettings(s => { s.Language = "en"; s.Animations = false; s.Transparency = false; });
+        DesktopTools.Localization.L.Use("en");
+        // AppController normalizes the legacy per-feature Enabled settings back to true, so make the aids
+        // unavailable at the service boundary itself, which is what a direct service call would hit.
+        controller.Hud.IsAvailable = _ => false;
         controller.Hud.ToggleClickIndicators(); controller.Hud.ToggleKeystrokes(); controller.Hud.ToggleTimer();
         controller.Hud.ToggleCountdown(); controller.Hud.ToggleRuler(); controller.Hud.ToggleBlackout();
         Check(!controller.Hud.IsClickIndicatorsEnabled && !controller.Hud.IsKeystrokesEnabled && !controller.Hud.IsTimerVisible &&
             !controller.Hud.IsCountdownVisible && !controller.Hud.IsRulerVisible && !controller.Hud.IsBlackoutVisible,
-            "Disabled presentation aids started through a direct service call");
+            "Disabled presentation aids started through a direct service call: " +
+            $"clicks={controller.Hud.IsClickIndicatorsEnabled} keys={controller.Hud.IsKeystrokesEnabled} timer={controller.Hud.IsTimerVisible} " +
+            $"countdown={controller.Hud.IsCountdownVisible} ruler={controller.Hud.IsRulerVisible} blackout={controller.Hud.IsBlackoutVisible}");
         var font = (FontFamily)Application.Current.FindResource("BodyFont");
         var annotationFont = new Typeface(DesktopTools.Core.AnnotationTypography.Resolve(DesktopTools.Core.AnnotationTypography.DefaultFamily),
             FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
