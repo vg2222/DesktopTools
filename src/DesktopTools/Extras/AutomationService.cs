@@ -78,7 +78,7 @@ internal sealed class AutomationService : IDisposable
             hidden=new HiddenWindowsScope();
             if(!AutomationInput.External(target))target=NativeWindowService.GetForegroundWindowHandle();
             if(AutomationInput.External(target)){if(AutomationInput.IsIconic(target))AutomationInput.SetWindowState(target,9);NativeWindowService.RestoreForeground(target);}
-            hud=CreateHud(L.T("Automation running — Esc to stop"),Stop);hud.Show();
+            hud=CreateHud(L.T("Automation running"),Stop);hud.Show();
             await Task.Delay(700,cancellation.Token);
             using var input=new AutomationInput();
             nint expected=AutomationInput.External(target)?target:0;
@@ -136,7 +136,7 @@ internal sealed class AutomationService : IDisposable
                 return Task.FromResult(string.Equals($"#{bytes[2]:X2}{bytes[1]:X2}{bytes[0]:X2}",s.Text,StringComparison.OrdinalIgnoreCase));
             }
             int lastStep=-1;
-            try{await AutomationProgram.RunAsync(source,Condition,Action,cancellation.Token,progress:i=>{lastStep=i;Progress?.Invoke(i);});}
+            try{await AutomationProgram.RunAsync(source,Condition,Action,cancellation.Token,progress:i=>{lastStep=i;if(hud is AutomationHudWindow progressHud)progressHud.Progress(i,source.Steps.Count);Progress?.Invoke(i);});}
             catch(Exception e)when(e is not OperationCanceledException){throw new InvalidOperationException(L.F($"Action {lastStep+1}: {e.Message}"),e);}
             Report(L.T("Automation completed."));
         }catch(OperationCanceledException){if(!disposed)Report(L.T("Automation stopped."));}
@@ -148,12 +148,6 @@ internal sealed class AutomationService : IDisposable
     internal static bool RequiresStableTarget(AutomationKind kind)=>kind is AutomationKind.Keys or AutomationKind.Text or AutomationKind.PasteClipboard or AutomationKind.KeyDown or AutomationKind.KeyUp
         or AutomationKind.Click or AutomationKind.DoubleClick or AutomationKind.RightClick or AutomationKind.Scroll or AutomationKind.Drag
         or AutomationKind.MouseDown or AutomationKind.MouseUp or AutomationKind.Move;
-    internal static Window CreateHud(string title,Action stop)
-    {
-        var w=new Window{Title=L.T("Desktop Automation"),Width=420,Height=100,ResizeMode=ResizeMode.NoResize,ShowInTaskbar=false,ShowActivated=false,Topmost=true,WindowStartupLocation=WindowStartupLocation.CenterScreen};
-        var p=new StackPanel();p.Children.Add(Ui.Text(title,13,true));var b=Ui.Button(L.T("Stop"),stop);b.Margin=new Thickness(0,10,0,0);p.Children.Add(b);w.Content=Ui.Card(p,14);UtilityWindowChrome.EnableBackdrop(w);
-        w.Loaded+=(_,_)=>{var monitor=MonitorService.GetCurrent();NativeMethods.SetWindowPos(new System.Windows.Interop.WindowInteropHelper(w).Handle,new IntPtr(-1),(int)(monitor.WorkingArea.Right-w.ActualWidth*monitor.ScaleX-24),(int)(monitor.WorkingArea.Top+24),0,0,0x0001|0x0010);};
-        w.SourceInitialized+=(_,_)=>{NativeWindowService.TryExcludeFromCapture(w,true,out _);};return w;
-    }
+    internal static Window CreateHud(string title,Action stop)=>new AutomationHudWindow(title,stop);
     public void Dispose(){disposed=true;Stop();timer.Stop();hotkeys.Dispose();}
 }

@@ -29,6 +29,16 @@ internal static class AutomationCatalog
         new(AutomationKind.ClipboardText,"Set clipboard text","Clipboard","Replace clipboard contents with your text."),
         new(AutomationKind.PasteClipboard,"Paste clipboard","Clipboard","Paste the current clipboard into the target window.")
     ];
+    internal static string Icon(AutomationKind kind)=>kind switch{
+        AutomationKind.Click or AutomationKind.DoubleClick or AutomationKind.RightClick or AutomationKind.MouseDown or AutomationKind.MouseUp=>"Click",
+        AutomationKind.Move or AutomationKind.Drag=>"Select",AutomationKind.Scroll=>"Interact",
+        AutomationKind.Keys or AutomationKind.KeyDown or AutomationKind.KeyUp=>"Shortcuts",AutomationKind.Text=>"Text",
+        AutomationKind.Launch=>"File",AutomationKind.FocusWindow or AutomationKind.WaitWindow=>"Window",
+        AutomationKind.MaximizeWindow=>"Maximize",AutomationKind.MinimizeWindow=>"Minimize",AutomationKind.RestoreWindow=>"Window",
+        AutomationKind.Wait=>"Timer",AutomationKind.IfPixel or AutomationKind.WaitPixel=>"Eyedropper",
+        AutomationKind.Repeat or AutomationKind.EndRepeat=>"Refresh",AutomationKind.IfWindow or AutomationKind.Else or AutomationKind.EndIf=>"Swap",
+        AutomationKind.ClipboardText or AutomationKind.PasteClipboard=>"Copy",_=>"Utilities"};
+
     internal static string Label(AutomationKind kind)=>L.T(Entries.FirstOrDefault(e=>e.Kind==kind)?.Label??kind switch{
         AutomationKind.EndRepeat=>"End repeat",AutomationKind.Else=>"Otherwise",AutomationKind.EndIf=>"End condition",
         AutomationKind.KeyDown=>"Key down",AutomationKind.KeyUp=>"Key up",AutomationKind.MouseDown=>"Mouse down",AutomationKind.MouseUp=>"Mouse up",_=>kind.ToString()});

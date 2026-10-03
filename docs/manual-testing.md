@@ -164,3 +164,11 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Exercise wait-for-window/color success, timeout and cancellation; clipboard set/paste; minimize, maximize then minimize/restore. A stalled or elevated target may reject input; verify an error and released modifiers.
 - Import/export a workflow containing user text and nested blocks; import must remain disarmed. Open a schema-1 store, save and reopen without losing original workflows. Keep real user settings and translations unchanged.
 - Review en/ru/de/fr/es in light, dark and custom backgrounds, including 1040-pixel-wide window, run settings and action library. Check keyboard focus and scrolling on small screens.
+
+## Desktop Automation UI polish
+
+- On each action row, reveal the move/copy/delete icons with hover, selection or keyboard focus. Operate nested blocks from their start and end rows, then undo; parameters remain in the inspector.
+- Open Add action, search and clear the search, try a query with no results, and resize/scroll the list. Check that the background fills the window without a gray strip at the bottom.
+- Open Run settings, cancel edited fields and reopen; cancelled changes must be discarded. Enter an invalid daily time, correct it and save. Use the window/shortcut pickers. At the minimum size, scroll the fields while Cancel and Save stay visible; Escape cancels and Enter saves.
+- Trigger an action error and a successful save. Confirm a readable colored message banner with a dismiss button. Run or record a workflow; check that localized HUD text and Stop fit without clipping and that showing the HUD does not take foreground focus.
+- Enable transparency with both the default and a custom background. Over a disposable colored test window, check the active backdrop, then turn transparency off. Verify opaque fallback with Windows transparency disabled or high contrast. Repeat after changing theme.

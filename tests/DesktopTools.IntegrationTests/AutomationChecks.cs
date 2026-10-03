@@ -32,7 +32,7 @@ internal static class AutomationChecks
             service.Save([new(){Name="Browser work",Steps=[new(){Kind=AutomationKind.FocusWindow,Text="Browser"},new(){Kind=AutomationKind.Repeat,Value=3},new(){Kind=AutomationKind.Keys,Text="Ctrl+L"},new(){Kind=AutomationKind.Text,Text="https://example.com"},new(){Kind=AutomationKind.Keys,Text="Enter"},new(){Kind=AutomationKind.Wait,Value=500},new(){Kind=AutomationKind.EndRepeat}]}]);
             using var themeController=new AppController(true);
             foreach(string theme in new[]{"Light","Dark"}) foreach(string language in new[]{"en","ru","de","fr","es"}){
-                themeController.UpdateSettings(s=>{s.Theme=theme;s.BackgroundColor="#060606";s.UseCustomBackground=theme=="Dark";});
+                themeController.UpdateSettings(s=>{s.Theme=theme;s.Transparency=true;s.Animations=false;s.BackgroundColor="#060606";s.UseCustomBackground=theme=="Dark";});
                 L.Use(language);var w=new AutomationWindow(service);w.Show();await Task.Delay(180);w.UpdateLayout();
                 var bitmap=new RenderTargetBitmap((int)w.ActualWidth,(int)w.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(w);Save(bitmap,"automation-"+theme+"-"+language+".png");
                 // Capture physical pixels of the actual app-owned window, without private desktop content.
@@ -41,14 +41,9 @@ internal static class AutomationChecks
                 if(language=="ru" && theme=="Dark")Save(CaptureService.Capture(new MonitorInfo("Fixture",new Rect(r.Left,r.Top,r.Right-r.Left,r.Bottom-r.Top),Rect.Empty,1,1)),"automation-actual-window.png");
                 if(language is "ru" or "de"){
                     w.Width=1040;w.Height=700;w.UpdateLayout();Snapshot(w,"automation-min-"+theme+"-"+language+".png");
-                    typeof(AutomationWindow).GetField("settingsMode",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(w,true);
-                    typeof(AutomationWindow).GetMethod("RefreshEditor",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);w.UpdateLayout();Snapshot(w,"automation-settings-"+theme+"-"+language+".png");
-                    var settingsPanel=(StackPanel)typeof(AutomationWindow).GetField("details",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(w)!;
-                    var toggles=settingsPanel.Children.OfType<Grid>().SelectMany(g=>g.Children.OfType<CheckBox>()).ToArray();
-                    if(toggles.Length!=2||toggles.Any(c=>string.IsNullOrWhiteSpace(System.Windows.Automation.AutomationProperties.GetName(c))))throw new Exception("Run trigger switches need visible accessible labels");
-                    DependencyObject scrollParent=settingsPanel;while(scrollParent is not ScrollViewer)scrollParent=VisualTreeHelper.GetParent(scrollParent);
-                    ((ScrollViewer)scrollParent).ScrollToEnd();w.UpdateLayout();Snapshot(w,"automation-settings-bottom-"+theme+"-"+language+".png");
-                    ((ScrollViewer)scrollParent).ScrollToTop();
+                    var settingsTimer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(200)};Exception? settingsError=null;
+                    settingsTimer.Tick+=(_,_)=>{settingsTimer.Stop();var dialog=Application.Current.Windows.Cast<Window>().OfType<AutomationRunSettingsWindow>().Single();try{dialog.UpdateLayout();Snapshot(dialog,"automation-settings-"+theme+"-"+language+".png");var toggles=AutomationUiChecks.Descendants(dialog).OfType<CheckBox>().ToArray();if(toggles.Length!=2||toggles.Any(c=>string.IsNullOrWhiteSpace(System.Windows.Automation.AutomationProperties.GetName(c))))throw new Exception("Run trigger switches need visible accessible labels");var scroll=AutomationUiChecks.Descendants(dialog).OfType<ScrollViewer>().First();scroll.ScrollToEnd();dialog.UpdateLayout();Snapshot(dialog,"automation-settings-bottom-"+theme+"-"+language+".png");}catch(Exception e){settingsError=e;}finally{dialog.Close();}};
+                    settingsTimer.Start();typeof(AutomationWindow).GetMethod("OpenRunSettings",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);settingsTimer.Stop();if(settingsError!=null)throw settingsError;
                     var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(250)};Exception? dialogError=null;
                     timer.Tick+=(_,_)=>{timer.Stop();var dialog=Application.Current.Windows.Cast<Window>().FirstOrDefault(x=>x.Owner==w);try{if(dialog==null)throw new Exception("Action library did not open");dialog.UpdateLayout();Snapshot(dialog,"automation-library-"+theme+"-"+language+".png");}catch(Exception e){dialogError=e;}finally{dialog?.Close();}};
                     timer.Start();typeof(AutomationWindow).GetMethod("OpenActions",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w,null);timer.Stop();if(dialogError!=null)throw dialogError;

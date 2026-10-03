@@ -23,7 +23,7 @@ internal sealed partial class AutomationWindow
             if(point!=null){Remember();if(end){s.EndX=(int)point.Value.X;s.EndY=(int)point.Value.Y;}else{s.X=(int)point.Value.X;s.Y=(int)point.Value.Y;}
                 if(!end&&s.Kind is AutomationKind.IfPixel or AutomationKind.WaitPixel){await Task.Delay(150,pending.Token);var pixel=CaptureService.Capture(new MonitorInfo("Pixel",new Rect(s.X,s.Y,1,1),Rect.Empty,1,1));byte[] bytes=new byte[4];new System.Windows.Media.Imaging.FormatConvertedBitmap(pixel,PixelFormats.Bgra32,null,0).CopyPixels(bytes,4,0);s.Text=$"#{bytes[2]:X2}{bytes[1]:X2}{bytes[0]:X2}";}
             }
-        }catch(OperationCanceledException){}catch(Exception e){Report(e.Message);}
+        }catch(OperationCanceledException){}catch(Exception e){ReportError(e.Message);}
         finally{pending.Dispose();if(ReferenceEquals(pickCancellation,pending))pickCancellation=null;service.SetRecording(false);if(!closed){RefreshSteps(s);Activate();}}
     }
     private async Task RecordAsync()
@@ -37,11 +37,11 @@ internal sealed partial class AutomationWindow
             nint target=current.TargetWindow.Length>0?AutomationInput.FindWindow(current.TargetWindow):service.Target;
             if(current.TargetWindow.Length>0&&!AutomationInput.External(target))throw new InvalidOperationException(L.T("The target window is unavailable."));
             Hide();recordHidden=new HiddenWindowsScope();if(AutomationInput.External(target))NativeWindowService.RestoreForeground(target);
-            recordHud=AutomationService.CreateHud(L.T("Recording starts in 3 seconds. Esc stops recording."),StopRecording);recordHud.Show();
-            await Task.Delay(3000,pending.Token);if(closed||!isRecording)return;
-            recordHud.Close();recordHud=AutomationService.CreateHud(L.T("Recording actions — Esc to stop"),StopRecording);recordHud.Show();
+            recordHud=AutomationService.CreateHud(L.F($"Recording starts in {3} seconds"),StopRecording);recordHud.Show();
+            for(int remaining=3;remaining>0;remaining--){if(recordHud is AutomationHudWindow countdown)countdown.Caption(L.F($"Recording starts in {remaining} seconds"));await Task.Delay(1000,pending.Token);}if(closed||!isRecording)return;
+            recordHud.Close();recordHud=AutomationService.CreateHud(L.T("Recording actions"),StopRecording);recordHud.Show();
             recorder=new AutomationRecorder();recorder.StopRequested+=()=>Dispatcher.BeginInvoke(StopRecording);
-        }catch(OperationCanceledException){}catch(Exception e){Report(e.Message);FinishRecording(false);}
+        }catch(OperationCanceledException){}catch(Exception e){ReportError(e.Message);FinishRecording(false);}
         finally{pending.Dispose();if(ReferenceEquals(pickCancellation,pending))pickCancellation=null;}
     }
     private void StopRecording()=>FinishRecording(true);
@@ -51,7 +51,7 @@ internal sealed partial class AutomationWindow
         if(recorder!=null){
             recorder.Dispose();
             if(recordingScript!=null&&recorder.Steps.Count>0){
-                if(recordingScript.Steps.Count+recorder.Steps.Count>500)Report(L.T("Recording is too large. Create a new workflow before recording."));
+                if(recordingScript.Steps.Count+recorder.Steps.Count>500)ReportError(L.T("Recording is too large. Create a new workflow before recording."));
                 else{Remember();recordingScript.Steps.AddRange(recorder.Steps);if(report)Report(L.T("Recorded actions added. Review them before running."));}
             }else if(report)Report(L.T("Automation stopped."));
             recorder=null;

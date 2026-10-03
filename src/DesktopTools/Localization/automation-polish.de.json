@@ -1,0 +1,21 @@
+{
+  "Run": "Starten",
+  "Select an action": "Aktion auswählen",
+  "Action help": "Hilfe zur Aktion",
+  "Test action": "Testen",
+  "Automatic triggers": "Automatischer Start",
+  "Target window": "Zielfenster",
+  "Leave blank to use the current window.": "Für das aktuelle Fenster leer lassen.",
+  "Use a value from 0 to 10000.": "Wert zwischen 0 und 10000 verwenden.",
+  "Daily at": "Täglich um",
+  "HH:mm; leave blank to disable.": "HH:mm; leer lassen zum Deaktivieren.",
+  "Triggers run while DesktopTools is open.": "Auslöser laufen, solange DesktopTools geöffnet ist.",
+  "Esc to stop": "Esc zum Stoppen",
+  "Automation running": "Ablauf wird ausgeführt",
+  "Recording actions": "Aktionen werden aufgezeichnet",
+  "Recording starts in {0} seconds": "Aufnahme beginnt in {0} Sekunden",
+  "Action {0} of {1}": "Aktion {0} von {1}",
+  "Action {0}: {1}": "Aktion {0}: {1}",
+  "No matching actions": "Keine passenden Aktionen",
+  "Try another search.": "Versuchen Sie eine andere Suche."
+}
