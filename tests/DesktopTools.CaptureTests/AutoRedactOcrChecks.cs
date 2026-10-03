@@ -348,6 +348,10 @@ internal static class AutoRedactOcrChecks
             ("serial", "Serial number: ", "TEST-ABCD-1234-5678"), ("serial", "Серийный номер: ", "DEMO-9876-XYZ123")
         ];
         string previousLanguage = DesktopTools.Localization.L.Language;
+        // Rows labelled in Russian can only be read when a Russian OCR recognizer is installed; hosted CI images ship en-US only.
+        bool russianOcr = LocalOcr.Languages.Any(l => l.Tag.StartsWith("ru", StringComparison.OrdinalIgnoreCase));
+        bool Needed(int row) => russianOcr || !rows[row].Prefix.Any(c => c >= 'Ѐ' && c <= 'ӿ');
+        int neededRows = Enumerable.Range(0, rows.Length).Count(Needed);
         var failures = new List<string>();
         try
         {
@@ -375,13 +379,14 @@ internal static class AutoRedactOcrChecks
                     var found = Task.Run(() => SensitiveDataAnalyzer.AnalyzeAsync(image, selected, AutoRedactOptions.AvailableCategories, CancellationToken.None)).GetAwaiter().GetResult();
                     for (int i = 0; i < rows.Length; i++)
                     {
+                        if (!Needed(i)) continue;
                         var target = expected[i];
                         var finding = found.FirstOrDefault(f => f.Categories.Contains(rows[i].Category) && f.Bounds.Y < target.Y + 22 && f.Bounds.Y + f.Bounds.Height > target.Y);
                         if (finding == null || finding.Bounds.X > target.X + 3 || finding.Bounds.X + finding.Bounds.Width < target.Right - 3)
                             failures.Add($"{rows[i].Category} row {i + 1}, font={size}, OCR={selected}; region={finding?.Bounds}");
                     }
-                    if (found.Count != rows.Length) failures.Add($"Region count {found.Count}/{rows.Length}, font={size}, OCR={selected}");
-                    if (found.Count != rows.Length && size == 10 && selected == english)
+                    if (found.Count != neededRows) failures.Add($"Region count {found.Count}/{neededRows}, font={size}, OCR={selected}");
+                    if (found.Count != neededRows && size == 10 && selected == english)
                     {
                         var diagnostic = Task.Run(() => LocalOcr.RecognizeLayoutAsync(image, english)).GetAwaiter().GetResult();
                         foreach (int index in new[] { 3, 4, 21 })
