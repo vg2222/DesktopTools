@@ -54,6 +54,7 @@ internal static class Program
                 else if (args.Contains("--release-polish-only")) await Test("Release window, setup and recorder corrections", ReleasePolishChecks.RunAsync);
                 else if (args.Contains("--codec-compatibility-only")) await Test("Generated codec import and trimmed exports", CodecCompatibilityChecks.RunAsync);
                 else if (args.Contains("--record-sustained-only")) await Test("Sustained numbered recording", RecordingThroughputChecks.RunSustainedAsync);
+                else if (args.Contains("--animated-export-only")) await Test("GIF and animated WebP export", AnimatedExportChecks.RunAsync);
                 else if (args.Contains("--library-only")) await Test("Screenshot library: OCR index, search and clearing", ScreenshotLibraryChecks.RunAsync);
                 else if (args.Contains("--editor-shots")) await Test("Screenshot editor states", EditorShots.RunAsync);
                 else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);

@@ -7,7 +7,7 @@
     <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
   </PropertyGroup>
-  <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /></ItemGroup>
+  <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /><PackageReference Include="SkiaSharp" Version="4.153.1" /><PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.153.1" /></ItemGroup>
   <ItemGroup><Content Include="Assets/Translation/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Assets/Models/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><EmbeddedResource WithCulture="false" Include="Localization/*.json" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Assets/Translation/catalog.json" LogicalName="DesktopTools.TranslationPacks" /></ItemGroup>

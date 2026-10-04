@@ -1,0 +1,19 @@
+{
+  "Save as": "Enregistrer sous",
+  "MP4 video": "Vidéo MP4",
+  "GIF animation": "Animation GIF",
+  "Animated WebP": "WebP animé",
+  "Frames per second": "Images par seconde",
+  "Maximum width": "Largeur maximale",
+  "Original": "Originale",
+  "Export GIF": "Exporter en GIF",
+  "Export WebP": "Exporter en WebP",
+  "GIF animation|*.gif": "Animation GIF|*.gif",
+  "Animated WebP|*.webp": "WebP animé|*.webp",
+  "Estimating file size…": "Estimation de la taille…",
+  "Up to about {0} · {1} × {2} px · {3} frames": "Jusqu’à environ {0} · {1} × {2} px · {3} images",
+  "The size could not be estimated.": "La taille n’a pas pu être estimée.",
+  "Save the animation as a {0} file.": "Enregistrez l’animation en fichier {0}.",
+  "Choose a new filename. Existing files are not overwritten.": "Choisissez un nouveau nom. Les fichiers existants ne sont pas remplacés.",
+  "This animation would be too large to build. Shorten the clip, lower the frame rate or choose a smaller width.": "Cette animation serait trop volumineuse. Raccourcissez le clip, baissez la cadence ou choisissez une largeur plus petite."
+}

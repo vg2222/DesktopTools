@@ -55,6 +55,10 @@ Microsoft.ML.Tokenizers 2.0.0 is MIT licensed. Its complete license and third-pa
 ## Screen recording
 
 ScreenRecorderLib 7.0.1 — Copyright (c) 2017 Sverre Skodje, MIT. Source: https://github.com/sskodje/ScreenRecorderLib . Full license: docs/licenses/ScreenRecorderLib-LICENSE.txt. The x64 native wrapper is distributed with DesktopTools. Windows Media Foundation and Microsoft Visual C++ x64 runtime are operating-system/runtime prerequisites; see docs/screen-recorder.md.
+## Animated WebP export
+
+SkiaSharp 4.153.1 — Copyright (c) 2015-2016 Xamarin, Inc.; (c) 2017-2018 Microsoft Corporation, MIT. Source: https://github.com/mono/SkiaSharp . Full license: docs/licenses/SkiaSharp-LICENSE.txt. Its native library bundles Skia (BSD-3-Clause) and libwebp (BSD-3-Clause); it is used only to encode the frames of animated WebP files exported from the video editor. The GIF encoder is original code.
+
 # Microsoft Fluent System Icons
 
 UI icons and the application-grid icon are from Microsoft Fluent System Icons 1.1.341, licensed under MIT. Original SVGs, attribution and the full license are in `src/DesktopTools/Assets/Icons`. The application ICO is a rasterization of the original color SVG.

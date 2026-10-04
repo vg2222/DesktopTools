@@ -2,6 +2,7 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Native/HotkeyGesture.cs" Link="Native/HotkeyGesture.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../src/DesktopTools/Extras/AnimatedWebp.cs" Link="Rendering/AnimatedWebp.cs" /><PackageReference Include="SkiaSharp" Version="4.153.1" /><PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.153.1" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Native/SmartRegionDetector.cs" Link="Native/SmartRegionDetector.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/UI/AnnotationRenderer.cs" Link="Rendering/AnnotationRenderer.cs" /><Compile Include="../../src/DesktopTools/Extras/RedactionRenderer.cs" Link="Rendering/RedactionRenderer.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Extras/ScreenshotEditDocument.cs" Link="Rendering/ScreenshotEditDocument.cs" /><Compile Include="../../src/DesktopTools/Extras/ScreenshotBeautifier.cs" Link="Rendering/ScreenshotBeautifier.cs" /></ItemGroup>
