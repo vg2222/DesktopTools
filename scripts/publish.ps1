@@ -1,6 +1,9 @@
 [CmdletBinding()]
-param([ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]*\.zip$')][string]$ArchiveName = 'DesktopTools-win-x64.zip')
+param(
+    [ValidateSet('win-x64','win-arm64')][string]$Runtime = 'win-x64',
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]*\.zip$')][string]$ArchiveName = '')
 $ErrorActionPreference = 'Stop'
+if (-not $ArchiveName) { $ArchiveName = "DesktopTools-$Runtime.zip" }
 $repo = Split-Path $PSScriptRoot -Parent
 if (-not $env:DOTNET_CLI_HOME) {
     $env:DOTNET_CLI_HOME = Join-Path $repo 'artifacts/dotnet-home'
@@ -9,22 +12,23 @@ if (-not $env:DOTNET_CLI_HOME) {
 $artifacts = Join-Path $repo 'artifacts'
 # A unique staging directory avoids stale files and never deletes an existing user's package.
 $stage = Join-Path $artifacts ('publish-' + [Guid]::NewGuid().ToString('N'))
-$output = Join-Path $stage 'DesktopTools-win-x64'
+$output = Join-Path $stage "DesktopTools-$Runtime"
 $archive = Join-Path $artifacts $ArchiveName
 Push-Location $repo
 try {
     # Test builds may replace project.assets.json with a framework-only restore. Clean also
     # resolves packages, so restore the release RID before asking it to clean that target.
-    & dotnet restore src/DesktopTools/DesktopTools.csproj -r win-x64 -p:SelfContained=true -p:NuGetAudit=false
+    & dotnet restore src/DesktopTools/DesktopTools.csproj -r $Runtime -p:SelfContained=true -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { throw "Release restore failed with exit code $LASTEXITCODE." }
     # A clean release compile prevents stale CodeView/PDB paths from an earlier incremental build entering public binaries.
-    & dotnet clean src/DesktopTools/DesktopTools.csproj -c Release -r win-x64 -p:DebugSymbols=false -p:DebugType=None
+    & dotnet clean src/DesktopTools/DesktopTools.csproj -c Release -r $Runtime -p:DebugSymbols=false -p:DebugType=None
     if ($LASTEXITCODE -ne 0) { throw "Clean failed with exit code $LASTEXITCODE." }
-    & dotnet publish src/DesktopTools/DesktopTools.csproj -c Release -r win-x64 --self-contained true --no-restore -p:PublishTrimmed=false -p:PublishSingleFile=false -p:DebugSymbols=false -p:DebugType=None -o $output
+    & dotnet publish src/DesktopTools/DesktopTools.csproj -c Release -r $Runtime --self-contained true --no-restore -p:PublishTrimmed=false -p:PublishSingleFile=false -p:DebugSymbols=false -p:DebugType=None -o $output
     if ($LASTEXITCODE -ne 0) { throw "Publish failed with exit code $LASTEXITCODE." }
     if (-not (Test-Path -LiteralPath (Join-Path $output 'DesktopTools.exe'))) { throw 'Published executable is missing.' }
     if (-not (Test-Path -LiteralPath (Join-Path $output 'ScreenRecorderLib.dll'))) { throw 'Screen recorder backend is missing.' }
     if (-not (Test-Path -LiteralPath (Join-Path $repo 'docs/licenses/ScreenRecorderLib-LICENSE.txt'))) { throw 'Screen recorder license is missing.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $repo 'docs/licenses/SkiaSharp-LICENSE.txt'))) { throw 'SkiaSharp license is missing.' }
     $translationRoot = Join-Path $output 'Assets/Translation'
     foreach ($entry in (Get-Content (Join-Path $translationRoot 'manifest.json') -Raw | ConvertFrom-Json)) {
         if ((Get-FileHash -LiteralPath (Join-Path $translationRoot $entry.File) -Algorithm SHA256).Hash -ne $entry.Sha256) { throw "Translation asset missing or damaged: $($entry.File). Run scripts/fetch-translation-models.ps1." }
@@ -61,9 +65,9 @@ try {
     # Only published README media are bundled; local capture galleries stay local.
     # Runtime packs keep their notices at package root; dotnet publish does not copy them automatically.
     $assets = Get-Content -LiteralPath (Join-Path $repo 'src/DesktopTools/obj/project.assets.json') -Raw | ConvertFrom-Json
-    $runtime = Get-Content -LiteralPath (Join-Path $output 'DesktopTools.runtimeconfig.json') -Raw | ConvertFrom-Json
-    foreach ($framework in $runtime.runtimeOptions.includedFrameworks) {
-        $packageId = $framework.name.ToLowerInvariant() + '.runtime.win-x64'
+    $runtimeConfig = Get-Content -LiteralPath (Join-Path $output 'DesktopTools.runtimeconfig.json') -Raw | ConvertFrom-Json
+    foreach ($framework in $runtimeConfig.runtimeOptions.includedFrameworks) {
+        $packageId = $framework.name.ToLowerInvariant() + '.runtime.' + $Runtime
         $packagePath = $null
         foreach ($folder in $assets.packageFolders.PSObject.Properties.Name) {
             $candidate = Join-Path $folder ($packageId + '/' + $framework.version)
@@ -80,7 +84,7 @@ try {
     Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object {
         $_.Extension -in '.pdb', '.lib' -or $_.Name -eq 'ScreenRecorderLib.xml'
     } | Remove-Item -Force
-    $temporaryArchive = Join-Path $stage 'DesktopTools-win-x64.zip'
+    $temporaryArchive = Join-Path $stage "DesktopTools-$Runtime.zip"
     Compress-Archive -LiteralPath $output -DestinationPath $temporaryArchive -CompressionLevel Optimal
     Move-Item -LiteralPath $temporaryArchive -Destination $archive -Force
     Write-Host "Portable folder: $output"
