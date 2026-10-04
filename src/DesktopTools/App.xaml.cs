@@ -91,11 +91,12 @@ public partial class App : Application
         Controller?.Dispose();
         bool restart = Controller?.CompleteDataReset() == true;
         bool restartLanguage = Controller?.RestartForLanguage == true;
+        bool restartImport = Controller?.CompleteDataImport() == true;
         wait?.Unregister(null);
         activation?.Dispose();
         mutex?.Dispose();
         base.OnExit(e);
-        if (!restart && !restartLanguage) return;
+        if (!restart && !restartLanguage && !restartImport) return;
         try
         {
             string executable = Environment.ProcessPath ?? throw new InvalidOperationException("DesktopTools executable path is unavailable.");
