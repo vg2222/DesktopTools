@@ -11,6 +11,7 @@
  <SolidColorBrush x:Key="GlassSurface" Color="#F3F5FA"/>
  <SolidColorBrush x:Key="GlassRim" Color="#1C293A55"/>
  <Style x:Key="ModeTab" TargetType="RadioButton">
+  <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="FontWeight" Value="SemiBold"/>
   <Setter Property="Background" Value="{DynamicResource Field}"/><Setter Property="BorderBrush" Value="{DynamicResource Stroke}"/>
   <Setter Property="Padding" Value="16,12"/><Setter Property="Cursor" Value="Hand"/>
   <Setter Property="HorizontalContentAlignment" Value="Center"/>

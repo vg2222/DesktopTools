@@ -13,6 +13,21 @@ public sealed record BeautifyOptions(bool Enabled = false, string Background = "
 
 public static class ScreenshotBeautifier
 {
+    /// <summary>Sizes used both when exporting and when previewing live in the editor, in image pixels.</summary>
+    public readonly record struct Metrics(double Margin, double Bar, double Radius, double Shadow);
+    public static Metrics Measure(int width, int height, BeautifyOptions options)
+    {
+        double shorter = Math.Min(width, height);
+        double padding = Math.Round(shorter * Math.Clamp(options.Padding, 0, 0.3));
+        double radius = Math.Round(shorter * Math.Clamp(options.Corners, 0, 0.1));
+        double bar = options.WindowBar ? Math.Round(Math.Max(28, shorter * 0.06)) : 0;
+        double shadow = options.Shadow ? Math.Max(8, shorter * 0.03) : 0;
+        // Leave room for the shadow even when padding is small, otherwise it is clipped into a hard edge.
+        return new(Math.Max(padding, shadow * 1.6), bar, radius, shadow);
+    }
+    public static Brush? BackgroundBrush(string name) =>
+        Gradient(name) is { } colors ? new LinearGradientBrush(colors.From, colors.To, new Point(0, 0), new Point(1, 1)) : null;
+
     private static (Color From, Color To)? Gradient(string name) => name switch
     {
         "Ocean" => (Color.FromRgb(0x27, 0x64, 0xE7), Color.FromRgb(0x36, 0xDF, 0xF1)),
@@ -28,13 +43,8 @@ public static class ScreenshotBeautifier
     public static BitmapSource Apply(BitmapSource image, BeautifyOptions options)
     {
         if (!options.Enabled) return image;
-        double shorter = Math.Min(image.PixelWidth, image.PixelHeight);
-        double padding = Math.Round(shorter * Math.Clamp(options.Padding, 0, 0.3));
-        double radius = Math.Round(shorter * Math.Clamp(options.Corners, 0, 0.1));
-        double bar = options.WindowBar ? Math.Round(Math.Max(28, shorter * 0.06)) : 0;
-        double shadow = options.Shadow ? Math.Max(8, shorter * 0.03) : 0;
-        // Leave room for the shadow even when padding is small, otherwise it is clipped into a hard edge.
-        double margin = Math.Max(padding, shadow * 1.6);
+        var m = Measure(image.PixelWidth, image.PixelHeight, options);
+        double radius = m.Radius, bar = m.Bar, shadow = m.Shadow, margin = m.Margin;
         double width = image.PixelWidth + margin * 2, height = image.PixelHeight + bar + margin * 2;
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())

@@ -13,6 +13,59 @@ public sealed partial class ScreenshotEditorWindow
     private Image _stylePreview = null!;
     private System.Windows.Threading.DispatcherTimer? _previewTimer;
 
+    // The canvas itself shows the presentation style while you work, so you draw on exactly what Copy and Save will produce.
+    private Border _styleFrame = null!, _styleCard = null!, _styleBar = null!;
+    private Grid _styleShadows = null!, _styleStack = null!;
+
+    private FrameworkElement BuildStyleFrame(Canvas surface, int width, int height)
+    {
+        _styleShadows = new Grid { IsHitTestVisible = false };
+        _styleBar = new Border { Background = new SolidColorBrush(Color.FromRgb(0x2B, 0x2F, 0x38)), Visibility = Visibility.Collapsed, IsHitTestVisible = false };
+        var cardGrid = new Grid();
+        cardGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); cardGrid.RowDefinitions.Add(new RowDefinition());
+        Grid.SetRow(_styleBar, 0); Grid.SetRow(surface, 1); cardGrid.Children.Add(_styleBar); cardGrid.Children.Add(surface);
+        _styleCard = new Border { Child = cardGrid, Width = width, Height = height };
+        _styleStack = new Grid { Width = width, Height = height };
+        _styleStack.Children.Add(_styleShadows); _styleStack.Children.Add(_styleCard);
+        BuildScanOverlay(_styleStack);
+        _styleFrame = new Border { Child = _styleStack };
+        return _styleFrame;
+    }
+
+    private void ApplyLiveStyle()
+    {
+        if (_styleFrame == null) return;
+        int width = _image.PixelWidth, height = _image.PixelHeight;
+        _styleShadows.Children.Clear();
+        if (!_beautify.Enabled)
+        {
+            _styleFrame.Background = null; _styleFrame.Padding = new Thickness(0); _styleBar.Visibility = Visibility.Collapsed; _styleCard.Clip = null;
+            _styleCard.Height = _styleStack.Height = height; return;
+        }
+        var m = ScreenshotBeautifier.Measure(width, height, _beautify);
+        _styleFrame.Background = ScreenshotBeautifier.BackgroundBrush(_beautify.Background); _styleFrame.Padding = new Thickness(m.Margin);
+        double total = height + m.Bar;
+        _styleCard.Height = _styleStack.Height = total;
+        _styleCard.Clip = new RectangleGeometry(new Rect(0, 0, width, total), m.Radius, m.Radius);
+        _styleBar.Height = m.Bar; _styleBar.Visibility = m.Bar > 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (m.Bar > 0)
+        {
+            var dots = new Canvas { Width = width, Height = m.Bar }; double dot = m.Bar * 0.17;
+            Color[] colors = [Color.FromRgb(0xFF, 0x5F, 0x57), Color.FromRgb(0xFE, 0xBC, 0x2E), Color.FromRgb(0x28, 0xC8, 0x40)];
+            for (int i = 0; i < 3; i++)
+                dots.Children.Add(new System.Windows.Shapes.Ellipse { Width = dot * 2, Height = dot * 2, Fill = new SolidColorBrush(colors[i]), Margin = new Thickness(m.Bar * 0.5 + i * dot * 2.9 - dot, m.Bar / 2 - dot, 0, 0) });
+            _styleBar.Child = dots;
+        }
+        // Stacked translucent rounded rectangles: a soft shadow without a pixel shader, so dragging a stroke stays smooth.
+        if (m.Shadow > 0)
+            for (int i = 8; i >= 1; i--)
+            {
+                double spread = m.Shadow * i / 8, offset = m.Shadow * 0.45;
+                _styleShadows.Children.Add(new Border { Background = new SolidColorBrush(Color.FromArgb(18, 0, 0, 0)), CornerRadius = new CornerRadius(m.Radius + spread),
+                    Margin = new Thickness(-spread, -spread + offset, -spread, -spread - offset), IsHitTestVisible = false });
+            }
+    }
+
     private StackPanel BuildStylePane()
     {
         var pane = new StackPanel();
@@ -58,6 +111,7 @@ public sealed partial class ScreenshotEditorWindow
 
     private void SchedulePreview()
     {
+        ApplyLiveStyle();
         _previewTimer ??= new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
         _previewTimer.Tick -= PreviewTick; _previewTimer.Tick += PreviewTick; _previewTimer.Stop(); _previewTimer.Start();
     }

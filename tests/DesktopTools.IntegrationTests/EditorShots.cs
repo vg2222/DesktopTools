@@ -62,6 +62,8 @@ internal static class EditorShots
         string folder = Path.GetFullPath(Environment.GetEnvironmentVariable("EDITOR_OUT") is { Length: > 0 } v ? v : "editor-shots"); Directory.CreateDirectory(folder);
         string layout = Environment.GetEnvironmentVariable("EDITOR_LAYOUT") is { Length: > 0 } l ? l : null!;
         string tag = Environment.GetEnvironmentVariable("EDITOR_TAG") ?? "";
+        using var controller = new DesktopTools.AppController(true);
+        if (Environment.GetEnvironmentVariable("EDITOR_THEME") is { Length: > 0 } theme) { controller.Settings.Theme = theme; controller.ApplyTheme(); }
         var window = new ScreenshotEditorWindow(AccountPage(), _ => { }, _ => { }, editorLayout: layout, autoRedact: new AutoRedactOptions()) { Width = 1280, Height = 800 };
         window.Show(); await Task.Delay(500);
         Save(window, Path.Combine(folder, tag + "1-opened.png"));
@@ -69,11 +71,49 @@ internal static class EditorShots
         Save(window, Path.Combine(folder, tag + "2-checked.png"));
         Walk(window).OfType<Button>().Single(b => b.Name == "HideAllSensitiveData").RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Task.Delay(300);
         Save(window, Path.Combine(folder, tag + "3-covered.png"));
-        Walk(window).OfType<RadioButton>().First(r => r.Content as string == "Style").IsChecked = true; await Task.Delay(200);
+        Walk(window).OfType<RadioButton>().First(r => System.Windows.Automation.AutomationProperties.GetName(r) == "Style").IsChecked = true; await Task.Delay(200);
         var field = typeof(ScreenshotEditorWindow).GetField("_beautify", BindingFlags.Instance | BindingFlags.NonPublic)!;
         field.SetValue(window, ((BeautifyOptions)field.GetValue(window)!) with { Enabled = true, WindowBar = true });
-        typeof(ScreenshotEditorWindow).GetMethod("RefreshStylePreview", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null); await Task.Delay(300);
+        typeof(ScreenshotEditorWindow).GetMethod("RefreshStylePreview", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+        typeof(ScreenshotEditorWindow).GetMethod("ApplyLiveStyle", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null); await Task.Delay(300);
         Save(window, Path.Combine(folder, tag + "4-style.png"));
+        // The check animation, caught while the analysis is still running.
+        var scan = window.FindSensitiveDataAsync(); await Task.Delay(450);
+        Save(window, Path.Combine(folder, tag + "5-scanning.png"));
+        await scan; await Task.Delay(900);
+        window.Close();
+        await DrawingSpeedAsync();
+    }
+
+    /// <summary>Cost of one mouse move while drawing on a large screenshot: the old way re-composited the whole image, the new way draws the stroke over a cached picture.</summary>
+    private static async Task DrawingSpeedAsync()
+    {
+        var big = new WriteableBitmap(2560, 1392, 96, 96, PixelFormats.Bgra32, null); big.Freeze();
+        var window = new ScreenshotEditorWindow(big, _ => { }, _ => { }) { Width = 1400, Height = 800 };
+        window.Show(); await Task.Delay(400);
+        var drawingField = typeof(ScreenshotEditorWindow).GetField("_drawing", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var canvas = (FrameworkElement)drawingField.GetValue(window)!;
+        var pending = canvas.GetType().GetProperty("Pending")!;
+        var points = Enumerable.Range(0, 400).Select(i => new Point(100 + i * 5, 400 + Math.Sin(i / 12.0) * 200)).ToArray();
+        var documentField = typeof(ScreenshotEditorWindow).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var document = (ScreenshotEditDocument)documentField.GetValue(window)!;
+        var stroke = new Annotation { Kind = AnnotationKind.Pen, Points = points, Color = Colors.Red, Thickness = 4, Opacity = 1 };
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        for (int i = 0; i < 15; i++) document.RenderPreview(stroke with { Id = Guid.NewGuid() }, null);
+        double oldPath = watch.Elapsed.TotalMilliseconds / 15;
+        var backdrop = document.RenderWithout(null, null);   // done once per stroke now
+        watch.Restart();
+        for (int i = 0; i < 200; i++)
+        {
+            var visual = new DrawingVisual();
+            using (var dc = visual.RenderOpen())
+            {
+                dc.DrawImage(backdrop, new Rect(0, 0, 2560, 1392));
+                DesktopTools.UI.AnnotationRenderer.Draw(dc, [stroke with { Points = points.Take(200 + i % 200).ToArray() }]);
+            }
+        }
+        double newPath = watch.Elapsed.TotalMilliseconds / 200;
+        Console.WriteLine($"DRAWING per mouse move on 2560x1392: before, re-compositing the whole image {oldPath:0.0} ms; now, recording the cached picture plus the stroke {newPath:0.00} ms");
         window.Close();
     }
 }

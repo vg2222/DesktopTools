@@ -113,8 +113,14 @@ public sealed partial class ScreenshotEditorWindow
         var tabList = new[] { drawTab, styleTab, privacyTab };
         for (int i = 0; i < tabList.Length; i++)
         {
-            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 8); Grid.SetColumn(tabList[i], i); tabs.Children.Add(tabList[i]);
+            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 7); Grid.SetColumn(tabList[i], i); tabs.Children.Add(tabList[i]);
+            string[] tabIcons = ["Draw", "Background", "Shield"];
             System.Windows.Automation.AutomationProperties.SetName(tabList[i], (string)tabList[i].Content);
+            // Icon above the label: three equal tabs stay readable in every language, including long German or Polish words.
+            var tabContent = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center };
+            var tabIcon = Ui.Icon(tabIcons[i], 17); tabIcon.HorizontalAlignment = HorizontalAlignment.Center; tabContent.Children.Add(tabIcon);
+            var tabLabel = Ui.Text((string)tabList[i].Content, 11); tabLabel.Margin = new Thickness(0, 4, 0, 0); tabLabel.TextTrimming = TextTrimming.CharacterEllipsis; tabLabel.TextAlignment = TextAlignment.Center; tabContent.Children.Add(tabLabel);
+            tabList[i].Content = tabContent; Ui.Tip(tabList[i], System.Windows.Automation.AutomationProperties.GetName(tabList[i]));
         }
         void ShowPanel(int index)
         {
@@ -144,7 +150,7 @@ public sealed partial class ScreenshotEditorWindow
         _analysisCancellation?.Cancel(); _analysisCancellation?.Dispose();
         var cancellation = new CancellationTokenSource(); _analysisCancellation = cancellation;
         long revision = _reviewState.BeginScan(), imageRevision = _document.Revision;
-        _scanStatus.Text = L.T("Analyzing this image locally…"); RefreshFindings();
+        _scanStatus.Text = L.T("Analyzing this image locally…"); RefreshFindings(); StartScanEffect();
         try
         {
             var languages = LocalOcr.Languages; var language = LocalOcr.SelectLanguage(languages, _redactOptions.Language);
@@ -161,7 +167,7 @@ public sealed partial class ScreenshotEditorWindow
         catch (OperationCanceledException) { if (!_reviewClosed) _reviewState.FailScan(revision); }
         catch (SensitiveDataAnalysisException ex) { if (!_reviewClosed) { _reviewState.FailScan(revision); _scanStatus.Text = ex.Message; } }
         catch (Exception) { if (!_reviewClosed) { _reviewState.FailScan(revision); _scanStatus.Text = L.T("Could not analyze this image. Try again, add covers manually, or ignore this check."); } }
-        finally { if (!_reviewClosed) RefreshFindings(); }
+        finally { StopScanEffect(); if (!_reviewClosed) RefreshFindings(); }
     }
 
     private const int CoverPadding = 3;

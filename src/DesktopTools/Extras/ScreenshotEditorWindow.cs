@@ -60,7 +60,7 @@ public sealed partial class ScreenshotEditorWindow : Window
         _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
         _surface.Children.Add(_originalLayer);
         _drawing = new EditCanvas(image, _document) { Width = image.PixelWidth, Height = image.PixelHeight, IsHitTestVisible = false }; _surface.Children.Add(_drawing);
-        var backdrop = new Border { Child = new Viewbox { Child = _surface, Stretch = Stretch.Uniform }, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
+        var backdrop = new Border { Child = new Viewbox { Child = BuildStyleFrame(_surface, image.PixelWidth, image.PixelHeight), Stretch = Stretch.Uniform }, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
         backdrop.SetResourceReference(Border.BackgroundProperty, "Card"); backdrop.SetResourceReference(Border.BorderBrushProperty, "Stroke"); work.Children.Add(backdrop);
         var properties = new StackPanel(); properties.Children.Add(Ui.Text(L.T("Properties"), 13, true));
         var colorLabel = Ui.Text(L.T("Color"), 12); colorLabel.Margin = new Thickness(0, 18, 0, 10); properties.Children.Add(colorLabel);
@@ -254,7 +254,12 @@ public sealed partial class ScreenshotEditorWindow : Window
         CommitText(); CancelGesture(); _showingOriginal = !_showingOriginal;
         _originalLayer.Visibility = _showingOriginal ? Visibility.Visible : Visibility.Collapsed;
         _drawing.Visibility = _showingOriginal ? Visibility.Collapsed : Visibility.Visible;
-        Ui.Tip(_originalButton, L.T(_showingOriginal ? "Show edited" : "Show original")); Update();
+        Ui.Tip(_originalButton, L.T(_showingOriginal ? "Show edited" : "Show original"));
+        // The icon shows what the next click does: the picture while editing, the pen while looking at the original.
+        _originalButton.Content = Ui.Icon(_showingOriginal ? "Draw" : "Image");
+        if (_showingOriginal) _originalButton.SetResourceReference(BackgroundProperty, "Selected"); else _originalButton.Background = Brushes.Transparent;
+        System.Windows.Automation.AutomationProperties.SetName(_originalButton, L.T(_showingOriginal ? "Show edited" : "Show original"));
+        Update();
     }
     private void Update()
     {
@@ -322,9 +327,28 @@ public sealed partial class ScreenshotEditorWindow : Window
         {
             get { var window = Window.GetWindow(this); double scale = window == null ? 1 : TransformToAncestor(window).TransformBounds(new Rect(0, 0, 1, 1)).Width; return 5 / Math.Max(.01, scale); }
         }
+        // While a stroke is dragged only the stroke changes. The picture underneath is rendered once per gesture and cached, and the
+        // pending annotation is drawn over it as vector graphics; re-compositing the whole bitmap on every mouse move made drawing lag.
+        private BitmapSource? _backdrop;
+        private long _backdropRevision = -1;
+        private Guid? _backdropExcluded;
+        private int _backdropHidden = -1;
         protected override void OnRender(DrawingContext dc)
         {
-            dc.DrawImage(document.RenderPreview(Pending, HiddenIds), new Rect(0, 0, image.PixelWidth, image.PixelHeight));
+            var full = new Rect(0, 0, image.PixelWidth, image.PixelHeight);
+            var pending = Pending;
+            bool vector = pending != null && (pending.Kind != AnnotationKind.Redaction || pending.RedactionStyle == RedactionStyle.Solid);
+            if (vector)
+            {
+                Guid? excluded = document.Items.Any(a => a.Id == pending!.Id) ? pending!.Id : null;
+                int hidden = HiddenIds?.Count ?? 0;
+                if (_backdrop == null || _backdropRevision != document.Revision || _backdropExcluded != excluded || _backdropHidden != hidden)
+                { _backdrop = document.RenderWithout(excluded, HiddenIds); _backdropRevision = document.Revision; _backdropExcluded = excluded; _backdropHidden = hidden; }
+                dc.DrawImage(_backdrop, full);
+                if (pending!.Kind == AnnotationKind.Redaction && pending.Points.Count >= 2) dc.DrawRectangle(Brushes.Black, null, new Rect(pending.Points[0], pending.Points[^1]));
+                else AnnotationRenderer.Draw(dc, [pending]);
+            }
+            else dc.DrawImage(document.RenderPreview(pending, HiddenIds), full);
             var accent = (TryFindResource("Accent") as Brush) ?? (TryFindResource("Selected") as Brush) ?? SystemColors.HighlightBrush;
             int number = 0;
             foreach (var finding in Suggestions)
