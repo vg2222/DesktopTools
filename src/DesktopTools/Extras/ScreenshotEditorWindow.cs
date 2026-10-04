@@ -27,6 +27,7 @@ public sealed partial class ScreenshotEditorWindow : Window
     private readonly TextBlock _status;
     private readonly List<Point> _points = [];
     private string _tool = "Pen";
+    private Action<bool>? _showPrivacyTab;
     private Color _color = Colors.Red;
     private double _thickness = 4, _opacity = 1;
     private Annotation? _movingOriginal;
@@ -39,7 +40,7 @@ public sealed partial class ScreenshotEditorWindow : Window
         string? applyLabel = null, bool offerOriginal = false, AutoRedactOptions? autoRedact = null, bool reviewBeforeOutput = false,
         Func<BitmapSource, ScreenshotExportAction, Task<bool>>? exportAsync = null)
     {
-        editorLayout ??= "B";
+        editorLayout ??= "A"; // tools above the image, actions below: the order people read an editor in
         _image = image; _document = new(image); _onExport = onExport; _report = report;
         Title = L.T(applyLabel == null ? "Edit screenshot · DesktopTools" : "Edit guide image"); Width = 1060; Height = 760; MinWidth = 640; MinHeight = 480;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -81,25 +82,25 @@ public sealed partial class ScreenshotEditorWindow : Window
         _status = Ui.Text("", 11, muted: true); _status.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(_status);
         var propertyCard = Ui.Card(new ScrollViewer { Content = properties, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }, 14); propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 2); work.Children.Add(propertyCard);
         var tools = new WrapPanel();
-        void SelectTool(string tool) { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = tool; Update(); }
-        foreach (var tool in new[] { "Select", "Pen", "Highlighter", "Arrow", "Rectangle", "Ellipse", "Text", "Eraser", "Crop" })
+        void SelectTool(string tool) { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = tool; _showPrivacyTab?.Invoke(tool == "Redaction"); Update(); }
+        foreach (var tool in new[] { "Select", "Pen", "Highlighter", "Arrow", "Rectangle", "Ellipse", "Text", "Redaction", "Eraser", "Crop" })
         {
-            var button = Ui.IconButton(tool, L.T(tool), () => SelectTool(tool)); button.Width = button.Height = button.MinHeight = 32; button.Padding = new Thickness(7); button.Margin = new Thickness(1); _tools.Add(tool, button); tools.Children.Add(button);
+            var button = Ui.IconButton(tool, L.T(tool == "Redaction" ? "Cover" : tool), () => SelectTool(tool)); button.Width = button.Height = button.MinHeight = 32; button.Padding = new Thickness(7); button.Margin = new Thickness(1); _tools.Add(tool, button); tools.Children.Add(button);
         }
         var more = Ui.IconButton("More", L.T("More tools"), () => { }); more.Width = more.Height = more.MinHeight = 32;
         var menu = new ContextMenu();
-        foreach (var tool in new[] { "Line", "Number", "Redaction", "Eyedropper" }) { var item = new MenuItem { Header = L.T(tool == "Redaction" ? "Cover" : tool), Icon = Ui.Icon(tool, 16) }; item.Click += (_, _) => SelectTool(tool); menu.Items.Add(item); }
+        foreach (var tool in new[] { "Line", "Number", "Eyedropper" }) { var item = new MenuItem { Header = L.T(tool == "Redaction" ? "Cover" : tool), Icon = Ui.Icon(tool, 16) }; item.Click += (_, _) => SelectTool(tool); menu.Items.Add(item); }
         menu.Items.Add(new Separator());
         var clear = new MenuItem { Header = L.T("Clear"), Icon = Ui.Icon("Clear", 16) }; clear.Click += (_, _) => { CommitText(); CancelGesture(); _document.Clear(); Update(); }; menu.Items.Add(clear);
         var resetCrop = new MenuItem { Header = L.T("Reset crop"), Icon = Ui.Icon("Crop", 16) }; resetCrop.Click += (_, _) => { CommitText(); CancelGesture(); _document.SetCrop(new(0, 0, image.PixelWidth, image.PixelHeight)); Update(); }; menu.Items.Add(resetCrop);
         var ocr = new MenuItem { Header = L.T("Extract text"), Icon = Ui.Icon("ScanText", 16) }; ocr.Click += (_, _) => ExtractText(); menu.Items.Add(ocr);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; tools.Children.Add(more); Closed += (_, _) => menu.IsOpen = false;
         tools.Children.Add(ToolbarDivider());
-        _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); _undo.Width = _redo.Width = 32; tools.Children.Add(_undo); tools.Children.Add(_redo);
+        _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); foreach (var b in new[] { _undo, _redo }) { b.Width = b.Height = b.MinHeight = 32; b.Padding = new Thickness(7); b.Margin = new Thickness(1); } tools.Children.Add(_undo); tools.Children.Add(_redo);
         tools.Children.Add(ToolbarDivider());
-        _originalButton = Ui.IconButton("Image", L.T("Show original"), ToggleOriginal); _originalButton.Width = 32; tools.Children.Add(_originalButton);
+        _originalButton = Ui.IconButton("Image", L.T("Show original"), ToggleOriginal); _originalButton.Width = _originalButton.Height = _originalButton.MinHeight = 32; _originalButton.Padding = new Thickness(7); _originalButton.Margin = new Thickness(1); tools.Children.Add(_originalButton);
         var toolCard = Ui.Card(tools, 6); toolCard.Margin = new Thickness(0, 0, 12, 0); toolCard.VerticalAlignment = VerticalAlignment.Center;
-        var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
+        var footer = new DockPanel { Margin = new Thickness(0, 12, 0, 0), LastChildFill = false };
         var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; DockPanel.SetDock(actions, Dock.Right); footer.Children.Add(actions);
         if (applyToImage)
         {
@@ -284,6 +285,7 @@ public sealed partial class ScreenshotEditorWindow : Window
         try
         {
             var result = _document.Export();
+            if (action != "Apply") result = ScreenshotBeautifier.Apply(result, _beautify); // frame, background and shadow only for finished copies
             bool success;
             if (_exportAsync != null) success = await _exportAsync(result, Enum.Parse<ScreenshotExportAction>(action));
             else if (action == "Save") success = ImageOutput.Save(this, result, _report);

@@ -151,6 +151,7 @@ internal static class Program
             Check(loaded.RecordingQuality == "Balanced" && loaded.RecordingFramesPerSecond == 30);
         }));
         Test("Notes persistence, recovery and bounds", NotesStoreTests.Run);
+        Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
         Test("History restores erased objects and undoable clear", () =>
         {
             var doc = new AnnotationDocument(); var a = new Annotation(); var b = new Annotation { Kind = AnnotationKind.Text, Text = "hello" };

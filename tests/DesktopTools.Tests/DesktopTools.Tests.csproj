@@ -4,7 +4,7 @@
   <ItemGroup><Compile Include="../../src/DesktopTools/Native/HotkeyGesture.cs" Link="Native/HotkeyGesture.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Native/SmartRegionDetector.cs" Link="Native/SmartRegionDetector.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/UI/AnnotationRenderer.cs" Link="Rendering/AnnotationRenderer.cs" /><Compile Include="../../src/DesktopTools/Extras/RedactionRenderer.cs" Link="Rendering/RedactionRenderer.cs" /></ItemGroup>
-  <ItemGroup><Compile Include="../../src/DesktopTools/Extras/ScreenshotEditDocument.cs" Link="Rendering/ScreenshotEditDocument.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../src/DesktopTools/Extras/ScreenshotEditDocument.cs" Link="Rendering/ScreenshotEditDocument.cs" /><Compile Include="../../src/DesktopTools/Extras/ScreenshotBeautifier.cs" Link="Rendering/ScreenshotBeautifier.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/UI/AnnotationTextEditor.cs" Link="Rendering/AnnotationTextEditor.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/DesktopTools/Extras/CaptureHistory.cs" Link="Capture/CaptureHistory.cs" /><Compile Include="../../src/DesktopTools/UI/CaptureComposition.cs" Link="Capture/CaptureComposition.cs" /></ItemGroup>
 <ItemGroup><Compile Include="../../src/DesktopTools/Extras/NotesStore.cs" Link="Notes/NotesStore.cs" /></ItemGroup>

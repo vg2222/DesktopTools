@@ -101,12 +101,36 @@ public sealed partial class ScreenshotEditorWindow
         optionsButton.SetResourceReference(BorderBrushProperty, "Divider");
         optionsButton.Content = Ui.IconLabel("Settings", L.T("Detection options")); optionsButton.Margin = new Thickness(0, 8, 0, 0);
         pane.Children.Add(optionsButton); pane.Children.Add(optionsPane);
-        var annotationOptions = new StackPanel { Visibility = Visibility.Collapsed };
-        foreach (var child in properties.Children.Cast<UIElement>().ToArray()) { properties.Children.Remove(child); annotationOptions.Children.Add(child); }
-        properties.Children.Add(pane);
-        var drawingOptions = Ui.Button(L.T("Drawing options"), () => annotationOptions.Visibility = annotationOptions.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible);
-        drawingOptions.SetResourceReference(BorderBrushProperty, "Divider");
-        drawingOptions.Content = Ui.IconLabel("Pen", L.T("Drawing options")); properties.Children.Add(drawingOptions); properties.Children.Add(annotationOptions);
+        // Two clearly separate jobs share the side panel: styling what you draw, and hiding private data.
+        var drawPane = new StackPanel();
+        foreach (var child in properties.Children.Cast<UIElement>().ToArray()) { properties.Children.Remove(child); drawPane.Children.Add(child); }
+        var stylePane = BuildStylePane();
+        var tabs = new Grid { Margin = new Thickness(0, 0, 0, 14) };
+        for (int i = 0; i < 3; i++) tabs.ColumnDefinitions.Add(new ColumnDefinition());
+        var drawTab = new RadioButton { Content = L.T("Draw"), GroupName = "EditorPanel", Margin = new Thickness(0, 0, 3, 0) };
+        var styleTab = new RadioButton { Content = L.T("Style"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 3, 0) };
+        var privacyTab = new RadioButton { Content = L.T("Hide data"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 0, 0) };
+        var tabList = new[] { drawTab, styleTab, privacyTab };
+        for (int i = 0; i < tabList.Length; i++)
+        {
+            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 8); Grid.SetColumn(tabList[i], i); tabs.Children.Add(tabList[i]);
+            System.Windows.Automation.AutomationProperties.SetName(tabList[i], (string)tabList[i].Content);
+        }
+        void ShowPanel(int index)
+        {
+            drawPane.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            stylePane.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+            pane.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+            if (tabList[index].IsChecked != true) tabList[index].IsChecked = true;
+            if (index == 1) RefreshStylePreview();
+        }
+        void ShowPrivacy(bool privacy) { if (privacy) ShowPanel(2); else if (pane.Visibility == Visibility.Visible) ShowPanel(0); }
+        drawTab.Checked += (_, _) => { if (_tool == "Redaction") { _tool = "Pen"; Update(); } ShowPanel(0); };
+        styleTab.Checked += (_, _) => ShowPanel(1);
+        privacyTab.Checked += (_, _) => ShowPanel(2);
+        _showPrivacyTab = ShowPrivacy;
+        properties.Children.Add(tabs); properties.Children.Add(drawPane); properties.Children.Add(stylePane); properties.Children.Add(pane);
+        ShowPanel(automaticReview ? 2 : 0);
         _reviewDocumentRevision = _document.Revision; _reviewInitialized = true;
         if (automaticReview) Loaded += async (_, _) => await FindSensitiveDataAsync();
         RefreshFindings();
@@ -115,6 +139,7 @@ public sealed partial class ScreenshotEditorWindow
     internal async Task FindSensitiveDataAsync()
     {
         if (_reviewClosed || _reviewState.IsScanning || _exporting) return;
+        _showPrivacyTab?.Invoke(true);
         if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); UpdateRedactionReview();
         _analysisCancellation?.Cancel(); _analysisCancellation?.Dispose();
         var cancellation = new CancellationTokenSource(); _analysisCancellation = cancellation;
@@ -139,6 +164,7 @@ public sealed partial class ScreenshotEditorWindow
         finally { if (!_reviewClosed) RefreshFindings(); }
     }
 
+    private const int CoverPadding = 3;
     private void AcceptSensitiveData()
     {
         HideSensitiveData(SelectedFindings());
@@ -147,9 +173,9 @@ public sealed partial class ScreenshotEditorWindow
     {
         if (selected.Count == 0 || _reviewState.IsScanning || _exporting) return;
         CommitText(); CancelGesture();
-        _document.AddRange(selected.Select(f => new Annotation { Kind = AnnotationKind.Redaction, RedactionStyle = _redactionStyle, Points = [new(f.Bounds.X, f.Bounds.Y), new(f.Bounds.X + f.Bounds.Width, f.Bounds.Y + f.Bounds.Height)] }).ToArray());
+        _document.AddRange(selected.Select(f => new Annotation { Kind = AnnotationKind.Redaction, RedactionStyle = _redactionStyle, Points = [new(Math.Max(0, f.Bounds.X - CoverPadding), Math.Max(0, f.Bounds.Y - CoverPadding)), new(Math.Min(_image.PixelWidth, f.Bounds.X + f.Bounds.Width + CoverPadding), Math.Min(_image.PixelHeight, f.Bounds.Y + f.Bounds.Height + CoverPadding))] }).ToArray());
         _reviewDocumentRevision = _document.Revision; _reviewState.Resolve(selected.Select(f => f.Id).ToArray());
-        _tool = "Select"; _drawing.SelectedId = _document.Items[^1].Id;
+        _tool = "Select"; _drawing.SelectedId = null; // finished covers read as plain black bars, not as one selected box with handles
         _scanStatus.Text = L.F($"Hidden areas: {selected.Count}. Undo restores them."); RefreshFindings(); Update();
     }
     private SensitiveFinding[] SelectedFindings() => _findings.SelectedItems.OfType<ListBoxItem>().Select(i => (SensitiveFinding)i.Tag).ToArray();

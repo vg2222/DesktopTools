@@ -100,6 +100,7 @@ internal static class AutoRedactChecks
                 try { Check(await controller.ExportReviewedImageAsync(redacted, ScreenshotExportAction.Copy, owner), "Copy did not succeed"); Check(Clipboard.ContainsImage(), "Reviewed Copy has no image"); }
                 finally { Clipboard.Clear(); }
                 Console.WriteLine("PASS reviewed Copy on initially empty clipboard");
+                clipboardBefore = GetClipboardSequenceNumber(); // the Copy above legitimately changed the clipboard; later checks compare from here
             }
             else Console.WriteLine("SKIP reviewed Copy: preserve nonempty clipboard; pre-review/Save sequence checks passed");
         }
@@ -149,7 +150,7 @@ internal static class AutoRedactChecks
                 window.AnalyzeSensitiveData = (_, _, _, _) => Task.FromResult<IReadOnlyList<SensitiveFinding>>(Enumerable.Range(0, 30).Select(i => new SensitiveFinding(Guid.NewGuid(), ["email", "credential"], new(10, 10, 100, 20), "••••")).ToArray());
                 window.Show(); window.Width = 860; window.Height = 500;
                 await window.FindSensitiveDataAsync(); await Task.Delay(20); window.UpdateLayout();
-                foreach (string label in new[] { "Add cover manually", "Detection options", "Drawing options" })
+                foreach (string label in new[] { "Add cover manually", "Detection options" })
                 {
                     var button = Children(window).OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == L.T(label));
                     var border = ((SolidColorBrush)button.BorderBrush).Color;
