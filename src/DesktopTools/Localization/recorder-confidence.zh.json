@@ -1,0 +1,11 @@
+{
+  "Meters show device activity. Use a test clip to verify recorded sound.": "电平表显示设备活动。请用测试片段验证录制的声音。",
+  "Record 5-second test": "录制 5 秒测试",
+  "Play test clip": "播放测试片段",
+  "Microphone activity": "麦克风活动",
+  "System audio activity": "系统音频活动",
+  "Recording needs at least 512 MB of free space on the destination drive.": "录制需要目标驱动器上至少有 512 MB 可用空间。",
+  "Test clip is ready. Play it to check picture and sound.": "测试片段已就绪。请播放以检查画面和声音。",
+  "Could not open test clip: ": "无法打开测试片段： ",
+  "File reports {0:0.#} FPS. Repeated frames may reduce visible smoothness.": "文件报告帧率为 {0:0.#} FPS。重复帧可能降低可见的流畅度。"
+}

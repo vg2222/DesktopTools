@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "Bir kopyayı düzenlemek için PNG, JPEG veya BMP seçin.",
+  "Choose a video to trim, crop and save a copy.": "Kırpmak, kesmek ve bir kopya kaydetmek için bir video seçin.",
+  "Click to choose a display, window or region.": "Bir ekran, pencere veya bölge seçmek için tıklayın.",
+  "Choose recording source": "Kayıt kaynağını seç",
+  "Translate text": "Metni çevir",
+  "Text from screenshot": "Ekran görüntüsünden metin",
+  "Select an area of your screen, then copy the recognized text.": "Ekranınızın bir alanını seçin, ardından tanınan metni kopyalayın.",
+  "Type or paste text, choose the languages, then translate.": "Metni yazın veya yapıştırın, dilleri seçin ve çevirin.",
+  "Update preview": "Önizlemeyi güncelle",
+  "Original loaded. The preview updates automatically after you edit.": "Özgün yüklendi. Düzenledikten sonra önizleme otomatik güncellenir.",
+  "Preview pending": "Önizleme bekliyor",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "Değişiklikleriniz hazırlanırken özgün gösteriliyor. Önizleme otomatik güncellenir.",
+  "Updating preview…": "Önizleme güncelleniyor…",
+  "Selection controls": "Seçim denetimleri",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "Gizleme, kayıt veya paylaşım uygulamasına bağlıdır. Bu pencereler yine de görünebilir. İzleyicilerin ne gördüğünü kontrol edin.",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "Çizim ve izleyici efektleri görünür kalır. Kaydedici denetimleri, çizim denetimleri, notlar, bildirimler ve teleprompter gizli başlar. Her seçimi Ayarlar → Gizlilik’ten değiştirin."
+}

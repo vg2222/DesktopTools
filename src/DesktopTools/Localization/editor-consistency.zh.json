@@ -1,0 +1,7 @@
+{
+  "Show edited": "显示已编辑",
+  "Viewing original. Edits are still in your working copy.": "正在查看原图。编辑内容仍保留在您的工作副本中。",
+  "Viewing edited working copy. Export saves a separate file.": "正在查看已编辑的工作副本。导出会保存为单独的文件。",
+  "Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready.": "拖动蓝色控制点以保留一个区域，或在其内部拖动来移动。准备好后点击“应用裁剪”。",
+  "Drag an area to keep. The crop applies on release; Undo restores it.": "拖动选择要保留的区域。松开后即应用裁剪；撤销可恢复。"
+}

@@ -1,0 +1,15 @@
+{
+  "Sound": "Som",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Usa a placa de vídeo para codificar. Desative se as gravações travarem.",
+  "Start at playhead": "Iniciar no cursor de reprodução",
+  "End at playhead": "Terminar no cursor de reprodução",
+  "Resume": "Retomar",
+  "Lock in place (click through)    Ctrl+L": "Bloquear no lugar (cliques atravessam)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Capturas fixadas desbloqueadas.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "A captura está bloqueada: os cliques passam através dela. Para desbloquear, clique com o botão direito no ícone do DesktopTools na bandeja e escolha Desbloquear capturas fixadas.",
+  "Unlock": "Desbloquear",
+  "Close screenshot": "Fechar captura",
+  "Unlock pinned screenshots": "Desbloquear capturas fixadas",
+  "Close pinned screenshots": "Fechar capturas fixadas",
+  "A pinned screenshot is locked and ignores the mouse.": "Uma captura fixada está bloqueada e ignora o mouse."
+}

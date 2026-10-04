@@ -1,0 +1,19 @@
+{
+  "Export settings": "导出设置",
+  "DesktopTools data": "DesktopTools 数据",
+  "Import settings": "导入设置",
+  "Import and restart": "导入并重启",
+  "Settings exported to ": "设置已导出到 ",
+  "Could not export settings: ": "无法导出设置： ",
+  "This file cannot be imported: ": "无法导入此文件： ",
+  "settings and shortcuts": "设置和快捷键",
+  "workflows": "工作流",
+  "notes": "笔记",
+  "{0} profiles": "{0} 个配置文件",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "要用此文件中的数据替换当前数据（{0}）吗？DesktopTools 将重启以应用。当前数据的备份会保存在 DesktopTools 数据文件夹中。",
+  "Could not import the settings. Your current data was not changed: ": "无法导入设置。当前数据未更改： ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "将设置、快捷键、配置文件、工作流和笔记保存到一个 zip 文件，可在另一台电脑上打开。不会上传任何内容。",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "用“导出设置”生成的文件替换您的设置、配置文件、工作流和笔记，然后重启。",
+  "Export…": "导出…",
+  "Import…": "导入…"
+}

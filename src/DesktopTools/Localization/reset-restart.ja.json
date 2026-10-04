@@ -1,0 +1,6 @@
+{
+  "Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.": "ローカルの設定、プロファイル、メモを削除し、初回セットアップで DesktopTools を再起動します。書き出したファイルは保存先に残ります。",
+  "Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.": "DesktopTools のローカルの設定、プロファイル、メモをすべて削除してアプリを再起動しますか? この操作は元に戻せません。ほかの場所に書き出したファイルは残ります。",
+  "DesktopTools could not finish restarting after the data reset. Please open it again.": "データのリセット後、DesktopTools の再起動を完了できませんでした。もう一度開いてください。",
+  "DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.": "DesktopTools のデータをリセットしましたが、アプリを自動的に開き直せませんでした。スタートメニューから DesktopTools を開いてください。"
+}

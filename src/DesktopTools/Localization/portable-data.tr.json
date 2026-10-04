@@ -1,0 +1,19 @@
+{
+  "Export settings": "Ayarları dışa aktar",
+  "DesktopTools data": "DesktopTools verileri",
+  "Import settings": "Ayarları içe aktar",
+  "Import and restart": "İçe aktar ve yeniden başlat",
+  "Settings exported to ": "Ayarlar şuraya aktarıldı: ",
+  "Could not export settings: ": "Ayarlar dışa aktarılamadı: ",
+  "This file cannot be imported: ": "Bu dosya içe aktarılamıyor: ",
+  "settings and shortcuts": "ayarlar ve kısayollar",
+  "workflows": "iş akışları",
+  "notes": "notlar",
+  "{0} profiles": "{0} profil",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "Geçerli verileriniz ({0}) bu dosyadaki verilerle değiştirilsin mi? DesktopTools bunu uygulamak için yeniden başlar. Geçerli verilerin yedeği DesktopTools veri klasöründe kalır.",
+  "Could not import the settings. Your current data was not changed: ": "Ayarlar içe aktarılamadı. Geçerli verileriniz değişmedi: ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "Ayarları, kısayolları, profilleri, iş akışlarını ve notları başka bir bilgisayarda açabileceğiniz tek bir zip dosyasına kaydeder. Hiçbir şey yüklenmez.",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "Ayarlarınızı, profillerinizi, iş akışlarınızı ve notlarınızı Ayarları dışa aktar ile oluşturulmuş bir dosyayla değiştirir, ardından yeniden başlar.",
+  "Export…": "Dışa aktar…",
+  "Import…": "İçe aktar…"
+}

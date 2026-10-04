@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "A taxa de quadros é uma meta. Um monitor ou região grava na taxa da tela; uma única janela fica limitada a cerca de 48 FPS.",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "Usa a placa de vídeo para codificar. Sem ela, a gravação fica limitada a 30 FPS.",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "Use o hardware gráfico quando disponível. Sem ele, a gravação fica limitada a 30 FPS. Desative só se a gravação falhar ou parecer incorreta."
+}

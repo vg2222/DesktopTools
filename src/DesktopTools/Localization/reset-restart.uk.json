@@ -1,0 +1,6 @@
+{
+  "Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.": "Видаляє локальні налаштування, профілі й нотатки, потім перезапускає DesktopTools із початковим налаштуванням. Експортовані файли залишаються там, де ви їх зберегли.",
+  "Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.": "Видалити всі локальні налаштування, профілі й нотатки DesktopTools та перезапустити програму? Цю дію не можна скасувати. Файли, експортовані деінде, залишаться.",
+  "DesktopTools could not finish restarting after the data reset. Please open it again.": "DesktopTools не вдалося завершити перезапуск після скидання даних. Відкрийте його знову.",
+  "DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.": "Дані DesktopTools скинуто, але програму не вдалося відкрити автоматично. Відкрийте DesktopTools із меню «Пуск»."
+}

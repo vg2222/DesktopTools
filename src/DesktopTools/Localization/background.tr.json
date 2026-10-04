@@ -1,0 +1,10 @@
+{
+  "Remove background": "Arka planı kaldır",
+  "Local AI · review edges before saving PNG.": "Yerel yapay zekâ · PNG’yi kaydetmeden önce kenarları gözden geçirin.",
+  "Removing background locally…": "Arka plan yerel olarak kaldırılıyor…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "Arka plan kaldırıldı. İnce kenarları kontrol edin; Geri al görüntüyü geri getirir. PNG olarak dışa aktarma saydamlığı korur.",
+  "Background removal canceled. The image is unchanged.": "Arka plan kaldırma iptal edildi. Görüntü değişmedi.",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "Arka plan kaldırma modeli eksik. DesktopTools paketinin tamamını çıkarın.",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "Arka plan kaldırma modeli hasarlı. Yeni bir DesktopTools paketi çıkarın.",
+  "The background-removal model returned an invalid mask.": "Arka plan kaldırma modeli geçersiz bir maske döndürdü."
+}

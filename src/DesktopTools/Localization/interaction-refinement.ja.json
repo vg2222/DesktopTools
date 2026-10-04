@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "コピーを編集する PNG、JPEG、または BMP を選んでください。",
+  "Choose a video to trim, crop and save a copy.": "トリミング、切り抜き、コピーの保存を行う動画を選んでください。",
+  "Click to choose a display, window or region.": "クリックしてディスプレイ、ウィンドウ、または領域を選びます。",
+  "Choose recording source": "録画ソースを選択",
+  "Translate text": "テキストを翻訳",
+  "Text from screenshot": "スクリーンショットのテキスト",
+  "Select an area of your screen, then copy the recognized text.": "画面の領域を選んで、認識されたテキストをコピーします。",
+  "Type or paste text, choose the languages, then translate.": "テキストを入力または貼り付け、言語を選んで翻訳します。",
+  "Update preview": "プレビューを更新",
+  "Original loaded. The preview updates automatically after you edit.": "元の画像を読み込みました。編集するとプレビューが自動で更新されます。",
+  "Preview pending": "プレビュー待機中",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "変更を準備する間、元の画像を表示しています。プレビューは自動で更新されます。",
+  "Updating preview…": "プレビューを更新しています…",
+  "Selection controls": "選択コントロール",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "非表示の可否は録画または共有アプリによって異なります。これらのウィンドウが見えてしまう場合があります。視聴者に見える内容を確認してください。",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "描画と視聴者向けの効果は表示されたままです。録画コントロール、描画コントロール、メモ、通知、プロンプターは非表示で始まります。各項目は [設定] → [プライバシー] で変更できます。"
+}

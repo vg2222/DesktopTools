@@ -1,0 +1,11 @@
+{
+  "Meters show device activity. Use a test clip to verify recorded sound.": "Göstergeler aygıt etkinliğini gösterir. Kaydedilen sesi doğrulamak için bir test klibi kullanın.",
+  "Record 5-second test": "5 saniyelik test kaydet",
+  "Play test clip": "Test klibini oynat",
+  "Microphone activity": "Mikrofon etkinliği",
+  "System audio activity": "Sistem sesi etkinliği",
+  "Recording needs at least 512 MB of free space on the destination drive.": "Kayıt için hedef sürücüde en az 512 MB boş alan gerekir.",
+  "Test clip is ready. Play it to check picture and sound.": "Test klibi hazır. Görüntü ve sesi denetlemek için oynatın.",
+  "Could not open test clip: ": "Test klibi açılamadı: ",
+  "File reports {0:0.#} FPS. Repeated frames may reduce visible smoothness.": "Dosya {0:0.#} FPS bildiriyor. Tekrarlanan kareler görünür akıcılığı azaltabilir."
+}

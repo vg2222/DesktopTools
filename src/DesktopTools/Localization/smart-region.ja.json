@@ -1,0 +1,6 @@
+{
+  "Smart region capture": "スマート領域キャプチャ",
+  "Point to a window or clear rectangular area, then click to capture. Drag to select your own region.": "ウィンドウや明確な四角い領域をポイントして、クリックでキャプチャします。ドラッグすると自分で領域を選べます。",
+  "Frozen screen: windows only. Turn off Freeze screen before selecting for panels, images, and video.": "画面をフリーズ中: ウィンドウのみ選べます。パネル、画像、動画を選ぶには、先に [選択前に画面をフリーズ] をオフにしてください。",
+  "Click highlighted area · Drag a custom region · Esc to cancel": "強調表示された領域をクリック · ドラッグで任意の領域 · Esc でキャンセル"
+}

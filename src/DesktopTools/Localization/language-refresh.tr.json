@@ -1,0 +1,14 @@
+{
+  "DesktopTools restarts automatically to apply the new language.": "DesktopTools, yeni dili uygulamak için otomatik olarak yeniden başlar.",
+  "DesktopTools could not finish restarting. Please open it again.": "DesktopTools yeniden başlatmayı tamamlayamadı. Lütfen yeniden açın.",
+  "DesktopTools could not reopen automatically. Open it from the Start menu.": "DesktopTools otomatik olarak yeniden açılamadı. Başlat menüsünden açın.",
+  "Installed version": "Kurulu sürüm",
+  "Available version": "Kullanılabilir sürüm",
+  "Automatic checks": "Otomatik denetimler",
+  "Every 15 minutes": "Her 15 dakikada bir",
+  "Every 30 minutes": "Her 30 dakikada bir",
+  "Every 2 hours": "Her 2 saatte bir",
+  "Every 3 hours": "Her 3 saatte bir",
+  "Recording setup": "Kayıt kurulumu",
+  "Finish the current operation before changing the language.": "Dili değiştirmeden önce geçerli işlemi bitirin."
+}

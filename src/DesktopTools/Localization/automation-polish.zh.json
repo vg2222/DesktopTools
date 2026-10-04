@@ -1,0 +1,21 @@
+{
+  "Run": "运行",
+  "Select an action": "选择一个操作",
+  "Action help": "操作帮助",
+  "Test action": "测试操作",
+  "Automatic triggers": "自动触发器",
+  "Target window": "目标窗口",
+  "Leave blank to use the current window.": "留空则使用当前窗口。",
+  "Use a value from 0 to 10000.": "请输入 0 到 10000 之间的值。",
+  "Daily at": "每天于",
+  "HH:mm; leave blank to disable.": "HH:mm；留空则禁用。",
+  "Triggers run while DesktopTools is open.": "触发器仅在 DesktopTools 打开时运行。",
+  "Esc to stop": "按 Esc 停止",
+  "Automation running": "自动化运行中",
+  "Recording actions": "录制操作",
+  "Recording starts in {0} seconds": "将在 {0} 秒后开始录制",
+  "Action {0} of {1}": "操作 {0} / {1}",
+  "Action {0}: {1}": "操作 {0}：{1}",
+  "No matching actions": "没有匹配的操作",
+  "Try another search.": "请尝试其他搜索。"
+}

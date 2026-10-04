@@ -1,0 +1,8 @@
+{
+  "Only hide from screen sharing (experimental)": "仅对屏幕共享隐藏（实验性）",
+  "Keep your desktop visible locally. Off: cover all displays in black for you too. Changing this stops active blackout.": "在本地保持桌面可见。关闭：同样用黑色覆盖您自己的所有显示器。更改此选项会停止当前的黑屏。",
+  "Warning: your screen may still be visible in screen-sharing apps. We recommend checking the viewer's output before use. Sharing an individual application window may bypass this mode.": "警告：您的屏幕在屏幕共享应用中仍可能可见。建议使用前先检查观看端的画面。共享单个应用程序窗口可能会绕过此模式。",
+  "Applies to all connected displays. Press Escape to stop. This is not a security guarantee.": "适用于所有已连接的显示器。按 Escape 停止。这不是安全保证。",
+  "Windows could not activate sharing blackout. Your screen may still be visible.": "Windows 无法启用共享黑屏。您的屏幕仍可能可见。",
+  "Warning: your screen may still be visible in screen-sharing apps. Check the viewer's output before using this mode. Press Escape to stop.": "警告：您的屏幕在屏幕共享应用中仍可能可见。使用此模式前请检查观看端的画面。按 Escape 停止。"
+}

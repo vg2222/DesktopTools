@@ -1,0 +1,14 @@
+{
+  "All tools are ready to open. Shortcuts can be switched on or off without hiding a tool.": "Tüm araçlar açılmaya hazır. Kısayollar, bir aracı gizlemeden açılıp kapatılabilir.",
+  "All tools are ready to open. None starts automatically; choose shortcuts on the next page.": "Tüm araçlar açılmaya hazır. Hiçbiri otomatik başlamaz; kısayolları sonraki sayfada seçin.",
+  "Ready when you need it.": "İhtiyaç duyduğunuzda hazır.",
+  "Explore your tools": "Araçlarınızı keşfedin",
+  "Tools available": "Kullanılabilir araçlar",
+  "Using the wheel": "Çarkı kullanma",
+  "How it works": "Nasıl çalışır",
+  "Original state is restored when DesktopTools closes.": "DesktopTools kapandığında özgün durum geri yüklenir.",
+  "Some shortcuts could not start": "Bazı kısayollar başlatılamadı",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "Diğer kısayollar çalışmaya devam ediyor. Bu tuşları kullanan uygulamaları kapatıp yeniden deneyin veya aşağıdan farklı tuşlar seçin.",
+  "Retry shortcuts": "Kısayolları yeniden dene",
+  "All enabled shortcuts are ready.": "Etkin tüm kısayollar hazır."
+}

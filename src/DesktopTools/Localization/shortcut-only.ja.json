@@ -1,0 +1,14 @@
+{
+  "All tools are ready to open. Shortcuts can be switched on or off without hiding a tool.": "すべてのツールを開けます。ツールを隠さずにショートカットのオン/オフを切り替えられます。",
+  "All tools are ready to open. None starts automatically; choose shortcuts on the next page.": "すべてのツールを開けます。自動的に起動するものはありません。次のページでショートカットを選んでください。",
+  "Ready when you need it.": "必要なときにすぐ使えます。",
+  "Explore your tools": "ツールを見てみましょう",
+  "Tools available": "利用できるツール",
+  "Using the wheel": "ホイールの使い方",
+  "How it works": "しくみ",
+  "Original state is restored when DesktopTools closes.": "DesktopTools を閉じると、元の状態に戻ります。",
+  "Some shortcuts could not start": "起動できなかったショートカットがあります",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "ほかのショートカットは引き続き使えます。これらのキーを使っているアプリを閉じて再試行するか、下で別のキーを選んでください。",
+  "Retry shortcuts": "ショートカットを再試行",
+  "All enabled shortcuts are ready.": "有効なショートカットはすべて準備できています。"
+}

@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "Velocidade de reprodução da pré-visualização; a exportação mantém a velocidade original.",
+  "Preview speed": "Velocidade da pré-visualização",
+  "Resize editor settings": "Redimensionar configurações do editor",
+  "Drag to resize editor settings": "Arraste para redimensionar as configurações do editor",
+  "Audio volume": "Volume do áudio",
+  "Export quality": "Qualidade da exportação",
+  "Standard": "Padrão",
+  "Maximum": "Máxima",
+  "Save current frame as PNG": "Salvar quadro atual como PNG",
+  "Save frame PNG": "Salvar quadro em PNG",
+  "Saving frame…": "Salvando quadro…",
+  "Frame saved as PNG.": "Quadro salvo como PNG.",
+  "Choose an audio volume between 0% and 200%.": "Escolha um volume de áudio entre 0% e 200%.",
+  "Choose a valid output quality.": "Escolha uma qualidade de saída válida.",
+  "Save the frame as a PNG file.": "Salve o quadro como um arquivo PNG.",
+  "Choose a new filename. Existing images are not overwritten.": "Escolha um novo nome de arquivo. Imagens existentes não são sobrescritas."
+}

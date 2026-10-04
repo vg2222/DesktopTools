@@ -1,0 +1,14 @@
+{
+  "All tools are ready to open. Shortcuts can be switched on or off without hiding a tool.": "所有工具均可打开。无需隐藏工具即可开关快捷键。",
+  "All tools are ready to open. None starts automatically; choose shortcuts on the next page.": "所有工具均可打开。没有工具会自动启动；请在下一页选择快捷键。",
+  "Ready when you need it.": "随时待命。",
+  "Explore your tools": "探索您的工具",
+  "Tools available": "可用工具",
+  "Using the wheel": "使用轮盘",
+  "How it works": "工作原理",
+  "Original state is restored when DesktopTools closes.": "关闭 DesktopTools 时会恢复原始状态。",
+  "Some shortcuts could not start": "部分快捷键无法启动",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "其他快捷键仍可使用。请关闭占用这些按键的应用后重试，或在下方选择其他按键。",
+  "Retry shortcuts": "重试快捷键",
+  "All enabled shortcuts are ready.": "所有已启用的快捷键均已就绪。"
+}

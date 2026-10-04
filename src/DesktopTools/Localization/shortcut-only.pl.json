@@ -1,0 +1,14 @@
+{
+  "All tools are ready to open. Shortcuts can be switched on or off without hiding a tool.": "Wszystkie narzędzia są gotowe do otwarcia. Skróty można włączać i wyłączać bez ukrywania narzędzia.",
+  "All tools are ready to open. None starts automatically; choose shortcuts on the next page.": "Wszystkie narzędzia są gotowe do otwarcia. Żadne nie uruchamia się automatycznie; wybierz skróty na następnej stronie.",
+  "Ready when you need it.": "Gotowe, gdy będzie potrzebne.",
+  "Explore your tools": "Poznaj swoje narzędzia",
+  "Tools available": "Dostępne narzędzia",
+  "Using the wheel": "Korzystanie z koła",
+  "How it works": "Jak to działa",
+  "Original state is restored when DesktopTools closes.": "Pierwotny stan jest przywracany po zamknięciu DesktopTools.",
+  "Some shortcuts could not start": "Niektóre skróty nie mogły się uruchomić",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "Pozostałe skróty nadal działają. Zamknij aplikację używającą tych klawiszy i spróbuj ponownie lub wybierz poniżej inne klawisze.",
+  "Retry shortcuts": "Ponów skróty",
+  "All enabled shortcuts are ready.": "Wszystkie włączone skróty są gotowe."
+}

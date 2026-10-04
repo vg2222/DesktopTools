@@ -1,0 +1,14 @@
+{
+  "DesktopTools restarts automatically to apply the new language.": "DesktopTools si riavvia automaticamente per applicare la nuova lingua.",
+  "DesktopTools could not finish restarting. Please open it again.": "DesktopTools non è riuscito a completare il riavvio. Riaprilo.",
+  "DesktopTools could not reopen automatically. Open it from the Start menu.": "DesktopTools non è riuscito a riaprirsi automaticamente. Aprilo dal menu Start.",
+  "Installed version": "Versione installata",
+  "Available version": "Versione disponibile",
+  "Automatic checks": "Controlli automatici",
+  "Every 15 minutes": "Ogni 15 minuti",
+  "Every 30 minutes": "Ogni 30 minuti",
+  "Every 2 hours": "Ogni 2 ore",
+  "Every 3 hours": "Ogni 3 ore",
+  "Recording setup": "Configurazione della registrazione",
+  "Finish the current operation before changing the language.": "Termina l’operazione in corso prima di cambiare la lingua."
+}

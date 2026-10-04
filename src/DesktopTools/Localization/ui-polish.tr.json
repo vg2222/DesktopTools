@@ -1,0 +1,15 @@
+{
+  "Sound": "Ses",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Kodlama için ekran kartını kullanır. Kayıtlar takılıyorsa kapatın.",
+  "Start at playhead": "Oynatma başlığında başla",
+  "End at playhead": "Oynatma başlığında bitir",
+  "Resume": "Sürdür",
+  "Lock in place (click through)    Ctrl+L": "Yerinde kilitle (tıklamalar geçer)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Sabitlenen ekran görüntülerinin kilidi açıldı.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "Ekran görüntüsü kilitli: tıklamalar içinden geçer. Kilidini açmak için tepsideki DesktopTools simgesine sağ tıklayın ve Sabitlenen ekran görüntülerinin kilidini aç’ı seçin.",
+  "Unlock": "Kilidi aç",
+  "Close screenshot": "Ekran görüntüsünü kapat",
+  "Unlock pinned screenshots": "Sabitlenen ekran görüntülerinin kilidini aç",
+  "Close pinned screenshots": "Sabitlenen ekran görüntülerini kapat",
+  "A pinned screenshot is locked and ignores the mouse.": "Sabitlenmiş bir ekran görüntüsü kilitli ve fareyi yok sayıyor."
+}

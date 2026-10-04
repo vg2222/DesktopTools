@@ -1,0 +1,10 @@
+{
+  "Remove background": "Usuń tło",
+  "Local AI · review edges before saving PNG.": "Lokalna AI · sprawdź krawędzie przed zapisaniem PNG.",
+  "Removing background locally…": "Lokalne usuwanie tła…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "Tło usunięte. Sprawdź drobne krawędzie; Cofnij przywraca obraz. Eksport PNG zachowuje przezroczystość.",
+  "Background removal canceled. The image is unchanged.": "Anulowano usuwanie tła. Obraz pozostał bez zmian.",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "Brakuje modelu usuwania tła. Wypakuj kompletny pakiet DesktopTools.",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "Model usuwania tła jest uszkodzony. Wypakuj nowy pakiet DesktopTools.",
+  "The background-removal model returned an invalid mask.": "Model usuwania tła zwrócił nieprawidłową maskę."
+}

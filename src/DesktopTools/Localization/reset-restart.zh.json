@@ -1,0 +1,6 @@
+{
+  "Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.": "删除本地设置、配置文件和笔记，然后重启 DesktopTools 并进入首次设置。已导出的文件保留在您保存的位置。",
+  "Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.": "要删除所有本地 DesktopTools 设置、配置文件和笔记并重启应用吗？此操作无法撤销。您导出到其他位置的文件将保留。",
+  "DesktopTools could not finish restarting after the data reset. Please open it again.": "数据重置后，DesktopTools 无法完成重启。请重新打开它。",
+  "DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.": "DesktopTools 数据已重置，但应用无法自动重新打开。请从“开始”菜单打开 DesktopTools。"
+}

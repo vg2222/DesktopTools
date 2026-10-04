@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "色の彩度と明度。矢印キーで調整します。",
+  "This application's audio session ended. Refresh the list.": "このアプリのオーディオセッションが終了しました。一覧を更新してください。",
+  "System sounds": "システム音",
+  "Application ({0})": "アプリ ({0})",
+  "No displays are connected.": "ディスプレイが接続されていません。",
+  "Could not locate the pointer.": "ポインターの位置を特定できませんでした。",
+  "Could not read connected monitors.": "接続されているモニターを読み取れませんでした。",
+  "Could not enumerate monitors.": "モニターを列挙できませんでした。",
+  "Show the window before placing it on a monitor.": "モニターに配置する前にウィンドウを表示してください。",
+  "Could not position the overlay.": "オーバーレイを配置できませんでした。",
+  "Monitor dimensions must be positive.": "モニターの寸法は正の値である必要があります。",
+  "Could not access the desktop.": "デスクトップにアクセスできませんでした。",
+  "Could not allocate a capture context.": "キャプチャコンテキストを割り当てられませんでした。",
+  "Could not allocate a screenshot.": "スクリーンショット用のメモリを割り当てられませんでした。",
+  "Could not prepare the screenshot.": "スクリーンショットを準備できませんでした。",
+  "Windows could not capture this desktop.": "Windows でこのデスクトップをキャプチャできませんでした。",
+  "Could not update overlay input mode.": "オーバーレイの入力モードを更新できませんでした。",
+  "The drawing control does not have a valid native window yet.": "描画コントロールには、まだ有効なネイティブウィンドウがありません。",
+  "Windows could not update capture exclusion: {0}": "Windows でキャプチャ除外を更新できませんでした: {0}"
+}

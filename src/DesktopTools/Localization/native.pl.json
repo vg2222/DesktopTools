@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "Nasycenie i jasność koloru. Dostosuj klawiszami strzałek.",
+  "This application's audio session ended. Refresh the list.": "Sesja audio tej aplikacji się zakończyła. Odśwież listę.",
+  "System sounds": "Dźwięki systemowe",
+  "Application ({0})": "Aplikacja ({0})",
+  "No displays are connected.": "Nie podłączono żadnych wyświetlaczy.",
+  "Could not locate the pointer.": "Nie można zlokalizować wskaźnika.",
+  "Could not read connected monitors.": "Nie można odczytać podłączonych monitorów.",
+  "Could not enumerate monitors.": "Nie można wyliczyć monitorów.",
+  "Show the window before placing it on a monitor.": "Pokaż okno, zanim umieścisz je na monitorze.",
+  "Could not position the overlay.": "Nie można ustawić położenia nakładki.",
+  "Monitor dimensions must be positive.": "Wymiary monitora muszą być dodatnie.",
+  "Could not access the desktop.": "Nie można uzyskać dostępu do pulpitu.",
+  "Could not allocate a capture context.": "Nie można przydzielić kontekstu przechwytywania.",
+  "Could not allocate a screenshot.": "Nie można przydzielić pamięci na zrzut ekranu.",
+  "Could not prepare the screenshot.": "Nie można przygotować zrzutu ekranu.",
+  "Windows could not capture this desktop.": "System Windows nie mógł przechwycić tego pulpitu.",
+  "Could not update overlay input mode.": "Nie można zaktualizować trybu wprowadzania nakładki.",
+  "The drawing control does not have a valid native window yet.": "Kontrolka rysowania nie ma jeszcze prawidłowego okna natywnego.",
+  "Windows could not update capture exclusion: {0}": "System Windows nie mógł zaktualizować wykluczenia z przechwytywania: {0}"
+}

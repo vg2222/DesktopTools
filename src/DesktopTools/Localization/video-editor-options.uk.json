@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "Швидкість відтворення в попередньому перегляді; експорт зберігає вихідну швидкість.",
+  "Preview speed": "Швидкість перегляду",
+  "Resize editor settings": "Змінити розмір параметрів редактора",
+  "Drag to resize editor settings": "Перетягніть, щоб змінити розмір параметрів редактора",
+  "Audio volume": "Гучність звуку",
+  "Export quality": "Якість експорту",
+  "Standard": "Стандартна",
+  "Maximum": "Максимальна",
+  "Save current frame as PNG": "Зберегти поточний кадр як PNG",
+  "Save frame PNG": "Зберегти кадр у PNG",
+  "Saving frame…": "Збереження кадру…",
+  "Frame saved as PNG.": "Кадр збережено як PNG.",
+  "Choose an audio volume between 0% and 200%.": "Виберіть гучність звуку від 0% до 200%.",
+  "Choose a valid output quality.": "Виберіть дійсну якість виводу.",
+  "Save the frame as a PNG file.": "Збережіть кадр як файл PNG.",
+  "Choose a new filename. Existing images are not overwritten.": "Виберіть нову назву файлу. Наявні зображення не перезаписуються."
+}

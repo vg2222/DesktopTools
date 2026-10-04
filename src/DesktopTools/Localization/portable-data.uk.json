@@ -1,0 +1,19 @@
+{
+  "Export settings": "Експорт налаштувань",
+  "DesktopTools data": "Дані DesktopTools",
+  "Import settings": "Імпорт налаштувань",
+  "Import and restart": "Імпортувати й перезапустити",
+  "Settings exported to ": "Налаштування експортовано до ",
+  "Could not export settings: ": "Не вдалося експортувати налаштування: ",
+  "This file cannot be imported: ": "Цей файл не можна імпортувати: ",
+  "settings and shortcuts": "налаштування та комбінації клавіш",
+  "workflows": "сценарії",
+  "notes": "нотатки",
+  "{0} profiles": "Профілів: {0}",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "Замінити поточні дані ({0}) даними з цього файлу? DesktopTools перезапуститься, щоб їх застосувати. Резервну копію поточних даних буде збережено в папці даних DesktopTools.",
+  "Could not import the settings. Your current data was not changed: ": "Не вдалося імпортувати налаштування. Поточні дані не змінено: ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "Зберігає налаштування, комбінації клавіш, профілі, сценарії та нотатки в одному zip-файлі, який можна відкрити на іншому ПК. Нічого не завантажується в мережу.",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "Замінює ваші налаштування, профілі, сценарії та нотатки файлом, створеним через «Експорт налаштувань», потім перезапускається.",
+  "Export…": "Експорт…",
+  "Import…": "Імпорт…"
+}

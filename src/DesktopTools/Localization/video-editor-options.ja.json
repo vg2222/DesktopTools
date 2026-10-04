@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "プレビューの再生速度です。書き出しは元の速度のままです。",
+  "Preview speed": "プレビュー速度",
+  "Resize editor settings": "エディター設定のサイズを変更",
+  "Drag to resize editor settings": "ドラッグしてエディター設定のサイズを変更",
+  "Audio volume": "音量",
+  "Export quality": "書き出し品質",
+  "Standard": "標準",
+  "Maximum": "最高",
+  "Save current frame as PNG": "現在のフレームを PNG で保存",
+  "Save frame PNG": "フレームを PNG で保存",
+  "Saving frame…": "フレームを保存中…",
+  "Frame saved as PNG.": "フレームを PNG として保存しました。",
+  "Choose an audio volume between 0% and 200%.": "音量は 0% ～ 200% で選んでください。",
+  "Choose a valid output quality.": "有効な出力品質を選んでください。",
+  "Save the frame as a PNG file.": "フレームを PNG ファイルとして保存します。",
+  "Choose a new filename. Existing images are not overwritten.": "新しいファイル名を選んでください。既存の画像は上書きされません。"
+}

@@ -1,0 +1,13 @@
+{
+  "Screen sharing and DesktopTools": "Ekran paylaşımı ve DesktopTools",
+  "Your tools are visible by default": "Araçlarınız varsayılan olarak görünür",
+  "DesktopTools windows, the screen ruler and floating controls can appear in screen shares and recordings. If you turn on hiding in Settings → Privacy, supported capture apps may omit those windows. Check the viewer's screen before sharing private content.": "DesktopTools pencereleri, ekran cetveli ve yüzen denetimler ekran paylaşımlarında ve kayıtlarda görünebilir. Ayarlar → Gizlilik’te gizlemeyi açarsanız desteklenen yakalama uygulamaları bu pencereleri atlayabilir. Özel içerik paylaşmadan önce izleyicinin ekranını kontrol edin.",
+  "This installation currently has hiding enabled. Keep that choice or show your tools now.": "Bu kurulumda şu anda gizleme etkin. Bu seçimi koruyun veya araçlarınızı şimdi gösterin.",
+  "Keep current settings": "Geçerli ayarları koru",
+  "Show my windows": "Pencerelerimi göster",
+  "Reset all app data": "Tüm uygulama verilerini sıfırla",
+  "Deletes local settings, profiles and notes after DesktopTools closes. Exported files stay where you saved them.": "DesktopTools kapandıktan sonra yerel ayarları, profilleri ve notları siler. Dışa aktarılan dosyalar kaydettiğiniz yerde kalır.",
+  "Delete app data": "Uygulama verilerini sil",
+  "Delete all local DesktopTools settings, profiles and notes? This cannot be undone. Files you exported elsewhere will remain.": "Tüm yerel DesktopTools ayarları, profilleri ve notları silinsin mi? Bu geri alınamaz. Başka yere dışa aktardığınız dosyalar kalır.",
+  "Could not remove all app data: ": "Tüm uygulama verileri kaldırılamadı: "
+}

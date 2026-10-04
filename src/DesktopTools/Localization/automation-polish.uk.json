@@ -1,0 +1,21 @@
+{
+  "Run": "Запустити",
+  "Select an action": "Виберіть дію",
+  "Action help": "Довідка про дію",
+  "Test action": "Перевірити дію",
+  "Automatic triggers": "Автоматичні тригери",
+  "Target window": "Цільове вікно",
+  "Leave blank to use the current window.": "Залиште порожнім, щоб використати поточне вікно.",
+  "Use a value from 0 to 10000.": "Вкажіть значення від 0 до 10000.",
+  "Daily at": "Щодня о",
+  "HH:mm; leave blank to disable.": "ГГ:хх; залиште порожнім, щоб вимкнути.",
+  "Triggers run while DesktopTools is open.": "Тригери спрацьовують, поки DesktopTools відкрито.",
+  "Esc to stop": "Esc — зупинити",
+  "Automation running": "Автоматизація виконується",
+  "Recording actions": "Запис дій",
+  "Recording starts in {0} seconds": "Запис почнеться через {0} с",
+  "Action {0} of {1}": "Дія {0} з {1}",
+  "Action {0}: {1}": "Дія {0}: {1}",
+  "No matching actions": "Немає відповідних дій",
+  "Try another search.": "Спробуйте інший запит."
+}

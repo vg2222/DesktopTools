@@ -1,0 +1,8 @@
+{
+  "Only hide from screen sharing (experimental)": "Yalnızca ekran paylaşımından gizle (deneysel)",
+  "Keep your desktop visible locally. Off: cover all displays in black for you too. Changing this stops active blackout.": "Masaüstünüzü yerel olarak görünür tutar. Kapalı: tüm ekranları sizin için de siyahla kaplar. Bunu değiştirmek etkin karartmayı durdurur.",
+  "Warning: your screen may still be visible in screen-sharing apps. We recommend checking the viewer's output before use. Sharing an individual application window may bypass this mode.": "Uyarı: ekranınız ekran paylaşım uygulamalarında yine de görünebilir. Kullanmadan önce izleyicideki görüntüyü kontrol etmenizi öneririz. Tek bir uygulama penceresini paylaşmak bu modu atlayabilir.",
+  "Applies to all connected displays. Press Escape to stop. This is not a security guarantee.": "Bağlı tüm ekranlara uygulanır. Durdurmak için Escape tuşuna basın. Bu bir güvenlik garantisi değildir.",
+  "Windows could not activate sharing blackout. Your screen may still be visible.": "Windows paylaşım karartmasını etkinleştiremedi. Ekranınız yine de görünebilir.",
+  "Warning: your screen may still be visible in screen-sharing apps. Check the viewer's output before using this mode. Press Escape to stop.": "Uyarı: ekranınız ekran paylaşım uygulamalarında yine de görünebilir. Bu modu kullanmadan önce izleyicideki görüntüyü kontrol edin. Durdurmak için Escape tuşuna basın."
+}

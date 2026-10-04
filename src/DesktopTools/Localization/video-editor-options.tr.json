@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "Önizleme oynatma hızı; dışa aktarma özgün hızı korur.",
+  "Preview speed": "Önizleme hızı",
+  "Resize editor settings": "Düzenleyici ayarlarını yeniden boyutlandır",
+  "Drag to resize editor settings": "Düzenleyici ayarlarını yeniden boyutlandırmak için sürükleyin",
+  "Audio volume": "Ses düzeyi",
+  "Export quality": "Dışa aktarma kalitesi",
+  "Standard": "Standart",
+  "Maximum": "En yüksek",
+  "Save current frame as PNG": "Geçerli kareyi PNG olarak kaydet",
+  "Save frame PNG": "Kareyi PNG kaydet",
+  "Saving frame…": "Kare kaydediliyor…",
+  "Frame saved as PNG.": "Kare PNG olarak kaydedildi.",
+  "Choose an audio volume between 0% and 200%.": "%0 ile %200 arasında bir ses düzeyi seçin.",
+  "Choose a valid output quality.": "Geçerli bir çıktı kalitesi seçin.",
+  "Save the frame as a PNG file.": "Kareyi PNG dosyası olarak kaydedin.",
+  "Choose a new filename. Existing images are not overwritten.": "Yeni bir dosya adı seçin. Var olan görüntülerin üzerine yazılmaz."
+}

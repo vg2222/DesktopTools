@@ -1,0 +1,12 @@
+{
+  "Translate locally with offline language packs.": "Перекладайте локально за допомогою офлайн-мовних пакетів.",
+  "Download offline packs": "Завантажити офлайн-пакети",
+  "Refresh Windows OCR languages": "Оновити мови OCR Windows",
+  "Download the offline language pack first.": "Спершу завантажте офлайн-мовний пакет.",
+  "Offline packs needed: {0:0} MB. Download once; your text stays on this PC.": "Потрібні офлайн-пакети: {0:0} МБ. Завантажте один раз; ваш текст залишається на цьому ПК.",
+  "Offline translation through English. Review the result.": "Офлайн-переклад через англійську. Перегляньте результат.",
+  "Offline packs ready. Your text stays on this PC.": "Офлайн-пакети готові. Ваш текст залишається на цьому ПК.",
+  "Downloading offline packs…": "Завантаження офлайн-пакетів…",
+  "Could not download offline packs: ": "Не вдалося завантажити офлайн-пакети: ",
+  "Installed Windows languages appear first. Extra offline languages require a one-time model download.": "Установлені мови Windows показано першими. Додаткові офлайн-мови потребують одноразового завантаження моделі."
+}

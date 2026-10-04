@@ -1,0 +1,21 @@
+{
+  "Run": "Executar",
+  "Select an action": "Selecione uma ação",
+  "Action help": "Ajuda da ação",
+  "Test action": "Testar ação",
+  "Automatic triggers": "Gatilhos automáticos",
+  "Target window": "Janela de destino",
+  "Leave blank to use the current window.": "Deixe em branco para usar a janela atual.",
+  "Use a value from 0 to 10000.": "Use um valor de 0 a 10000.",
+  "Daily at": "Diariamente às",
+  "HH:mm; leave blank to disable.": "HH:mm; deixe em branco para desativar.",
+  "Triggers run while DesktopTools is open.": "Os gatilhos são executados enquanto o DesktopTools estiver aberto.",
+  "Esc to stop": "Esc para parar",
+  "Automation running": "Automação em execução",
+  "Recording actions": "Gravando ações",
+  "Recording starts in {0} seconds": "A gravação começa em {0} segundos",
+  "Action {0} of {1}": "Ação {0} de {1}",
+  "Action {0}: {1}": "Ação {0}: {1}",
+  "No matching actions": "Nenhuma ação correspondente",
+  "Try another search.": "Tente outra pesquisa."
+}

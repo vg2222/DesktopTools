@@ -1,0 +1,19 @@
+{
+  "Save as": "Farklı kaydet",
+  "MP4 video": "MP4 videosu",
+  "GIF animation": "GIF animasyonu",
+  "Animated WebP": "Animasyonlu WebP",
+  "Frames per second": "Saniyedeki kare",
+  "Maximum width": "En büyük genişlik",
+  "Original": "Özgün",
+  "Export GIF": "GIF dışa aktar",
+  "Export WebP": "WebP dışa aktar",
+  "GIF animation|*.gif": "GIF animasyonu|*.gif",
+  "Animated WebP|*.webp": "Animasyonlu WebP|*.webp",
+  "Estimating file size…": "Dosya boyutu tahmin ediliyor…",
+  "Up to about {0} · {1} × {2} px · {3} frames": "En fazla yaklaşık {0} · {1} × {2} px · {3} kare",
+  "The size could not be estimated.": "Boyut tahmin edilemedi.",
+  "Save the animation as a {0} file.": "Animasyonu bir {0} dosyası olarak kaydedin.",
+  "Choose a new filename. Existing files are not overwritten.": "Yeni bir dosya adı seçin. Var olan dosyaların üzerine yazılmaz.",
+  "This animation would be too large to build. Shorten the clip, lower the frame rate or choose a smaller width.": "Bu animasyon oluşturulamayacak kadar büyük olurdu. Klibi kısaltın, kare hızını düşürün veya daha küçük bir genişlik seçin."
+}

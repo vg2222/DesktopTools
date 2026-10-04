@@ -1,0 +1,15 @@
+{
+  "Sound": "Звук",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Для кодування використовується відеокарта. Вимкніть, якщо запис гальмує.",
+  "Start at playhead": "Початок на позначці відтворення",
+  "End at playhead": "Кінець на позначці відтворення",
+  "Resume": "Продовжити",
+  "Lock in place (click through)    Ctrl+L": "Зафіксувати на місці (кліки проходять крізь)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Закріплені знімки екрана розблоковано.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "Знімок екрана заблоковано: кліки проходять крізь нього. Щоб розблокувати, клацніть правою кнопкою значок DesktopTools у треї й виберіть «Розблокувати закріплені знімки екрана».",
+  "Unlock": "Розблокувати",
+  "Close screenshot": "Закрити знімок екрана",
+  "Unlock pinned screenshots": "Розблокувати закріплені знімки екрана",
+  "Close pinned screenshots": "Закрити закріплені знімки екрана",
+  "A pinned screenshot is locked and ignores the mouse.": "Закріплений знімок екрана заблоковано, він ігнорує мишу."
+}

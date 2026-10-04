@@ -1,0 +1,14 @@
+{
+  "All tools are ready to open. Shortcuts can be switched on or off without hiding a tool.": "Усі інструменти готові до відкриття. Комбінації клавіш можна вмикати й вимикати, не ховаючи інструмент.",
+  "All tools are ready to open. None starts automatically; choose shortcuts on the next page.": "Усі інструменти готові до відкриття. Жоден не запускається автоматично; виберіть комбінації клавіш на наступній сторінці.",
+  "Ready when you need it.": "Готово, коли знадобиться.",
+  "Explore your tools": "Дослідіть свої інструменти",
+  "Tools available": "Доступні інструменти",
+  "Using the wheel": "Користування колесом",
+  "How it works": "Як це працює",
+  "Original state is restored when DesktopTools closes.": "Початковий стан відновлюється, коли DesktopTools закривається.",
+  "Some shortcuts could not start": "Деякі комбінації клавіш не вдалося запустити",
+  "The other shortcuts still work. Close any app using these keys, then retry, or choose different keys below.": "Інші комбінації працюють. Закрийте програму, що використовує ці клавіші, потім повторіть спробу або виберіть інші клавіші нижче.",
+  "Retry shortcuts": "Повторити комбінації",
+  "All enabled shortcuts are ready.": "Усі ввімкнені комбінації клавіш готові."
+}

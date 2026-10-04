@@ -1,0 +1,7 @@
+{
+  "Screen recording is unavailable until Microsoft Visual C++ x64 is installed.": "安装 Microsoft Visual C++ x64 之前，屏幕录制不可用。",
+  "Local translation needs Microsoft Visual C++ x64. Install it to use offline translation. Screen text scanning still works.": "本地翻译需要 Microsoft Visual C++ x64。请安装以使用离线翻译。屏幕文字扫描仍可使用。",
+  "Local translation is unavailable until Microsoft Visual C++ x64 is installed.": "安装 Microsoft Visual C++ x64 之前，本地翻译不可用。",
+  "Background removal needs Microsoft Visual C++ x64. Other image editing tools still work.": "背景移除需要 Microsoft Visual C++ x64。其他图像编辑工具仍可使用。",
+  "Background removal is unavailable until Microsoft Visual C++ x64 is installed.": "安装 Microsoft Visual C++ x64 之前，背景移除不可用。"
+}

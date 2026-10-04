@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "Prędkość odtwarzania podglądu; eksport zachowuje oryginalną prędkość.",
+  "Preview speed": "Prędkość podglądu",
+  "Resize editor settings": "Zmień rozmiar ustawień edytora",
+  "Drag to resize editor settings": "Przeciągnij, aby zmienić rozmiar ustawień edytora",
+  "Audio volume": "Głośność dźwięku",
+  "Export quality": "Jakość eksportu",
+  "Standard": "Standardowa",
+  "Maximum": "Maksymalna",
+  "Save current frame as PNG": "Zapisz bieżącą klatkę jako PNG",
+  "Save frame PNG": "Zapisz klatkę jako PNG",
+  "Saving frame…": "Zapisywanie klatki…",
+  "Frame saved as PNG.": "Zapisano klatkę jako PNG.",
+  "Choose an audio volume between 0% and 200%.": "Wybierz głośność dźwięku od 0% do 200%.",
+  "Choose a valid output quality.": "Wybierz prawidłową jakość wyjściową.",
+  "Save the frame as a PNG file.": "Zapisz klatkę jako plik PNG.",
+  "Choose a new filename. Existing images are not overwritten.": "Wybierz nową nazwę pliku. Istniejące obrazy nie są zastępowane."
+}
