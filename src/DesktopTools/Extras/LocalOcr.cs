@@ -38,7 +38,78 @@ public static class LocalOcr
         return languages.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Reads the text of an image. The picture is read as it is and again as a polarity-neutral "ink" map (which rescues light-on-dark and coloured
+    /// text), at a magnification chosen from the size of the text, in overlapping tiles so large screenshots work too. The better reading wins
+    /// and anything only the other one found is added. If the enhanced path fails the plain single-pass reading is used.
+    /// </summary>
     public static async Task<string> RecognizeAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        try { return await RecognizeEnhancedAsync(image, languageTag, cancellationToken); }
+        catch (OperationCanceledException) { throw; }
+        catch (SensitiveDataAnalysisException) when (image.PixelWidth > OcrEngine.MaxImageDimension || image.PixelHeight > OcrEngine.MaxImageDimension)
+        { throw new InvalidOperationException(L.F($"Crop the screenshot to at most {OcrEngine.MaxImageDimension} pixels on each side before extracting text.")); }
+        catch (Exception) when (image.PixelWidth <= OcrEngine.MaxImageDimension && image.PixelHeight <= OcrEngine.MaxImageDimension)
+        { return await RecognizeSinglePassAsync(image, languageTag, cancellationToken); }
+    }
+
+    internal static async Task<string> RecognizeEnhancedAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken)
+    {
+        var readings = new List<IReadOnlyList<OcrEnhancer.Line>>();
+        // Pass 1 at 2x also tells how large the text is. Tiny UI text is read again at a higher magnification.
+        var plain = await RecognizeLayoutAtScaleAsync(image, languageTag, 2, cancellationToken);
+        readings.Add(OcrEnhancer.Lines(plain));
+        double height = OcrEnhancer.MedianWordHeight(plain);
+        int scale = height > 0 && height < 18 ? Math.Min(4, (int)Math.Ceiling(OcrEnhancer.TargetTextHeight / height)) : 2;
+        bool inkable = (long)image.PixelWidth * image.PixelHeight <= 20_000_000;
+        var ink = inkable ? OcrEnhancer.InkMap(image) : null;
+        async Task ReadAsync(string tag, bool first)
+        {
+            if (!first || scale > 2) readings.Add(OcrEnhancer.Lines(await RecognizeLayoutAtScaleAsync(image, tag, scale, cancellationToken)));
+            if (ink != null) readings.Add(OcrEnhancer.Lines(await RecognizeLayoutAtScaleAsync(ink, tag, scale, cancellationToken)));
+        }
+        await ReadAsync(languageTag, first: true);
+        var lines = OcrEnhancer.Select(readings);
+
+        // A page that mixes alphabets (Cyrillic UI with Latin file names, for example) is misread in whole lines by an engine that does not know
+        // the other alphabet. Read it with one installed language of another script too and take over only the lines that clearly belong to it.
+        var primary = OcrEnhancer.ScriptOfLanguage(languageTag);
+        var other = Languages.FirstOrDefault(l => OcrEnhancer.ScriptOfLanguage(l.Tag) != primary);
+        if (other != null)
+        {
+            var otherScript = OcrEnhancer.ScriptOfLanguage(other.Tag);
+            var secondary = new List<IReadOnlyList<OcrEnhancer.Line>>();
+            var saved = readings.ToList(); readings.Clear();
+            await ReadAsync(other.Tag, first: false);
+            secondary.AddRange(readings); readings.Clear(); readings.AddRange(saved);
+            // The other engine reads every alphabet it does not know as look-alike garbage, so its lines only replace ours where they are
+            // clearly in its own alphabet and clearly more word-like than what we read in the same place.
+            var foreign = OcrEnhancer.Select(secondary).Where(l => OcrEnhancer.ScriptShare(l.Text, otherScript) >= .7 && OcrEnhancer.WordLikeness(l.Text) is >= .28).ToList();
+            if (foreign.Count > 0)
+            {
+                bool Overlaps(OcrEnhancer.Line a, OcrEnhancer.Line b)
+                {
+                    var overlap = Rect.Intersect(a.Bounds, b.Bounds);
+                    return !overlap.IsEmpty && overlap.Width * overlap.Height / Math.Max(1, a.Bounds.Width * a.Bounds.Height) > .5;
+                }
+                var replaced = new HashSet<OcrEnhancer.Line>(); var added = new List<OcrEnhancer.Line>();
+                foreach (var f in foreign)
+                {
+                    var mine = lines.Where(own => Overlaps(own, f) || Overlaps(f, own)).ToArray();
+                    double mineLike = mine.Select(m => OcrEnhancer.WordLikeness(m.Text) ?? 0).DefaultIfEmpty(0).Average();
+                    if (OcrEnhancer.WordLikeness(f.Text)!.Value < mineLike + .08) continue;
+                    foreach (var m in mine) replaced.Add(m);
+                    added.Add(f);
+                }
+                lines = lines.Where(own => !replaced.Contains(own)).Concat(added).ToArray();
+            }
+        }
+        return OcrEnhancer.Compose(lines);
+    }
+
+    /// <summary>The original reading: the whole image once, at native size. Kept as the fallback and as the baseline for quality checks.</summary>
+    internal static async Task<string> RecognizeSinglePassAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var engine = OcrEngine.TryCreateFromLanguage(new Language(languageTag))
@@ -63,11 +134,15 @@ public static class LocalOcr
     public static async Task<OcrLayout> RecognizeLayoutAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
     {
         var primary = await RecognizeLayoutAtScaleAsync(image, languageTag, 2, cancellationToken);
+        // Dark themes: read the polarity-neutral ink map as well and keep both readings, so light-on-dark secrets are not missed.
+        OcrLayout? inkReading = null;
+        if ((long)image.PixelWidth * image.PixelHeight <= 20_000_000 && OcrEnhancer.IsMostlyDark(image))
+            inkReading = await RecognizeLayoutAtScaleAsync(OcrEnhancer.InkMap(image), languageTag, 2, cancellationToken);
+        bool plainIsEnough = primary.Words.Count > 0 && !primary.Words.Any(w => w.Text.Length >= 3 && w.Bounds.Height <= 12);
         // Tiny code/UI glyphs can be read differently at another sampling size.
         // Retain independent line variants so detection can use either reading;
         // do not overwrite a correctly read word with a longer OCR mistake.
-        if (primary.Words.Count > 0 && !primary.Words.Any(w => w.Text.Length >= 3 && w.Bounds.Height <= 12)) return primary;
-        var extra = await RecognizeLayoutAtScaleAsync(image, languageTag, 3, cancellationToken);
+        if (plainIsEnough && inkReading == null) return primary;
         var words = primary.Words.ToList();
         void Append(OcrLayout reading, int y = 0, int x = 0)
         {
@@ -77,7 +152,9 @@ public static class LocalOcr
             words.AddRange(reading.Words.Select(w => w with { LineIndex = w.LineIndex + firstLine,
                 Bounds = new Rect(w.Bounds.X + x, w.Bounds.Y + y, w.Bounds.Width, w.Bounds.Height) }));
         }
-        Append(extra);
+        if (inkReading != null) Append(inkReading);
+        if (plainIsEnough) return primary with { Words = words };
+        Append(await RecognizeLayoutAtScaleAsync(image, languageTag, 3, cancellationToken));
         // Windows OCR sometimes discards tiny words within a mixed-size page,
         // but reads them when the surrounding page layout is removed. Re-read
         // narrow physical rows independently; retain their original geometry.
@@ -141,15 +218,7 @@ public static class LocalOcr
                 int x = column * step, y = row * step;
                 cancellationToken.ThrowIfCancellationRequested();
                 var tile = new CroppedBitmap(image, new Int32Rect(x, y, Math.Min(tileSize, image.PixelWidth - x), Math.Min(tileSize, image.PixelHeight - y)));
-                var enlarged = new TransformedBitmap(tile, new ScaleTransform(recognitionScale, recognitionScale));
-                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(enlarged));
-                using var memory = new MemoryStream(); encoder.Save(memory);
-                using var stream = new InMemoryRandomAccessStream();
-                using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
-                { writer.WriteBytes(memory.ToArray()); await writer.StoreAsync(); await writer.FlushAsync(); }
-                stream.Seek(0);
-                var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(stream);
-                using var bitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore);
+                using var bitmap = OcrEnhancer.ToSoftwareBitmap(OcrEnhancer.Enlarge(tile, recognitionScale));
                 var result = await engine.RecognizeAsync(bitmap).AsTask(cancellationToken);
                 foreach (var nativeLine in result.Lines)
                 {

@@ -189,3 +189,9 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Diagnostics: Copy report and paste it somewhere private; the user name, computer name, paths, e-mail and IP addresses must be replaced.
 - Languages: switch to each of Ukrainian, Chinese, Portuguese, Japanese, Polish, Turkish and Italian, restart, and check the main pages, the screenshot editor, the recorder and the installer language menu for clipped or wrapped text. These translations have not had a native-speaker review.
 - ARM64: `./scripts/publish.ps1 -Runtime win-arm64` produces an ARM64 portable folder. It was built and its binaries checked for the ARM64 machine type but **not run on ARM hardware**; start it on a Windows 11 ARM device and repeat the recorder, OCR, translation and background-removal checks.
+
+## Editor polish, library entry and OCR (1.3)
+
+- Screenshot editor: in both themes the Draw, Style and Hide data tabs show an icon above a readable label. Turn on the presentation background in Style: the canvas itself shows the gradient, rounded corners, shadow and window bar while you draw. Draw a long pen stroke on a 4K screenshot; it must follow the pointer without lag. Press Check screenshot: a rainbow rim runs around the picture and a light bar sweeps over it until the check is done (a still rim with animations off). The view-original button switches between a picture icon and a pen icon.
+- Screenshot library: a Screenshot library card sits under Capture tools on Home and opens the search even before the library is enabled; its settings page has the switch, limit and Clear library.
+- OCR: scan or extract text from a dark-theme window with small text, from a page that mixes two alphabets, and from a plain light page; compare with the previous release. Check Check screenshot on a dark-theme screenshot that contains an e-mail address and a key.
