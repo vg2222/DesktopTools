@@ -21,7 +21,7 @@ internal sealed partial class AppController
             machine.Hide(); overlay?.Hide(); Palette?.Hide();
             OpenAutoRedactReview(image); return;
         }
-        LastCapture = image; CaptureHistory.Add(image);
+        LastCapture = image; RememberCapture(image);
         if (Settings.CaptureOutput == "Save") SaveLast();
         else { await CopyAsync(image); ShowCaptureNotice(); }
     }
@@ -48,7 +48,7 @@ internal sealed partial class AppController
             _ => false
         };
         if (!success || disposed || cancellationToken.IsCancellationRequested) return false;
-        LastCapture = image; CaptureHistory.Add(image); ShowCaptureNotice(); return true;
+        LastCapture = image; RememberCapture(image); ShowCaptureNotice(); return true;
     }
     private void CloseScreenshotReviews() { foreach (var review in screenshotReviews.ToArray()) review.Close(); screenshotReviews.Clear(); }
 }

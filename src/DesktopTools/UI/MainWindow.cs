@@ -471,6 +471,15 @@ internal sealed partial class MainWindow : Window
         else recent.Children.Add(Ui.Button(L.T("Clear recent screenshots"), () => { controller.CaptureHistory.Clear(); Navigate("Capture"); }));
 
         Group(L.T("Recent screenshots"), recent);
+        var libraryLimit = Ui.Choice(new[] { "100", "300", "1000" }, s.ScreenshotLibraryLimit.ToString(), v => Change(x => x.ScreenshotLibraryLimit = int.Parse(v)), translate: false);
+        libraryLimit.MinWidth = 100;
+        var openLibrary = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary);
+        var clearLibrary = Ui.Button(L.T("Clear library"), () => { if (ConfirmationDialog.Ask(this, L.T("Clear library"), L.T("Delete every screenshot and its searchable text from the library? Files you saved elsewhere are not touched."), L.T("Clear library"))) controller.Library.Clear(); }, ButtonKind.Danger);
+        var libraryActions = new WrapPanel(); libraryActions.Children.Add(openLibrary); libraryActions.Children.Add(clearLibrary);
+        Group(L.T("Screenshot library"),
+            Ui.Row(L.T("Keep a searchable library"), L.T("Stores finished screenshots and the text found in them on this PC only, so you can search for something you saw last week. Off by default."), Ui.Toggle(s.ScreenshotLibraryEnabled, v => Change(x => x.ScreenshotLibraryEnabled = v))),
+            Ui.Row(L.T("Screenshots to keep"), L.T("The oldest are removed when the library is full."), libraryLimit),
+            libraryActions);
 
     }
 

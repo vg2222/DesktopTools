@@ -37,6 +37,9 @@ public sealed class AppSettings
     public string ScreenTextShortcut { get; set; } = "Ctrl+Alt+E";
     public string TranslationDirection { get; set; } = "en-ru";
     public string ScreenTextLanguage { get; set; } = "en-US";
+    /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
+    public bool ScreenshotLibraryEnabled { get; set; }
+    public int ScreenshotLibraryLimit { get; set; } = 300;
     public bool QuickWheelEnabled { get; set; } = true;
     public string QuickWheelShortcut { get; set; } = "Ctrl+Alt+Q";
     public string[] QuickWheelItems { get; set; } = QuickWheelActions.Defaults;

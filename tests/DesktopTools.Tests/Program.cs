@@ -152,6 +152,7 @@ internal static class Program
         }));
         Test("Notes persistence, recovery and bounds", NotesStoreTests.Run);
         Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
+        Test("Screenshot library searches, prunes, recovers and clears", ScreenshotLibraryTests.Run);
         Test("History restores erased objects and undoable clear", () =>
         {
             var doc = new AnnotationDocument(); var a = new Annotation(); var b = new Annotation { Kind = AnnotationKind.Text, Text = "hello" };

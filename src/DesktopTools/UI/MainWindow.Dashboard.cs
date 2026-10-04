@@ -139,7 +139,10 @@ internal sealed partial class MainWindow
         }
         normal.Children.Add(groups);
         Motion.Stagger(groups.Children.OfType<FrameworkElement>(), 45);
-        var recentTitle = Ui.Text(L.T("Recent screenshots"), 17, true); recentTitle.Margin = new Thickness(0, 14, 0, 12); normal.Children.Add(recentTitle);
+        var recentHeader = new DockPanel { Margin = new Thickness(0, 14, 0, 12) };
+        var searchAll = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary, ButtonKind.Ghost, 12);
+        DockPanel.SetDock(searchAll, Dock.Right); searchAll.Visibility = controller.Settings.ScreenshotLibraryEnabled || controller.Library.Index.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        recentHeader.Children.Add(searchAll); recentHeader.Children.Add(Ui.Text(L.T("Recent screenshots"), 17, true)); normal.Children.Add(recentHeader);
         var recent = new UniformGrid { Columns = 3, Margin = new Thickness(0, 0, -10, 0) };
         foreach (var entry in controller.CaptureHistory.Entries.Take(3))
         {
