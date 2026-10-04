@@ -471,6 +471,14 @@ internal sealed partial class MainWindow : Window
         else recent.Children.Add(Ui.Button(L.T("Clear recent screenshots"), () => { controller.CaptureHistory.Clear(); Navigate("Capture"); }));
 
         Group(L.T("Recent screenshots"), recent);
+        LibrarySettingsGroup();
+
+    }
+
+    /// <summary>The opt-in screenshot library switch, size limit and the Search / Clear buttons; shown on the Capture page and on the library tool's own page.</summary>
+    private void LibrarySettingsGroup()
+    {
+        var s = controller.Settings;
         var libraryLimit = Ui.Choice(new[] { "100", "300", "1000" }, s.ScreenshotLibraryLimit.ToString(), v => Change(x => x.ScreenshotLibraryLimit = int.Parse(v)), translate: false);
         libraryLimit.MinWidth = 100;
         var openLibrary = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary);
@@ -480,7 +488,6 @@ internal sealed partial class MainWindow : Window
             Ui.Row(L.T("Keep a searchable library"), L.T("Stores finished screenshots and the text found in them on this PC only, so you can search for something you saw last week. Off by default."), Ui.Toggle(s.ScreenshotLibraryEnabled, v => Change(x => x.ScreenshotLibraryEnabled = v))),
             Ui.Row(L.T("Screenshots to keep"), L.T("The oldest are removed when the library is full."), libraryLimit),
             libraryActions);
-
     }
 
     private void Present()

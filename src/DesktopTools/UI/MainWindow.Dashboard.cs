@@ -25,6 +25,7 @@ internal sealed partial class MainWindow
             new("capture", "Region capture", "Capture tools", "Capture", "Select, edit, and share a screenshot.", () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(); }, () => controller.Settings.CaptureEnabled, "Capture"),
             new("record", "Screen recorder", "Capture tools", "Record", "Record a monitor or region to MP4.", controller.OpenScreenRecorder, () => controller.Settings.ScreenRecorderEnabled, "Utilities"),
             new("pin", "Pin screenshot", "Capture tools", "Pin", "Pin above applications", controller.PinLast, () => controller.LastCapture != null, "Capture"),
+            new("library", "Screenshot library", "Capture tools", "Search", "Search text in screenshots", controller.OpenScreenshotLibrary, () => true, "Capture"),
             new("guide", "Step-by-step guide", "Capture tools", "Image", "Turn screenshots into one numbered guide.", controller.OpenStepGuide, () => controller.Settings.CaptureEnabled, "Capture"),
             new("draw", "Screen drawing", "Presentation tools", "Pen", "Annotate over any application.", () => { Hide(); controller.ToggleDraw(); }, () => controller.Settings.DrawingEnabled, "Draw"),
             new("laser", "Laser pointer", "Presentation tools", "Laser", "Guide attention with a laser, spotlight, or frozen screen.", () => { Hide(); controller.TogglePresentation("Laser"); }, () => controller.Settings.LaserEnabled, "Laser pointer"),
