@@ -151,6 +151,7 @@ internal static class Program
             Check(loaded.RecordingQuality == "Balanced" && loaded.RecordingFramesPerSecond == 30);
         }));
         Test("Notes persistence, recovery and bounds", NotesStoreTests.Run);
+        Test("Diagnostic report hides personal details", DiagnosticReportTests.Run);
         Test("Portable data export, validation and import", PortableDataTests.Run);
         Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
         Test("Screenshot library searches, prunes, recovers and clears", ScreenshotLibraryTests.Run);
