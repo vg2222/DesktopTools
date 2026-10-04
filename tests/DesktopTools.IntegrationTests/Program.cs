@@ -54,6 +54,8 @@ internal static class Program
                 else if (args.Contains("--release-polish-only")) await Test("Release window, setup and recorder corrections", ReleasePolishChecks.RunAsync);
                 else if (args.Contains("--codec-compatibility-only")) await Test("Generated codec import and trimmed exports", CodecCompatibilityChecks.RunAsync);
                 else if (args.Contains("--record-sustained-only")) await Test("Sustained numbered recording", RecordingThroughputChecks.RunSustainedAsync);
+                else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);
+                else if (args.Contains("--record-probe")) await Test("Full-display recording probe", RecordingProbe.RunAsync);
                 else if (args.Contains("--record-display-only")) await Test("MSI display recording with regular source painting", RecordingThroughputChecks.RunDisplayAsync);
                 else if (args.Contains("--record-primary-display-only")) await Test("Primary display recording with regular source painting", RecordingThroughputChecks.RunPrimaryDisplayAsync);
                 else if (args.Contains("--record-throughput-only")) await Test("Numbered recording frames and sustained capture", RecordingThroughputChecks.RunAsync);

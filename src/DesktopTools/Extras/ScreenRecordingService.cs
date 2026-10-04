@@ -5,8 +5,13 @@ using System.Windows;
 
 namespace DesktopTools.Extras;
 
+/// <summary>Encoder/capture experiments for the recording probe; null in the app so the defaults below apply.</summary>
+internal sealed record RecordingTuning(RecorderApi? Api = null, bool? DisableThrottling = null, bool? LowLatency = null, int? BitrateKbps = null,
+    H264BitrateControlMode? BitrateMode = null, H264Profile? Profile = null, bool? FixedFramerate = null, int? Quality = null, string? LogPath = null);
+
 internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
 {
+    internal static RecordingTuning? Tuning { get; set; }
     private Recorder? recorder;
     private Task? disposal;
     private readonly object recorderGate = new();
@@ -26,21 +31,26 @@ internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
     internal event Action<string>? StatusChanged;
     internal Task<string> Start(MonitorInfo monitor, Rect? region, string path, bool microphone, bool systemAudio, int framesPerSecond = 30, string quality = "Balanced", bool hardwareAcceleration = true)
     {
-        var source = new DisplayRecordingSource(monitor.Id) { RecorderApi = RecorderApi.WindowsGraphicsCapture, IsCursorCaptureEnabled = true, IsBorderRequired = true };
+        var source = new DisplayRecordingSource(monitor.Id) { RecorderApi = Tuning?.Api ?? RecorderApi.DesktopDuplication, IsCursorCaptureEnabled = true, IsBorderRequired = true };
+        var pixels = new System.Windows.Size(monitor.Bounds.Width, monitor.Bounds.Height);
         if (region is Rect area)
         {
             if (area.IsEmpty || area.X < 0 || area.Y < 0 || area.Width < 2 || area.Height < 2 || area.Right > monitor.Bounds.Width || area.Bottom > monitor.Bounds.Height)
                 throw new ArgumentOutOfRangeException(nameof(region));
             source.SourceRect = new ScreenRect(area.X, area.Y, area.Width, area.Height);
+            pixels = new System.Windows.Size(area.Width, area.Height);
         }
-        return StartSource(source, path, microphone, systemAudio, framesPerSecond, quality, hardwareAcceleration);
+        return StartSource(source, path, microphone, systemAudio, framesPerSecond, quality, hardwareAcceleration, pixels);
     }
-    internal Task<string> StartSource(RecordingSourceBase source, string path, bool microphone = false, bool systemAudio = false, int framesPerSecond = 30, string quality = "Balanced", bool hardwareAcceleration = true)
+    internal Task<string> StartSource(RecordingSourceBase source, string path, bool microphone = false, bool systemAudio = false, int framesPerSecond = 30, string quality = "Balanced", bool hardwareAcceleration = true, System.Windows.Size? pixelSize = null)
     {
         if (Active) throw new InvalidOperationException("Recording already active.");
         disposal = null;
         if (framesPerSecond is not (24 or 30 or 60 or 90 or 120 or 144)) throw new ArgumentOutOfRangeException(nameof(framesPerSecond));
         int encoderQuality = QualityValue(quality);
+        // The Microsoft software H.264 encoder manages roughly 20-30 frames per second at 1080p. Asking it for more only fills the file
+        // with repeated frames (a 144 FPS label over choppy video), so cap its target.
+        if (!hardwareAcceleration) framesPerSecond = Math.Min(framesPerSecond, 30);
         ValidateAudioSources(microphone, systemAudio);
         stopping = userPaused = sourceSuspended = false;
         StopReason = null;
@@ -51,39 +61,64 @@ internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
         var sources = new List<AudioSourceBase>();
         if (microphone) sources.Add(CaptureAudioSource.Default);
         if (systemAudio) sources.Add(LoopbackAudioSource.Default);
-        var options = new RecorderOptions
+        System.Windows.Size size = pixelSize ?? (source is WindowRecordingSource windowSource ? WindowSize(windowSource.Handle) : new System.Windows.Size(1920, 1080));
+        RecorderOptions BuildOptions() => new()
         {
             SourceOptions = new SourceOptions { RecordingSources = new List<RecordingSourceBase> { source } },
             AudioOptions = new AudioOptions { IsAudioEnabled = sources.Count > 0, AudioSources = sources },
-            // A static desktop may not deliver another capture frame for seconds.
-            // Keep media time advancing so a still screen produces a usable clip.
-            // Fixed pacing duplicates stale WGC frames while the encoder is busy and
-            // can make the reported FPS look higher than the captured motion. Let
-            // arriving frames set timestamps, capped by the requested target.
-            VideoEncoderOptions = new VideoEncoderOptions { Framerate = framesPerSecond, Quality = encoderQuality, IsFixedFramerate = false,
-                IsHardwareEncodingEnabled = hardwareAcceleration,
-                Encoder = new H264VideoEncoder { BitrateMode = H264BitrateControlMode.Quality }, IsFragmentedMp4Enabled = false },
+            // A static desktop may not deliver another capture frame for seconds, so frames keep the timestamp
+            // they arrive with (variable frame rate) instead of being repeated to fill a fixed rate.
+            VideoEncoderOptions = VideoOptions(framesPerSecond, encoderQuality, hardwareAcceleration, size, quality),
+            LogOptions = Tuning?.LogPath is { } log ? new LogOptions { IsLogEnabled = true, LogFilePath = log, LogSeverityLevel = LogLevel.Debug } : new LogOptions { IsLogEnabled = false },
             OutputOptions = new OutputOptions { RecorderMode = RecorderMode.Video }
         };
         completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         var currentCompletion = completion; string currentStaging = staging, currentDestination = destination;
         RecordingWindowInfo? refreshSource = source is WindowRecordingSource selectedWindow ? RecordingWindows.Identify(selectedWindow.Handle) : null;
-        recorder = Recorder.CreateRecorder(options);
-        recorder.OnRecordingComplete += (_, _) =>
+        bool duplication = source is DisplayRecordingSource { RecorderApi: RecorderApi.DesktopDuplication }, fellBack = false;
+        void Launch()
         {
-            StopStartupRefresh();
-            if (!stopping && refreshSource != null && !RecordingWindows.IsSameWindow(refreshSource))
-                StopReason = "Source window closed. Recording stopped.";
-            lock (clockGate) elapsed.Stop();
-            _ = FinalizeAsync(currentStaging, currentDestination, currentCompletion);
-        };
-        recorder.OnRecordingFailed += (_, e) => { StopStartupRefresh(); lock (clockGate) elapsed.Stop(); currentCompletion.TrySetException(new IOException(e.Error + "\n" + L.T("Temporary recording: ") + currentStaging)); };
-        recorder.OnStatusChanged += (_, e) =>
-        {
-            string next = e.Status.ToString();
-            lock (clockGate) { status = next; if (next == "Recording" && !stopping) elapsed.Start(); else elapsed.Stop(); }
-            StatusChanged?.Invoke(next);
-        };
+            var created = Recorder.CreateRecorder(BuildOptions());
+            recorder = created;
+            created.OnRecordingComplete += (_, _) =>
+            {
+                StopStartupRefresh();
+                if (!stopping && refreshSource != null && !RecordingWindows.IsSameWindow(refreshSource))
+                    StopReason = "Source window closed. Recording stopped.";
+                lock (clockGate) elapsed.Stop();
+                _ = FinalizeAsync(currentStaging, currentDestination, currentCompletion);
+            };
+            created.OnRecordingFailed += (_, e) =>
+            {
+                StopStartupRefresh();
+                // Desktop Duplication can refuse a display (some remote sessions, GPU switching). Retry once with
+                // Windows Graphics Capture if it failed before producing a usable clip.
+                if (duplication && !fellBack && !stopping && Elapsed < TimeSpan.FromSeconds(3) && source is DisplayRecordingSource display)
+                {
+                    fellBack = true; display.RecorderApi = RecorderApi.WindowsGraphicsCapture;
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            created.Dispose();
+                            try { File.Delete(currentStaging); } catch (IOException) { }
+                            lock (recorderGate) { if (stopping) return; Launch(); recorder!.Record(currentStaging); }
+                        }
+                        catch (Exception ex) { currentCompletion.TrySetException(ex); }
+                    });
+                    return;
+                }
+                lock (clockGate) elapsed.Stop();
+                currentCompletion.TrySetException(new IOException(e.Error + "\n" + L.T("Temporary recording: ") + currentStaging));
+            };
+            created.OnStatusChanged += (_, e) =>
+            {
+                string next = e.Status.ToString();
+                lock (clockGate) { status = next; if (next == "Recording" && !stopping) elapsed.Start(); else elapsed.Stop(); }
+                StatusChanged?.Invoke(next);
+            };
+        }
+        Launch();
         try
         {
             CancellationToken refreshToken = default;
@@ -92,7 +127,7 @@ internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
                 startupRefresh = new CancellationTokenSource();
                 refreshToken = startupRefresh.Token;
             }
-            recorder.Record(staging);
+            recorder!.Record(staging);
             if (refreshSource != null && !completion.Task.IsCompleted) _ = WatchWindowAsync(refreshSource, refreshToken);
             return completion.Task;
         }
@@ -104,6 +139,35 @@ internal sealed class ScreenRecordingService : IDisposable, IAsyncDisposable
                 CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
             throw;
         }
+    }
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)] private struct NativeRect { public int Left, Top, Right, Bottom; }
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool GetWindowRect(nint handle, out NativeRect rect);
+    private static System.Windows.Size WindowSize(nint handle) =>
+        GetWindowRect(handle, out var r) && r.Right > r.Left && r.Bottom > r.Top ? new System.Windows.Size(r.Right - r.Left, r.Bottom - r.Top) : new System.Windows.Size(1920, 1080);
+    /// <summary>
+    /// Average video bitrate in kbit/s. The encoder's own "quality" mode gave about 2 Mbit/s for 1440p, which smears anything that
+    /// moves; a size-and-rate based target keeps text and motion clean. Rates above 60 FPS count at half weight because
+    /// consecutive frames are more alike.
+    /// </summary>
+    internal static int BitrateKbps(System.Windows.Size size, int framesPerSecond, string quality)
+    {
+        double effectiveFps = framesPerSecond <= 60 ? framesPerSecond : 60 + (framesPerSecond - 60) * 0.5;
+        double bitsPerPixel = quality switch { "Economy" => 0.04, "Balanced" => 0.07, "High" => 0.12, _ => throw new ArgumentOutOfRangeException(nameof(quality)) };
+        double kbps = size.Width * size.Height * effectiveFps * bitsPerPixel / 1000;
+        return (int)Math.Clamp(Math.Round(kbps / 100) * 100, 4000, 80000);
+    }
+    private static VideoEncoderOptions VideoOptions(int framesPerSecond, int quality, bool hardware, System.Windows.Size size, string qualityName)
+    {
+        var t = Tuning;
+        var encoder = new H264VideoEncoder { BitrateMode = t?.BitrateMode ?? H264BitrateControlMode.UnconstrainedVBR };
+        if (t?.Profile is { } profile) encoder.EncoderProfile = profile;
+        var options = new VideoEncoderOptions { Framerate = framesPerSecond, Quality = t?.Quality ?? quality, IsFixedFramerate = t?.FixedFramerate ?? false,
+            IsHardwareEncodingEnabled = hardware, Encoder = encoder, IsFragmentedMp4Enabled = false, Bitrate = (t?.BitrateKbps ?? BitrateKbps(size, framesPerSecond, qualityName)) * 1000 };
+        // The sink writer's throttling made the encoder skip bursts of frames (visible as stalls of 100-200 ms, worst with audio at 1440p).
+        // A hardware encoder keeps up, so let every captured frame through; the software encoder would only queue them, so it stays throttled.
+        options.IsThrottlingDisabled = t?.DisableThrottling ?? hardware;
+        if (t?.LowLatency is { } low) options.IsLowLatencyEnabled = low;
+        return options;
     }
     internal static void ValidateAudioSources(bool microphone, bool systemAudio)
     {

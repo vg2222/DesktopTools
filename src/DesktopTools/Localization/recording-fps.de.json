@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "Die Bildrate ist ein Zielwert. Ein Bildschirm oder Bereich wird mit der Bildrate des Monitors aufgenommen, ein einzelnes Fenster mit höchstens etwa 48 FPS.",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "Kodiert mit der Grafikkarte. Ohne sie ist die Aufnahme auf 30 FPS begrenzt.",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "Grafikhardware verwenden, wenn verfügbar. Ohne sie ist die Aufnahme auf 30 FPS begrenzt. Nur ausschalten, wenn die Aufnahme fehlschlägt oder falsch aussieht."
+}
