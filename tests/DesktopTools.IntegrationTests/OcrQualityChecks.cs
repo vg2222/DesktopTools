@@ -95,7 +95,7 @@ internal static class OcrQualityChecks
         var russian = languages.FirstOrDefault(l => l.Tag.StartsWith("ru", StringComparison.OrdinalIgnoreCase));
         Console.WriteLine("OCR language: " + language.Name);
         double plainTotal = 0, enhancedTotal = 0;
-        Console.WriteLine($"{"case",-26}{"single pass",12}{"enhanced",12}");
+        Console.WriteLine($"{"case",-26}{"single pass",12}{"enhanced",12}{"word layout",12}");
         foreach (var testCase in Cases)
         {
             var image = Render(testCase);
@@ -107,7 +107,10 @@ internal static class OcrQualityChecks
             string enhancedText = await LocalOcr.RecognizeAsync(image, useLanguage.Tag);
             double enhanced = Accuracy(expected, enhancedText);
             plainTotal += plain; enhancedTotal += enhanced;
-            Console.WriteLine($"{testCase.Name,-26}{plain,11:P0}{enhanced,12:P0}");
+            var words = await LocalOcr.RecognizeWordsAsync(image, useLanguage.Tag);
+            double wordAccuracy = Accuracy(expected, string.Join("\n", words.Words.GroupBy(w => w.LineIndex).Select(g => string.Join(" ", g.OrderBy(w => w.Bounds.X).Select(w => w.Text)))));
+            Console.WriteLine($"{testCase.Name,-26}{plain,11:P0}{enhanced,12:P0}{wordAccuracy,12:P0}");
+            if (wordAccuracy + .02 < enhanced) throw new Exception($"Word layout is clearly worse than the text path on '{testCase.Name}': {enhanced:P0} -> {wordAccuracy:P0}");
             if (enhanced + .001 < plain - .05) throw new Exception($"Enhanced OCR is clearly worse on '{testCase.Name}': {plain:P0} -> {enhanced:P0}\n{enhancedText}");
         }
         Console.WriteLine($"{"average",-26}{plainTotal / Cases.Length,11:P0}{enhancedTotal / Cases.Length,12:P0}");

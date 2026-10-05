@@ -71,6 +71,13 @@ internal static class OcrEnhancer
         return result;
     }
 
+    /// <summary>The picture as plain luma grey, which removes the coloured sub-pixel fringes of ClearType text before enlarging.</summary>
+    public static BitmapSource Gray(BitmapSource source)
+    {
+        var gray = new FormatConvertedBitmap(source, PixelFormats.Gray8, null, 0);
+        var result = new FormatConvertedBitmap(gray, PixelFormats.Bgra32, null, 0); result.Freeze(); return result;
+    }
+
     /// <summary>True when most of the picture is dark (a dark theme), judged from a coarse sample of its luma.</summary>
     public static bool IsMostlyDark(BitmapSource source)
     {
@@ -91,12 +98,12 @@ internal static class OcrEnhancer
     }
 
     /// <summary>Smooth enlargement; small UI text loses dots and thin strokes if the engine has to read it at native size.</summary>
-    public static BitmapSource Enlarge(BitmapSource tile, int scale)
+    public static BitmapSource Enlarge(BitmapSource tile, int scale, BitmapScalingMode mode = BitmapScalingMode.HighQuality)
     {
         if (scale <= 1) return tile;
         int width = tile.PixelWidth * scale, height = tile.PixelHeight * scale;
         var visual = new DrawingVisual();
-        RenderOptions.SetBitmapScalingMode(visual, BitmapScalingMode.HighQuality);
+        RenderOptions.SetBitmapScalingMode(visual, mode);
         using (var dc = visual.RenderOpen()) dc.DrawImage(tile, new Rect(0, 0, width, height));
         var target = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
         target.Render(visual); target.Freeze(); return target;
@@ -112,7 +119,7 @@ internal static class OcrEnhancer
         return SoftwareBitmap.CreateCopyFromBuffer(buffer, BitmapPixelFormat.Bgra8, source.PixelWidth, source.PixelHeight, BitmapAlphaMode.Ignore);
     }
 
-    public sealed record Line(string Text, Rect Bounds);
+    public sealed record Line(string Text, Rect Bounds, IReadOnlyList<OcrWordBox>? Words = null);
 
     public static IReadOnlyList<Line> Lines(OcrLayout layout) =>
         layout.Words.GroupBy(w => w.LineIndex).Select(group =>
@@ -126,7 +133,7 @@ internal static class OcrEnhancer
                 if (i > 0) text.Append(words[i].Bounds.Left - words[i - 1].Bounds.Right > height * 2.5 ? "    " : " ");
                 text.Append(words[i].Text);
             }
-            return new Line(text.ToString(), bounds);
+            return new Line(text.ToString(), bounds, words);
         }).Where(line => !line.Bounds.IsEmpty && line.Text.Trim().Length > 0).ToArray();
 
     /// <summary>Median word height in source pixels; decides how much the page needs to be enlarged.</summary>
@@ -213,7 +220,7 @@ internal static class OcrEnhancer
         _ => Script.Latin
     };
 
-    private static Script ScriptOf(char c) => c switch
+    internal static Script ScriptOf(char c) => c switch
     {
         >= 'A' and <= 'ɏ' => Script.Latin,
         >= 'Ͱ' and <= 'Ͽ' => Script.Greek,
@@ -232,6 +239,31 @@ internal static class OcrEnhancer
         int letters = 0, match = 0;
         foreach (char c in text) if (char.IsLetter(c)) { letters++; if (ScriptOf(c) == script) match++; }
         return letters == 0 ? 0 : (double)match / letters;
+    }
+
+    /// <summary>The chosen lines as a clean word layout: rows top to bottom, lines left to right inside a row; every line gets its own LineIndex.</summary>
+    public static OcrLayout ToLayout(IReadOnlyList<Line> lines, int pixelWidth, int pixelHeight)
+    {
+        var rows = new List<List<Line>>();
+        foreach (var line in lines.OrderBy(l => l.Bounds.Top + l.Bounds.Height / 2))
+        {
+            double center = line.Bounds.Top + line.Bounds.Height / 2;
+            var row = rows.Count == 0 ? null : rows[^1];
+            if (row != null)
+            {
+                Rect bounds = Rect.Empty; foreach (var l in row) bounds.Union(l.Bounds);
+                if (Math.Abs(center - (bounds.Top + bounds.Height / 2)) < Math.Min(bounds.Height, line.Bounds.Height) * .5) { row.Add(line); continue; }
+            }
+            rows.Add([line]);
+        }
+        var words = new List<OcrWordBox>(); int index = 0;
+        foreach (var row in rows)
+            foreach (var line in row.OrderBy(l => l.Bounds.Left))
+            {
+                foreach (var word in line.Words ?? []) words.Add(word with { LineIndex = index });
+                index++;
+            }
+        return new OcrLayout(pixelWidth, pixelHeight, words);
     }
 
     /// <summary>Lines in reading order: rows top to bottom, left to right inside a row, with a blank line between paragraphs.</summary>
