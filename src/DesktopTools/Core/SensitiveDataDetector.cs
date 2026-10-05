@@ -11,6 +11,9 @@ public static class SensitiveDataDetector
     private enum SecretEvidence { None, Shape, Prose }
     private sealed record Rule(string Category, Regex Pattern, Func<string, bool>? Validate = null, Regex? Context = null, Regex? CellLabel = null, SecretEvidence Evidence = SecretEvidence.None);
     private static Regex Pattern(string text) => new(text, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+    private static readonly Regex DigitGroups = Pattern(@"\d+");
+    private static readonly Regex DateShape = Pattern(@"^\d{4}[-./]\d{1,2}[-./]\d{1,2}$|^\d{1,2}[-./]\d{1,2}[-./]\d{4}$");
+    private static readonly Regex ProseToken = Pattern(@"^[\p{L}\p{Nd}][\p{L}\p{Nd}!#$@%&*?+=_-]{3,127}$");
     private static readonly Regex UrlPattern = Pattern(@"(?:https?://|www\.)\S+");
     private static readonly Regex EmailShape = Pattern(@"^[\w.+%'-]+@[\w-]+(?:\.[\w-]+)*\.(?:[a-z]{2,}|xn--[a-z0-9-]+)[.!?,;:]?$");
     private static readonly Regex Ipv4Pattern = Pattern(@"(?<![\w.])(?:[0-9oøeils|]{1,3}[ \t]*\.[ \t]*){3}[0-9oøeils|]{1,3}(?!\w|\.[0-9oøeils|])");
@@ -54,11 +57,11 @@ public static class SensitiveDataDetector
         string normalized = text.Replace('ø', '0').Replace('Ø', '0').Replace('e', '0').Replace('E', '0').Replace('s', '5').Replace('S', '5');
         int digits = normalized.Count(char.IsDigit);
         if (Ipv4Pattern.Matches(normalized).Cast<Match>().Any(m => PlausibleIpv4(m.Value))) return false;
-        var groups = Pattern(@"\d+").Matches(normalized).Cast<Match>().ToArray();
+        var groups = DigitGroups.Matches(normalized).Cast<Match>().ToArray();
         bool countryPrefix = groups.Length >= 4 && digits == 11 && groups[0].Value is "1" or "7" or "8";
         if (!normalized.StartsWith('+') && !normalized.Contains('(') && !normalized.Contains('-') && !countryPrefix && groups[0].Length < 2) return false;
         return digits is >= 7 and <= 15 && !IPAddress.TryParse(normalized, out _) &&
-            !Pattern(@"^\d{4}[-./]\d{1,2}[-./]\d{1,2}$|^\d{1,2}[-./]\d{1,2}[-./]\d{4}$").IsMatch(normalized) &&
+            !DateShape.IsMatch(normalized) &&
             (text.StartsWith('+') || text.Any(c => c is ' ' or '(' or '-' ));
     }
     private static bool HardSecretSymbol(char c) => c is '!' or '#' or '$' or '@' or '&' or '*' or '?';
@@ -69,18 +72,20 @@ public static class SensitiveDataDetector
 
     public static IReadOnlyList<SensitiveFinding> Detect(OcrLayout layout, IReadOnlyCollection<string> categories)
     {
+        using var timing = PipelineMetrics.Measure("privacy.detection");
         ArgumentNullException.ThrowIfNull(layout);
         if (layout.PixelWidth < 1 || layout.PixelHeight < 1 || layout.Words.Count > 10_000 || layout.Words.Sum(w => (long)w.Text.Length + 1) > 200_000)
             throw new ArgumentException("The recognized image exceeds the sensitive-data analysis limit.");
         var found = new List<SensitiveFinding>();
         var incompleteLabels = new List<(Rule Rule, Rect Bounds)>();
         var strongSecrets = new List<Rect>(); var wrappedPrefixes = new List<Rect>();
+        var selectedRules = Rules.Where(r => categories.Contains(r.Category)).ToArray();
         foreach (var line in layout.Words.GroupBy(w => w.LineIndex))
         {
             var words = line.OrderBy(w => w.Bounds.X).ToArray();
             var compact = ReadLine(words, true); var spaced = ReadLine(words, false);
             var urls = UrlPattern.Matches(compact.Text).Cast<Match>().ToArray();
-            foreach (var rule in Rules.Where(r => categories.Contains(r.Category)))
+            foreach (var rule in selectedRules)
             {
                 var reading = rule.Category == "phone" ? spaced : compact;
                 string text = rule.Category is "ip" or "credential" ? reading.Text.Replace('ø', '0').Replace('Ø', '0') : reading.Text;
@@ -134,7 +139,7 @@ public static class SensitiveDataDetector
                 if (label.Rule.Evidence == SecretEvidence.Prose)
                 {
                     string token = word.Text.TrimEnd('.', ',', ';');
-                    if (UrlPattern.IsMatch(token) || !Pattern(@"^[\p{L}\p{Nd}][\p{L}\p{Nd}!#$@%&*?+=_-]{3,127}$").IsMatch(token)) break;
+                    if (UrlPattern.IsMatch(token) || !ProseToken.IsMatch(token)) break;
                     if (PlausibleProseSecret(token)) AddBounds(found, "credential", b, layout);
                     else if (WrappedSecretPrefix(token)) wrappedPrefixes.Add(b);
                     break;
@@ -400,6 +405,7 @@ public static class SensitiveDataDetector
 
     internal static IReadOnlyList<SensitiveFinding> Merge(IEnumerable<SensitiveFinding> findings)
     {
+        using var timing = PipelineMetrics.Measure("privacy.merge");
         var result = new List<SensitiveFinding>();
         foreach (var finding in findings)
         {

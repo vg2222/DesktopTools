@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 var installer = Assembly.Load("DesktopTools.Installer");
+PackagingChecks.Run();
 foreach (string icon in new[] { "screenshot", "pen", "presenter", "dismiss", "translate", "chevron_right", "checkmark", "arrow_up_right", "arrow_clockwise", "desktop_toolbox", "delete", "info" })
 {
     using var resource = installer.GetManifestResourceStream($"DesktopTools.Installer.Icons.{icon}_24_regular.svg");

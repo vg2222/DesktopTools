@@ -121,6 +121,7 @@ public sealed partial class ScreenshotEditorView
 
     private void SchedulePreview()
     {
+        if (_reviewClosed) return;
         ApplyLiveStyle();
         _previewTimer ??= new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
         _previewTimer.Tick -= PreviewTick; _previewTimer.Tick += PreviewTick; _previewTimer.Stop(); _previewTimer.Start();
@@ -130,7 +131,7 @@ public sealed partial class ScreenshotEditorView
     /// <summary>A small rendering of what Copy or Save would produce, so the options can be judged before exporting.</summary>
     private void RefreshStylePreview()
     {
-        if (_stylePreview == null) return;
+        if (_reviewClosed || _stylePreview == null) return;
         try
         {
             var current = _document.Export();

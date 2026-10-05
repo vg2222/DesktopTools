@@ -28,7 +28,7 @@ internal static class ImageTransforms
         var loaded = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames[0];
         loaded.Freeze(); return loaded;
     }
-    internal static BitmapSource Rotate(BitmapSource source) => Transform(source, new RotateTransform(90));
+    internal static BitmapSource Rotate(BitmapSource source, int degrees = 90) => Transform(source, new RotateTransform(degrees));
     internal static BitmapSource Mirror(BitmapSource source, bool horizontal) => Transform(source, new ScaleTransform(horizontal ? -1 : 1, horizontal ? 1 : -1));
     private static BitmapSource Transform(BitmapSource source, Transform transform)
     {

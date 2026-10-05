@@ -23,7 +23,7 @@
   "Enter text to translate.": "Wpisz tekst do przetłumaczenia.",
   "The translation model returned an invalid result.": "Model tłumaczenia zwrócił nieprawidłowy wynik.",
   "This passage has too many tokens. Translate a shorter selection.": "Ten fragment ma zbyt wiele tokenów. Przetłumacz krótszy fragment.",
-  "Translate": "Tłumacz",
+  "Translate": "Przetłumacz",
   "Translate up to 32 sentences at a time.": "Tłumacz do 32 zdań naraz.",
   "Translating locally…": "Tłumaczenie lokalne…",
   "Translation": "Tłumaczenie",

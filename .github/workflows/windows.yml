@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/artifacts/nuget-packages
+
 # A newer push to the same branch or pull request replaces the run that is still going.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +26,19 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - name: Fetch checksum-pinned translation models
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('global.json', '**/*.csproj', 'Directory.Build.props', 'Directory.Build.targets', 'NuGet.Config') }}
+          restore-keys: ${{ runner.os }}-nuget-v1-
+      - name: Cache checksum-pinned translation weights
+        uses: actions/cache@v6
+        with:
+          path: src/DesktopTools/Assets/Translation/**/*.onnx
+          key: ${{ runner.os }}-translation-v1-${{ hashFiles('src/DesktopTools/Assets/Translation/manifest.json') }}
+      # Cache hits still pass through every manifest checksum before build/test.
+      - name: Verify or fetch checksum-pinned translation models
         shell: pwsh
         run: ./scripts/fetch-translation-models.ps1
       - name: Restore and build
@@ -31,6 +46,6 @@ jobs:
         run: ./scripts/build.ps1
       - name: Run automated harnesses
         shell: pwsh
-        run: ./scripts/test.ps1
+        run: ./scripts/test.ps1 -NoBuild
 
 # Visible desktop, hardware, other-process input, and remote viewer checks remain manual.

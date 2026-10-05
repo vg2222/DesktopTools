@@ -37,7 +37,15 @@ internal static class Program
         {
             try
             {
-                if (args.Contains("--auto-redact-only")) await Test("Auto Redact manual review and capture privacy", AutoRedactChecks.RunAsync);
+                if (args.Contains("--maintenance-recording-only")) await Test("Owned-window sustained recording measurement", MaintenancePerformanceChecks.RecordingMeasurementAsync);
+                else if (args.Contains("--maintenance-transport-only")) await Test("Exact legacy OCR pixel transport", MaintenancePerformanceChecks.TransportEquivalenceAsync);
+                else if (args.Contains("--maintenance-pixels-only")) await Test("Bounded pixel sampling preserves polarity and originals", MaintenancePerformanceChecks.PixelSamplingAsync);
+                else if (args.Contains("--maintenance-performance-only")) await Test("Measured privacy pipeline without source logging", MaintenancePerformanceChecks.RunAsync);
+                else if (args.Contains("--maintenance-idle-only")) await Test("Controller startup and idle measurement", MaintenancePerformanceChecks.StartupIdleAsync);
+                else if (args.Contains("--maintenance-lifecycle-only")) await Test("Maintenance background scheduling and shutdown", MaintenanceLifecycleChecks.RunAsync);
+                else if (args.Contains("--maintenance-models-ui-only")) await Test("Maintenance image and editor resource regressions", MaintenanceModelsChecks.RunUiAsync);
+                else if (args.Contains("--maintenance-translation-only")) await Test("Maintenance translation stage reuse", MaintenanceModelsChecks.RunTranslationAsync);
+                else if (args.Contains("--auto-redact-only")) await Test("Auto Redact manual review and capture privacy", AutoRedactChecks.RunAsync);
                 else if (args.Contains("--automation-ui-preview")) await Test("Automation UI preview", AutomationUiChecks.PreviewAsync);
                 else if (args.Contains("--automation-interaction-only")) await Test("Automation motion and custom save prompt", AutomationInteractionChecks.RunAsync);
                 else if (args.Contains("--automation-ui-only")) await Test("Automation controls, HUD and background colors", AutomationUiChecks.RunAsync);
@@ -131,7 +139,7 @@ internal static class Program
                 else if (args.Contains("--video-ui")) await Test("Video editor languages, edited preview and resource cleanup", () => VideoWindowChecks.RunAsync());
                 else if (args.Contains("--video-only")) await Test("Native video trim, cut, crop, rotation, mute and original protection", VideoEditingChecks.RunAsync);
                 else if (args.Contains("--effects-only")) await Test("Stationary spotlight and uniform laser", () => { EffectChecks.Run(); return Task.CompletedTask; });
-                else if (args.Contains("--localization-only")) await Test("Five languages, both themes, stable choices and notification severity", LocalizationChecks.RunAsync);
+                else if (args.Contains("--localization-only")) await Test("All supported languages, both themes, stable choices and notification severity", LocalizationChecks.RunAsync);
                 else if (args.Contains("--eyedropper-only")) await Test("Eyedropper cancellation releases every monitor window", EyedropperCheck);
                 else if (args.Contains("--visual-only")) await Test("Interface layouts, rounded controls and notification surfaces", VisualChecks.RunAsync);
                 else if (args.Contains("--presentation-only")) await Test("Native presentation initialization and lifecycle", PresentationSessionChecks.RunAsync);

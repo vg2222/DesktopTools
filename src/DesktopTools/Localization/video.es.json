@@ -30,7 +30,7 @@
   "Original video. Your source file stays unchanged.": "Vídeo original. El archivo de origen no cambia.",
   "Changes not previewed. Showing the original video.": "Cambios sin vista previa. Se muestra el vídeo original.",
   "Enter a valid number of seconds.": "Introduce un número de segundos válido.",
-  "Enter whole pixel crop coordinates and dimensions.": "Introduce coordenadas y dimensiones enteras en píxeles.",
+  "Enter whole pixel crop coordinates and dimensions.": "Introduce coordenadas y dimensiones enteras del recorte en píxeles.",
   "Preparing edited preview…": "Preparando vista previa editada…",
   "Exporting video…": "Exportando vídeo…",
   "Edited preview ready. Press Play to review before exporting.": "Vista previa editada lista. Pulsa Reproducir para revisar antes de exportar.",

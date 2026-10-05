@@ -12,6 +12,8 @@ Use Windows 11 x64 and the SDK pinned in [global.json](../global.json):
 ./scripts/test.ps1
 ```
 
+After a successful solution build, `./scripts/test.ps1 -NoBuild` reuses the built harnesses without rebuilding or restoring each project. The default command still builds projects when run on its own. All six default harnesses run sequentially.
+
 The automated harnesses cover core state/history, image transforms and original-file protection, settings and profiles, native helpers, updater protocol and notification lifetime, and installer maintenance/rollback logic.
 
 ## Interactive checks

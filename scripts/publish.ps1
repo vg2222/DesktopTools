@@ -46,6 +46,8 @@ try {
     Copy-Item -LiteralPath (Join-Path $repo 'THIRD-PARTY-NOTICES.md') -Destination $output
     Copy-Item -LiteralPath (Join-Path $repo 'CONTRIBUTING.md') -Destination $output
     Copy-Item -LiteralPath (Join-Path $repo 'AGENTS.md') -Destination $output
+    Copy-Item -LiteralPath (Join-Path $repo 'CODE_OF_CONDUCT.md') -Destination $output
+    Copy-Item -LiteralPath (Join-Path $repo 'global.json') -Destination $output
     foreach ($readme in @('README.md','README.ru.md','README.de.md','README.fr.md','README.es.md')) {
         Copy-Item -LiteralPath (Join-Path $repo $readme) -Destination $output
     }
@@ -57,7 +59,7 @@ try {
     }
     $publicDocs = Join-Path $output 'docs'
     New-Item -ItemType Directory -Force -Path $publicDocs | Out-Null
-    foreach ($document in @('architecture.md','audio-controls.md','background-removal.md','compatibility.md','localization.md','manual-testing.md','roadmap.md','screen-recorder.md','sharing-blackout.md','text-tools.md','updates.md','verification.md','video-editor.md','security-checks.md','release-preparation.md')) {
+    foreach ($document in @('architecture.md','audio-controls.md','background-removal.md','compatibility.md','localization.md','manual-testing.md','maintenance-2026-10-05.md','news-and-security-updates.md','offline-languages.md','optimization.md','roadmap.md','screen-recorder.md','sharing-blackout.md','text-tools.md','updates.md','verification.md','video-editor.md','security-checks.md','release-preparation.md')) {
         Copy-Item -LiteralPath (Join-Path $repo ('docs/' + $document)) -Destination $publicDocs
     }
     Copy-Item -LiteralPath (Join-Path $repo 'docs/licenses') -Destination $publicDocs -Recurse
@@ -84,6 +86,7 @@ try {
     Get-ChildItem -LiteralPath $output -Recurse -File | Where-Object {
         $_.Extension -in '.pdb', '.lib' -or $_.Name -eq 'ScreenRecorderLib.xml'
     } | Remove-Item -Force
+    & (Join-Path $PSScriptRoot 'verify-publish.ps1') -Directory $output
     $temporaryArchive = Join-Path $stage "DesktopTools-$Runtime.zip"
     Compress-Archive -LiteralPath $output -DestinationPath $temporaryArchive -CompressionLevel Optimal
     Move-Item -LiteralPath $temporaryArchive -Destination $archive -Force

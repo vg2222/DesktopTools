@@ -12,11 +12,8 @@ internal sealed partial class AppController
         language = DesktopTools.Localization.L.Normalize(language);
         if (Settings.Language == language) return true;
         if (IsBusy) { Report(DesktopTools.Localization.L.T("Finish the current operation before changing the language.")); return false; }
-        if (utilityWindows.TryGetValue("Recorder", out var recorder))
-        {
-            try { await ((DesktopTools.Extras.ScreenRecorderWindow)recorder).StopAsync(); }
-            catch (Exception ex) { Report(ex.Message); return false; }
-        }
+        try { await PrepareForShutdownAsync(); }
+        catch (Exception ex) { Report(ex.Message); return false; }
         if (!UpdateSettings(settings => settings.Language = language)) return false;
         RestartForLanguage = true;
         if (!smoke) System.Windows.Application.Current.Shutdown();

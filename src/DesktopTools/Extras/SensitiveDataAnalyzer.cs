@@ -13,6 +13,7 @@ public static class SensitiveDataAnalyzer
         Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        using var timing = PipelineMetrics.Measure("privacy.total");
         var read = recognize ?? LocalOcr.RecognizeLayoutAsync;
         var installed = LocalOcr.Languages;
         var additional = new List<OcrLanguage>();
@@ -33,7 +34,8 @@ public static class SensitiveDataAnalyzer
             var findings = SensitiveDataDetector.Detect(layout, categories);
             foreach (var language in additional)
             {
-                var extra = await read(image, language.Tag, cancellationToken);
+                OcrLayout extra;
+                using (PipelineMetrics.Measure("privacy.additional-language")) extra = await read(image, language.Tag, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 layouts.Add(extra);
                 findings = SensitiveDataDetector.Merge(findings.Concat(SensitiveDataDetector.Detect(extra, categories)));

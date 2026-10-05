@@ -129,7 +129,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             row.Children.Add(controls); sizeRow.Children.Add(row);
         }
         Button Labeled(string symbol, string label, Action action) { var button = Ui.ActionButton(symbol, L.T(label), action, ButtonKind.Secondary, 12); button.Padding = new Thickness(8, 5, 10, 5); return button; }
-        TransformRow("Rotation", Labeled("RotateLeft", "Rotate left", () => Edit(() => ImageTransforms.Rotate(ImageTransforms.Rotate(ImageTransforms.Rotate(bitmap!))))),
+        TransformRow("Rotation", Labeled("RotateLeft", "Rotate left", () => Edit(() => ImageTransforms.Rotate(bitmap!, -90))),
             Labeled("RotateRight", "Rotate 90°", () => Edit(() => ImageTransforms.Rotate(bitmap!))));
         TransformRow("Mirror", Labeled("FlipHorizontal", "Mirror horizontal", () => Edit(() => ImageTransforms.Mirror(bitmap!, true))),
             Labeled("FlipVertical", "Mirror vertical", () => Edit(() => ImageTransforms.Mirror(bitmap!, false))));

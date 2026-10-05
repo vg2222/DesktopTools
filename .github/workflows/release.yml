@@ -6,6 +6,14 @@ on:
 permissions:
   contents: write
 
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/artifacts/nuget-packages
+
+# Let an active publication finish before another run for this ref starts.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: windows-latest
@@ -17,6 +25,17 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('global.json', '**/*.csproj', 'Directory.Build.props', 'Directory.Build.targets', 'NuGet.Config') }}
+          restore-keys: ${{ runner.os }}-nuget-v1-
+      - name: Cache checksum-pinned translation weights
+        uses: actions/cache@v6
+        with:
+          path: src/DesktopTools/Assets/Translation/**/*.onnx
+          key: ${{ runner.os }}-translation-v1-${{ hashFiles('src/DesktopTools/Assets/Translation/manifest.json') }}
       - name: Validate release version and notes
         shell: pwsh
         run: |
@@ -25,14 +44,15 @@ jobs:
           if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Stable releases require major.minor.patch.' }
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag and project version must match.' }
           if (!(Test-Path -LiteralPath "docs/releases/$version.md")) { throw 'Versioned release notes are missing.' }
-      - name: Fetch checksum-pinned translation models
+      # Cache hits still pass through every manifest checksum before build/test.
+      - name: Verify or fetch checksum-pinned translation models
         shell: pwsh
         run: ./scripts/fetch-translation-models.ps1
       - name: Build and test
         shell: pwsh
         run: |
           ./scripts/build.ps1
-          ./scripts/test.ps1
+          ./scripts/test.ps1 -NoBuild
       - name: Build installer and portable package
         shell: pwsh
         run: ./scripts/build-release.ps1
