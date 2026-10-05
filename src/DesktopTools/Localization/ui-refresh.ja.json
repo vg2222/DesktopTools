@@ -1,0 +1,15 @@
+{
+  "Notification preview": "通知のプレビュー",
+  "Display duration": "表示時間",
+  "Pauses while you interact with a notification.": "通知を操作している間は一時停止します。",
+  "Show preview": "プレビューを表示",
+  "Tools": "ツール",
+  "Enabled tools are available to open. Enabling a tool does not start it.": "有効なツールは開けます。ツールを有効にしても起動はしません。",
+  "No shortcuts found.": "ショートカットが見つかりません。",
+  "Find a shortcut": "ショートカットを検索",
+  "Clear search": "検索をクリア",
+  "Try a different search.": "別の検索語をお試しください。",
+  "Check the spelling or choose another category.": "スペルを確認するか、別のカテゴリを選んでください。",
+  "No tools found": "ツールが見つかりません",
+  "No results": "結果なし"
+}

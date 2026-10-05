@@ -1,0 +1,19 @@
+{
+  "Style": "Стиль",
+  "Presentation style": "Оформление",
+  "Adds a background, rounded corners and a shadow to the copy you save or copy. The original stays as it is.": "Добавляет фон, скруглённые углы и тень к копии, которую вы сохраняете или копируете. Оригинал не меняется.",
+  "Add a presentation background": "Добавить фон для публикации",
+  "Background": "Фон",
+  "Space around the image": "Отступ вокруг изображения",
+  "Rounded corners": "Скруглённые углы",
+  "Shadow": "Тень",
+  "Window bar": "Заголовок окна",
+  "A slim title bar with three dots above the image.": "Тонкая полоса с тремя точками над изображением.",
+  "Ocean": "Океан",
+  "Sunset": "Закат",
+  "Violet": "Фиолетовый",
+  "Mint": "Мята",
+  "Graphite": "Графит",
+  "Paper": "Бумага",
+  "None": "Без фона"
+}

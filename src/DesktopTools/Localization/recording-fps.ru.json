@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "Частота кадров — целевое значение. Экран или область пишутся с частотой экрана, а одно окно — не более примерно 48 к/с.",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "Кодирует видео на видеокарте. Без неё запись ограничена 30 к/с.",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "Использовать видеокарту, если она доступна. Без неё запись ограничена 30 к/с. Отключайте, только если запись не запускается или выглядит неправильно."
+}

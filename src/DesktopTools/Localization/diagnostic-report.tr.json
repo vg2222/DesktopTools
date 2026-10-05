@@ -1,0 +1,6 @@
+{
+  "Copy report": "Raporu kopyala",
+  "Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced.": "Hata raporu için bir özet kopyalar. Kullanıcı adınız, bilgisayar adınız, yollar, e-posta ve IP adresleri değiştirilir.",
+  "Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.": "Rapor kopyalandı. Kullanıcı adınız, bilgisayar adınız, yollar, e-posta ve IP adresleri değiştirildi.",
+  "Could not copy the report: ": "Rapor kopyalanamadı: "
+}

@@ -41,6 +41,12 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     private readonly TextBox cropX = NumberBox(), cropY = NumberBox(), cropWidth = NumberBox(), cropHeight = NumberBox();
     private readonly CheckBox removeSection, mute;
     private readonly ComboBox rotation, cropRatio, playbackSpeed, outputQuality;
+    private ComboBox saveAs = null!, animationRate = null!, animationWidth = null!;
+    private readonly TextBlock animationEstimate = Ui.Text("", 12, muted: true);
+    private StackPanel animationOptionsPanel = null!;
+    private readonly DispatcherTimer estimateTimer = new() { Interval = TimeSpan.FromMilliseconds(700) };
+    private CancellationTokenSource? estimateCancellation;
+    private const string FormatMp4 = "MP4 video", FormatGif = "GIF animation", FormatWebp = "Animated WebP";
     private readonly Slider audioVolume = new() { Minimum = 0, Maximum = 200, Value = 100, TickFrequency = 5, IsSnapToTickEnabled = true };
     private readonly TextBlock audioVolumeLabel = Ui.Text("100%", 12, muted: true);
     private readonly Slider outputPercent = new() { Minimum = 10, Maximum = 100, Value = 100, TickFrequency = 1, IsSnapToTickEnabled = true };
@@ -226,6 +232,17 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         outputSettings.Children.Add(presets); outputSettings.Children.Add(outputPercent); outputSize.Margin = new Thickness(0, 8, 0, 0); outputSettings.Children.Add(outputSize);
         outputQuality = Ui.Choice(new[] { "Standard", "High", "Maximum" }, "Standard", _ => Changed());
         outputQuality.Margin = new Thickness(0, 7, 0, 0); outputSettings.Children.Add(Field(L.T("Export quality"), outputQuality, 240));
+        // Share as a short looping animation instead of a video: README images, bug reports, chat.
+        saveAs = Ui.Choice(new[] { FormatMp4, FormatGif, FormatWebp }, FormatMp4, _ => AnimationChoiceChanged());
+        saveAs.Margin = new Thickness(0, 12, 0, 0); outputSettings.Children.Add(Field(L.T("Save as"), saveAs, 240));
+        animationRate = Ui.Choice(new[] { "10", "15", "20", "25" }, "15", _ => AnimationChoiceChanged(), translate: false);
+        animationWidth = Ui.Choice(new[] { "480", "640", "800", "1024", "Original" }, "640", _ => AnimationChoiceChanged());
+        animationOptionsPanel = new StackPanel { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 7, 0, 0) };
+        animationOptionsPanel.Children.Add(Field(L.T("Frames per second"), animationRate, 240));
+        animationWidth.Margin = new Thickness(0, 7, 0, 0); animationOptionsPanel.Children.Add(Field(L.T("Maximum width"), animationWidth, 240));
+        animationEstimate.Margin = new Thickness(0, 8, 0, 0); animationEstimate.TextWrapping = TextWrapping.Wrap; animationOptionsPanel.Children.Add(animationEstimate);
+        outputSettings.Children.Add(animationOptionsPanel);
+        estimateTimer.Tick += async (_, _) => { estimateTimer.Stop(); await UpdateAnimationEstimateAsync(); };
         saveFrameButton = Ui.Button(L.T("Save current frame as PNG"), async () => await SaveFrameAsync());
         saveFrameButton.Content = Ui.IconLabel("Image", L.T("Save frame PNG"));
         Ui.Tip(saveFrameButton, L.T("Save current frame as PNG"));
@@ -495,7 +512,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         if (source == null || closed || (busy && !previewRendering)) return;
         cropEditing = true; previewTimer.Stop();
         editRevision++; if (previewRendering) operation?.Cancel();
-        InvalidatePreview(); RefreshEnabled();
+        InvalidatePreview(); RefreshEnabled(); QueueAnimationEstimate();
         previewLabel.Text = L.T("Editing crop"); status.Text = L.T("Adjust the frame on the original video, then choose Apply crop.");
     }
     private void CropChanged()
@@ -605,6 +622,44 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         throw new ArgumentException(L.T("Enter whole pixel crop coordinates and dimensions."));
     }
 
+    private AnimatedFormat? SelectedAnimation => (saveAs?.SelectedItem as string) switch { FormatGif => AnimatedFormat.Gif, FormatWebp => AnimatedFormat.WebP, _ => null };
+    private AnimatedOptions? ReadAnimationOptions() => SelectedAnimation is AnimatedFormat format
+        ? new AnimatedOptions(format, int.Parse(animationRate.SelectedItem as string ?? "15", CultureInfo.InvariantCulture),
+            animationWidth.SelectedItem as string is { } w && int.TryParse(w, NumberStyles.Integer, CultureInfo.InvariantCulture, out int width) ? width : 0)
+        : null;
+    private void AnimationChoiceChanged()
+    {
+        if (saveAs == null || animationOptionsPanel == null) return;
+        animationOptionsPanel.Visibility = SelectedAnimation == null ? Visibility.Collapsed : Visibility.Visible;
+        string label = SelectedAnimation switch { AnimatedFormat.Gif => "Export GIF", AnimatedFormat.WebP => "Export WebP", _ => "Export MP4" };
+        exportButton.Content = Ui.IconLabel("Save", L.T(label), primary: true);
+        QueueAnimationEstimate();
+    }
+    private void QueueAnimationEstimate()
+    {
+        estimateCancellation?.Cancel();
+        if (SelectedAnimation == null || source == null) { animationEstimate.Text = ""; return; }
+        animationEstimate.Text = L.T("Estimating file size…");
+        estimateTimer.Stop(); estimateTimer.Start();
+    }
+    private async Task UpdateAnimationEstimateAsync()
+    {
+        var options = ReadAnimationOptions(); var video = source;
+        if (options == null || video == null || closed) return;
+        estimateCancellation?.Cancel(); var cancellation = estimateCancellation = new CancellationTokenSource();
+        try
+        {
+            var edit = ReadEdit();
+            long bytes = await AnimatedExport.EstimateBytesAsync(video, edit, options, cancellation.Token);
+            var (width, height) = AnimatedExport.FrameSize(video, edit, options);
+            if (cancellation.IsCancellationRequested || closed) return;
+            string size = bytes >= 1_048_576 ? $"{bytes / 1_048_576d:0.#} MB" : $"{Math.Max(1, bytes / 1024)} KB";
+            animationEstimate.Text = L.F($"Up to about {size} · {width} × {height} px · {AnimatedExport.FrameCount(video, edit, options)} frames");
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception) { if (!closed && !cancellation.IsCancellationRequested) animationEstimate.Text = L.T("The size could not be estimated."); }
+    }
+
     private async Task RenderAsync(bool previewOnly, Window? dialogOwner = null)
     {
         if (source == null || busy || closed) return;
@@ -620,10 +675,13 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         }
         else
         {
+            var animation = ReadAnimationOptions();
+            string extension = animation == null ? ".mp4" : AnimatedExport.Extension(animation.Format);
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = L.T("Export MP4"), Filter = L.T("MP4 video|*.mp4"), DefaultExt = ".mp4", AddExtension = true,
-                FileName = Path.GetFileNameWithoutExtension(source.Path) + "-edited.mp4", OverwritePrompt = true
+                Title = L.T(animation == null ? "Export MP4" : animation.Format == AnimatedFormat.Gif ? "Export GIF" : "Export WebP"),
+                Filter = animation == null ? L.T("MP4 video|*.mp4") : animation.Format == AnimatedFormat.Gif ? L.T("GIF animation|*.gif") : L.T("Animated WebP|*.webp"),
+                DefaultExt = extension, AddExtension = true, FileName = Path.GetFileNameWithoutExtension(source.Path) + "-edited" + extension, OverwritePrompt = true
             };
             if (dialog.ShowDialog(dialogOwner ?? this) != true) return;
             output = dialog.FileName;
@@ -640,7 +698,12 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             {
                 if (!closed && ReferenceEquals(operation, cancellation) && double.IsFinite(value)) progress.Value = Math.Clamp(value, 0, 100);
             });
-            await VideoEditorService.ExportAsync(source, edit, output, indicator, cancellation.Token);
+            if (!previewOnly && ReadAnimationOptions() is { } animationOptions)
+            {
+                if (File.Exists(output)) File.Delete(output); // the save dialog already confirmed replacing it
+                await AnimatedExport.ExportAsync(source, edit, output, animationOptions, indicator, cancellation.Token);
+            }
+            else await VideoEditorService.ExportAsync(source, edit, output, indicator, cancellation.Token);
             if (previewOnly) cancellation.Token.ThrowIfCancellationRequested();
             if (closed || (previewOnly && (revision != editRevision || !ReferenceEquals(source, originalSource)))) return;
             if (previewOnly)

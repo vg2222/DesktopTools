@@ -21,7 +21,7 @@ internal sealed partial class AppController
             machine.Hide(); overlay?.Hide(); Palette?.Hide();
             OpenAutoRedactReview(image); return;
         }
-        LastCapture = image; CaptureHistory.Add(image);
+        LastCapture = image; RememberCapture(image);
         if (Settings.CaptureOutput == "Save") SaveLast();
         else { await CopyAsync(image); ShowCaptureNotice(); }
     }
@@ -30,7 +30,8 @@ internal sealed partial class AppController
     {
         ScreenshotEditorWindow? review = null;
         review = new ScreenshotEditorWindow(image, _ => { }, Report, autoRedact: Settings.AutoRedact, reviewBeforeOutput: true,
-            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken));
+            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken),
+            translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null);
         screenshotReviews.Add(review); review.Closed += (_, _) => screenshotReviews.Remove(review);
         review.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(review, Dark, Settings.Transparency);
         NativeWindowService.ShowForeground(review);
@@ -48,7 +49,7 @@ internal sealed partial class AppController
             _ => false
         };
         if (!success || disposed || cancellationToken.IsCancellationRequested) return false;
-        LastCapture = image; CaptureHistory.Add(image); ShowCaptureNotice(); return true;
+        LastCapture = image; RememberCapture(image); ShowCaptureNotice(); return true;
     }
     private void CloseScreenshotReviews() { foreach (var review in screenshotReviews.ToArray()) review.Close(); screenshotReviews.Clear(); }
 }

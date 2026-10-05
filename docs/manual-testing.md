@@ -178,3 +178,43 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Switch workflows and selected actions, move or insert actions, search the library, open dialogs, and show/dismiss a message. Confirm short transitions settle at the correct position. Reverse a row move during its animation and show a new error during dismissal; rows must settle and the newer message must remain visible. Disable app animations and Windows client-area animations separately; controls must remain immediately usable without these transitions.
 - Edit a workflow and close the builder. The DesktopTools prompt must offer Save, Don't save and Cancel with the app colors and icons. Cancel, Escape and the header close button must preserve the unsaved draft; Don't save must close without changing the store; Save must persist it. Close again after canceling to confirm there is only one prompt.
 - Leave an invalid action value, choose Save from the close prompt and verify the inline error keeps both windows open. Cancel, correct the action, close again and save. In a disposable fixture, make storage temporarily unwritable and retry after restoring it; an error must never discard the draft. Check keyboard focus, Enter, screen-reader labels, wrapped translations and footer buttons on a small display.
+
+## Recorder throughput, GIF/WebP export, library, styling, data export and languages (1.2.8)
+
+- Recording: record a display for one minute at 144 FPS with hardware acceleration on and again off. The first file should play smoothly at the screen's rate with no missing or garbled frames (decode it with `scripts/analyze-recording-probe.py` for an objective check); the second is limited to 30 FPS by design. Record a single window: about 48 FPS is expected. Stop, pause and resume while a game or video plays. **Not tested** by the automated runs: hour-long recordings, other GPUs, mixed-DPI displays, remote-viewer output.
+- GIF and animated WebP: open a short clip in the video editor, choose Save as → GIF animation and Animated WebP, change frame rate and width and watch the size estimate. Export, open the result in a browser and an image viewer and check duration, loop and colors. Existing files must not be overwritten and the source video must not change. Very long or large clips should show the size warning instead of exhausting memory.
+- Screenshot library: enable it in Capture settings, take screenshots containing known words, search for them, open and copy a result, then use Clear library and confirm every entry and its text are gone while saved screenshot files stay. With the library off nothing must be indexed.
+- Screenshot style: in the editor open the Style tab, turn the presentation background on, change background, padding, corners, shadow and window bar and check that Copy and Save include them while the original image is unchanged.
+- Settings archive: use Export… on the Settings page, change something, then Import… the archive and confirm settings, shortcuts, profiles, workflows and notes return after the restart and that a backup of the replaced data exists. A damaged or foreign zip must be rejected without changing data.
+- Diagnostics: Copy report and paste it somewhere private; the user name, computer name, paths, e-mail and IP addresses must be replaced.
+- Languages: switch to each of Ukrainian, Chinese, Portuguese, Japanese, Polish, Turkish and Italian, restart, and check the main pages, the screenshot editor, the recorder and the installer language menu for clipped or wrapped text. These translations have not had a native-speaker review.
+- ARM64: `./scripts/publish.ps1 -Runtime win-arm64` produces an ARM64 portable folder. It was built and its binaries checked for the ARM64 machine type but **not run on ARM hardware**; start it on a Windows 11 ARM device and repeat the recorder, OCR, translation and background-removal checks.
+
+## Editor polish, library entry and OCR (1.2.8)
+
+- Screenshot editor: in both themes the Draw, Style and Hide data tabs show an icon above a readable label. Turn on the presentation background in Style: the canvas itself shows the gradient, rounded corners, shadow and window bar while you draw. Draw a long pen stroke on a 4K screenshot; it must follow the pointer without lag. Press Check screenshot: a rainbow rim runs around the picture and a light bar sweeps over it until the check is done (a still rim with animations off). The view-original button switches between a picture icon and a pen icon.
+- Screenshot library: a Screenshot library card sits under Capture tools on Home and opens the search even before the library is enabled; its settings page has the switch, limit and Clear library.
+- OCR: scan or extract text from a dark-theme window with small text, from a page that mixes two alphabets, and from a plain light page; compare with the previous release. Check Check screenshot on a dark-theme screenshot that contains an e-mail address and a key.
+
+## Text view and Image tools editing (1.2.8)
+
+On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), in both themes:
+
+1. **Scan screen text** (hotkey and dashboard card): select a region of a dark window with small text. The rainbow rim and light sweep should appear while it reads, then everything dims and the words light up in a wave from top to bottom. Drag across several lines, double-click a word, triple-click a line, press Ctrl+A / Ctrl+C and paste into Notepad. Check the pasted line breaks.
+2. Put a web address, an e-mail address and a phone number in the region. They should be underlined; Ctrl+click opens them (use a harmless address), the context menu copies the link. Press F2 on a misread word, correct it, copy again: the correction is used. Close and reopen: the picture is unchanged.
+3. Select a region with no text and a very large region: expect "No text found" and the existing crop guidance, no frozen window. Close the window while it is still reading.
+4. With translation enabled, select words and press Translate: Text tools opens with exactly that text. Disable translation: the button disappears.
+5. Screenshot editor: draw something, More menu ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
+6. Image tools: open a PNG. The tabs Resize, Crop, Output, Background and **Annotate** sit in a row under the title. In Annotate draw, then **Check screenshot** and **Hide all found**; switch to Crop: the drawing is baked in as one step, Undo removes it. While in Annotate, the title-bar Undo/Redo are disabled; closing the window with unbaked drawings asks to save.
+7. The title-bar picture button changes to a pen while the original is shown and back again; hover text and screen-reader name say "Show original" / "Show edited". Press it while in Annotate: the drawing is baked and the original is shown on the normal canvas.
+8. Image tools **Extract text** (the text icon next to it): the workspace is replaced by the text view, title-bar Undo/Redo/Original are disabled, **Back to editing** returns to the same tab.
+9. Reduced motion on: no rim animation, the text view appears at once.
+10. Translations of the new strings are machine-written; have native speakers review `text-select.*.json`.
+
+## Clipboard and recognition quality (1.2.8)
+
+1. Copy text from the text view (**Copy selection**, **Copy all**, Ctrl+C), a screenshot (**Copy image**) and a colour from the eyedropper about thirty times in a row while Windows clipboard history (Win+V) is on and, if you use one, a clipboard manager is running. None should show "Unable to open clipboard". Paste into Notepad and a drawing program to check the text and the picture. If a copy is refused, the message should name the program using the clipboard.
+2. Only the button you press shows the check mark: **Copy selection** must not tick **Copy all** and the other way round.
+3. Screenshot real pages with small text (a web shop button such as "Claim offer", a settings dialog, a spreadsheet, a code editor, a dark and a light theme, 100% and 150% scale). Compare the text view with what you see. Note misreadings of 9-10 pixel text separately; it is the known weak spot.
+4. With Russian as the OCR language, scan a page that mixes Russian and English; install another Windows language with a dictionary (for example German) and repeat. The second alphabet should be read only when the first result has many unknown words.
+

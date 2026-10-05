@@ -1,0 +1,19 @@
+{
+  "Save as": "另存为",
+  "MP4 video": "MP4 视频",
+  "GIF animation": "GIF 动画",
+  "Animated WebP": "动画 WebP",
+  "Frames per second": "每秒帧数",
+  "Maximum width": "最大宽度",
+  "Original": "原始",
+  "Export GIF": "导出 GIF",
+  "Export WebP": "导出 WebP",
+  "GIF animation|*.gif": "GIF 动画|*.gif",
+  "Animated WebP|*.webp": "动画 WebP|*.webp",
+  "Estimating file size…": "正在估算文件大小…",
+  "Up to about {0} · {1} × {2} px · {3} frames": "最大约 {0} · {1} × {2} 像素 · {3} 帧",
+  "The size could not be estimated.": "无法估算大小。",
+  "Save the animation as a {0} file.": "请将动画保存为 {0} 文件。",
+  "Choose a new filename. Existing files are not overwritten.": "请选择新的文件名。现有文件不会被覆盖。",
+  "This animation would be too large to build. Shorten the clip, lower the frame rate or choose a smaller width.": "此动画过大，无法生成。请缩短片段、降低帧率或选择更小的宽度。"
+}

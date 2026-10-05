@@ -1,0 +1,12 @@
+{
+  "Initial setup": "初始设置",
+  "Skip setup": "跳过设置",
+  "Skip initial setup? You can restart it from Help.": "要跳过初始设置吗？您可以从“帮助”中重新开始。",
+  "Restart setup": "重新开始设置",
+  "Finish setup": "完成设置",
+  "Your preferences are saved. Tools start only when you open them.": "您的偏好设置已保存。工具只在您打开时才会启动。",
+  "Ready": "就绪",
+  "Back": "返回",
+  "Next": "下一步",
+  "Help": "帮助"
+}

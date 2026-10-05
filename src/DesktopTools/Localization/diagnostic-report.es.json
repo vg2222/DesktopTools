@@ -1,0 +1,6 @@
+{
+  "Copy report": "Copiar informe",
+  "Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced.": "Copia un resumen para un informe de error. Se reemplazan tu nombre de usuario, el nombre del equipo, las rutas, los correos y las direcciones IP.",
+  "Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.": "Informe copiado. Se reemplazaron el nombre de usuario, el nombre del equipo, las rutas, los correos y las direcciones IP.",
+  "Could not copy the report: ": "No se pudo copiar el informe: "
+}

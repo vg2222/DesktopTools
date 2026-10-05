@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "帧率只是目标值。显示器或区域按屏幕刷新率录制；单个窗口限制在约 48 FPS。",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "使用显卡进行编码。不使用时，录制限制为 30 FPS。",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "在可用时使用图形硬件。不使用时，录制限制为 30 FPS。仅在录制失败或画面异常时才关闭。"
+}

@@ -1,0 +1,6 @@
+{
+  "Copy report": "レポートをコピー",
+  "Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced.": "バグ報告用の概要をコピーします。ユーザー名、コンピューター名、パス、メールアドレス、IP アドレスは置き換えられます。",
+  "Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.": "レポートをコピーしました。ユーザー名、コンピューター名、パス、メールアドレス、IP アドレスは置き換えられています。",
+  "Could not copy the report: ": "レポートをコピーできませんでした: "
+}

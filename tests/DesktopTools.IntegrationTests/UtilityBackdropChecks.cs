@@ -29,7 +29,7 @@ internal static class UtilityBackdropChecks
             string? source = mediaOnly ? await VideoEditingChecks.FixtureAsync(Path.GetFullPath("media-backdrop-" + Guid.NewGuid().ToString("N"))) : null;
             var sample = BitmapSource.Create(2, 2, 96, 96, PixelFormats.Bgra32, null, new byte[] { 255, 100, 20, 255, 60, 180, 40, 255, 60, 180, 40, 255, 255, 100, 20, 255 }, 8); sample.Freeze();
             var windows = mediaOnly
-                ? new Window[] { new VideoEditorWindow(_ => { }), new TextToolsWindow(controller), new OcrTextWindow(sample, _ => { }) }
+                ? new Window[] { new VideoEditorWindow(_ => { }), new TextToolsWindow(controller), new ScreenTextWindow(sample, _ => { }, null) }
                 : new Window[] { new ImageToolsWindow(_ => { }), new AudioControlsWindow(_ => { }), new TeleprompterWindow(new AppSettings(), _ => true) };
             foreach (var window in windows)
             {

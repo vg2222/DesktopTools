@@ -97,6 +97,7 @@ internal sealed partial class AppController : IDisposable
         OpenUtility("Text", () => new TextToolsWindow(this)); return (TextToolsWindow)utilityWindows["Text"];
     }
     private int textRequestVersion;
+    internal void OpenTextToolsForTranslation(string text) { textRequestVersion++; OpenTextTools()?.SetSource(text); }
     public void OpenTextToolsWindow() { textRequestVersion++; OpenTextTools(); }
     public async Task TranslateSelectionAsync()
     {
@@ -106,7 +107,7 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact) { WindowState = WindowState.Maximized }); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact, translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null) { WindowState = WindowState.Maximized }); }
     public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report, () => Settings.AutoRedact)); }
     public void ToggleWindowPin()
     {
@@ -625,7 +626,12 @@ internal sealed partial class AppController : IDisposable
             if (State == OverlayState.Draw) Palette?.Show();
             else if (!disposed && !autoReviewOpened) NativeWindowService.RestoreForeground(captureForeground);
             scanningText = false;
-            if (!disposed && !cancellation.IsCancellationRequested && textImage != null && Settings.ScreenTextEnabled) { var textWindow = OpenTextTools(); if (textWindow != null) _ = textWindow.RecognizeScreenAsync(textImage); }
+            if (!disposed && !cancellation.IsCancellationRequested && textImage != null && Settings.ScreenTextEnabled)
+            {
+                var shown = textImage;
+                if (utilityWindows.TryGetValue("ScreenText", out var previous)) previous.Close();
+                OpenUtility("ScreenText", () => new ScreenTextWindow(shown, Report, Settings.TranslationEnabled ? OpenTextToolsForTranslation : null));
+            }
         }
     }
     internal static Int32Rect RegionPixelBounds(Rect region, MonitorInfo monitor, int pixelWidth, int pixelHeight)
@@ -648,6 +654,16 @@ internal sealed partial class AppController : IDisposable
     internal async Task<bool> TryCopyAsync(BitmapSource image, CancellationToken cancellationToken = default,
         Action<DataObject>? writeClipboard = null)
     {
+        if (writeClipboard == null)
+        {
+            // Own writer: waits for a busy clipboard instead of failing after a second, and names the program in the way.
+            ClipboardResult result;
+            try { result = await ClipboardService.SetImageAsync(image, 4000, cancellationToken); }
+            catch (OperationCanceledException) { return false; }
+            if (result.Success) { Report(L.T("Screenshot copied to clipboard.")); return true; }
+            Report(L.T("Clipboard is busy. Your screenshot is retained; use Save PNG. ") + result.Error);
+            return false;
+        }
         Exception? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
@@ -657,7 +673,7 @@ internal sealed partial class AppController : IDisposable
                 var data = new DataObject(); data.SetImage(image);
                 using var stream = new MemoryStream(); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); stream.Position = 0;
                 data.SetData("PNG", stream);
-                if (writeClipboard == null) Clipboard.SetDataObject(data, true); else writeClipboard(data);
+                writeClipboard(data);
                 Report(L.T("Screenshot copied to clipboard.")); return true;
             }
             catch (System.Runtime.InteropServices.ExternalException ex)
@@ -733,7 +749,8 @@ internal sealed partial class AppController : IDisposable
         if (LastCapture == null) { Report(L.T("Capture a screenshot first.")); return; }
         ScreenshotEditorWindow? window = null;
         window = new ScreenshotEditorWindow(LastCapture, _ => { }, Report, autoRedact: Settings.AutoRedact,
-            exportAsync: (image, action) => ExportReviewedImageAsync(image, action, window!, cancellationToken: window!.ExportCancellationToken));
+            exportAsync: (image, action) => ExportReviewedImageAsync(image, action, window!, cancellationToken: window!.ExportCancellationToken),
+            translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null);
         window.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(window, Dark, Settings.Transparency); NativeWindowService.ShowForeground(window);
     }
     public void TogglePresentation(string mode)

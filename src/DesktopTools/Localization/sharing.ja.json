@@ -1,0 +1,13 @@
+{
+  "Screen sharing and DesktopTools": "画面共有と DesktopTools",
+  "Your tools are visible by default": "ツールは既定で表示されます",
+  "DesktopTools windows, the screen ruler and floating controls can appear in screen shares and recordings. If you turn on hiding in Settings → Privacy, supported capture apps may omit those windows. Check the viewer's screen before sharing private content.": "DesktopTools のウィンドウ、画面ルーラー、フローティングコントロールは、画面共有や録画に映ることがあります。[設定] → [プライバシー] で非表示をオンにすると、対応するキャプチャアプリではこれらのウィンドウが除外される場合があります。非公開の内容を共有する前に、視聴側の画面を確認してください。",
+  "This installation currently has hiding enabled. Keep that choice or show your tools now.": "このインストールでは現在、非表示が有効です。この選択を維持するか、今すぐツールを表示してください。",
+  "Keep current settings": "現在の設定を維持",
+  "Show my windows": "ウィンドウを表示",
+  "Reset all app data": "アプリのデータをすべてリセット",
+  "Deletes local settings, profiles and notes after DesktopTools closes. Exported files stay where you saved them.": "DesktopTools を閉じた後に、ローカルの設定、プロファイル、メモを削除します。書き出したファイルは保存先に残ります。",
+  "Delete app data": "アプリのデータを削除",
+  "Delete all local DesktopTools settings, profiles and notes? This cannot be undone. Files you exported elsewhere will remain.": "DesktopTools のローカルの設定、プロファイル、メモをすべて削除しますか? この操作は元に戻せません。ほかの場所に書き出したファイルは残ります。",
+  "Could not remove all app data: ": "アプリのデータをすべて削除できませんでした: "
+}

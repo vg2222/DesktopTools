@@ -1,0 +1,7 @@
+{
+  "Screen recording is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 をインストールするまで、画面録画は利用できません。",
+  "Local translation needs Microsoft Visual C++ x64. Install it to use offline translation. Screen text scanning still works.": "ローカル翻訳には Microsoft Visual C++ x64 が必要です。オフライン翻訳を使うにはインストールしてください。画面のテキストのスキャンは引き続き使えます。",
+  "Local translation is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 をインストールするまで、ローカル翻訳は利用できません。",
+  "Background removal needs Microsoft Visual C++ x64. Other image editing tools still work.": "背景削除には Microsoft Visual C++ x64 が必要です。その他の画像編集ツールは引き続き使えます。",
+  "Background removal is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 をインストールするまで、背景削除は利用できません。"
+}

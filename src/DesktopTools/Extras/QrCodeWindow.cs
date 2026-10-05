@@ -148,7 +148,7 @@ public sealed class QrCodeWindow : Window
     private void CopyImage()
     {
         if (preview.Source is not BitmapSource bitmap) return;
-        try { Clipboard.SetImage(bitmap); status.Text = L.T("QR image copied."); Motion.Transition(status); }
+        try { var copied = DesktopTools.Native.ClipboardService.SetImage(bitmap); if (!copied.Success) throw new InvalidOperationException(copied.Error); status.Text = L.T("QR image copied."); Motion.Transition(status); }
         catch (Exception ex) { status.Text = L.F($"Could not copy image: {ex.Message}"); report(status.Text); }
     }
 

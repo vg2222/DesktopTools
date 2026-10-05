@@ -1,0 +1,6 @@
+{
+  "Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.": "Yerel ayarları, profilleri ve notları siler, ardından DesktopTools’u ilk kurulumla yeniden başlatır. Dışa aktarılan dosyalar kaydettiğiniz yerde kalır.",
+  "Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.": "Tüm yerel DesktopTools ayarları, profilleri ve notları silinip uygulama yeniden başlatılsın mı? Bu geri alınamaz. Başka yere dışa aktardığınız dosyalar kalır.",
+  "DesktopTools could not finish restarting after the data reset. Please open it again.": "DesktopTools veri sıfırlamasından sonra yeniden başlatmayı tamamlayamadı. Lütfen yeniden açın.",
+  "DesktopTools data was reset, but the app could not reopen automatically. Open DesktopTools from the Start menu.": "DesktopTools verileri sıfırlandı ancak uygulama otomatik olarak yeniden açılamadı. DesktopTools’u Başlat menüsünden açın."
+}

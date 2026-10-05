@@ -1,0 +1,14 @@
+{
+  "DesktopTools restarts automatically to apply the new language.": "DesktopTools 将自动重启以应用新语言。",
+  "DesktopTools could not finish restarting. Please open it again.": "DesktopTools 无法完成重启。请重新打开它。",
+  "DesktopTools could not reopen automatically. Open it from the Start menu.": "DesktopTools 无法自动重新打开。请从“开始”菜单打开。",
+  "Installed version": "已安装版本",
+  "Available version": "可用版本",
+  "Automatic checks": "自动检查",
+  "Every 15 minutes": "每 15 分钟",
+  "Every 30 minutes": "每 30 分钟",
+  "Every 2 hours": "每 2 小时",
+  "Every 3 hours": "每 3 小时",
+  "Recording setup": "录制设置",
+  "Finish the current operation before changing the language.": "更改语言前，请先完成当前操作。"
+}

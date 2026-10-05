@@ -1,0 +1,19 @@
+{
+  "Style": "スタイル",
+  "Presentation style": "プレゼンテーションスタイル",
+  "Adds a background, rounded corners and a shadow to the copy you save or copy. The original stays as it is.": "保存またはコピーするコピーに、背景、角丸、影を追加します。元の画像はそのままです。",
+  "Add a presentation background": "プレゼンテーション用の背景を追加",
+  "Background": "背景",
+  "Space around the image": "画像の周囲の余白",
+  "Rounded corners": "角丸",
+  "Shadow": "影",
+  "Window bar": "ウィンドウバー",
+  "A slim title bar with three dots above the image.": "画像の上に、3 つの点が付いた細いタイトルバーを表示します。",
+  "Ocean": "オーシャン",
+  "Sunset": "サンセット",
+  "Violet": "バイオレット",
+  "Mint": "ミント",
+  "Graphite": "グラファイト",
+  "Paper": "ペーパー",
+  "None": "なし"
+}

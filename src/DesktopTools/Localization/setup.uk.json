@@ -1,0 +1,12 @@
+{
+  "Initial setup": "Початкове налаштування",
+  "Skip setup": "Пропустити налаштування",
+  "Skip initial setup? You can restart it from Help.": "Пропустити початкове налаштування? Його можна перезапустити з довідки.",
+  "Restart setup": "Перезапустити налаштування",
+  "Finish setup": "Завершити налаштування",
+  "Your preferences are saved. Tools start only when you open them.": "Ваші параметри збережено. Інструменти запускаються, лише коли ви їх відкриваєте.",
+  "Ready": "Готово",
+  "Back": "Назад",
+  "Next": "Далі",
+  "Help": "Довідка"
+}

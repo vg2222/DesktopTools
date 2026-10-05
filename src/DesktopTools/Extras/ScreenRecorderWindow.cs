@@ -79,11 +79,11 @@ internal sealed class ScreenRecorderWindow : Window
         fpsColumn.Children.Add(Ui.Text("FPS", 12, muted: true));
         fpsChoice = Ui.Choice(new[] { "24", "30", "60", "90", "120", "144" }, controller.Settings.RecordingFramesPerSecond.ToString(), value => controller.UpdateSettings(s => s.RecordingFramesPerSecond = int.Parse(value)), translate: false);
         fpsChoice.MinWidth = 100; fpsChoice.HorizontalAlignment = HorizontalAlignment.Stretch; fpsChoice.Margin = new Thickness(0, 6, 0, 0); fpsColumn.Children.Add(fpsChoice); Grid.SetColumn(fpsColumn, 1); qualityGrid.Children.Add(fpsColumn);
-        var fpsHint = Ui.Text(L.T("Frame rate is a target. Actual smoothness depends on the display, source and computer."), 11, muted: true);
+        var fpsHint = Ui.Text(L.T("Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS."), 11, muted: true);
         fpsHint.TextWrapping = TextWrapping.Wrap; fpsHint.Margin = new Thickness(0, 9, 0, 2);
         hardwareAcceleration = Ui.Toggle(controller.Settings.RecordingHardwareAcceleration, value => controller.UpdateSettings(s => s.RecordingHardwareAcceleration = value));
         panel.Children.Add(Ui.Group("Video", L.T("Recording quality"), null, qualityGrid, fpsHint,
-            Ui.Row(L.T("Hardware acceleration"), L.T("Uses the graphics card to encode. Turn off if recordings stutter."), hardwareAcceleration)));
+            Ui.Row(L.T("Hardware acceleration"), L.T("Uses the graphics card to encode. Without it, recording is limited to 30 FPS."), hardwareAcceleration)));
         var guide = FeatureTourButton.Create(this, "recorder", () => new GuidedTour.Step[]
         {
             new(() => sourceChoice, "Recording source", "Choose a display, window or region. Selecting a source does not start recording."),

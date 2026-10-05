@@ -11,11 +11,9 @@ internal static class ImageOutput
     {
         try
         {
-            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
-            using var stream = new MemoryStream(); encoder.Save(stream); stream.Position = 0;
-            var data = new DataObject(); data.SetImage(image); data.SetData("PNG", stream);
-            Clipboard.SetDataObject(data, true);
-            report(L.T("Image copied to the clipboard."));
+            var copied = DesktopTools.Native.ClipboardService.SetImage(image);
+            if (copied.Success) report(L.T("Image copied to the clipboard."));
+            else report(L.T("Could not copy the image. Try again: ") + copied.Error);
         }
         catch (Exception ex) { report(L.T("Could not copy the image. Try again: ") + ex.Message); }
     }

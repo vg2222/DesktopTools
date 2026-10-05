@@ -1,0 +1,19 @@
+{
+  "Export settings": "設定を書き出し",
+  "DesktopTools data": "DesktopTools のデータ",
+  "Import settings": "設定を読み込み",
+  "Import and restart": "読み込んで再起動",
+  "Settings exported to ": "設定を書き出しました: ",
+  "Could not export settings: ": "設定を書き出せませんでした: ",
+  "This file cannot be imported: ": "このファイルは読み込めません: ",
+  "settings and shortcuts": "設定とショートカット",
+  "workflows": "ワークフロー",
+  "notes": "メモ",
+  "{0} profiles": "プロファイル {0} 件",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "現在のデータ ({0}) をこのファイルのデータに置き換えますか? 適用のため DesktopTools が再起動します。現在のデータのバックアップは DesktopTools のデータフォルダーに残ります。",
+  "Could not import the settings. Your current data was not changed: ": "設定を読み込めませんでした。現在のデータは変更されていません: ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "設定、ショートカット、プロファイル、ワークフロー、メモを 1 つの zip ファイルに保存します。別の PC で開けます。何もアップロードされません。",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "設定、プロファイル、ワークフロー、メモを、[設定を書き出し] で作成したファイルの内容に置き換え、再起動します。",
+  "Export…": "書き出し…",
+  "Import…": "読み込み…"
+}

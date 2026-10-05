@@ -2,12 +2,13 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings>
-    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.7</Version><RootNamespace>DesktopTools</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest><Version>1.2.8</Version><RootNamespace>DesktopTools</RootNamespace>
     <ApplicationIcon>Assets/DesktopTools.ico</ApplicationIcon>
     <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <RecorderFlavor>x64</RecorderFlavor><RecorderFlavor Condition="'$(RuntimeIdentifier)' == 'win-arm64'">ARM64</RecorderFlavor>
   </PropertyGroup>
-  <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /></ItemGroup>
+  <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /><PackageReference Include="SkiaSharp" Version="4.153.1" /><PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.153.1" /></ItemGroup>
   <ItemGroup><Content Include="Assets/Translation/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Assets/Models/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><EmbeddedResource WithCulture="false" Include="Localization/*.json" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Assets/Translation/catalog.json" LogicalName="DesktopTools.TranslationPacks" /></ItemGroup>
@@ -28,4 +29,6 @@
     <Resource Include="Assets/Fonts/*.otf" />
     <Content Include="Assets/Fonts/Inter-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
-<ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>$(PkgScreenRecorderLib)/build/x64/ScreenRecorderLib.dll</HintPath><Private>true</Private></Reference></ItemGroup></Project>
+  <!-- The recorder backend is native; use its ARM64 build for the win-arm64 runtime and x64 everywhere else. -->
+  <ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>$(PkgScreenRecorderLib)/build/$(RecorderFlavor)/ScreenRecorderLib.dll</HintPath><Private>true</Private></Reference></ItemGroup>
+</Project>

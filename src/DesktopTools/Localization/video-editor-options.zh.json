@@ -1,0 +1,18 @@
+{
+  "Preview playback speed; export keeps the original speed.": "预览播放速度；导出时保持原始速度。",
+  "Preview speed": "预览速度",
+  "Resize editor settings": "调整编辑器设置大小",
+  "Drag to resize editor settings": "拖动以调整编辑器设置大小",
+  "Audio volume": "音频音量",
+  "Export quality": "导出质量",
+  "Standard": "标准",
+  "Maximum": "最高",
+  "Save current frame as PNG": "将当前帧保存为 PNG",
+  "Save frame PNG": "保存帧 PNG",
+  "Saving frame…": "正在保存帧…",
+  "Frame saved as PNG.": "帧已保存为 PNG。",
+  "Choose an audio volume between 0% and 200%.": "请选择 0% 到 200% 之间的音量。",
+  "Choose a valid output quality.": "请选择有效的输出质量。",
+  "Save the frame as a PNG file.": "将该帧保存为 PNG 文件。",
+  "Choose a new filename. Existing images are not overwritten.": "请选择新的文件名。现有图像不会被覆盖。"
+}

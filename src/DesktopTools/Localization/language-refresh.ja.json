@@ -1,0 +1,14 @@
+{
+  "DesktopTools restarts automatically to apply the new language.": "新しい言語を適用するため、DesktopTools が自動的に再起動します。",
+  "DesktopTools could not finish restarting. Please open it again.": "DesktopTools の再起動を完了できませんでした。もう一度開いてください。",
+  "DesktopTools could not reopen automatically. Open it from the Start menu.": "DesktopTools を自動的に開き直せませんでした。スタートメニューから開いてください。",
+  "Installed version": "インストール済みのバージョン",
+  "Available version": "利用可能なバージョン",
+  "Automatic checks": "自動確認",
+  "Every 15 minutes": "15 分ごと",
+  "Every 30 minutes": "30 分ごと",
+  "Every 2 hours": "2 時間ごと",
+  "Every 3 hours": "3 時間ごと",
+  "Recording setup": "録画のセットアップ",
+  "Finish the current operation before changing the language.": "言語を変更する前に、現在の操作を完了してください。"
+}

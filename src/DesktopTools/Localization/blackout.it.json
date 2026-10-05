@@ -1,0 +1,8 @@
+{
+  "Only hide from screen sharing (experimental)": "Nascondi solo dalla condivisione dello schermo (sperimentale)",
+  "Keep your desktop visible locally. Off: cover all displays in black for you too. Changing this stops active blackout.": "Mantiene il desktop visibile in locale. Disattivato: copre di nero tutti i display anche per te. La modifica interrompe l’oscuramento attivo.",
+  "Warning: your screen may still be visible in screen-sharing apps. We recommend checking the viewer's output before use. Sharing an individual application window may bypass this mode.": "Avviso: lo schermo potrebbe restare visibile nelle app di condivisione dello schermo. Ti consigliamo di controllare l’output del visualizzatore prima dell’uso. Condividere la finestra di una singola applicazione può aggirare questa modalità.",
+  "Applies to all connected displays. Press Escape to stop. This is not a security guarantee.": "Si applica a tutti i display collegati. Premi Escape per interrompere. Non è una garanzia di sicurezza.",
+  "Windows could not activate sharing blackout. Your screen may still be visible.": "Windows non è riuscito ad attivare l’oscuramento per la condivisione. Lo schermo potrebbe restare visibile.",
+  "Warning: your screen may still be visible in screen-sharing apps. Check the viewer's output before using this mode. Press Escape to stop.": "Avviso: lo schermo potrebbe restare visibile nelle app di condivisione dello schermo. Controlla l’output del visualizzatore prima di usare questa modalità. Premi Escape per interrompere."
+}

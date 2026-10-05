@@ -1,0 +1,12 @@
+{
+  "Translate locally with offline language packs.": "使用离线语言包在本地翻译。",
+  "Download offline packs": "下载离线包",
+  "Refresh Windows OCR languages": "刷新 Windows OCR 语言",
+  "Download the offline language pack first.": "请先下载离线语言包。",
+  "Offline packs needed: {0:0} MB. Download once; your text stays on this PC.": "需要离线包：{0:0} MB。仅需下载一次；您的文字保留在此电脑上。",
+  "Offline translation through English. Review the result.": "通过英语进行离线翻译。请检查结果。",
+  "Offline packs ready. Your text stays on this PC.": "离线包已就绪。您的文字保留在此电脑上。",
+  "Downloading offline packs…": "正在下载离线包…",
+  "Could not download offline packs: ": "无法下载离线包： ",
+  "Installed Windows languages appear first. Extra offline languages require a one-time model download.": "已安装的 Windows 语言排在前面。额外的离线语言需要一次性下载模型。"
+}

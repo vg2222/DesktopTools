@@ -21,8 +21,8 @@ internal sealed class RecordingQualityWindow : Window
         panel.Children.Add(Ui.Row(L.T("Quality"), null, choice)); description.Margin = new Thickness(0, 0, 0, 12); panel.Children.Add(description); Describe();
         var rate = Ui.Choice(new[] { "24", "30", "60", "90", "120", "144" }, fps.ToString(), value => fps = int.Parse(value), translate: false); rate.Width = 260;
         panel.Children.Add(Ui.Row("FPS", null, rate));
-        var hint = Ui.Text(L.T("Frame rate is a target. Actual smoothness depends on the display, source and computer."), 12, muted: true); hint.Margin = new Thickness(0, 8, 0, 20); panel.Children.Add(hint);
-        panel.Children.Add(Ui.Row(L.T("Hardware acceleration"), L.T("Use graphics hardware when available. Turn off if recording fails or looks incorrect."), Ui.Toggle(hardware, value => hardware = value)));
+        var hint = Ui.Text(L.T("Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS."), 12, muted: true); hint.Margin = new Thickness(0, 8, 0, 20); panel.Children.Add(hint);
+        panel.Children.Add(Ui.Row(L.T("Hardware acceleration"), L.T("Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect."), Ui.Toggle(hardware, value => hardware = value)));
         var done = Ui.Button(L.T("Done"), () => { if (save(quality, fps, hardware)) Close(); }, true); done.Width = 200; done.Margin = new Thickness(0, 12, 0, 0); done.HorizontalAlignment = HorizontalAlignment.Center;
         Content = UtilityWindowChrome.DialogCard(this, header, panel, done, 18);
     }

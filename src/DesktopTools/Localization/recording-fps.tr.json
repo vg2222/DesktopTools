@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "Kare hızı bir hedeftir. Bir ekran veya bölge ekranın hızında kaydedilir; tek bir pencere yaklaşık 48 FPS ile sınırlıdır.",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "Kodlama için ekran kartını kullanır. Kullanılmazsa kayıt 30 FPS ile sınırlıdır.",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "Mümkün olduğunda grafik donanımını kullanın. Kullanılmazsa kayıt 30 FPS ile sınırlıdır. Yalnızca kayıt başarısız olursa veya hatalı görünürse kapatın."
+}

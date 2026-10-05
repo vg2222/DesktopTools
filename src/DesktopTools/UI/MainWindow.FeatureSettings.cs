@@ -40,6 +40,7 @@ internal sealed partial class MainWindow
             return;
         }
         if (id == "automation") { Group(L.T("Desktop Automation"), Ui.Row(L.T("Build and run local desktop actions."), L.T("Schedules run while DesktopTools is open. Window triggers use part of a title."), Ui.Button(L.T("Open"), controller.OpenAutomation))); return; }
+        if (id == "library") { LibrarySettingsGroup(); return; }
         if (id == "pin")
         {
             Group(L.T("Pin screenshot"),

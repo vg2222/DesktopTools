@@ -1,0 +1,15 @@
+{
+  "Notification preview": "通知预览",
+  "Display duration": "显示时长",
+  "Pauses while you interact with a notification.": "与通知互动时会暂停。",
+  "Show preview": "显示预览",
+  "Tools": "工具",
+  "Enabled tools are available to open. Enabling a tool does not start it.": "已启用的工具可以打开。启用工具不会启动它。",
+  "No shortcuts found.": "未找到快捷键。",
+  "Find a shortcut": "查找快捷键",
+  "Clear search": "清除搜索",
+  "Try a different search.": "请尝试其他搜索。",
+  "Check the spelling or choose another category.": "请检查拼写或选择其他类别。",
+  "No tools found": "未找到工具",
+  "No results": "没有结果"
+}

@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "Renk doygunluğu ve parlaklığı. Ok tuşlarıyla ayarlayın.",
+  "This application's audio session ended. Refresh the list.": "Bu uygulamanın ses oturumu sona erdi. Listeyi yenileyin.",
+  "System sounds": "Sistem sesleri",
+  "Application ({0})": "Uygulama ({0})",
+  "No displays are connected.": "Bağlı ekran yok.",
+  "Could not locate the pointer.": "İşaretçi bulunamadı.",
+  "Could not read connected monitors.": "Bağlı monitörler okunamadı.",
+  "Could not enumerate monitors.": "Monitörler listelenemedi.",
+  "Show the window before placing it on a monitor.": "Bir monitöre yerleştirmeden önce pencereyi gösterin.",
+  "Could not position the overlay.": "Yer paylaşımı konumlandırılamadı.",
+  "Monitor dimensions must be positive.": "Monitör boyutları pozitif olmalıdır.",
+  "Could not access the desktop.": "Masaüstüne erişilemedi.",
+  "Could not allocate a capture context.": "Yakalama bağlamı ayrılamadı.",
+  "Could not allocate a screenshot.": "Ekran görüntüsü için bellek ayrılamadı.",
+  "Could not prepare the screenshot.": "Ekran görüntüsü hazırlanamadı.",
+  "Windows could not capture this desktop.": "Windows bu masaüstünü yakalayamadı.",
+  "Could not update overlay input mode.": "Yer paylaşımı girdi modu güncellenemedi.",
+  "The drawing control does not have a valid native window yet.": "Çizim denetiminin henüz geçerli bir yerel penceresi yok.",
+  "Windows could not update capture exclusion: {0}": "Windows yakalama dışlamasını güncelleyemedi: {0}"
+}

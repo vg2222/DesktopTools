@@ -1,0 +1,15 @@
+{
+  "Copy all": "Копіювати все",
+  "Copy selection": "Копіювати виділене",
+  "Translate": "Перекласти",
+  "Back to editing": "Назад до редагування",
+  "Fix text": "Виправити текст",
+  "Open link": "Відкрити посилання",
+  "Copy link": "Копіювати посилання",
+  "{0} words found": "Знайдено слів: {0}",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "Тягніть мишею, щоб виділити · подвійний клік — слово · потрійний — рядок · Ctrl+A — усе",
+  "Select text first.": "Спочатку виділіть текст.",
+  "Could not open the link: ": "Не вдалося відкрити посилання: ",
+  "Text view": "Текст на зображенні",
+  "Enter the corrected text": "Введіть виправлений текст"
+}

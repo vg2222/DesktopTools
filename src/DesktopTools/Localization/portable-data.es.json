@@ -1,0 +1,19 @@
+{
+  "Export settings": "Exportar ajustes",
+  "DesktopTools data": "Datos de DesktopTools",
+  "Import settings": "Importar ajustes",
+  "Import and restart": "Importar y reiniciar",
+  "Settings exported to ": "Ajustes exportados a ",
+  "Could not export settings: ": "No se pudieron exportar los ajustes: ",
+  "This file cannot be imported: ": "No se puede importar este archivo: ",
+  "settings and shortcuts": "ajustes y atajos",
+  "workflows": "flujos",
+  "notes": "notas",
+  "{0} profiles": "{0} perfiles",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "¿Reemplazar tus datos actuales ({0}) por los de este archivo? DesktopTools se reinicia para aplicarlos. Una copia de seguridad de los datos actuales queda en la carpeta de datos de DesktopTools.",
+  "Could not import the settings. Your current data was not changed: ": "No se pudieron importar los ajustes. Tus datos actuales no se modificaron: ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "Guarda ajustes, atajos, perfiles, flujos y notas en un archivo zip que puedes abrir en otro PC. No se sube nada.",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "Reemplaza tus ajustes, perfiles, flujos y notas con un archivo creado con «Exportar ajustes» y luego reinicia.",
+  "Export…": "Exportar…",
+  "Import…": "Importar…"
+}

@@ -1,0 +1,19 @@
+{
+  "Save as": "名前を付けて保存",
+  "MP4 video": "MP4 動画",
+  "GIF animation": "GIF アニメーション",
+  "Animated WebP": "アニメーション WebP",
+  "Frames per second": "フレーム/秒",
+  "Maximum width": "最大幅",
+  "Original": "元のサイズ",
+  "Export GIF": "GIF を書き出し",
+  "Export WebP": "WebP を書き出し",
+  "GIF animation|*.gif": "GIF アニメーション|*.gif",
+  "Animated WebP|*.webp": "アニメーション WebP|*.webp",
+  "Estimating file size…": "ファイルサイズを見積もり中…",
+  "Up to about {0} · {1} × {2} px · {3} frames": "最大で約 {0} · {1} × {2} px · {3} フレーム",
+  "The size could not be estimated.": "サイズを見積もれませんでした。",
+  "Save the animation as a {0} file.": "アニメーションを {0} ファイルとして保存してください。",
+  "Choose a new filename. Existing files are not overwritten.": "新しいファイル名を選んでください。既存のファイルは上書きされません。",
+  "This animation would be too large to build. Shorten the clip, lower the frame rate or choose a smaller width.": "このアニメーションは大きすぎて作成できません。クリップを短くするか、フレームレートを下げるか、幅を小さくしてください。"
+}

@@ -306,7 +306,7 @@ internal sealed partial class InstallerWindow
         }
         var menu = new Border
         {
-            Child = options, Width = 220, Background = CardBrush, BorderBrush = StrokeBrush,
+            Child = new ScrollViewer { Content = options, MaxHeight = 330, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }, Width = 220, Background = CardBrush, BorderBrush = StrokeBrush,
             BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(11)
         };
         languageMenu = new Popup
@@ -345,7 +345,7 @@ internal sealed partial class InstallerWindow
 
     private static Border LanguageFlag(string language)
     {
-        string country = language switch { "ru" => "ru", "de" => "de", "fr" => "fr", "es" => "es", _ => "gb" };
+        string country = language switch { "ru" => "ru", "de" => "de", "fr" => "fr", "es" => "es", "uk" => "ua", "zh" => "cn", "pt" => "pt", "ja" => "jp", "pl" => "pl", "tr" => "tr", "it" => "it", _ => "gb" };
         const double width = 22;
         const double height = 16.5;
         var flag = new Image

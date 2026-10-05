@@ -1,0 +1,15 @@
+{
+  "Sound": "声音",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "使用显卡进行编码。如果录制卡顿，请关闭。",
+  "Start at playhead": "从播放头开始",
+  "End at playhead": "在播放头结束",
+  "Resume": "继续",
+  "Lock in place (click through)    Ctrl+L": "锁定位置（点击穿透）    Ctrl+L",
+  "Pinned screenshots unlocked.": "已解锁固定的截图。",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "截图已锁定：点击会穿透它。若要解锁，请右键点击托盘中的 DesktopTools 图标，然后选择“解锁固定的截图”。",
+  "Unlock": "解锁",
+  "Close screenshot": "关闭截图",
+  "Unlock pinned screenshots": "解锁固定的截图",
+  "Close pinned screenshots": "关闭固定的截图",
+  "A pinned screenshot is locked and ignores the mouse.": "固定的截图已锁定，会忽略鼠标。"
+}

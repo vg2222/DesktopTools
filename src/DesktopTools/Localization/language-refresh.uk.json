@@ -1,0 +1,14 @@
+{
+  "DesktopTools restarts automatically to apply the new language.": "DesktopTools автоматично перезапускається, щоб застосувати нову мову.",
+  "DesktopTools could not finish restarting. Please open it again.": "DesktopTools не вдалося завершити перезапуск. Відкрийте його знову.",
+  "DesktopTools could not reopen automatically. Open it from the Start menu.": "DesktopTools не вдалося відкрити автоматично. Відкрийте його з меню «Пуск».",
+  "Installed version": "Установлена версія",
+  "Available version": "Доступна версія",
+  "Automatic checks": "Автоматичні перевірки",
+  "Every 15 minutes": "Кожні 15 хвилин",
+  "Every 30 minutes": "Кожні 30 хвилин",
+  "Every 2 hours": "Кожні 2 години",
+  "Every 3 hours": "Кожні 3 години",
+  "Recording setup": "Налаштування запису",
+  "Finish the current operation before changing the language.": "Завершіть поточну операцію, перш ніж змінювати мову."
+}

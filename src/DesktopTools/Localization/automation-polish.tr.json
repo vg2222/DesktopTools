@@ -1,0 +1,21 @@
+{
+  "Run": "Çalıştır",
+  "Select an action": "Bir eylem seçin",
+  "Action help": "Eylem yardımı",
+  "Test action": "Eylemi sına",
+  "Automatic triggers": "Otomatik tetikleyiciler",
+  "Target window": "Hedef pencere",
+  "Leave blank to use the current window.": "Geçerli pencereyi kullanmak için boş bırakın.",
+  "Use a value from 0 to 10000.": "0 ile 10000 arasında bir değer kullanın.",
+  "Daily at": "Her gün saat",
+  "HH:mm; leave blank to disable.": "SS:dd; devre dışı bırakmak için boş bırakın.",
+  "Triggers run while DesktopTools is open.": "Tetikleyiciler DesktopTools açıkken çalışır.",
+  "Esc to stop": "Durdurmak için Esc",
+  "Automation running": "Otomasyon çalışıyor",
+  "Recording actions": "Eylemler kaydediliyor",
+  "Recording starts in {0} seconds": "Kayıt {0} saniye sonra başlayacak",
+  "Action {0} of {1}": "Eylem {0} / {1}",
+  "Action {0}: {1}": "Eylem {0}: {1}",
+  "No matching actions": "Eşleşen eylem yok",
+  "Try another search.": "Başka bir arama deneyin."
+}

@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "Wybierz plik PNG, JPEG lub BMP, aby edytować kopię.",
+  "Choose a video to trim, crop and save a copy.": "Wybierz wideo, aby przyciąć, wykadrować i zapisać kopię.",
+  "Click to choose a display, window or region.": "Kliknij, aby wybrać wyświetlacz, okno lub obszar.",
+  "Choose recording source": "Wybierz źródło nagrywania",
+  "Translate text": "Przetłumacz tekst",
+  "Text from screenshot": "Tekst ze zrzutu ekranu",
+  "Select an area of your screen, then copy the recognized text.": "Zaznacz obszar ekranu, a następnie skopiuj rozpoznany tekst.",
+  "Type or paste text, choose the languages, then translate.": "Wpisz lub wklej tekst, wybierz języki, a następnie przetłumacz.",
+  "Update preview": "Aktualizuj podgląd",
+  "Original loaded. The preview updates automatically after you edit.": "Wczytano oryginał. Podgląd aktualizuje się automatycznie po edycji.",
+  "Preview pending": "Podgląd oczekuje",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "Wyświetlany jest oryginał, gdy przygotowywane są Twoje zmiany. Podgląd aktualizuje się automatycznie.",
+  "Updating preview…": "Aktualizowanie podglądu…",
+  "Selection controls": "Kontrolki zaznaczenia",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "Ukrywanie zależy od aplikacji do nagrywania lub udostępniania. Te okna mogą nadal być widoczne. Sprawdź, co widzą odbiorcy.",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "Rysowanie i efekty dla publiczności pozostają widoczne. Kontrolki rejestratora, kontrolki rysowania, notatki, powiadomienia i teleprompter startują ukryte. Zmień każdy wybór w Ustawienia → Prywatność."
+}

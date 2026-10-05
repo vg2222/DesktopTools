@@ -1,0 +1,9 @@
+{
+  "Drag the corners to keep an area. Drag inside the frame to move it.": "角をドラッグして残す領域を決めます。枠の内側をドラッグすると移動できます。",
+  "Crop width": "切り抜きの幅",
+  "Crop height": "切り抜きの高さ",
+  "Compare before and after": "ビフォー/アフターを比較",
+  "Drag the divider. Before is on the left; after is on the right.": "区切り線をドラッグします。左がビフォー、右がアフターです。",
+  "Before": "ビフォー",
+  "After": "アフター"
+}

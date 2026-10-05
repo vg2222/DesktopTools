@@ -54,6 +54,17 @@ internal static class Program
                 else if (args.Contains("--release-polish-only")) await Test("Release window, setup and recorder corrections", ReleasePolishChecks.RunAsync);
                 else if (args.Contains("--codec-compatibility-only")) await Test("Generated codec import and trimmed exports", CodecCompatibilityChecks.RunAsync);
                 else if (args.Contains("--record-sustained-only")) await Test("Sustained numbered recording", RecordingThroughputChecks.RunSustainedAsync);
+                else if (args.Contains("--animated-export-only")) await Test("GIF and animated WebP export", AnimatedExportChecks.RunAsync);
+                else if (args.Contains("--ocr-quality-only")) await Test("OCR accuracy: single pass versus enhanced reader", OcrQualityChecks.RunAsync);
+                else if (args.Contains("--ocr-consensus-only")) await Test("OCR consensus between several readings", OcrConsensusChecks.RunAsync);
+                else if (args.Contains("--ocr-bench")) await Test("OCR benchmark on ClearType text", OcrBenchmark.RunAsync);
+                else if (args.Contains("--text-copy-only")) await Test("Text view copy buttons", TextCopyChecks.RunAsync);
+                else if (args.Contains("--clipboard-only")) await Test("Clipboard text copy under contention", ClipboardServiceChecks.RunAsync);
+                else if (args.Contains("--text-selection-only")) await Test("Text selection view, word layout and editor embedding", TextSelectionChecks.RunAsync);
+                else if (args.Contains("--library-only")) await Test("Screenshot library: OCR index, search and clearing", ScreenshotLibraryChecks.RunAsync);
+                else if (args.Contains("--editor-shots")) await Test("Screenshot editor states", EditorShots.RunAsync);
+                else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);
+                else if (args.Contains("--record-probe")) await Test("Full-display recording probe", RecordingProbe.RunAsync);
                 else if (args.Contains("--record-display-only")) await Test("MSI display recording with regular source painting", RecordingThroughputChecks.RunDisplayAsync);
                 else if (args.Contains("--record-primary-display-only")) await Test("Primary display recording with regular source painting", RecordingThroughputChecks.RunPrimaryDisplayAsync);
                 else if (args.Contains("--record-throughput-only")) await Test("Numbered recording frames and sustained capture", RecordingThroughputChecks.RunAsync);

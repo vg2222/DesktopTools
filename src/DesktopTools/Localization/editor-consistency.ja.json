@@ -1,0 +1,7 @@
+{
+  "Show edited": "編集後を表示",
+  "Viewing original. Edits are still in your working copy.": "元の画像を表示中です。編集内容は作業コピーに残っています。",
+  "Viewing edited working copy. Export saves a separate file.": "編集後の作業コピーを表示中です。書き出すと別のファイルとして保存されます。",
+  "Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready.": "青いハンドルをドラッグして残す領域を決めるか、内側をドラッグして移動します。準備ができたら切り抜きを適用してください。",
+  "Drag an area to keep. The crop applies on release; Undo restores it.": "残したい領域をドラッグします。離すと切り抜きが適用されます。元に戻すと復元できます。"
+}

@@ -1,0 +1,12 @@
+{
+  "Initial setup": "Konfiguracja początkowa",
+  "Skip setup": "Pomiń konfigurację",
+  "Skip initial setup? You can restart it from Help.": "Pominąć konfigurację początkową? Możesz uruchomić ją ponownie z Pomocy.",
+  "Restart setup": "Uruchom konfigurację ponownie",
+  "Finish setup": "Zakończ konfigurację",
+  "Your preferences are saved. Tools start only when you open them.": "Twoje preferencje zostały zapisane. Narzędzia uruchamiają się tylko po otwarciu.",
+  "Ready": "Gotowe",
+  "Back": "Wstecz",
+  "Next": "Dalej",
+  "Help": "Pomoc"
+}

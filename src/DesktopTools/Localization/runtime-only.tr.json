@@ -1,0 +1,7 @@
+{
+  "Screen recording is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 yüklenene kadar ekran kaydı kullanılamaz.",
+  "Local translation needs Microsoft Visual C++ x64. Install it to use offline translation. Screen text scanning still works.": "Yerel çeviri Microsoft Visual C++ x64 gerektirir. Çevrimdışı çeviriyi kullanmak için yükleyin. Ekran metni tarama yine de çalışır.",
+  "Local translation is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 yüklenene kadar yerel çeviri kullanılamaz.",
+  "Background removal needs Microsoft Visual C++ x64. Other image editing tools still work.": "Arka plan kaldırma Microsoft Visual C++ x64 gerektirir. Diğer görüntü düzenleme araçları yine de çalışır.",
+  "Background removal is unavailable until Microsoft Visual C++ x64 is installed.": "Microsoft Visual C++ x64 yüklenene kadar arka plan kaldırma kullanılamaz."
+}

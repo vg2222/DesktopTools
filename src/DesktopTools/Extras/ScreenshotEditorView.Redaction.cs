@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace DesktopTools.Extras;
 
-public sealed partial class ScreenshotEditorWindow
+public sealed partial class ScreenshotEditorView
 {
     private AutoRedactOptions _redactOptions = new();
     private RedactionReviewState _reviewState = new();
@@ -22,6 +22,7 @@ public sealed partial class ScreenshotEditorWindow
     private ListBox _findings = null!;
     private WrapPanel _selectionActions = null!;
     private TextBlock _scanStatus = null!;
+    private Border _detectionNotice = null!;
     private Button _findButton = null!, _hideAllButton = null!, _acceptButton = null!, _ignoreButton = null!, _skipButton = null!, _cancelScan = null!;
     private readonly List<Button> _exportButtons = [];
     private Func<BitmapSource, ScreenshotExportAction, Task<bool>>? _exportAsync;
@@ -51,7 +52,7 @@ public sealed partial class ScreenshotEditorWindow
         choices.Children.Add(_acceptButton); choices.Children.Add(_ignoreButton); pane.Children.Add(choices);
         _skipButton = Ui.Button(L.T("Keep remaining visible"), () => { _analysisCancellation?.Cancel(); _reviewState.SkipRemaining(); _scanStatus.Text = L.T("Remaining areas stay visible. Check the image before sharing."); RefreshFindings(); });
         _skipButton.Margin = new Thickness(0, 8, 0, 8); pane.Children.Add(_skipButton);
-        _cancelScan = Ui.Button(L.T("Cancel analysis"), () => { _analysisCancellation?.Cancel(); _reviewState.Invalidate(); _scanStatus.Text = L.T("Check cancelled. Check again or continue without checking."); RefreshFindings(); }); pane.Children.Add(_cancelScan);
+        _cancelScan = Ui.Button(L.T("Cancel analysis"), () => { _analysisCancellation?.Cancel(); _reviewState.Invalidate(); _scanStatus.Text = L.T(_reviewState.RequiresScanToExport ? "Check cancelled. Check again or continue without checking." : "Check cancelled. Copy and Save still work."); RefreshFindings(); }); pane.Children.Add(_cancelScan);
         var manual = Ui.Button(L.T("Add cover manually"), () => { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = "Redaction"; Update(); });
         manual.SetResourceReference(BorderBrushProperty, "Divider");
         manual.Content = Ui.IconLabel("Redaction", L.T("Add cover manually")); manual.Margin = new Thickness(0, 0, 0, 8); pane.Children.Add(manual);
@@ -94,6 +95,13 @@ public sealed partial class ScreenshotEditorWindow
         var itemStyle = new Style(typeof(ListBoxItem)); itemStyle.Setters.Add(new Setter(Control.TemplateProperty, itemTemplate)); _findings.ItemContainerStyle = itemStyle;
         _findings.SelectionChanged += (_, _) => { _drawing.SelectedFinding = (_findings.SelectedItem as ListBoxItem)?.Tag is SensitiveFinding f ? f.Id : null; RefreshReviewControls(); };
         pane.Children.Add(_findings);
+        // Detection is automatic and imperfect; say so every time a check has finished (below the list, so the list keeps its place).
+        var noticeText = Ui.Text(L.T("Automatic detection can miss some private data, such as very small, blurred or unusual text, images and handwriting. Look through the picture yourself before you share it."), 11, muted: true);
+        var noticeIcon = Ui.Icon("About", 15); noticeIcon.VerticalAlignment = VerticalAlignment.Top; noticeIcon.Margin = new Thickness(0, 1, 8, 0);
+        var noticeRow = new DockPanel(); DockPanel.SetDock(noticeIcon, Dock.Left); noticeRow.Children.Add(noticeIcon); noticeRow.Children.Add(noticeText);
+        _detectionNotice = new Border { Name = "DetectionNotice", Child = noticeRow, Padding = new Thickness(10, 8, 10, 8), CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 8), Visibility = Visibility.Collapsed };
+        _detectionNotice.SetResourceReference(Border.BackgroundProperty, "Field"); _detectionNotice.SetResourceReference(Border.BorderBrushProperty, "Stroke");
+        pane.Children.Add(_detectionNotice);
         // Keep the result list directly below the primary action. Secondary
         // actions must not push all findings outside a short window's viewport.
         foreach (var action in new UIElement[] { choices, _skipButton, manual }) { pane.Children.Remove(action); pane.Children.Add(action); }
@@ -101,12 +109,44 @@ public sealed partial class ScreenshotEditorWindow
         optionsButton.SetResourceReference(BorderBrushProperty, "Divider");
         optionsButton.Content = Ui.IconLabel("Settings", L.T("Detection options")); optionsButton.Margin = new Thickness(0, 8, 0, 0);
         pane.Children.Add(optionsButton); pane.Children.Add(optionsPane);
-        var annotationOptions = new StackPanel { Visibility = Visibility.Collapsed };
-        foreach (var child in properties.Children.Cast<UIElement>().ToArray()) { properties.Children.Remove(child); annotationOptions.Children.Add(child); }
-        properties.Children.Add(pane);
-        var drawingOptions = Ui.Button(L.T("Drawing options"), () => annotationOptions.Visibility = annotationOptions.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible);
-        drawingOptions.SetResourceReference(BorderBrushProperty, "Divider");
-        drawingOptions.Content = Ui.IconLabel("Pen", L.T("Drawing options")); properties.Children.Add(drawingOptions); properties.Children.Add(annotationOptions);
+        // Two clearly separate jobs share the side panel: styling what you draw, and hiding private data.
+        var drawPane = new StackPanel();
+        foreach (var child in properties.Children.Cast<UIElement>().ToArray()) { properties.Children.Remove(child); drawPane.Children.Add(child); }
+        var stylePane = BuildStylePane();
+        var tabs = new Grid { Margin = new Thickness(0, 0, 0, 14) };
+        for (int i = 0; i < (_hosted ? 2 : 3); i++) tabs.ColumnDefinitions.Add(new ColumnDefinition());
+        var drawTab = new RadioButton { Content = L.T("Draw"), GroupName = "EditorPanel", Margin = new Thickness(0, 0, 3, 0) };
+        var styleTab = new RadioButton { Content = L.T("Style"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 3, 0) };
+        var privacyTab = new RadioButton { Content = L.T("Hide data"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 0, 0) };
+        var tabList = new[] { drawTab, styleTab, privacyTab };
+        var shownTabs = _hosted ? new[] { drawTab, privacyTab } : tabList;   // Style (frame, background, shadow) only applies to finished copies, not to Image tools
+        for (int i = 0; i < tabList.Length; i++)
+        {
+            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 7);
+            if (shownTabs.Contains(tabList[i])) { Grid.SetColumn(tabList[i], Array.IndexOf(shownTabs, tabList[i])); tabs.Children.Add(tabList[i]); }
+            string[] tabIcons = ["Draw", "Background", "Shield"];
+            System.Windows.Automation.AutomationProperties.SetName(tabList[i], (string)tabList[i].Content);
+            // Icon above the label: three equal tabs stay readable in every language, including long German or Polish words.
+            var tabContent = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center };
+            var tabIcon = Ui.Icon(tabIcons[i], 17); tabIcon.HorizontalAlignment = HorizontalAlignment.Center; tabContent.Children.Add(tabIcon);
+            var tabLabel = Ui.Text((string)tabList[i].Content, 11); tabLabel.Margin = new Thickness(0, 4, 0, 0); tabLabel.TextTrimming = TextTrimming.CharacterEllipsis; tabLabel.TextAlignment = TextAlignment.Center; tabContent.Children.Add(tabLabel);
+            tabList[i].Content = tabContent; Ui.Tip(tabList[i], System.Windows.Automation.AutomationProperties.GetName(tabList[i]));
+        }
+        void ShowPanel(int index)
+        {
+            drawPane.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            stylePane.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+            pane.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+            if (tabList[index].IsChecked != true) tabList[index].IsChecked = true;
+            if (index == 1) RefreshStylePreview();
+        }
+        void ShowPrivacy(bool privacy) { if (privacy) ShowPanel(2); else if (pane.Visibility == Visibility.Visible) ShowPanel(0); }
+        drawTab.Checked += (_, _) => { if (_tool == "Redaction") { _tool = "Pen"; Update(); } ShowPanel(0); };
+        styleTab.Checked += (_, _) => ShowPanel(1);
+        privacyTab.Checked += (_, _) => ShowPanel(2);
+        _showPrivacyTab = ShowPrivacy;
+        properties.Children.Add(tabs); properties.Children.Add(drawPane); if (!_hosted) properties.Children.Add(stylePane); properties.Children.Add(pane);
+        ShowPanel(automaticReview ? 2 : 0);
         _reviewDocumentRevision = _document.Revision; _reviewInitialized = true;
         if (automaticReview) Loaded += async (_, _) => await FindSensitiveDataAsync();
         RefreshFindings();
@@ -115,11 +155,13 @@ public sealed partial class ScreenshotEditorWindow
     internal async Task FindSensitiveDataAsync()
     {
         if (_reviewClosed || _reviewState.IsScanning || _exporting) return;
+        _showPrivacyTab?.Invoke(true);
         if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); UpdateRedactionReview();
         _analysisCancellation?.Cancel(); _analysisCancellation?.Dispose();
         var cancellation = new CancellationTokenSource(); _analysisCancellation = cancellation;
         long revision = _reviewState.BeginScan(), imageRevision = _document.Revision;
-        _scanStatus.Text = L.T("Analyzing this image locally…"); RefreshFindings();
+        _detectionNotice.Visibility = Visibility.Collapsed;
+        _scanStatus.Text = L.T("Analyzing this image locally…"); RefreshFindings(); StartScanEffect();
         try
         {
             var languages = LocalOcr.Languages; var language = LocalOcr.SelectLanguage(languages, _redactOptions.Language);
@@ -132,13 +174,15 @@ public sealed partial class ScreenshotEditorWindow
             var full = result.Select(f => f with { Bounds = new(f.Bounds.X + crop.X, f.Bounds.Y + crop.Y, f.Bounds.Width, f.Bounds.Height) }).ToArray();
             if (!_reviewState.CompleteScan(revision, full)) return;
             _scanStatus.Text = full.Length == 0 ? L.T("Nothing found. Check the image or add a cover manually.") : L.F($"Found areas: {full.Length}");
+            _detectionNotice.Visibility = Visibility.Visible; _report(L.T("Check finished. Detection can miss some data, so look through the picture yourself before you share it."));
         }
         catch (OperationCanceledException) { if (!_reviewClosed) _reviewState.FailScan(revision); }
         catch (SensitiveDataAnalysisException ex) { if (!_reviewClosed) { _reviewState.FailScan(revision); _scanStatus.Text = ex.Message; } }
         catch (Exception) { if (!_reviewClosed) { _reviewState.FailScan(revision); _scanStatus.Text = L.T("Could not analyze this image. Try again, add covers manually, or ignore this check."); } }
-        finally { if (!_reviewClosed) RefreshFindings(); }
+        finally { StopScanEffect(); if (!_reviewClosed) RefreshFindings(); }
     }
 
+    private const int CoverPadding = 3;
     private void AcceptSensitiveData()
     {
         HideSensitiveData(SelectedFindings());
@@ -147,9 +191,9 @@ public sealed partial class ScreenshotEditorWindow
     {
         if (selected.Count == 0 || _reviewState.IsScanning || _exporting) return;
         CommitText(); CancelGesture();
-        _document.AddRange(selected.Select(f => new Annotation { Kind = AnnotationKind.Redaction, RedactionStyle = _redactionStyle, Points = [new(f.Bounds.X, f.Bounds.Y), new(f.Bounds.X + f.Bounds.Width, f.Bounds.Y + f.Bounds.Height)] }).ToArray());
+        _document.AddRange(selected.Select(f => new Annotation { Kind = AnnotationKind.Redaction, RedactionStyle = _redactionStyle, Points = [new(Math.Max(0, f.Bounds.X - CoverPadding), Math.Max(0, f.Bounds.Y - CoverPadding)), new(Math.Min(_image.PixelWidth, f.Bounds.X + f.Bounds.Width + CoverPadding), Math.Min(_image.PixelHeight, f.Bounds.Y + f.Bounds.Height + CoverPadding))] }).ToArray());
         _reviewDocumentRevision = _document.Revision; _reviewState.Resolve(selected.Select(f => f.Id).ToArray());
-        _tool = "Select"; _drawing.SelectedId = _document.Items[^1].Id;
+        _tool = "Select"; _drawing.SelectedId = null; // finished covers read as plain black bars, not as one selected box with handles
         _scanStatus.Text = L.F($"Hidden areas: {selected.Count}. Undo restores them."); RefreshFindings(); Update();
     }
     private SensitiveFinding[] SelectedFindings() => _findings.SelectedItems.OfType<ListBoxItem>().Select(i => (SensitiveFinding)i.Tag).ToArray();
@@ -177,9 +221,10 @@ public sealed partial class ScreenshotEditorWindow
         _findings.Visibility = _reviewState.HasUnresolved ? Visibility.Visible : Visibility.Collapsed;
         _selectionActions.Visibility = _findings.SelectedItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         _acceptButton.IsEnabled = _ignoreButton.IsEnabled = _findings.SelectedItems.Count > 0 && !_reviewState.IsScanning && !_exporting;
-        _skipButton.IsEnabled = !_reviewState.IsScanning && !_exporting && (_reviewState.NeedsScan || _reviewState.HasUnresolved);
-        _skipButton.Visibility = _reviewState.NeedsScan || _reviewState.HasUnresolved ? Visibility.Visible : Visibility.Collapsed;
-        _skipButton.Content = L.T(_reviewState.NeedsScan ? "Continue without checking" : "Keep remaining visible");
+        // "Continue without checking" exists only where a missing check blocks output; the ordinary editor never needs it.
+        _skipButton.IsEnabled = !_reviewState.IsScanning && !_exporting && (_reviewState.RequiresScanToExport || _reviewState.HasUnresolved);
+        _skipButton.Visibility = _reviewState.RequiresScanToExport || _reviewState.HasUnresolved ? Visibility.Visible : Visibility.Collapsed;
+        _skipButton.Content = L.T(_reviewState.RequiresScanToExport ? "Continue without checking" : "Keep remaining visible");
         _cancelScan.Visibility = _reviewState.IsScanning ? Visibility.Visible : Visibility.Collapsed;
         foreach (var button in _exportButtons) button.IsEnabled = _reviewState.CanExport && !_exporting;
         _drawing.InvalidateVisual();
@@ -188,7 +233,8 @@ public sealed partial class ScreenshotEditorWindow
     {
         if (!_reviewInitialized || _reviewClosed || _reviewDocumentRevision == _document.Revision) return;
         _reviewDocumentRevision = _document.Revision; _analysisCancellation?.Cancel(); _reviewState.Invalidate();
-        if (_reviewState.NeedsScan) _scanStatus.Text = L.T("Image changed. Scan again or explicitly ignore this check.");
+        if (_reviewState.NeedsScan) _scanStatus.Text = L.T(_reviewState.RequiresScanToExport ? "Image changed. Scan again or explicitly ignore this check."
+            : "Image changed since the last check. Check again to look for new private data. Copy and Save still work.");
         RefreshFindings();
     }
     private void CloseRedactionReview()

@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "Виберіть PNG, JPEG або BMP, щоб редагувати копію.",
+  "Choose a video to trim, crop and save a copy.": "Виберіть відео, щоб обрізати, кадрувати й зберегти копію.",
+  "Click to choose a display, window or region.": "Клацніть, щоб вибрати дисплей, вікно або область.",
+  "Choose recording source": "Вибрати джерело запису",
+  "Translate text": "Переклад тексту",
+  "Text from screenshot": "Текст зі знімка екрана",
+  "Select an area of your screen, then copy the recognized text.": "Виберіть ділянку екрана, потім скопіюйте розпізнаний текст.",
+  "Type or paste text, choose the languages, then translate.": "Введіть або вставте текст, виберіть мови, потім перекладіть.",
+  "Update preview": "Оновити попередній перегляд",
+  "Original loaded. The preview updates automatically after you edit.": "Оригінал завантажено. Після редагування попередній перегляд оновлюється автоматично.",
+  "Preview pending": "Попередній перегляд очікує",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "Показано оригінал, поки готуються ваші зміни. Попередній перегляд оновлюється автоматично.",
+  "Updating preview…": "Оновлення попереднього перегляду…",
+  "Selection controls": "Елементи керування виділенням",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "Приховування залежить від програми запису чи демонстрації. Ці вікна все ще можуть бути видимими. Перевірте, що бачать ваші глядачі.",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "Малювання й ефекти для аудиторії залишаються видимими. Елементи керування записом, малюванням, нотатки, сповіщення й телесуфлер запускаються схованими. Змінюйте кожен вибір у Налаштування → Конфіденційність."
+}

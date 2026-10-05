@@ -1,0 +1,19 @@
+{
+  "Export settings": "Exportar configurações",
+  "DesktopTools data": "Dados do DesktopTools",
+  "Import settings": "Importar configurações",
+  "Import and restart": "Importar e reiniciar",
+  "Settings exported to ": "Configurações exportadas para ",
+  "Could not export settings: ": "Não foi possível exportar as configurações: ",
+  "This file cannot be imported: ": "Este arquivo não pode ser importado: ",
+  "settings and shortcuts": "configurações e atalhos",
+  "workflows": "fluxos de trabalho",
+  "notes": "notas",
+  "{0} profiles": "{0} perfis",
+  "Replace your current data ({0}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder.": "Substituir seus dados atuais ({0}) pelos dados deste arquivo? O DesktopTools reinicia para aplicá-los. Um backup dos dados atuais fica na pasta de dados do DesktopTools.",
+  "Could not import the settings. Your current data was not changed: ": "Não foi possível importar as configurações. Seus dados atuais não foram alterados: ",
+  "Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded.": "Salva configurações, atalhos, perfis, fluxos de trabalho e notas em um arquivo zip que você pode abrir em outro PC. Nada é enviado pela rede.",
+  "Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts.": "Substitui suas configurações, perfis, fluxos de trabalho e notas por um arquivo criado em Exportar configurações e reinicia em seguida.",
+  "Export…": "Exportar…",
+  "Import…": "Importar…"
+}

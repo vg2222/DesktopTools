@@ -66,6 +66,9 @@ public sealed class ScreenshotEditDocument
         var items = Items.Where(a => a.Id != pending?.Id && hidden?.Contains(a.Id) != true);
         return Render(pending == null ? items : items.Append(pending), new(0, 0, _source.PixelWidth, _source.PixelHeight));
     }
+    /// <summary>The picture without one annotation (and any hidden ones), used as a stable backdrop while that annotation is being drawn or moved.</summary>
+    public BitmapSource RenderWithout(Guid? excluded, IReadOnlyCollection<Guid>? hidden = null) =>
+        Render(Items.Where(a => a.Id != excluded && hidden?.Contains(a.Id) != true), new(0, 0, _source.PixelWidth, _source.PixelHeight));
     private BitmapSource Render(IEnumerable<Annotation> annotations, Int32Rect crop)
     {
         var items = annotations.ToArray();

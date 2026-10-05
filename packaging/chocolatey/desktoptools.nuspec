@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>desktoptools</id>
+    <version>1.2.7</version>
+    <title>DesktopTools</title>
+    <authors>vg2222</authors>
+    <projectUrl>https://github.com/vg2222/DesktopTools</projectUrl>
+    <licenseUrl>https://github.com/vg2222/DesktopTools/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/vg2222/DesktopTools</projectSourceUrl>
+    <bugTrackerUrl>https://github.com/vg2222/DesktopTools/issues</bugTrackerUrl>
+    <releaseNotes>https://github.com/vg2222/DesktopTools/releases/tag/v1.2.7</releaseNotes>
+    <tags>screenshot screen-recorder annotation presentation ocr teleprompter windows</tags>
+    <summary>Screenshots, screen recording, drawing and presentation tools for Windows 11.</summary>
+    <description>DesktopTools brings region capture and annotation, screen recording and a video editor, on-screen drawing, laser pointer and spotlight, OCR, offline translation, floating notes and a teleprompter into one local-first app. No account and no telemetry. Windows 11 x64.</description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

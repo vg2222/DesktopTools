@@ -1,0 +1,22 @@
+{
+  "News": "新闻",
+  "Announcements and important update notices.": "公告和重要更新通知。",
+  "News is available offline. Check for newer announcements.": "新闻可离线查看。请检查是否有更新的公告。",
+  "Checking news…": "正在检查新闻…",
+  "Showing bundled news. No online feed is available yet.": "显示的是内置新闻。目前尚无在线源。",
+  "News is up to date.": "新闻已是最新。",
+  "Could not check news. Showing saved announcements.": "无法检查新闻。显示已保存的公告。",
+  "Open news": "打开新闻",
+  "View details": "查看详情",
+  "Remind me later": "稍后提醒我",
+  "Security update available": "有可用的安全更新",
+  "Latest announcements": "最新公告",
+  "Check news": "检查新闻",
+  "Check news automatically": "自动检查新闻",
+  "Checks once an hour while DesktopTools is running.": "DesktopTools 运行期间每小时检查一次。",
+  "No announcements yet. Check again later.": "暂无公告。请稍后再来查看。",
+  "Security notice": "安全通知",
+  "Announcement": "公告",
+  "A fixed update is ready. DesktopTools will ask before downloading or restarting.": "已有修复版更新。下载或重启前，DesktopTools 会先询问您。",
+  "A fixed update is not available yet. Check for updates or read the details.": "暂时没有修复版更新。请检查更新或阅读详情。"
+}

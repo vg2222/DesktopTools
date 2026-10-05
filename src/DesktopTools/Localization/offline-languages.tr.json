@@ -1,0 +1,12 @@
+{
+  "Translate locally with offline language packs.": "Çevrimdışı dil paketleriyle yerel olarak çevirin.",
+  "Download offline packs": "Çevrimdışı paketleri indir",
+  "Refresh Windows OCR languages": "Windows OCR dillerini yenile",
+  "Download the offline language pack first.": "Önce çevrimdışı dil paketini indirin.",
+  "Offline packs needed: {0:0} MB. Download once; your text stays on this PC.": "Gereken çevrimdışı paketler: {0:0} MB. Bir kez indirin; metniniz bu bilgisayarda kalır.",
+  "Offline translation through English. Review the result.": "İngilizce üzerinden çevrimdışı çeviri. Sonucu gözden geçirin.",
+  "Offline packs ready. Your text stays on this PC.": "Çevrimdışı paketler hazır. Metniniz bu bilgisayarda kalır.",
+  "Downloading offline packs…": "Çevrimdışı paketler indiriliyor…",
+  "Could not download offline packs: ": "Çevrimdışı paketler indirilemedi: ",
+  "Installed Windows languages appear first. Extra offline languages require a one-time model download.": "Yüklü Windows dilleri önce görünür. Ek çevrimdışı diller tek seferlik model indirmesi gerektirir."
+}

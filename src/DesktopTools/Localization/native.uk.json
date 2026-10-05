@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "Насиченість і яскравість кольору. Налаштовуйте клавішами зі стрілками.",
+  "This application's audio session ended. Refresh the list.": "Аудіосеанс цієї програми завершився. Оновіть список.",
+  "System sounds": "Системні звуки",
+  "Application ({0})": "Програма ({0})",
+  "No displays are connected.": "Жодного дисплея не підключено.",
+  "Could not locate the pointer.": "Не вдалося визначити положення вказівника.",
+  "Could not read connected monitors.": "Не вдалося прочитати підключені монітори.",
+  "Could not enumerate monitors.": "Не вдалося перелічити монітори.",
+  "Show the window before placing it on a monitor.": "Покажіть вікно, перш ніж розміщувати його на моніторі.",
+  "Could not position the overlay.": "Не вдалося розташувати накладку.",
+  "Monitor dimensions must be positive.": "Розміри монітора мають бути додатними.",
+  "Could not access the desktop.": "Не вдалося отримати доступ до робочого столу.",
+  "Could not allocate a capture context.": "Не вдалося виділити контекст захоплення.",
+  "Could not allocate a screenshot.": "Не вдалося виділити пам’ять для знімка екрана.",
+  "Could not prepare the screenshot.": "Не вдалося підготувати знімок екрана.",
+  "Windows could not capture this desktop.": "Windows не вдалося захопити цей робочий стіл.",
+  "Could not update overlay input mode.": "Не вдалося змінити режим вводу накладки.",
+  "The drawing control does not have a valid native window yet.": "Елемент керування малюванням ще не має дійсного власного вікна.",
+  "Windows could not update capture exclusion: {0}": "Windows не вдалося оновити виключення із захоплення: {0}"
+}

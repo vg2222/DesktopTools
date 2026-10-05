@@ -1,0 +1,10 @@
+{
+  "Remove background": "移除背景",
+  "Local AI · review edges before saving PNG.": "本地 AI · 保存 PNG 前请检查边缘。",
+  "Removing background locally…": "正在本地移除背景…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "背景已移除。请检查细节边缘；撤销可恢复图像。导出 PNG 会保留透明度。",
+  "Background removal canceled. The image is unchanged.": "已取消移除背景。图像未更改。",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "缺少背景移除模型。请解压完整的 DesktopTools 软件包。",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "背景移除模型已损坏。请解压全新的 DesktopTools 软件包。",
+  "The background-removal model returned an invalid mask.": "背景移除模型返回了无效的蒙版。"
+}

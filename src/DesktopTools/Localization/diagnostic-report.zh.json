@@ -1,0 +1,6 @@
+{
+  "Copy report": "复制报告",
+  "Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced.": "复制用于错误报告的摘要。您的用户名、计算机名、路径、电子邮件和 IP 地址会被替换。",
+  "Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.": "报告已复制。您的用户名、计算机名、路径、电子邮件和 IP 地址已被替换。",
+  "Could not copy the report: ": "无法复制报告： "
+}

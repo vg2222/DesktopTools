@@ -1,0 +1,15 @@
+{
+  "Copy all": "全部复制",
+  "Copy selection": "复制所选内容",
+  "Translate": "翻译",
+  "Back to editing": "返回编辑",
+  "Fix text": "修正文本",
+  "Open link": "打开链接",
+  "Copy link": "复制链接",
+  "{0} words found": "找到 {0} 个词",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "拖动选择文字 · 双击选词 · 三击选行 · Ctrl+A 全选",
+  "Select text first.": "请先选择文字。",
+  "Could not open the link: ": "无法打开链接：",
+  "Text view": "文字视图",
+  "Enter the corrected text": "输入修正后的文字"
+}

@@ -1,0 +1,18 @@
+{
+  "Choose a PNG, JPEG or BMP to edit a copy.": "选择 PNG、JPEG 或 BMP 以编辑副本。",
+  "Choose a video to trim, crop and save a copy.": "选择视频以剪辑、裁剪并保存副本。",
+  "Click to choose a display, window or region.": "点击以选择显示器、窗口或区域。",
+  "Choose recording source": "选择录制来源",
+  "Translate text": "翻译文字",
+  "Text from screenshot": "截图中的文字",
+  "Select an area of your screen, then copy the recognized text.": "选择屏幕上的一个区域，然后复制识别出的文字。",
+  "Type or paste text, choose the languages, then translate.": "输入或粘贴文字，选择语言，然后翻译。",
+  "Update preview": "更新预览",
+  "Original loaded. The preview updates automatically after you edit.": "已载入原图。编辑后预览会自动更新。",
+  "Preview pending": "预览待更新",
+  "Showing the original while your changes are prepared. The preview updates automatically.": "正在准备您的更改，暂时显示原图。预览会自动更新。",
+  "Updating preview…": "正在更新预览…",
+  "Selection controls": "选择控件",
+  "Hiding depends on the recording or sharing app. These windows might still be visible. Check what your viewers see.": "隐藏效果取决于录制或共享应用。这些窗口仍可能可见。请检查观看者看到的内容。",
+  "Drawing and audience effects stay visible. Recorder controls, drawing controls, notes, notifications and the teleprompter start hidden. Change each choice in Settings → Privacy.": "绘图和观众效果保持可见。录制控件、绘图控件、笔记、通知和提词器默认隐藏。可在 设置 → 隐私 中分别更改。"
+}

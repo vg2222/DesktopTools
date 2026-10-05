@@ -151,6 +151,12 @@ internal static class Program
             Check(loaded.RecordingQuality == "Balanced" && loaded.RecordingFramesPerSecond == 30);
         }));
         Test("Notes persistence, recovery and bounds", NotesStoreTests.Run);
+        Test("Diagnostic report hides personal details", DiagnosticReportTests.Run);
+        Test("Portable data export, validation and import", PortableDataTests.Run);
+        Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
+        Test("Screenshot library searches, prunes, recovers and clears", ScreenshotLibraryTests.Run);
+        Test("Animated GIF encoder writes valid, compact animations", GifEncoderTests.Run);
+        Test("Animated WebP container wraps lossy frames", AnimatedWebpTests.Run);
         Test("History restores erased objects and undoable clear", () =>
         {
             var doc = new AnnotationDocument(); var a = new Annotation(); var b = new Annotation { Kind = AnnotationKind.Text, Text = "hello" };
@@ -185,6 +191,7 @@ internal static class Program
             Check(new SettingsStore(path).Load().DrawingEnabled);
         }));
         AutoRedactTests.Run(Test, Check);
+        TextSelectionTests.Run(Test, Check);
         AutomationTests.Run(Test, Check);
         DrawingEditTests.Run(Test, Check);
         DrawingBindingTests.Run(Test, Check);

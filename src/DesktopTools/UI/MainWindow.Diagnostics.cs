@@ -19,6 +19,12 @@ internal sealed partial class MainWindow
         rerun.Tag = "diagnostics-rerun";
         DockPanel.SetDock(rerun, Dock.Right);
         heading.Children.Add(rerun);
+        var copyReport = Ui.Button(L.T("Copy report"), CopyDiagnosticReport);
+        copyReport.Content = Ui.IconLabel("Copy", L.T("Copy report"));
+        copyReport.Tag = "diagnostics-copy-report";
+        Ui.Tip(copyReport, L.T("Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced."));
+        DockPanel.SetDock(copyReport, Dock.Right);
+        heading.Children.Add(copyReport);
         heading.Children.Add(Ui.Text(L.T("Checks run locally and do not change your files or settings."), 13, muted: true));
         page.Children.Add(heading);
 
@@ -100,6 +106,51 @@ internal sealed partial class MainWindow
         var boundary = Ui.Text(L.T("These checks detect missing files and shortcut registration. They do not test capture quality, codecs or what a screen-sharing viewer sees."), 12, muted: true);
         boundary.Margin = new Thickness(0, 2, 0, 8);
         page.Children.Add(boundary);
+    }
+
+    /// <summary>Builds the report from the same checks the page shows, then copies it. Nothing is uploaded.</summary>
+    private void CopyDiagnosticReport()
+    {
+        var settings = controller.Settings;
+        var missingRuntime = VisualCppRuntime.FindMissingFiles();
+        var missingMedia = NativeDependencyDiagnostics.FindMissingMediaFoundationFiles();
+        string ocr;
+        try { var languages = LocalOcr.Languages; ocr = languages.Count == 0 ? "no Windows OCR languages installed" : string.Join(", ", languages.Select(language => language.Name)); }
+        catch (Exception ex) { ocr = "unavailable: " + ex.GetType().Name; }
+        var requested = FeatureShortcutCatalog.Bindings(settings);
+        var registered = controller.RegisteredShortcuts;
+        var inactive = requested.Keys.Where(action => !registered.ContainsKey(action)).Select(action => action + " (" + requested[action] + ")").ToArray();
+        var screens = MonitorService.GetAll().Select(m => $"{m.Bounds.Width:0}x{m.Bounds.Height:0} at {m.ScaleX * 100:0}% scale").ToArray();
+        string version = typeof(MainWindow).Assembly.GetName().Version is { } v ? $"{v.Major}.{v.Minor}.{v.Build}" : "unknown";
+        var sections = new[]
+        {
+            new DiagnosticReport.Section("System", new[]
+            {
+                System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                "Process architecture " + System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture + ", " + System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                "Displays: " + (screens.Length == 0 ? "none reported" : string.Join("; ", screens)),
+            }),
+            new DiagnosticReport.Section("Components", new[]
+            {
+                "Visual C++ runtime: " + (missingRuntime.Count == 0 ? "ready" : "missing " + string.Join(", ", missingRuntime)),
+                "Windows Media Foundation: " + (missingMedia.Count == 0 ? "ready" : "missing " + string.Join(", ", missingMedia)),
+                "Windows OCR languages: " + ocr,
+            }),
+            new DiagnosticReport.Section("Shortcuts", new[]
+            {
+                $"{registered.Count} of {requested.Count} enabled shortcuts are active",
+                inactive.Length == 0 ? "No inactive shortcuts" : "Inactive: " + string.Join(", ", inactive),
+            }),
+            new DiagnosticReport.Section("Settings", new[]
+            {
+                $"Language {settings.Language}, theme {settings.Theme}, animations {settings.Animations}, transparency {settings.Transparency}",
+                $"Recording: {settings.RecordingFramesPerSecond} FPS, {settings.RecordingQuality} quality, hardware acceleration {settings.RecordingHardwareAcceleration}",
+            }),
+        };
+        string report = DiagnosticReport.Build(version, sections, DateTime.UtcNow, Environment.UserName, Environment.MachineName,
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+        try { var copied = DesktopTools.Native.ClipboardService.SetText(report); if (!copied.Success) throw new InvalidOperationException(copied.Error); controller.Report(L.T("Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.")); }
+        catch (Exception ex) { controller.Report(L.T("Could not copy the report: ") + ex.Message, NotificationKind.Warning); }
     }
 
     private static Border DiagnosticCard(string title, bool ready, string detail, string icon, FrameworkElement? action)

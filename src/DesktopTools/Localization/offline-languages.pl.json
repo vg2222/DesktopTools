@@ -1,0 +1,12 @@
+{
+  "Translate locally with offline language packs.": "Tłumacz lokalnie za pomocą pakietów językowych offline.",
+  "Download offline packs": "Pobierz pakiety offline",
+  "Refresh Windows OCR languages": "Odśwież języki OCR systemu Windows",
+  "Download the offline language pack first.": "Najpierw pobierz pakiet językowy offline.",
+  "Offline packs needed: {0:0} MB. Download once; your text stays on this PC.": "Wymagane pakiety offline: {0:0} MB. Pobierz raz; Twój tekst zostaje na tym komputerze.",
+  "Offline translation through English. Review the result.": "Tłumaczenie offline przez angielski. Sprawdź wynik.",
+  "Offline packs ready. Your text stays on this PC.": "Pakiety offline gotowe. Twój tekst zostaje na tym komputerze.",
+  "Downloading offline packs…": "Pobieranie pakietów offline…",
+  "Could not download offline packs: ": "Nie można pobrać pakietów offline: ",
+  "Installed Windows languages appear first. Extra offline languages require a one-time model download.": "Zainstalowane języki systemu Windows są na początku. Dodatkowe języki offline wymagają jednorazowego pobrania modelu."
+}

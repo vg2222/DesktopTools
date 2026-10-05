@@ -1,0 +1,6 @@
+{
+  "Copy report": "Скопировать отчёт",
+  "Copies a summary for a bug report. Your user name, computer name, paths, e-mail and IP addresses are replaced.": "Копирует сводку для отчёта об ошибке. Имя пользователя, имя компьютера, пути, e-mail и IP-адреса заменяются.",
+  "Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.": "Отчёт скопирован. Имя пользователя, имя компьютера, пути, e-mail и IP-адреса заменены.",
+  "Could not copy the report: ": "Не удалось скопировать отчёт: "
+}

@@ -1,0 +1,10 @@
+{
+  "Remove background": "Видалити фон",
+  "Local AI · review edges before saving PNG.": "Локальний ШІ · перегляньте краї перед збереженням PNG.",
+  "Removing background locally…": "Локальне видалення фону…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "Фон видалено. Перевірте тонкі краї; «Скасувати» повертає зображення. Експорт PNG зберігає прозорість.",
+  "Background removal canceled. The image is unchanged.": "Видалення фону скасовано. Зображення не змінено.",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "Модель видалення фону відсутня. Розпакуйте повний пакет DesktopTools.",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "Модель видалення фону пошкоджена. Розпакуйте новий пакет DesktopTools.",
+  "The background-removal model returned an invalid mask.": "Модель видалення фону повернула недійсну маску."
+}

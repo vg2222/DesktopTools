@@ -1,0 +1,5 @@
+{
+  "Frame rate is a target. A display or region records at the screen’s rate; a single window is limited to about 48 FPS.": "フレームレートは目標値です。ディスプレイや領域は画面のリフレッシュレートで録画されます。単一のウィンドウは約 48 FPS に制限されます。",
+  "Uses the graphics card to encode. Without it, recording is limited to 30 FPS.": "グラフィックスカードでエンコードします。使用しない場合、録画は 30 FPS に制限されます。",
+  "Use graphics hardware when available. Without it, recording is limited to 30 FPS. Turn off only if recording fails or looks incorrect.": "可能な場合はグラフィックスハードウェアを使います。使用しない場合、録画は 30 FPS に制限されます。録画に失敗する、または映像がおかしい場合にのみオフにしてください。"
+}

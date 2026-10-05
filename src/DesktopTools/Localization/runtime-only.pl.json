@@ -1,0 +1,7 @@
+{
+  "Screen recording is unavailable until Microsoft Visual C++ x64 is installed.": "Nagrywanie ekranu jest niedostępne, dopóki nie zostanie zainstalowany Microsoft Visual C++ x64.",
+  "Local translation needs Microsoft Visual C++ x64. Install it to use offline translation. Screen text scanning still works.": "Tłumaczenie lokalne wymaga Microsoft Visual C++ x64. Zainstaluj go, aby używać tłumaczenia offline. Skanowanie tekstu na ekranie nadal działa.",
+  "Local translation is unavailable until Microsoft Visual C++ x64 is installed.": "Tłumaczenie lokalne jest niedostępne, dopóki nie zostanie zainstalowany Microsoft Visual C++ x64.",
+  "Background removal needs Microsoft Visual C++ x64. Other image editing tools still work.": "Usuwanie tła wymaga Microsoft Visual C++ x64. Pozostałe narzędzia do edycji obrazów nadal działają.",
+  "Background removal is unavailable until Microsoft Visual C++ x64 is installed.": "Usuwanie tła jest niedostępne, dopóki nie zostanie zainstalowany Microsoft Visual C++ x64."
+}

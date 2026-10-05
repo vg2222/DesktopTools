@@ -1,0 +1,22 @@
+{
+  "News": "Новини",
+  "Announcements and important update notices.": "Оголошення та важливі повідомлення про оновлення.",
+  "News is available offline. Check for newer announcements.": "Новини доступні офлайн. Перевірте наявність новіших оголошень.",
+  "Checking news…": "Перевірка новин…",
+  "Showing bundled news. No online feed is available yet.": "Показано вбудовані новини. Онлайн-стрічка поки недоступна.",
+  "News is up to date.": "Новини актуальні.",
+  "Could not check news. Showing saved announcements.": "Не вдалося перевірити новини. Показано збережені оголошення.",
+  "Open news": "Відкрити новини",
+  "View details": "Переглянути подробиці",
+  "Remind me later": "Нагадати пізніше",
+  "Security update available": "Доступне оновлення безпеки",
+  "Latest announcements": "Останні оголошення",
+  "Check news": "Перевірити новини",
+  "Check news automatically": "Перевіряти новини автоматично",
+  "Checks once an hour while DesktopTools is running.": "Перевіряє раз на годину, поки DesktopTools запущено.",
+  "No announcements yet. Check again later.": "Оголошень поки немає. Перевірте пізніше.",
+  "Security notice": "Повідомлення про безпеку",
+  "Announcement": "Оголошення",
+  "A fixed update is ready. DesktopTools will ask before downloading or restarting.": "Виправлене оновлення готове. DesktopTools запитає, перш ніж завантажувати чи перезапускатися.",
+  "A fixed update is not available yet. Check for updates or read the details.": "Виправленого оновлення ще немає. Перевірте оновлення або прочитайте подробиці."
+}

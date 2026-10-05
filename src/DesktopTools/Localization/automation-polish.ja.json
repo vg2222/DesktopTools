@@ -1,0 +1,21 @@
+{
+  "Run": "実行",
+  "Select an action": "操作を選択",
+  "Action help": "操作のヘルプ",
+  "Test action": "操作をテスト",
+  "Automatic triggers": "自動トリガー",
+  "Target window": "対象ウィンドウ",
+  "Leave blank to use the current window.": "空欄の場合は現在のウィンドウを使います。",
+  "Use a value from 0 to 10000.": "0 ～ 10000 の値を指定してください。",
+  "Daily at": "毎日",
+  "HH:mm; leave blank to disable.": "HH:mm。空欄で無効になります。",
+  "Triggers run while DesktopTools is open.": "トリガーは DesktopTools の起動中に実行されます。",
+  "Esc to stop": "Esc で停止",
+  "Automation running": "自動化を実行中",
+  "Recording actions": "操作を記録中",
+  "Recording starts in {0} seconds": "{0} 秒後に記録を開始します",
+  "Action {0} of {1}": "操作 {0} / {1}",
+  "Action {0}: {1}": "操作 {0}: {1}",
+  "No matching actions": "一致する操作がありません",
+  "Try another search.": "別の検索語をお試しください。"
+}

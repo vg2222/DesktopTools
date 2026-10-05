@@ -71,10 +71,10 @@ internal static class CaptureLifecycleChecks
         try
         {
             editor.Show(); await Settle();
-            var document = (ScreenshotEditDocument)typeof(ScreenshotEditorWindow).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(editor)!;
+            var document = (ScreenshotEditDocument)typeof(ScreenshotEditorView).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(editor.View)!;
             document.Add(new Annotation { Color = Colors.White, Thickness = 8, Points = new[] { new Point(20, 20), new Point(80, 60) } });
             document.SetCrop(new Int32Rect(10, 10, 100, 70));
-            typeof(ScreenshotEditorWindow).GetMethod("Export", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(editor, new object[] { "Apply" });
+            typeof(ScreenshotEditorView).GetMethod("Export", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(editor.View, new object[] { "Apply" });
             Check(error == null && exported is { PixelWidth: 100, PixelHeight: 70 } && !editor.IsVisible, "Apply did not export and close the editor: " + error);
             // Exercise encoding/decoding while keeping the generated data in memory.
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(exported!));

@@ -1,0 +1,12 @@
+{
+  "Initial setup": "初期セットアップ",
+  "Skip setup": "セットアップをスキップ",
+  "Skip initial setup? You can restart it from Help.": "初期セットアップをスキップしますか? ヘルプからやり直せます。",
+  "Restart setup": "セットアップをやり直す",
+  "Finish setup": "セットアップを完了",
+  "Your preferences are saved. Tools start only when you open them.": "設定を保存しました。ツールは開いたときにだけ起動します。",
+  "Ready": "準備完了",
+  "Back": "戻る",
+  "Next": "次へ",
+  "Help": "ヘルプ"
+}

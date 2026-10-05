@@ -8,8 +8,8 @@ namespace DesktopTools.Localization;
 /// <summary>Local, embedded translations. Stored setting values and user content are never translated.</summary>
 public static class L
 {
-    public static readonly string[] Languages = ["en", "ru", "de", "fr", "es"];
-    public static readonly string[] LanguageNames = ["English", "Русский", "Deutsch", "Français", "Español"];
+    public static readonly string[] Languages = ["en", "ru", "de", "fr", "es", "uk", "zh", "pt", "ja", "pl", "tr", "it"];
+    public static readonly string[] LanguageNames = ["English", "Русский", "Deutsch", "Français", "Español", "Українська", "中文（简体）", "Português", "日本語", "Polski", "Türkçe", "Italiano"];
     private static readonly Dictionary<string, Dictionary<string, string>> catalogs = Load();
     public static string Language { get; private set; } = "en";
     public static CultureInfo Culture => CultureInfo.GetCultureInfo(Language);
@@ -34,11 +34,12 @@ public static class L
     internal static string EnglishHint(string message)
     {
         if (Language == "en" || !catalogs.TryGetValue(Language, out var catalog)) return message;
+        int minimumPrefix = Language is "zh" or "ja" ? 4 : 8;   // CJK sentences are much shorter than the same text in other languages
         foreach (var (source, translated) in catalog.OrderByDescending(x => x.Value.Length))
         {
             if (message == translated) return source;
             var prefix = translated.Split('{')[0];
-            if (prefix.Length >= 8 && message.StartsWith(prefix, StringComparison.Ordinal)) return source;
+            if (prefix.Length >= minimumPrefix && message.StartsWith(prefix, StringComparison.Ordinal)) return source;
         }
         // Some warnings begin with the user's shortcut or filename, not a translated prefix.
         foreach (var (source, pattern) in messagePatterns[Language])

@@ -1,0 +1,7 @@
+{
+  "Show edited": "Düzenlenmişi göster",
+  "Viewing original. Edits are still in your working copy.": "Özgün görüntüleniyor. Düzenlemeler çalışma kopyanızda duruyor.",
+  "Viewing edited working copy. Export saves a separate file.": "Düzenlenmiş çalışma kopyası görüntüleniyor. Dışa aktarma ayrı bir dosya kaydeder.",
+  "Drag the blue handles to keep an area, or drag inside to move it. Apply crop when ready.": "Bir alanı tutmak için mavi tutamaçları sürükleyin veya taşımak için içeride sürükleyin. Hazır olduğunuzda kırpmayı uygulayın.",
+  "Drag an area to keep. The crop applies on release; Undo restores it.": "Tutulacak bir alanı sürükleyin. Kırpma bırakınca uygulanır; Geri al onu geri getirir."
+}

@@ -1,0 +1,10 @@
+{
+  "Remove background": "背景を削除",
+  "Local AI · review edges before saving PNG.": "ローカル AI · PNG を保存する前にエッジを確認してください。",
+  "Removing background locally…": "背景をローカルで削除しています…",
+  "Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.": "背景を削除しました。細かいエッジを確認してください。元に戻すと画像が復元されます。PNG で書き出すと透明が保持されます。",
+  "Background removal canceled. The image is unchanged.": "背景の削除をキャンセルしました。画像は変更されていません。",
+  "The background-removal model is missing. Extract the complete DesktopTools package.": "背景削除モデルが見つかりません。DesktopTools のパッケージ全体を展開してください。",
+  "The background-removal model is damaged. Extract a fresh DesktopTools package.": "背景削除モデルが破損しています。新しい DesktopTools パッケージを展開してください。",
+  "The background-removal model returned an invalid mask.": "背景削除モデルが無効なマスクを返しました。"
+}

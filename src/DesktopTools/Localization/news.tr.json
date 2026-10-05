@@ -1,0 +1,22 @@
+{
+  "News": "Haberler",
+  "Announcements and important update notices.": "Duyurular ve önemli güncelleme bildirimleri.",
+  "News is available offline. Check for newer announcements.": "Haberler çevrimdışı kullanılabilir. Daha yeni duyuruları denetleyin.",
+  "Checking news…": "Haberler denetleniyor…",
+  "Showing bundled news. No online feed is available yet.": "Paketle gelen haberler gösteriliyor. Henüz çevrimiçi bir akış yok.",
+  "News is up to date.": "Haberler güncel.",
+  "Could not check news. Showing saved announcements.": "Haberler denetlenemedi. Kayıtlı duyurular gösteriliyor.",
+  "Open news": "Haberleri aç",
+  "View details": "Ayrıntıları görüntüle",
+  "Remind me later": "Sonra hatırlat",
+  "Security update available": "Güvenlik güncellemesi mevcut",
+  "Latest announcements": "Son duyurular",
+  "Check news": "Haberleri denetle",
+  "Check news automatically": "Haberleri otomatik denetle",
+  "Checks once an hour while DesktopTools is running.": "DesktopTools çalışırken saatte bir denetler.",
+  "No announcements yet. Check again later.": "Henüz duyuru yok. Daha sonra yeniden denetleyin.",
+  "Security notice": "Güvenlik bildirimi",
+  "Announcement": "Duyuru",
+  "A fixed update is ready. DesktopTools will ask before downloading or restarting.": "Düzeltilmiş bir güncelleme hazır. DesktopTools indirmeden veya yeniden başlamadan önce soracak.",
+  "A fixed update is not available yet. Check for updates or read the details.": "Düzeltilmiş güncelleme henüz mevcut değil. Güncellemeleri denetleyin veya ayrıntıları okuyun."
+}

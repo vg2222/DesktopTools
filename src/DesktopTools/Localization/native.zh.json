@@ -1,0 +1,21 @@
+{
+  "Color saturation and brightness. Arrow keys adjust.": "颜色饱和度与亮度。可用方向键调整。",
+  "This application's audio session ended. Refresh the list.": "此应用程序的音频会话已结束。请刷新列表。",
+  "System sounds": "系统声音",
+  "Application ({0})": "应用程序（{0}）",
+  "No displays are connected.": "未连接任何显示器。",
+  "Could not locate the pointer.": "无法定位指针。",
+  "Could not read connected monitors.": "无法读取已连接的显示器。",
+  "Could not enumerate monitors.": "无法枚举显示器。",
+  "Show the window before placing it on a monitor.": "请先显示窗口，再将其放到显示器上。",
+  "Could not position the overlay.": "无法定位覆盖层。",
+  "Monitor dimensions must be positive.": "显示器尺寸必须为正数。",
+  "Could not access the desktop.": "无法访问桌面。",
+  "Could not allocate a capture context.": "无法分配截取上下文。",
+  "Could not allocate a screenshot.": "无法为截图分配内存。",
+  "Could not prepare the screenshot.": "无法准备截图。",
+  "Windows could not capture this desktop.": "Windows 无法截取此桌面。",
+  "Could not update overlay input mode.": "无法更新覆盖层的输入模式。",
+  "The drawing control does not have a valid native window yet.": "该绘图控件尚无有效的原生窗口。",
+  "Windows could not update capture exclusion: {0}": "Windows 无法更新截取排除：{0}"
+}

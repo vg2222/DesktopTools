@@ -1,0 +1,13 @@
+{
+  "Screen sharing and DesktopTools": "屏幕共享与 DesktopTools",
+  "Your tools are visible by default": "您的工具默认可见",
+  "DesktopTools windows, the screen ruler and floating controls can appear in screen shares and recordings. If you turn on hiding in Settings → Privacy, supported capture apps may omit those windows. Check the viewer's screen before sharing private content.": "DesktopTools 窗口、屏幕标尺和浮动控件可能出现在屏幕共享和录制中。如果在 设置 → 隐私 中开启隐藏，受支持的截取应用可能会忽略这些窗口。分享隐私内容前，请先检查观看端的屏幕。",
+  "This installation currently has hiding enabled. Keep that choice or show your tools now.": "此安装目前已启用隐藏。保留该选择，或现在显示您的工具。",
+  "Keep current settings": "保留当前设置",
+  "Show my windows": "显示我的窗口",
+  "Reset all app data": "重置所有应用数据",
+  "Deletes local settings, profiles and notes after DesktopTools closes. Exported files stay where you saved them.": "在 DesktopTools 关闭后删除本地设置、配置文件和笔记。已导出的文件保留在您保存的位置。",
+  "Delete app data": "删除应用数据",
+  "Delete all local DesktopTools settings, profiles and notes? This cannot be undone. Files you exported elsewhere will remain.": "要删除所有本地 DesktopTools 设置、配置文件和笔记吗？此操作无法撤销。您导出到其他位置的文件将保留。",
+  "Could not remove all app data: ": "无法删除全部应用数据： "
+}

@@ -1,0 +1,15 @@
+{
+  "Sound": "サウンド",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "グラフィックスカードでエンコードします。録画がカクつく場合はオフにしてください。",
+  "Start at playhead": "再生位置から開始",
+  "End at playhead": "再生位置で終了",
+  "Resume": "再開",
+  "Lock in place (click through)    Ctrl+L": "その場に固定 (クリックを通過)    Ctrl+L",
+  "Pinned screenshots unlocked.": "ピン留めしたスクリーンショットのロックを解除しました。",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "スクリーンショットはロックされています。クリックは通過します。解除するには、トレイの DesktopTools アイコンを右クリックして [ピン留めしたスクリーンショットのロック解除] を選んでください。",
+  "Unlock": "ロック解除",
+  "Close screenshot": "スクリーンショットを閉じる",
+  "Unlock pinned screenshots": "ピン留めしたスクリーンショットのロック解除",
+  "Close pinned screenshots": "ピン留めしたスクリーンショットを閉じる",
+  "A pinned screenshot is locked and ignores the mouse.": "ピン留めしたスクリーンショットはロックされており、マウス操作を受け付けません。"
+}

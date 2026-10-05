@@ -471,7 +471,23 @@ internal sealed partial class MainWindow : Window
         else recent.Children.Add(Ui.Button(L.T("Clear recent screenshots"), () => { controller.CaptureHistory.Clear(); Navigate("Capture"); }));
 
         Group(L.T("Recent screenshots"), recent);
+        LibrarySettingsGroup();
 
+    }
+
+    /// <summary>The opt-in screenshot library switch, size limit and the Search / Clear buttons; shown on the Capture page and on the library tool's own page.</summary>
+    private void LibrarySettingsGroup()
+    {
+        var s = controller.Settings;
+        var libraryLimit = Ui.Choice(new[] { "100", "300", "1000" }, s.ScreenshotLibraryLimit.ToString(), v => Change(x => x.ScreenshotLibraryLimit = int.Parse(v)), translate: false);
+        libraryLimit.MinWidth = 100;
+        var openLibrary = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary);
+        var clearLibrary = Ui.Button(L.T("Clear library"), () => { if (ConfirmationDialog.Ask(this, L.T("Clear library"), L.T("Delete every screenshot and its searchable text from the library? Files you saved elsewhere are not touched."), L.T("Clear library"))) controller.Library.Clear(); }, ButtonKind.Danger);
+        var libraryActions = new WrapPanel(); libraryActions.Children.Add(openLibrary); libraryActions.Children.Add(clearLibrary);
+        Group(L.T("Screenshot library"),
+            Ui.Row(L.T("Keep a searchable library"), L.T("Stores finished screenshots and the text found in them on this PC only, so you can search for something you saw last week. Off by default."), Ui.Toggle(s.ScreenshotLibraryEnabled, v => Change(x => x.ScreenshotLibraryEnabled = v))),
+            Ui.Row(L.T("Screenshots to keep"), L.T("The oldest are removed when the library is full."), libraryLimit),
+            libraryActions);
     }
 
     private void Present()
@@ -707,6 +723,8 @@ internal sealed partial class MainWindow : Window
             Group(L.T("App behavior"), Ui.Row(L.T("Start at login"),L.T("Launch quietly in the system tray."), Ui.Toggle(s.StartAtLogin, v => Change(x => x.StartAtLogin = v))), Ui.Row(L.T("Active monitor"),L.T("Changing this ends the current drawing session."), Ui.Choice(new[] { "Cursor", "Primary" }, s.MonitorMode, v => Change(x => x.MonitorMode = v))), Ui.Row(L.T("Close to system tray"),L.T("Use Quit in the tray menu to exit completely."), Ui.Text(L.T("Always"), 13, muted: true)));
             Group(L.T("Preferences"),
                 Ui.Row(L.T("Restore defaults"), L.T("Resets app settings and shortcuts."), Ui.Button(L.T("Reset preferences"), () => { if (!ConfirmationDialog.Ask(this, L.T("Reset preferences"), L.T("Reset all preferences? Your current drawing will be cleared."), L.T("Reset preferences"))) return; Change(x => { var defaults = new AppSettings(); foreach (var p in typeof(AppSettings).GetProperties().Where(p => p.CanWrite)) p.SetValue(x, p.GetValue(defaults)); }); Navigate("Settings"); })),
+                Ui.Row(L.T("Export settings"), L.T("Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded."), Ui.Button(L.T("Export…"), () => controller.RequestSettingsExport(this))),
+                Ui.Row(L.T("Import settings"), L.T("Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts."), Ui.Button(L.T("Import…"), () => controller.RequestSettingsImport(this))),
                 Ui.Row(L.T("Reset all app data"), L.T("Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them."), Ui.Button(L.T("Delete app data"), () => controller.RequestDataReset(this))));
         }
     }

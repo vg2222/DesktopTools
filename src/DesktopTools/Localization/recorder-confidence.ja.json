@@ -1,0 +1,11 @@
+{
+  "Meters show device activity. Use a test clip to verify recorded sound.": "メーターはデバイスの動作を示します。録音された音はテストクリップで確認してください。",
+  "Record 5-second test": "5 秒のテストを録画",
+  "Play test clip": "テストクリップを再生",
+  "Microphone activity": "マイクの動作",
+  "System audio activity": "システム音声の動作",
+  "Recording needs at least 512 MB of free space on the destination drive.": "録画には、保存先のドライブに 512 MB 以上の空き容量が必要です。",
+  "Test clip is ready. Play it to check picture and sound.": "テストクリップの準備ができました。再生して映像と音声を確認してください。",
+  "Could not open test clip: ": "テストクリップを開けませんでした: ",
+  "File reports {0:0.#} FPS. Repeated frames may reduce visible smoothness.": "ファイルの FPS は {0:0.#} です。フレームの重複により、見た目の滑らかさが低下する場合があります。"
+}

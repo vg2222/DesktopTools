@@ -25,6 +25,7 @@ internal sealed partial class MainWindow
             new("capture", "Region capture", "Capture tools", "Capture", "Select, edit, and share a screenshot.", () => { HideImmediatelyForCapture(); _ = controller.CaptureAsync(); }, () => controller.Settings.CaptureEnabled, "Capture"),
             new("record", "Screen recorder", "Capture tools", "Record", "Record a monitor or region to MP4.", controller.OpenScreenRecorder, () => controller.Settings.ScreenRecorderEnabled, "Utilities"),
             new("pin", "Pin screenshot", "Capture tools", "Pin", "Pin above applications", controller.PinLast, () => controller.LastCapture != null, "Capture"),
+            new("library", "Screenshot library", "Capture tools", "Search", "Search text in screenshots", controller.OpenScreenshotLibrary, () => true, "Capture"),
             new("guide", "Step-by-step guide", "Capture tools", "Image", "Turn screenshots into one numbered guide.", controller.OpenStepGuide, () => controller.Settings.CaptureEnabled, "Capture"),
             new("draw", "Screen drawing", "Presentation tools", "Pen", "Annotate over any application.", () => { Hide(); controller.ToggleDraw(); }, () => controller.Settings.DrawingEnabled, "Draw"),
             new("laser", "Laser pointer", "Presentation tools", "Laser", "Guide attention with a laser, spotlight, or frozen screen.", () => { Hide(); controller.TogglePresentation("Laser"); }, () => controller.Settings.LaserEnabled, "Laser pointer"),
@@ -139,7 +140,10 @@ internal sealed partial class MainWindow
         }
         normal.Children.Add(groups);
         Motion.Stagger(groups.Children.OfType<FrameworkElement>(), 45);
-        var recentTitle = Ui.Text(L.T("Recent screenshots"), 17, true); recentTitle.Margin = new Thickness(0, 14, 0, 12); normal.Children.Add(recentTitle);
+        var recentHeader = new DockPanel { Margin = new Thickness(0, 14, 0, 12) };
+        var searchAll = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary, ButtonKind.Ghost, 12);
+        DockPanel.SetDock(searchAll, Dock.Right); searchAll.Visibility = controller.Settings.ScreenshotLibraryEnabled || controller.Library.Index.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        recentHeader.Children.Add(searchAll); recentHeader.Children.Add(Ui.Text(L.T("Recent screenshots"), 17, true)); normal.Children.Add(recentHeader);
         var recent = new UniformGrid { Columns = 3, Margin = new Thickness(0, 0, -10, 0) };
         foreach (var entry in controller.CaptureHistory.Entries.Take(3))
         {

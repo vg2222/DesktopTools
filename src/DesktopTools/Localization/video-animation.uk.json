@@ -1,0 +1,19 @@
+{
+  "Save as": "Зберегти як",
+  "MP4 video": "Відео MP4",
+  "GIF animation": "GIF-анімація",
+  "Animated WebP": "Анімований WebP",
+  "Frames per second": "Кадрів за секунду",
+  "Maximum width": "Максимальна ширина",
+  "Original": "Оригінальна",
+  "Export GIF": "Експорт GIF",
+  "Export WebP": "Експорт WebP",
+  "GIF animation|*.gif": "GIF-анімація|*.gif",
+  "Animated WebP|*.webp": "Анімований WebP|*.webp",
+  "Estimating file size…": "Оцінка розміру файлу…",
+  "Up to about {0} · {1} × {2} px · {3} frames": "Приблизно до {0} · {1} × {2} пікс. · кадрів: {3}",
+  "The size could not be estimated.": "Не вдалося оцінити розмір.",
+  "Save the animation as a {0} file.": "Збережіть анімацію як файл {0}.",
+  "Choose a new filename. Existing files are not overwritten.": "Виберіть нову назву файлу. Наявні файли не перезаписуються.",
+  "This animation would be too large to build. Shorten the clip, lower the frame rate or choose a smaller width.": "Таку анімацію не вдасться створити: вона завелика. Скоротіть кліп, зменшіть частоту кадрів або виберіть меншу ширину."
+}

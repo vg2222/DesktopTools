@@ -76,22 +76,22 @@ internal static class InlineFormattingChecks
             var window = new ScreenshotEditorWindow(source, _ => { }, _ => { }, editorLayout: layout); window.Show();
             try
             {
-                typeof(ScreenshotEditorWindow).GetMethod("OpenText", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, new object[] { new Point(80, 120) });
-                var editor = (AnnotationTextEditor)typeof(ScreenshotEditorWindow).GetField("_editor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window)!;
+                typeof(ScreenshotEditorView).GetMethod("OpenText", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, new object[] { new Point(80, 120) });
+                var editor = (AnnotationTextEditor)typeof(ScreenshotEditorView).GetField("_editor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window.View)!;
                 editor.Text = "Styled Пример"; editor.FontSize = 32; editor.FontWeight = FontWeights.Bold; editor.FontStyle = FontStyles.Italic; editor.Foreground = Brushes.Crimson;
                 await Task.Delay(40);
                 var popup = (Popup)typeof(AnnotationTextEditor).GetField("formatting", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(editor)!;
                 var toolbar = (StackPanel)((Border)popup.Child).Child;
                 toolbar.Children.OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == "Apply").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                var document = (ScreenshotEditDocument)typeof(ScreenshotEditorWindow).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window)!;
+                var document = (ScreenshotEditDocument)typeof(ScreenshotEditorView).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window.View)!;
                 if (document.Items.Single() is not { Bold: true, Italic: true, FontSize: 32 } annotation || annotation.Color != Colors.Crimson) throw new Exception(layout + ": screenshot commit lost formatting");
                 var exported = document.Export(); var actual = new byte[pixels.Length]; exported.CopyPixels(actual, 640 * 4, 0);
                 if (actual.SequenceEqual(pixels)) throw new Exception(layout + ": formatted text was absent from export");
                 document.Undo(); if (document.Items.Count != 0 || document.CanUndo) throw new Exception(layout + ": text commit was not one undo step");
                 document.Redo(); if (document.Items.Single() != annotation) throw new Exception(layout + ": redo lost text formatting");
                 var original = new byte[pixels.Length]; source.CopyPixels(original, 640 * 4, 0); if (!original.SequenceEqual(pixels)) throw new Exception("Text export modified original");
-                typeof(ScreenshotEditorWindow).GetMethod("OpenText", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, new object[] { new Point(160, 240) });
-                editor = (AnnotationTextEditor)typeof(ScreenshotEditorWindow).GetField("_editor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window)!;
+                typeof(ScreenshotEditorView).GetMethod("OpenText", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, new object[] { new Point(160, 240) });
+                editor = (AnnotationTextEditor)typeof(ScreenshotEditorView).GetField("_editor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window.View)!;
                 editor.Text = "Cancel this"; await Task.Delay(30);
                 popup = (Popup)typeof(AnnotationTextEditor).GetField("formatting", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(editor)!;
                 ((StackPanel)((Border)popup.Child).Child).Children.OfType<Button>().Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == "Cancel").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

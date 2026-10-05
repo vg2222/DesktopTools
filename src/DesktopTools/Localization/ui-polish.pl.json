@@ -1,0 +1,15 @@
+{
+  "Sound": "Dźwięk",
+  "Uses the graphics card to encode. Turn off if recordings stutter.": "Używa karty graficznej do kodowania. Wyłącz, jeśli nagrania się zacinają.",
+  "Start at playhead": "Zacznij w miejscu głowicy",
+  "End at playhead": "Zakończ w miejscu głowicy",
+  "Resume": "Wznów",
+  "Lock in place (click through)    Ctrl+L": "Zablokuj w miejscu (kliknięcia przechodzą)    Ctrl+L",
+  "Pinned screenshots unlocked.": "Odblokowano przypięte zrzuty ekranu.",
+  "The screenshot is locked: clicks pass through it. To unlock it, right-click the DesktopTools icon in the tray and choose Unlock pinned screenshots.": "Zrzut ekranu jest zablokowany: kliknięcia przechodzą przez niego. Aby go odblokować, kliknij prawym przyciskiem ikonę DesktopTools w zasobniku i wybierz Odblokuj przypięte zrzuty ekranu.",
+  "Unlock": "Odblokuj",
+  "Close screenshot": "Zamknij zrzut ekranu",
+  "Unlock pinned screenshots": "Odblokuj przypięte zrzuty ekranu",
+  "Close pinned screenshots": "Zamknij przypięte zrzuty ekranu",
+  "A pinned screenshot is locked and ignores the mouse.": "Przypięty zrzut ekranu jest zablokowany i ignoruje mysz."
+}
