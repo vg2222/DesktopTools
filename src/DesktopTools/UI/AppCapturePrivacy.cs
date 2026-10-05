@@ -43,7 +43,7 @@ internal static class AppCapturePrivacy
         "FileShelfWindow" => "File shelf", "AudioControlsWindow" => "Audio controls",
         "ScreenshotEditorWindow" or "ImageToolsWindow" or "PinnedImageWindow" or "ImageExportDialog" => "Image tools",
         "VideoEditorWindow" => "Video editor", "ScreenRecorderWindow" or "RecordingHudWindow" or "RecordingQualityWindow" or "RecordingSourcePickerWindow" => "Screen recorder",
-        "TextToolsWindow" or "OcrTextWindow" => "Text tools",
+        "TextToolsWindow" or "ScreenTextWindow" => "Text tools",
         "NotificationWindow" => "Notifications", _ => "Other feature windows"
         };
     }

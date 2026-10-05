@@ -25,7 +25,7 @@ internal static class AutoRedactChecks
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) foreach (var child in Children(VisualTreeHelper.GetChild(root, i))) yield return child;
     }
     private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
-    private static T Field<T>(object instance, string name) => (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(instance)!;
+    private static T Field<T>(object instance, string name) { if (instance is ScreenshotEditorWindow editor) instance = editor.View; return (T)instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(instance)!; }
     internal static async Task RunAsync()
     {
         var pixels = Enumerable.Repeat((byte)255, 400 * 200 * 4).ToArray();
@@ -73,9 +73,9 @@ internal static class AutoRedactChecks
             Check(skip.Visibility != Visibility.Visible, "'Continue without checking' is shown in the ordinary editor");
             window.AnalyzeSensitiveData = (_, _, _, _) => Task.FromResult<IReadOnlyList<SensitiveFinding>>([]);
             await window.FindSensitiveDataAsync();
-            window.GetType().GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            typeof(ScreenshotEditorView).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, null);
             doc.Add(new() { Kind = AnnotationKind.Redaction, Points = [new(1, 1), new(30, 30)] });
-            window.GetType().GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            typeof(ScreenshotEditorView).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, null);
             Check(manualState.NeedsScan && manualState.CanExport && skip.Visibility != Visibility.Visible, "Editing after a check blocked Copy and Save or showed the skip button");
             Check(Field<List<Button>>(window, "_exportButtons").All(b => b.IsEnabled), "Copy/Save buttons are disabled after the image changed");
         }
@@ -131,7 +131,7 @@ internal static class AutoRedactChecks
                     cancellationToken: busyReview!.ExportCancellationToken,
                     writeClipboard: _ => { if (++attempts == 1) { entered.TrySetResult(); throw new ExternalException("Invented clipboard contention"); } copiedAfterClose = true; }));
             busyReview.Show();
-            typeof(ScreenshotEditorWindow).GetMethod("Export", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(busyReview, ["Copy"]);
+            typeof(ScreenshotEditorView).GetMethod("Export", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(busyReview.View, ["Copy"]);
             Check(await Task.WhenAny(entered.Task, Task.Delay(3000)) == entered.Task, "Busy Copy did not reach retry");
             busyReview.Close(); await Task.Delay(250);
             Check(!copiedAfterClose && attempts == 1, "Closed review continued clipboard writes");

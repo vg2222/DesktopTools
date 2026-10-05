@@ -34,7 +34,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private BitmapSource? backgroundBefore;
     private BitmapSource? backgroundAfter;
     private bool IsComparisonAvailable => bitmap != null && ReferenceEquals(bitmap, backgroundAfter) && backgroundBefore != null;
-    public bool HasUnsavedChanges => removal != null || (bitmap != null && !ReferenceEquals(bitmap, savedImage ?? originalImage));
+    public bool HasUnsavedChanges => removal != null || annotateView?.HasEdits == true || (bitmap != null && !ReferenceEquals(bitmap, savedImage ?? originalImage));
     public Task<bool> SaveCopyAsync(Window owner)
     {
         if (removal != null) return Task.FromResult(false);
@@ -60,15 +60,31 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private readonly WrapPanel openControls;
     private string activeMode = "Size";
     private readonly Button emptyImport;
+    private readonly Button extractButton;
+    private readonly Func<AutoRedactOptions>? getAutoRedact;
+    private readonly Action<string>? translate;
+    private Grid rootGrid = null!, workspace = null!, viewer = null!;
+    private WrapPanel modeStrip = null!;
+    private Action<string> selectMode = _ => { };
+    private string lastModeBeforeAnnotate = "Size", modeBeforeText = "Size";
+    private ScreenshotEditorView? annotateView;
+    private TextSelectionView? textView;
+    internal ScreenshotEditorView? AnnotateView => annotateView;
+    internal TextSelectionView? TextView => textView;
+    internal BitmapSource? CurrentBitmap => bitmap;
+    internal DockPanel Inspector => edits;
+    internal WrapPanel ModeStrip => modeStrip;
+    internal string ActiveMode => activeMode;
+    internal bool CanUndoImage => history?.CanUndo == true;
 
 
-    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null, Func<AutoRedactOptions>? getAutoRedact = null)
+    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null, Func<AutoRedactOptions>? getAutoRedact = null, Action<string>? translate = null)
     {
-        this.report = report; this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles; preview = editCanvas.Image;
+        this.getAutoRedact = getAutoRedact; this.translate = translate; this.report = report; this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles; preview = editCanvas.Image;
         Title = L.T("Image tools"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 560;
         ResizeMode = ResizeMode.CanResizeWithGrip; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        var root = new Grid(); root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); root.RowDefinitions.Add(new RowDefinition());
+        var root = new Grid(); rootGrid = root; root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); root.RowDefinitions.Add(new RowDefinition());
         Button Icon(string symbol, string label, Action action)
         {
             var button = Ui.IconButton(symbol, L.T(label), action); button.Width = button.Height = 34; button.MinHeight = 34; button.Margin = new Thickness(3, 0, 3, 0);
@@ -82,8 +98,9 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         redoButton = Icon("Redo", "Redo", () => { history?.Redo(); if (history != null) SetImage(history.Current); });
         openControls.Children.Add(undoButton); openControls.Children.Add(redoButton);
         originalButton = Icon("Image", "Show original", ToggleOriginalPreview); originalButton.IsEnabled = false; openControls.Children.Add(originalButton);
+        extractButton = Icon("ScanText", "Extract text", ExtractText); extractButton.IsEnabled = false; openControls.Children.Add(extractButton);
         var more = Icon("More", "Image tools", () => { }); var menu = new ContextMenu();
-        var reset = new MenuItem { Header = L.T("Reset") }; reset.Click += (_, _) => Edit(() => originalImage!); menu.Items.Add(reset);
+        var reset = new MenuItem { Header = L.T("Reset") }; reset.Click += (_, _) => { if (annotateView != null) selectMode(lastModeBeforeAnnotate); Edit(() => originalImage!); }; menu.Items.Add(reset);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; openControls.Children.Add(more);
         DockPanel.SetDock(openControls, Dock.Right); header.Children.Insert(header.Children.Count - 1, openControls);
         root.Children.Add(header);
@@ -215,6 +232,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         }); DockPanel.SetDock(guide, Dock.Right); header.Children.Insert(header.Children.Count - 1, guide);
         void Mode(string mode)
         {
+            if (mode != "Annotate") { lastModeBeforeAnnotate = mode; if (annotateView != null) LeaveAnnotate(); }   // leaving Annotate bakes the drawing into the picture first
             if (showingOriginal) ToggleOriginalPreview();
             activeMode = mode;
             if (mode == "Background") RefreshRuntimeWarning();
@@ -225,19 +243,19 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             editCanvas.ResizePreview = mode == "Size"; editCanvas.KeepRatio = mode == "Size" && aspect.IsChecked == true; editCanvas.ResetSelection(); editCanvas.ShowHandles(mode is "Size" or "Crop");
             if (bitmap != null) editCanvas.SetSelection(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             if (mode == "Crop") { cropRatio.SelectedItem = "Free"; editCanvas.KeepRatio = false; }
+            if (mode == "Annotate") EnterAnnotate();
         }
-        var tabStrip = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
-        foreach (var (key, symbol, label) in new[] { ("Size", "Utilities", "Resize"), ("Crop", "Crop", "Crop"), ("Format", "File", "Output"), ("Background", "Background", "Background") })
+        selectMode = Mode;
+        var tabStrip = new WrapPanel();
+        foreach (var (key, symbol, label) in new[] { ("Size", "Utilities", "Resize"), ("Crop", "Crop", "Crop"), ("Format", "File", "Output"), ("Background", "Background", "Background"), ("Annotate", "Pen", "Annotate") })
         {
             string selected = key; var button = MediaWorkspaceLayout.Tab(symbol, label, () => Mode(selected));
             System.Windows.Automation.AutomationProperties.SetName(button, L.T(key));
             tabButtons[key] = button; tabStrip.Children.Add(button);
         }
-        var annotate = Ui.Button(L.T("Annotate"), () => { if (bitmap != null && removal == null) new ScreenshotEditorWindow(bitmap, result => Edit(() => result), report, applyToImage: true, autoRedact: getAutoRedact?.Invoke()) { Owner = this }.ShowDialog(); });
-        annotate.Content = Ui.IconLabel("Pen", L.T("Annotate")); annotate.Margin = new Thickness(0, 8, 0, 0);
-        var exportActions = new StackPanel(); exportActions.Children.Add(annotate); exportActions.Children.Add(export);
+        var exportActions = new StackPanel(); exportActions.Children.Add(export);
         DockPanel.SetDock(exportActions, Dock.Bottom); edits.Children.Add(exportActions);
-        DockPanel.SetDock(tabStrip, Dock.Top); edits.Children.Add(tabStrip);
+        modeStrip = tabStrip; tabStrip.Margin = new Thickness(0, 0, 0, 12); tabStrip.IsEnabled = false; Grid.SetRow(tabStrip, 1); root.Children.Add(tabStrip);
         var inspectorScroll = new ScrollViewer { Content = rowHost, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
         rowHost.Margin = new Thickness(0, 0, 6, 0); edits.Children.Add(inspectorScroll); edits.IsEnabled = false; Mode("Size");
         var stage = new Grid(); imageScroll.Content = editCanvas;
@@ -260,11 +278,11 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         System.Windows.Automation.AutomationProperties.SetName(previewZoom, L.T("Preview zoom"));
         var zoomCard = Ui.Card(zoomTools, 5); zoomCard.HorizontalAlignment = HorizontalAlignment.Right; zoomCard.VerticalAlignment = VerticalAlignment.Top; zoomCard.Margin = new Thickness(10); stage.Children.Add(zoomCard);
         cancelRemoval.HorizontalAlignment = HorizontalAlignment.Right; cancelRemoval.VerticalAlignment = VerticalAlignment.Bottom; cancelRemoval.Margin = new Thickness(12); stage.Children.Add(cancelRemoval);
-        var viewer = new Grid { Margin = new Thickness(0, 0, 16, 0) }; viewer.RowDefinitions.Add(new RowDefinition()); viewer.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        viewer = new Grid { Margin = new Thickness(0, 0, 16, 0) }; viewer.RowDefinitions.Add(new RowDefinition()); viewer.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         viewer.Children.Add(stage); status.TextWrapping = TextWrapping.Wrap; var statusSurface = MediaWorkspaceLayout.Status(status); statusSurface.Margin = new Thickness(0, 10, 0, 0); Grid.SetRow(statusSurface, 1); viewer.Children.Add(statusSurface);
-        var workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition()); workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
+        workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition()); workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
         workspace.Children.Add(viewer); Grid.SetColumn(edits, 1); workspace.Children.Add(edits);
-        Grid.SetRow(workspace, 1); root.Children.Add(workspace);
+        Grid.SetRow(workspace, 2); root.Children.Add(workspace);
         editCanvas.Margin = new Thickness(0);
         editCanvas.SelectionChanged += (rect, _) =>
         {
@@ -283,7 +301,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         };
         var card = Ui.Card(root, 14); card.Margin = new Thickness(0); card.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); card.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = card;
         sizeInfo.TextWrapping = TextWrapping.Wrap;
-        Closed += (_, _) => menu.IsOpen = false;
+        Closed += (_, _) => { menu.IsOpen = false; annotateView?.Dispose(); annotateView = null; textView?.Cancel(); textView = null; };
         System.Windows.Automation.AutomationProperties.SetName(width, L.T("Image width in pixels"));
         System.Windows.Automation.AutomationProperties.SetName(height, L.T("Image height in pixels"));
         System.Windows.Automation.AutomationProperties.SetName(aspect, L.T("Keep aspect ratio"));
@@ -307,14 +325,15 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     {
         var dialog = new Microsoft.Win32.OpenFileDialog { Filter = L.T("Images|*.png;*.jpg;*.jpeg;*.bmp") };
         if (dialog.ShowDialog(this) != true) return;
-        try { var loaded = ImageTransforms.Load(dialog.FileName); original = dialog.FileName; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; history = new ImageEditHistory(loaded); SetImage(loaded); }
+        try { LoadImage(dialog.FileName, ImageTransforms.Load(dialog.FileName)); }
         catch (Exception ex) { Error(ex); }
     }
+    internal void LoadImage(string path, BitmapSource loaded) { original = path; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; history = new ImageEditHistory(loaded); SetImage(loaded); }
     private void SetImage(BitmapSource image)
     {
         originalImage ??= image; history ??= new ImageEditHistory(image); previewZoom.Value = 1; imageScroll.ScrollToHome();
         undoButton.IsEnabled = history.CanUndo; redoButton.IsEnabled = history.CanRedo; ChangedOutput();
-        bitmap = image; showingOriginal = false; originalButton.IsEnabled = originalImage != null; Ui.Tip(originalButton, L.T("Show original"));
+        bitmap = image; showingOriginal = false; originalButton.IsEnabled = originalImage != null; ShowOriginalState(false); modeStrip.IsEnabled = extractButton.IsEnabled = true;
         if (compare != null) { compare.IsChecked = false; compare.IsEnabled = ReferenceEquals(image, backgroundAfter) && backgroundBefore != null; } preview.Source = image; emptyImport.Visibility = Visibility.Collapsed; edits.IsEnabled = true; updating = true;
         removeBackground.IsEnabled = removal == null;
         if (activeMode == "Crop") cropRatio.SelectedItem = "Free";
@@ -335,6 +354,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private void Export(Window owner)
     {
         if (bitmap == null) return;
+        if (annotateView != null) selectMode(lastModeBeforeAnnotate);
         if (showingOriginal) ToggleOriginalPreview();
         var dialog = new ImageExportDialog(bitmap, original, outputFormat, (int)quality.Value) { Owner = owner }; dialog.ShowDialog();
         if (dialog.SavedPath == null) return;
@@ -354,13 +374,66 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private void ToggleOriginalPreview()
     {
         if (bitmap == null || originalImage == null) return;
+        if (annotateView != null) selectMode(lastModeBeforeAnnotate);   // bake the drawing, then compare on the normal canvas
         showingOriginal = !showingOriginal;
         if (showingOriginal && compare?.IsChecked == true) compare.IsChecked = false;
         preview.Source = showingOriginal ? originalImage : encodedPreview ?? bitmap;
         editCanvas.ShowHandles(!showingOriginal && (activeMode is "Size" or "Crop"));
-        Ui.Tip(originalButton, L.T(showingOriginal ? "Show edited" : "Show original"));
-        System.Windows.Automation.AutomationProperties.SetName(originalButton, L.T(showingOriginal ? "Show edited" : "Show original"));
+        ShowOriginalState(showingOriginal);
         status.Text = L.T(showingOriginal ? "Viewing original. Edits are still in your working copy." : "Viewing edited working copy. Export saves a separate file.");
+    }
+    /// <summary>The button shows what its next click does: the picture while editing, the pen while looking at the original (same as the screenshot editor).</summary>
+    private void ShowOriginalState(bool original)
+    {
+        string label = L.T(original ? "Show edited" : "Show original");
+        Ui.Tip(originalButton, label); System.Windows.Automation.AutomationProperties.SetName(originalButton, label);
+        originalButton.Content = Ui.Icon(original ? "Draw" : "Image");
+        if (original) originalButton.SetResourceReference(Control.BackgroundProperty, "Selected"); else originalButton.SetResourceReference(Control.BackgroundProperty, "Field");
+    }
+    private void RefreshHistoryButtons() { undoButton.IsEnabled = history?.CanUndo == true; redoButton.IsEnabled = history?.CanRedo == true; }
+
+    private void EnterAnnotate()
+    {
+        if (bitmap == null || removal != null || annotateView != null) return;
+        var view = new ScreenshotEditorView(bitmap, _ => { }, report, applyToImage: true, autoRedact: getAutoRedact?.Invoke(), hosted: true);
+        if (translate != null) view.TranslateRequested += translate;
+        view.CloseRequested += () => { };   // Esc inside the embedded editor must not close Image tools
+        annotateView = view; Grid.SetColumnSpan(view, 2); workspace.Children.Add(view);
+        viewer.Visibility = edits.Visibility = Visibility.Collapsed;
+        undoButton.IsEnabled = redoButton.IsEnabled = false;
+    }
+
+    /// <summary>Takes the embedded editor away; drawings and covers become one step of the picture's history.</summary>
+    private void LeaveAnnotate()
+    {
+        var view = annotateView; if (view == null) return;
+        annotateView = null; workspace.Children.Remove(view);
+        viewer.Visibility = edits.Visibility = Visibility.Visible;
+        BitmapSource? result = null;
+        try { if (view.HasEdits) result = view.RenderResult(); } finally { view.Dispose(); }
+        if (result != null) Edit(() => result); else RefreshHistoryButtons();
+    }
+
+    private void ExtractText()
+    {
+        if (bitmap == null || removal != null || textView != null) return;
+        modeBeforeText = activeMode;
+        if (annotateView != null) LeaveAnnotate();
+        if (showingOriginal) ToggleOriginalPreview();
+        textView = new TextSelectionView(bitmap, report, translate, BackToEditing);
+        Grid.SetRow(textView, 2); rootGrid.Children.Add(textView);
+        workspace.Visibility = modeStrip.Visibility = Visibility.Collapsed;
+        undoButton.IsEnabled = redoButton.IsEnabled = originalButton.IsEnabled = extractButton.IsEnabled = false;   // the picture behind the text view must not change
+        _ = textView.RecognizeAsync();
+    }
+
+    private void BackToEditing()
+    {
+        var view = textView; if (view == null) return;
+        textView = null; view.Cancel(); rootGrid.Children.Remove(view);
+        workspace.Visibility = modeStrip.Visibility = Visibility.Visible;
+        originalButton.IsEnabled = extractButton.IsEnabled = true; RefreshHistoryButtons();
+        selectMode(modeBeforeText);
     }
     private void ChangedOutput() { revision++; encodedPreview = null; if (compare?.IsChecked != true && !showingOriginal) preview.Source = bitmap; sizeInfo.Text = L.T("Export changed. Choose Estimate size."); }
     private async Task Estimate()

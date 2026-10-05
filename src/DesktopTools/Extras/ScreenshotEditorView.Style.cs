@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 
 namespace DesktopTools.Extras;
 
-public sealed partial class ScreenshotEditorWindow
+public sealed partial class ScreenshotEditorView
 {
     private BeautifyOptions _beautify = new();
     private Image _stylePreview = null!;
@@ -16,6 +16,7 @@ public sealed partial class ScreenshotEditorWindow
     // The canvas itself shows the presentation style while you work, so you draw on exactly what Copy and Save will produce.
     private Border _styleFrame = null!, _styleCard = null!, _styleBar = null!;
     private Grid _styleShadows = null!, _styleStack = null!;
+    private ScanOverlay? _scanOverlay;
 
     private FrameworkElement BuildStyleFrame(Canvas surface, int width, int height)
     {
@@ -27,10 +28,19 @@ public sealed partial class ScreenshotEditorWindow
         _styleCard = new Border { Child = cardGrid, Width = width, Height = height };
         _styleStack = new Grid { Width = width, Height = height };
         _styleStack.Children.Add(_styleShadows); _styleStack.Children.Add(_styleCard);
-        BuildScanOverlay(_styleStack);
+        _scanOverlay = new ScanOverlay(); _styleStack.Children.Add(_scanOverlay);
         _styleFrame = new Border { Child = _styleStack };
         return _styleFrame;
     }
+
+    // "Check screenshot" visual: the rainbow rim hugs the (optionally styled) picture's rounded corners.
+    private void StartScanEffect()
+    {
+        double width = _image.PixelWidth, height = _image.PixelHeight + (_beautify.Enabled ? ScreenshotBeautifier.Measure(_image.PixelWidth, _image.PixelHeight, _beautify).Bar : 0);
+        double radius = _beautify.Enabled ? Math.Max(ScreenshotBeautifier.Measure(_image.PixelWidth, _image.PixelHeight, _beautify).Radius, 6) : Math.Max(8, Math.Min(width, height) * 0.015);
+        _scanOverlay?.Start(width, height, radius);
+    }
+    private void StopScanEffect() => _scanOverlay?.Stop();
 
     private void ApplyLiveStyle()
     {

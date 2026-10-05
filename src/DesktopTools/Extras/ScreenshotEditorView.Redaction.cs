@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace DesktopTools.Extras;
 
-public sealed partial class ScreenshotEditorWindow
+public sealed partial class ScreenshotEditorView
 {
     private AutoRedactOptions _redactOptions = new();
     private RedactionReviewState _reviewState = new();
@@ -114,14 +114,16 @@ public sealed partial class ScreenshotEditorWindow
         foreach (var child in properties.Children.Cast<UIElement>().ToArray()) { properties.Children.Remove(child); drawPane.Children.Add(child); }
         var stylePane = BuildStylePane();
         var tabs = new Grid { Margin = new Thickness(0, 0, 0, 14) };
-        for (int i = 0; i < 3; i++) tabs.ColumnDefinitions.Add(new ColumnDefinition());
+        for (int i = 0; i < (_hosted ? 2 : 3); i++) tabs.ColumnDefinitions.Add(new ColumnDefinition());
         var drawTab = new RadioButton { Content = L.T("Draw"), GroupName = "EditorPanel", Margin = new Thickness(0, 0, 3, 0) };
         var styleTab = new RadioButton { Content = L.T("Style"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 3, 0) };
         var privacyTab = new RadioButton { Content = L.T("Hide data"), GroupName = "EditorPanel", Margin = new Thickness(3, 0, 0, 0) };
         var tabList = new[] { drawTab, styleTab, privacyTab };
+        var shownTabs = _hosted ? new[] { drawTab, privacyTab } : tabList;   // Style (frame, background, shadow) only applies to finished copies, not to Image tools
         for (int i = 0; i < tabList.Length; i++)
         {
-            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 7); Grid.SetColumn(tabList[i], i); tabs.Children.Add(tabList[i]);
+            tabList[i].SetResourceReference(StyleProperty, "ModeTab"); tabList[i].FontSize = 12; tabList[i].Padding = new Thickness(4, 8, 4, 7);
+            if (shownTabs.Contains(tabList[i])) { Grid.SetColumn(tabList[i], Array.IndexOf(shownTabs, tabList[i])); tabs.Children.Add(tabList[i]); }
             string[] tabIcons = ["Draw", "Background", "Shield"];
             System.Windows.Automation.AutomationProperties.SetName(tabList[i], (string)tabList[i].Content);
             // Icon above the label: three equal tabs stay readable in every language, including long German or Polish words.
@@ -143,7 +145,7 @@ public sealed partial class ScreenshotEditorWindow
         styleTab.Checked += (_, _) => ShowPanel(1);
         privacyTab.Checked += (_, _) => ShowPanel(2);
         _showPrivacyTab = ShowPrivacy;
-        properties.Children.Add(tabs); properties.Children.Add(drawPane); properties.Children.Add(stylePane); properties.Children.Add(pane);
+        properties.Children.Add(tabs); properties.Children.Add(drawPane); if (!_hosted) properties.Children.Add(stylePane); properties.Children.Add(pane);
         ShowPanel(automaticReview ? 2 : 0);
         _reviewDocumentRevision = _document.Revision; _reviewInitialized = true;
         if (automaticReview) Loaded += async (_, _) => await FindSensitiveDataAsync();

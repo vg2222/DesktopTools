@@ -26,7 +26,7 @@ internal sealed partial class MainWindow
         }
         else rows.Add(Ui.Text(L.T("No Windows OCR languages are installed. Add a language pack in Windows Settings → Time & language → Language & region, then reopen this window."), 12, muted: true));
         foreach (string category in AutoRedactOptions.AvailableCategories)
-            rows.Add(Ui.Row(L.T(ScreenshotEditorWindow.CategoryLabel(category)), null,
+            rows.Add(Ui.Row(L.T(ScreenshotEditorView.CategoryLabel(category)), null,
                 Ui.Toggle(options.Categories.Contains(category), enabled => Change(settings => settings.AutoRedact.Categories = enabled
                     ? settings.AutoRedact.Categories.Append(category).Distinct().ToArray()
                     : settings.AutoRedact.Categories.Where(c => c != category).ToArray()))));

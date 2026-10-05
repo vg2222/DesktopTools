@@ -1,0 +1,15 @@
+{
+  "Copy all": "Kopiuj wszystko",
+  "Copy selection": "Kopiuj zaznaczenie",
+  "Translate": "Przetłumacz",
+  "Back to editing": "Wróć do edycji",
+  "Fix text": "Popraw tekst",
+  "Open link": "Otwórz link",
+  "Copy link": "Kopiuj link",
+  "{0} words found": "Znaleziono słów: {0}",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "Przeciągnij, aby zaznaczyć · dwuklik: słowo · trzyklik: wiersz · Ctrl+A: wszystko",
+  "Select text first.": "Najpierw zaznacz tekst.",
+  "Could not open the link: ": "Nie można otworzyć linku: ",
+  "Text view": "Widok tekstu",
+  "Enter the corrected text": "Wpisz poprawiony tekst"
+}

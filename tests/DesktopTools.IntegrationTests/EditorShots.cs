@@ -72,10 +72,10 @@ internal static class EditorShots
         Walk(window).OfType<Button>().Single(b => b.Name == "HideAllSensitiveData").RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Task.Delay(300);
         Save(window, Path.Combine(folder, tag + "3-covered.png"));
         Walk(window).OfType<RadioButton>().First(r => System.Windows.Automation.AutomationProperties.GetName(r) == "Style").IsChecked = true; await Task.Delay(200);
-        var field = typeof(ScreenshotEditorWindow).GetField("_beautify", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        field.SetValue(window, ((BeautifyOptions)field.GetValue(window)!) with { Enabled = true, WindowBar = true });
-        typeof(ScreenshotEditorWindow).GetMethod("RefreshStylePreview", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
-        typeof(ScreenshotEditorWindow).GetMethod("ApplyLiveStyle", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null); await Task.Delay(300);
+        var field = typeof(ScreenshotEditorView).GetField("_beautify", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        field.SetValue(window.View, ((BeautifyOptions)field.GetValue(window.View)!) with { Enabled = true, WindowBar = true });
+        typeof(ScreenshotEditorView).GetMethod("RefreshStylePreview", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, null);
+        typeof(ScreenshotEditorView).GetMethod("ApplyLiveStyle", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window.View, null); await Task.Delay(300);
         Save(window, Path.Combine(folder, tag + "4-style.png"));
         // The check animation, caught while the analysis is still running.
         var scan = window.FindSensitiveDataAsync(); await Task.Delay(450);
@@ -91,12 +91,12 @@ internal static class EditorShots
         var big = new WriteableBitmap(2560, 1392, 96, 96, PixelFormats.Bgra32, null); big.Freeze();
         var window = new ScreenshotEditorWindow(big, _ => { }, _ => { }) { Width = 1400, Height = 800 };
         window.Show(); await Task.Delay(400);
-        var drawingField = typeof(ScreenshotEditorWindow).GetField("_drawing", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var canvas = (FrameworkElement)drawingField.GetValue(window)!;
+        var drawingField = typeof(ScreenshotEditorView).GetField("_drawing", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var canvas = (FrameworkElement)drawingField.GetValue(window.View)!;
         var pending = canvas.GetType().GetProperty("Pending")!;
         var points = Enumerable.Range(0, 400).Select(i => new Point(100 + i * 5, 400 + Math.Sin(i / 12.0) * 200)).ToArray();
-        var documentField = typeof(ScreenshotEditorWindow).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var document = (ScreenshotEditDocument)documentField.GetValue(window)!;
+        var documentField = typeof(ScreenshotEditorView).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var document = (ScreenshotEditDocument)documentField.GetValue(window.View)!;
         var stroke = new Annotation { Kind = AnnotationKind.Pen, Points = points, Color = Colors.Red, Thickness = 4, Opacity = 1 };
         var watch = System.Diagnostics.Stopwatch.StartNew();
         for (int i = 0; i < 15; i++) document.RenderPreview(stroke with { Id = Guid.NewGuid() }, null);

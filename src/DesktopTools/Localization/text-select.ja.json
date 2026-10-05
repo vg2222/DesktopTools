@@ -1,0 +1,15 @@
+{
+  "Copy all": "すべてコピー",
+  "Copy selection": "選択範囲をコピー",
+  "Translate": "翻訳",
+  "Back to editing": "編集に戻る",
+  "Fix text": "テキストを修正",
+  "Open link": "リンクを開く",
+  "Copy link": "リンクをコピー",
+  "{0} words found": "{0} 語が見つかりました",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "ドラッグで選択 · ダブルクリックで単語 · トリプルクリックで行 · Ctrl+A ですべて",
+  "Select text first.": "先にテキストを選択してください。",
+  "Could not open the link: ": "リンクを開けませんでした: ",
+  "Text view": "テキスト表示",
+  "Enter the corrected text": "修正後のテキストを入力"
+}

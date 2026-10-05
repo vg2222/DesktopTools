@@ -1,7 +1,7 @@
 # Text tools: local translation and screen OCR
 
 - **Ctrl+Alt+R** opens selected text for review and translation. Choose English→Russian or Russian→English, then Translate. Source edits and direction changes cancel obsolete work. Unsupported applications get an explicit paste fallback. Clipboard contents are untouched until you click Copy.
-- **Ctrl+Alt+E** lets you select an area of the current screen. Windows OCR fills the editable source field; copy it or translate it. No screenshot file, screenshot-history entry or automatic clipboard write is made. This uses temporary captured pixels internally; it does not require taking/saving a screenshot first.
+- **Ctrl+Alt+E** lets you select an area of the current screen and opens it in the text view (see below): the picture is dimmed, every recognized word is outlined and can be selected and copied straight from the picture; translating hands the text to this window. No screenshot file, screenshot-history entry or automatic clipboard write is made. This uses temporary captured pixels internally; it does not require taking/saving a screenshot first.
 - Both shortcuts are editable using the existing recorder on Shortcuts. Independent enable toggles live in Utilities; Home and the quick wheel expose launch actions. Direction and OCR language preferences save locally and are included in profiles.
 
 OCR uses Windows-installed language packs, selected in the text-tools window. Install missing OCR languages in Windows Settings. Region selection follows the capture monitor setting, including the default all-monitor desktop. Escape cancels region selection and prior drawing mode is restored. Freeze-frame content is ignored for screen-text recognition: it reads the live desktop. DesktopTools control windows are temporarily hidden while reading pixels.
@@ -35,3 +35,16 @@ The readings are combined word by word (`OcrConsensus`): lines of different read
 `--ocr-bench` draws phrases the way programs draw text (GDI ClearType, coloured sub-pixel edges) in 15 fonts, 10 sizes and 10 colour schemes, with English and Russian phrases, and reports exact phrase matches by size, scheme and font plus the worst misreadings (`OCR_BENCH_IMAGES`, `OCR_BENCH_SEED`, `OCR_BENCH_MODES`; modes `single`, `current` and `v:<plain|ink|gray>:<scale>:<hq|legacy>` for single readings, and an oracle row for the best of all). On the development PC (English and Russian OCR installed), seed 21, 1,582 phrases: plain Windows OCR 69.9% exact, this reader 92.9% (98.5% of characters). 12 pixel text and larger is 95-100% exact; 9-10 pixel text is 69-72%, with thin serif and Courier fonts the weakest. `--ocr-quality-only` keeps the earlier synthetic cases (dark themes, gradients, Russian, code): average 79% to 96%. `--ocr-consensus-only` checks the word choice and repair with a fixed word list. These are synthetic images; real screenshots are noisier.
 
 The sensitive-data check (Hide private data) keeps its own readings with the original magnification it was tuned on; it does not use the word choice.
+
+## Text view (Scan screen text, Extract text)
+
+The text view shows the picture with everything dimmed except the recognized words, which stay at full brightness inside a thin outline, so it is clear what can be copied. While the picture is being read the same rainbow rim and sweeping light as **Check screenshot** run; with reduced motion they are replaced by a still rim.
+
+- **Selecting:** drag over the words (reading order, like a PDF); double-click selects a word, triple-click a line, **Ctrl+A** everything, **Esc** or a click on empty space clears. **Ctrl+C**, **Copy selection** and **Copy all** copy plain text, words joined by spaces and lines by new lines.
+- **Links:** web addresses, e-mail addresses and phone numbers get a second colour and an underline. **Ctrl+click** opens them; the right-click menu can copy the link.
+- **Fix text:** **F2** or the context menu on a word opens a small box over it. A fix only changes what is copied or translated; the picture is never touched.
+- **Translate** sends the selection (or all text) to the local translator in Text tools when translation is enabled.
+- **Zoom:** **Ctrl+wheel** zooms, middle-button drag or **Space+drag** pans, **Ctrl+0** fits.
+- **Where it lives:** the large "Scan screen text" window; **Extract text** in the screenshot editor (More menu) and in Image tools. In both editors a **Back to editing** button returns to the tools with nothing lost.
+
+Words come from the same best-line selection as the plain text reading (`LocalOcr.RecognizeWordsAsync`), so the boxes and the copied text agree. `--text-selection-only` checks the layout, the dimming (pixels inside and outside the word boxes), selection, fixes, a blank picture, cancelling mid-scan, the standalone window and both editor integrations; the unit tests cover the selection model and the link detector.

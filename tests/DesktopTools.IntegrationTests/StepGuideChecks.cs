@@ -75,11 +75,11 @@ internal static class StepGuideChecks
                     editorPreview.Render(editor);
                     var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(editorPreview));
                     using (var stream = File.Create(Path.Combine(Environment.CurrentDirectory, "step-guide-preadd-editor.png"))) encoder.Save(stream);
-                    var document = (ScreenshotEditDocument)typeof(ScreenshotEditorWindow)
-                        .GetField("_document", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(editor)!;
+                    var document = (ScreenshotEditDocument)typeof(ScreenshotEditorView)
+                        .GetField("_document", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(editor.View)!;
                     document.SetCrop(new Int32Rect(0, 0, 80, 90));
-                    typeof(ScreenshotEditorWindow).GetMethod("Export", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-                        .Invoke(editor, new object[] { "Apply" });
+                    typeof(ScreenshotEditorView).GetMethod("Export", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                        .Invoke(editor.View, new object[] { "Apply" });
                 }
                 catch (Exception ex) { editorError = ex; editor.Close(); }
             }), System.Windows.Threading.DispatcherPriority.Loaded);

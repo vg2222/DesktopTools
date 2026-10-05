@@ -30,7 +30,8 @@ internal sealed partial class AppController
     {
         ScreenshotEditorWindow? review = null;
         review = new ScreenshotEditorWindow(image, _ => { }, Report, autoRedact: Settings.AutoRedact, reviewBeforeOutput: true,
-            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken));
+            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken),
+            translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null);
         screenshotReviews.Add(review); review.Closed += (_, _) => screenshotReviews.Remove(review);
         review.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(review, Dark, Settings.Transparency);
         NativeWindowService.ShowForeground(review);

@@ -1,0 +1,15 @@
+{
+  "Copy all": "Tümünü kopyala",
+  "Copy selection": "Seçimi kopyala",
+  "Translate": "Çevir",
+  "Back to editing": "Düzenlemeye dön",
+  "Fix text": "Metni düzelt",
+  "Open link": "Bağlantıyı aç",
+  "Copy link": "Bağlantıyı kopyala",
+  "{0} words found": "{0} sözcük bulundu",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "Seçmek için sürükleyin · çift tıklama: sözcük · üç tıklama: satır · Ctrl+A: tümü",
+  "Select text first.": "Önce metin seçin.",
+  "Could not open the link: ": "Bağlantı açılamadı: ",
+  "Text view": "Metin görünümü",
+  "Enter the corrected text": "Düzeltilmiş metni girin"
+}

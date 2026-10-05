@@ -196,6 +196,21 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Screenshot library: a Screenshot library card sits under Capture tools on Home and opens the search even before the library is enabled; its settings page has the switch, limit and Clear library.
 - OCR: scan or extract text from a dark-theme window with small text, from a page that mixes two alphabets, and from a plain light page; compare with the previous release. Check Check screenshot on a dark-theme screenshot that contains an e-mail address and a key.
 
+## Text view and Image tools editing (1.2.8)
+
+On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), in both themes:
+
+1. **Scan screen text** (hotkey and dashboard card): select a region of a dark window with small text. The rainbow rim and light sweep should appear while it reads, then everything dims and the words light up in a wave from top to bottom. Drag across several lines, double-click a word, triple-click a line, press Ctrl+A / Ctrl+C and paste into Notepad. Check the pasted line breaks.
+2. Put a web address, an e-mail address and a phone number in the region. They should be underlined; Ctrl+click opens them (use a harmless address), the context menu copies the link. Press F2 on a misread word, correct it, copy again: the correction is used. Close and reopen: the picture is unchanged.
+3. Select a region with no text and a very large region: expect "No text found" and the existing crop guidance, no frozen window. Close the window while it is still reading.
+4. With translation enabled, select words and press Translate: Text tools opens with exactly that text. Disable translation: the button disappears.
+5. Screenshot editor: draw something, More menu ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
+6. Image tools: open a PNG. The tabs Resize, Crop, Output, Background and **Annotate** sit in a row under the title. In Annotate draw, then **Check screenshot** and **Hide all found**; switch to Crop: the drawing is baked in as one step, Undo removes it. While in Annotate, the title-bar Undo/Redo are disabled; closing the window with unbaked drawings asks to save.
+7. The title-bar picture button changes to a pen while the original is shown and back again; hover text and screen-reader name say "Show original" / "Show edited". Press it while in Annotate: the drawing is baked and the original is shown on the normal canvas.
+8. Image tools **Extract text** (the text icon next to it): the workspace is replaced by the text view, title-bar Undo/Redo/Original are disabled, **Back to editing** returns to the same tab.
+9. Reduced motion on: no rim animation, the text view appears at once.
+10. Translations of the new strings are machine-written; have native speakers review `text-select.*.json`.
+
 ## Clipboard and recognition quality (1.2.8)
 
 1. Copy text from the text view (**Copy selection**, **Copy all**, Ctrl+C), a screenshot (**Copy image**) and a colour from the eyedropper about thirty times in a row while Windows clipboard history (Win+V) is on and, if you use one, a clipboard manager is running. None should show "Unable to open clipboard". Paste into Notepad and a drawing program to check the text and the picture. If a copy is refused, the message should name the program using the clipboard.

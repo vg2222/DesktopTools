@@ -58,7 +58,9 @@ internal static class Program
                 else if (args.Contains("--ocr-quality-only")) await Test("OCR accuracy: single pass versus enhanced reader", OcrQualityChecks.RunAsync);
                 else if (args.Contains("--ocr-consensus-only")) await Test("OCR consensus between several readings", OcrConsensusChecks.RunAsync);
                 else if (args.Contains("--ocr-bench")) await Test("OCR benchmark on ClearType text", OcrBenchmark.RunAsync);
+                else if (args.Contains("--text-copy-only")) await Test("Text view copy buttons", TextCopyChecks.RunAsync);
                 else if (args.Contains("--clipboard-only")) await Test("Clipboard text copy under contention", ClipboardServiceChecks.RunAsync);
+                else if (args.Contains("--text-selection-only")) await Test("Text selection view, word layout and editor embedding", TextSelectionChecks.RunAsync);
                 else if (args.Contains("--library-only")) await Test("Screenshot library: OCR index, search and clearing", ScreenshotLibraryChecks.RunAsync);
                 else if (args.Contains("--editor-shots")) await Test("Screenshot editor states", EditorShots.RunAsync);
                 else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);

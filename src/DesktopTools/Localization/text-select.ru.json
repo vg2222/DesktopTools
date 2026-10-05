@@ -1,0 +1,15 @@
+{
+  "Copy all": "Копировать всё",
+  "Copy selection": "Копировать выделенное",
+  "Translate": "Перевести",
+  "Back to editing": "Назад к редактированию",
+  "Fix text": "Исправить текст",
+  "Open link": "Открыть ссылку",
+  "Copy link": "Копировать ссылку",
+  "{0} words found": "Найдено слов: {0}",
+  "Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all": "Тяните мышью, чтобы выделить · двойной щелчок — слово · тройной — строка · Ctrl+A — всё",
+  "Select text first.": "Сначала выделите текст.",
+  "Could not open the link: ": "Не удалось открыть ссылку: ",
+  "Text view": "Текст на изображении",
+  "Enter the corrected text": "Введите исправленный текст"
+}
