@@ -179,7 +179,7 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Edit a workflow and close the builder. The DesktopTools prompt must offer Save, Don't save and Cancel with the app colors and icons. Cancel, Escape and the header close button must preserve the unsaved draft; Don't save must close without changing the store; Save must persist it. Close again after canceling to confirm there is only one prompt.
 - Leave an invalid action value, choose Save from the close prompt and verify the inline error keeps both windows open. Cancel, correct the action, close again and save. In a disposable fixture, make storage temporarily unwritable and retry after restoring it; an error must never discard the draft. Check keyboard focus, Enter, screen-reader labels, wrapped translations and footer buttons on a small display.
 
-## Recorder throughput, GIF/WebP export, library, styling, data export and languages (1.3)
+## Recorder throughput, GIF/WebP export, library, styling, data export and languages (1.2.8)
 
 - Recording: record a display for one minute at 144 FPS with hardware acceleration on and again off. The first file should play smoothly at the screen's rate with no missing or garbled frames (decode it with `scripts/analyze-recording-probe.py` for an objective check); the second is limited to 30 FPS by design. Record a single window: about 48 FPS is expected. Stop, pause and resume while a game or video plays. **Not tested** by the automated runs: hour-long recordings, other GPUs, mixed-DPI displays, remote-viewer output.
 - GIF and animated WebP: open a short clip in the video editor, choose Save as → GIF animation and Animated WebP, change frame rate and width and watch the size estimate. Export, open the result in a browser and an image viewer and check duration, loop and colors. Existing files must not be overwritten and the source video must not change. Very long or large clips should show the size warning instead of exhausting memory.
@@ -190,7 +190,7 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 - Languages: switch to each of Ukrainian, Chinese, Portuguese, Japanese, Polish, Turkish and Italian, restart, and check the main pages, the screenshot editor, the recorder and the installer language menu for clipped or wrapped text. These translations have not had a native-speaker review.
 - ARM64: `./scripts/publish.ps1 -Runtime win-arm64` produces an ARM64 portable folder. It was built and its binaries checked for the ARM64 machine type but **not run on ARM hardware**; start it on a Windows 11 ARM device and repeat the recorder, OCR, translation and background-removal checks.
 
-## Editor polish, library entry and OCR (1.3)
+## Editor polish, library entry and OCR (1.2.8)
 
 - Screenshot editor: in both themes the Draw, Style and Hide data tabs show an icon above a readable label. Turn on the presentation background in Style: the canvas itself shows the gradient, rounded corners, shadow and window bar while you draw. Draw a long pen stroke on a 4K screenshot; it must follow the pointer without lag. Press Check screenshot: a rainbow rim runs around the picture and a light bar sweeps over it until the check is done (a still rim with animations off). The view-original button switches between a picture icon and a pen icon.
 - Screenshot library: a Screenshot library card sits under Capture tools on Home and opens the search even before the library is enabled; its settings page has the switch, limit and Clear library.
@@ -217,3 +217,4 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 2. Only the button you press shows the check mark: **Copy selection** must not tick **Copy all** and the other way round.
 3. Screenshot real pages with small text (a web shop button such as "Claim offer", a settings dialog, a spreadsheet, a code editor, a dark and a light theme, 100% and 150% scale). Compare the text view with what you see. Note misreadings of 9-10 pixel text separately; it is the known weak spot.
 4. With Russian as the OCR language, scan a page that mixes Russian and English; install another Windows language with a dictionary (for example German) and repeat. The second alphabet should be read only when the first result has many unknown words.
+

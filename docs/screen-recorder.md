@@ -27,7 +27,7 @@ The microphone and loopback sources use the current default Windows input/output
 
 The recording probe (`--record-probe`, see `tests/DesktopTools.IntegrationTests/RecordingProbe.cs`) records a full display while a fixture window paints frame-ID cells, a moving bar, scrolling text and a deterministic noise texture. `scripts/analyze-recording-probe.py` decodes **every** frame of the MP4 and reports unreadable frames, lost and repeated frame IDs, timestamp gaps, text sharpness and compression error against the exact expected pixels. Because the fixture is an ordinary WPF window it paints at roughly 96–122 FPS on the development PC, so these runs show what the recorder keeps of what is painted, not that 144 unique frames per second were rendered.
 
-Final runs of the 1.3 recorder (Desktop Duplication, 144 FPS target, hardware encoding, High quality, microphone-free system audio on), 60 seconds each, on the development PC (Windows 11, one 1920×1080 100 Hz and one 2560×1440 display):
+Final runs of the 1.2.8 recorder (Desktop Duplication, 144 FPS target, hardware encoding, High quality, microphone-free system audio on), 60 seconds each, on the development PC (Windows 11, one 1920×1080 100 Hz and one 2560×1440 display):
 
 | Display | Delivered | Corrupt frames | Repeated | Gaps over 50 ms | Bitrate | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
