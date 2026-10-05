@@ -31,7 +31,8 @@ internal static class AutoRedactChecks
         var pixels = Enumerable.Repeat((byte)255, 400 * 200 * 4).ToArray();
         var sample = BitmapSource.Create(400, 200, 96, 96, PixelFormats.Bgra32, null, pixels, 1600); sample.Freeze();
         BitmapSource? exported = null;
-        var window = new ScreenshotEditorWindow(sample, result => exported = result, _ => { });
+        var reported = new List<string>();
+        var window = new ScreenshotEditorWindow(sample, result => exported = result, reported.Add);
         try
         {
             window.Show(); await Task.Delay(50); window.UpdateLayout();
@@ -46,6 +47,9 @@ internal static class AutoRedactChecks
             await (Task)window.GetType().GetMethod("FindSensitiveDataAsync", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null)!;
             var doc = Field<ScreenshotEditDocument>(window, "_document");
             Check(doc.Items.Count == 0, "Detection silently edited the image");
+            var notice = Children(window).OfType<Border>().Single(b => b.Name == "DetectionNotice");
+            Check(notice.Visibility == Visibility.Visible && Children(notice).OfType<TextBlock>().Any(t => t.Text.Contains("miss")), "No notice that detection can miss data after the check");
+            Check(reported.Any(m => m.Contains("miss")), "No notification that detection can miss data after the check");
             var list = Children(window).OfType<ListBox>().Single(l => l.Name == "SensitiveFindings"); list.SelectedIndex = 0;
             Check(ReferenceEquals(list.Background, window.FindResource("Card")), "Findings list does not use DesktopTools theme");
             var hideAll = Children(window).OfType<Button>().SingleOrDefault(b => b.Name == "HideAllSensitiveData");
@@ -62,7 +66,18 @@ internal static class AutoRedactChecks
             window.AnalyzeSensitiveData = (_, _, _, _) => throw new SensitiveDataAnalysisException(guidance);
             await window.FindSensitiveDataAsync();
             Check(Field<TextBlock>(window, "_scanStatus").Text == guidance, "Analysis limit lost actionable crop guidance");
-            Check(!Field<RedactionReviewState>(window, "_reviewState").CanExport, "Failed analysis enabled export");
+            Check(notice.Visibility != Visibility.Visible, "The notice stayed after a failed check, which found nothing to be incomplete about");
+            var manualState = Field<RedactionReviewState>(window, "_reviewState");
+            Check(manualState.CanExport && manualState.NeedsScan, "A failed check blocked Copy and Save in the ordinary editor");
+            var skip = Field<Button>(window, "_skipButton");
+            Check(skip.Visibility != Visibility.Visible, "'Continue without checking' is shown in the ordinary editor");
+            window.AnalyzeSensitiveData = (_, _, _, _) => Task.FromResult<IReadOnlyList<SensitiveFinding>>([]);
+            await window.FindSensitiveDataAsync();
+            window.GetType().GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            doc.Add(new() { Kind = AnnotationKind.Redaction, Points = [new(1, 1), new(30, 30)] });
+            window.GetType().GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            Check(manualState.NeedsScan && manualState.CanExport && skip.Visibility != Visibility.Visible, "Editing after a check blocked Copy and Save or showed the skip button");
+            Check(Field<List<Button>>(window, "_exportButtons").All(b => b.IsEnabled), "Copy/Save buttons are disabled after the image changed");
         }
         finally { window.Close(); }
         using var controller = new AppController(true);

@@ -486,13 +486,23 @@ internal static class AutoRedactTests
             state.Invalidate(); check(!state.CanExport, "Edit did not invalidate scan");
             state.Close(); check(!state.CompleteScan(second, [one]) && !state.CanExport, "Closed review accepted work");
         });
-        test("Ordinary editor can export until detection is requested", () =>
+        test("Ordinary editor can always export once no analysis is running or unresolved", () =>
         {
             var state = new RedactionReviewState(); check(state.CanExport, "Manual editor unexpectedly blocked");
             state.Invalidate(); check(state.CanExport, "Unscanned editing needs no privacy gate");
             long revision = state.BeginScan(); check(!state.CanExport, "Running analysis exported");
-            state.FailScan(revision); check(!state.CanExport && state.NeedsScan, "Failed OCR was treated as clean");
-            state.SkipRemaining(); check(state.CanExport, "Failed scan cannot be skipped explicitly");
+            state.FailScan(revision); check(state.CanExport && state.NeedsScan && !state.RequiresScanToExport, "A failed check blocked the ordinary editor");
+            long second = state.BeginScan(); check(state.CompleteScan(second, []), "Clean scan rejected");
+            state.Invalidate(); check(state.CanExport && state.NeedsScan && !state.RequiresScanToExport, "Editing after a check blocked Copy and Save");
+            long third = state.BeginScan(); check(state.CompleteScan(third, [new SensitiveFinding(Guid.NewGuid(), ["email"], new(1, 1, 20, 10), "••••")]) && !state.CanExport, "Unresolved findings stopped gating output");
+            state.SkipRemaining(); check(state.CanExport, "Keeping the remaining findings visible did not unlock export");
+        });
+        test("Automatic review still requires a check or an explicit skip after the image changes", () =>
+        {
+            var state = new RedactionReviewState(true);
+            long revision = state.BeginScan(); check(state.CompleteScan(revision, []) && state.CanExport, "Clean automatic review blocked");
+            state.Invalidate(); check(!state.CanExport && state.RequiresScanToExport, "Edit after the automatic review did not require another check");
+            state.SkipRemaining(); check(state.CanExport && !state.RequiresScanToExport, "Explicit skip did not unlock the automatic review");
         });
         test("Auto redact copy is localized in all supported catalogs", () =>
         {

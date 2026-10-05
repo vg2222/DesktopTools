@@ -2,11 +2,14 @@ namespace DesktopTools.Core;
 public sealed class RedactionReviewState(bool requireScan = false)
 {
     private long revision;
+    private readonly bool mandatory = requireScan;
     private bool closed, requested = requireScan;
     public bool IsScanning { get; private set; }
     public bool NeedsScan { get; private set; } = requireScan;
+    /// <summary>Only the automatic review (the user asked for every capture to be checked before output) makes a missing check block Copy and Save.</summary>
+    public bool RequiresScanToExport => mandatory && NeedsScan;
     public bool HasUnresolved => Findings.Count > 0;
-    public bool CanExport => !closed && !IsScanning && !NeedsScan && !HasUnresolved;
+    public bool CanExport => !closed && !IsScanning && !RequiresScanToExport && !HasUnresolved;
     public IReadOnlyList<SensitiveFinding> Findings { get; private set; } = [];
     public long BeginScan()
     {
