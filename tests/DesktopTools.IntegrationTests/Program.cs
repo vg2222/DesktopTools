@@ -56,6 +56,7 @@ internal static class Program
                 else if (args.Contains("--record-sustained-only")) await Test("Sustained numbered recording", RecordingThroughputChecks.RunSustainedAsync);
                 else if (args.Contains("--animated-export-only")) await Test("GIF and animated WebP export", AnimatedExportChecks.RunAsync);
                 else if (args.Contains("--ocr-quality-only")) await Test("OCR accuracy: single pass versus enhanced reader", OcrQualityChecks.RunAsync);
+                else if (args.Contains("--clipboard-only")) await Test("Clipboard text copy under contention", ClipboardServiceChecks.RunAsync);
                 else if (args.Contains("--library-only")) await Test("Screenshot library: OCR index, search and clearing", ScreenshotLibraryChecks.RunAsync);
                 else if (args.Contains("--editor-shots")) await Test("Screenshot editor states", EditorShots.RunAsync);
                 else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);

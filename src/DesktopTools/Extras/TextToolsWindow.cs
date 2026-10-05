@@ -135,7 +135,7 @@ internal sealed class TextToolsWindow : Window
         System.Windows.Automation.AutomationProperties.SetName(source, L.T(ocr ? "Recognized text" : "Source text")); RefreshButtons();
         RefreshRuntimeWarning();
     }
-    private bool Copy(string text) { try { if (!string.IsNullOrWhiteSpace(text)) { Clipboard.SetText(text); status.Text = L.T("Text copied."); return true; } } catch (Exception ex) { controller.Report(L.T("Could not copy text: ") + ex.Message); } return false; }
+    private bool Copy(string text) { try { if (!string.IsNullOrWhiteSpace(text)) { var copied = DesktopTools.Native.ClipboardService.SetText(text); if (copied.Success) { status.Text = L.T("Text copied."); return true; } controller.Report(L.T("Could not copy text: ") + copied.Error); } } catch (Exception ex) { controller.Report(L.T("Could not copy text: ") + ex.Message); } return false; }
     private void SettingsChanged()
     {
         if (closed) return;

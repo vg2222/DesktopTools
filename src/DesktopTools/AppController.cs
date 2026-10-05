@@ -648,6 +648,16 @@ internal sealed partial class AppController : IDisposable
     internal async Task<bool> TryCopyAsync(BitmapSource image, CancellationToken cancellationToken = default,
         Action<DataObject>? writeClipboard = null)
     {
+        if (writeClipboard == null)
+        {
+            // Own writer: waits for a busy clipboard instead of failing after a second, and names the program in the way.
+            ClipboardResult result;
+            try { result = await ClipboardService.SetImageAsync(image, 4000, cancellationToken); }
+            catch (OperationCanceledException) { return false; }
+            if (result.Success) { Report(L.T("Screenshot copied to clipboard.")); return true; }
+            Report(L.T("Clipboard is busy. Your screenshot is retained; use Save PNG. ") + result.Error);
+            return false;
+        }
         Exception? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
@@ -657,7 +667,7 @@ internal sealed partial class AppController : IDisposable
                 var data = new DataObject(); data.SetImage(image);
                 using var stream = new MemoryStream(); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); encoder.Save(stream); stream.Position = 0;
                 data.SetData("PNG", stream);
-                if (writeClipboard == null) Clipboard.SetDataObject(data, true); else writeClipboard(data);
+                writeClipboard(data);
                 Report(L.T("Screenshot copied to clipboard.")); return true;
             }
             catch (System.Runtime.InteropServices.ExternalException ex)

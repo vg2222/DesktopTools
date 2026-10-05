@@ -106,7 +106,7 @@ internal sealed class SampledColorWindow : Window
         samples.Children.Add(new Border { Background = new SolidColorBrush(color), Height = 104, CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 12, 0) });
         if (pixels != null) { var magnifier = ScreenEyedropperWindow.PixelZoom(new Image { Source = pixels, Width = 104, Height = 104, Stretch = Stretch.Fill }); Grid.SetColumn(magnifier, 1); samples.Children.Add(magnifier); }
         panel.Children.Add(samples);
-        bool Copy(string value) { try { Clipboard.SetText(value); report(L.T("Color copied.")); return true; } catch (Exception ex) { report(L.T("Could not copy color: ") + ex.Message); return false; } }
+        bool Copy(string value) { var copied = DesktopTools.Native.ClipboardService.SetText(value); if (copied.Success) { report(L.T("Color copied.")); return true; } report(L.T("Could not copy color: ") + copied.Error); return false; }
         void ColorValue(string label, string value)
         {
             var row = new DockPanel { Margin = new Thickness(0, 0, 0, 10) }; var name = Ui.Text(label, 12); name.Width = 42; DockPanel.SetDock(name, Dock.Left); row.Children.Add(name);

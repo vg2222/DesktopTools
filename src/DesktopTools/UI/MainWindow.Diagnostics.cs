@@ -149,7 +149,7 @@ internal sealed partial class MainWindow
         };
         string report = DiagnosticReport.Build(version, sections, DateTime.UtcNow, Environment.UserName, Environment.MachineName,
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-        try { Clipboard.SetText(report); controller.Report(L.T("Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.")); }
+        try { var copied = DesktopTools.Native.ClipboardService.SetText(report); if (!copied.Success) throw new InvalidOperationException(copied.Error); controller.Report(L.T("Report copied. Your user name, computer name, paths, e-mail and IP addresses were replaced.")); }
         catch (Exception ex) { controller.Report(L.T("Could not copy the report: ") + ex.Message, NotificationKind.Warning); }
     }
 
