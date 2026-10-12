@@ -36,7 +36,7 @@ internal sealed class AutomationService : IDisposable
             Target=AutomationInput.External(foreground)?foreground:0;
             _=RunAsync(script);
         };
-        timer.Tick+=(_,_)=>Tick();ApplyTriggers(true);timer.Start();
+        timer.Tick+=(_,_)=>Tick();ApplyTriggers(true);
         if(store.RecoveryMessage!=null)report(store.RecoveryMessage);
     }
     internal void Save(List<AutomationScript> scripts)
@@ -52,6 +52,12 @@ internal sealed class AutomationService : IDisposable
         if(failures.Count>0)report(L.T("An automation shortcut is unavailable.")+" "+string.Join("; ",failures.Values));
         foreach(var id in triggers.Keys.Where(id=>!Scripts.Any(s=>s.Id==id)).ToArray())triggers.Remove(id);
         foreach(var s in Scripts){string key=$"{s.Armed}|{s.IntervalMinutes}|{s.DailyTime}|{s.WindowTrigger}|{s.RunOnStartup}";if(!triggers.TryGetValue(s.Id,out var old)||old.Key!=key)triggers[s.Id]=(key,new(s,DateTime.Now,AutomationInput.FindWindow(s.WindowTrigger)!=0,startup));}
+        UpdatePolling();
+    }
+    private void UpdatePolling()
+    {
+        if(!disposed && Scripts.Any(s=>triggers.TryGetValue(s.Id,out var trigger)&&trigger.State.NeedsPolling(s)))timer.Start();
+        else timer.Stop();
     }
     private void Tick()
     {
@@ -59,6 +65,7 @@ internal sealed class AutomationService : IDisposable
             nint window=AutomationInput.FindWindow(s.WindowTrigger);
             if(triggers[s.Id].State.Take(s,DateTime.Now,window!=0,!IsActive&&available())){Target=window!=0?window:0;_=RunAsync(s);}
         }
+        UpdatePolling();
     }
     internal void SetRecording(bool value) { if(cancellation!=null)return; IsActive=value; hotkeys.DispatchSuspended=value; Changed?.Invoke(); }
     internal void Stop()=>cancellation?.Cancel();

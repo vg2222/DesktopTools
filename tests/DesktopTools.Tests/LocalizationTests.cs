@@ -1,6 +1,7 @@
 using DesktopTools.Core;
 using DesktopTools.Localization;
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 internal static class LocalizationTests
@@ -8,6 +9,7 @@ internal static class LocalizationTests
     public static void Run()
     {
         void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+        CheckRawCatalogs();
         var previous = L.Language;
         try
         {
@@ -47,5 +49,53 @@ internal static class LocalizationTests
             var invalid = new AppSettings { Language = "unsupported" }; SettingsStore.Validate(invalid); Check(invalid.Language == "en", "Invalid saved language not repaired");
         }
         finally { L.Use(previous); }
+    }
+
+    private static void CheckRawCatalogs()
+    {
+        var languages = L.Languages.Where(language => language != "en").ToArray();
+        var features = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.Ordinal);
+        var translations = new Dictionary<(string Language, string Key), (string Value, string Resource)>();
+        var errors = new List<string>();
+        var assembly = typeof(L).Assembly;
+        foreach (var resource in assembly.GetManifestResourceNames()
+            .Where(name => name.Contains(".Localization.", StringComparison.Ordinal) && name.EndsWith(".json", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal))
+        {
+            var language = languages.FirstOrDefault(language => resource.EndsWith("." + language + ".json", StringComparison.Ordinal));
+            if (language is null) { errors.Add("Unsupported catalog language: " + resource); continue; }
+            var feature = resource[..^(language.Length + 6)];
+            if (!features.TryGetValue(feature, out var catalogs)) features.Add(feature, catalogs = new(StringComparer.Ordinal));
+            var keys = new HashSet<string>(StringComparer.Ordinal);
+            if (!catalogs.TryAdd(language, keys)) errors.Add("Duplicate feature catalog: " + resource);
+            using var stream = assembly.GetManifestResourceStream(resource)!;
+            using var document = JsonDocument.Parse(stream);
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                if (!keys.Add(property.Name)) errors.Add("Duplicate JSON key: " + resource + ": " + property.Name);
+                var value = property.Value.GetString();
+                if (string.IsNullOrWhiteSpace(value) || property.Name.Contains('\uFFFD') || value.Contains('\uFFFD'))
+                { errors.Add("Empty or broken translation: " + resource + ": " + property.Name); continue; }
+                var key = (language, property.Name);
+                if (translations.TryGetValue(key, out var previous) && previous.Value != value)
+                    errors.Add("Conflicting duplicate: " + previous.Resource + " / " + resource + ": " + property.Name);
+                else translations.TryAdd(key, (value, resource));
+            }
+        }
+        if (features.Count == 0) errors.Add("No raw feature catalogs were embedded");
+        foreach (var (feature, catalogs) in features)
+        {
+            foreach (var language in languages)
+                if (!catalogs.ContainsKey(language)) errors.Add("Missing feature catalog: " + feature + "." + language);
+            var reference = catalogs.TryGetValue("ru", out var russian) ? russian : catalogs.Values.First();
+            foreach (var (language, keys) in catalogs)
+            {
+                var missing = reference.Except(keys).Order(StringComparer.Ordinal).ToArray();
+                var extra = keys.Except(reference).Order(StringComparer.Ordinal).ToArray();
+                if (missing.Length > 0 || extra.Length > 0)
+                    errors.Add($"Feature key mismatch: {feature}.{language}; missing: {string.Join(", ", missing)}; extra: {string.Join(", ", extra)}");
+            }
+        }
+        if (errors.Count > 0) throw new Exception(string.Join(Environment.NewLine, errors));
     }
 }

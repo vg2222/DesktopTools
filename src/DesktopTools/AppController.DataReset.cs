@@ -10,11 +10,14 @@ internal sealed partial class AppController
 {
     private bool resetDataOnExit;
 
-    internal void RequestDataReset(Window owner)
+    internal async void RequestDataReset(Window owner)
     {
         if (!ConfirmationDialog.Ask(owner, L.T("Reset all app data"),
                 L.T("Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain."),
                 L.T("Delete app data"))) return;
+        try { await PrepareForShutdownAsync(); }
+        catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }
+        if (disposed) return;
         resetDataOnExit = true;
         Application.Current.Shutdown();
     }

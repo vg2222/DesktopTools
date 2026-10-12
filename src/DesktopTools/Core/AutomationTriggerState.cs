@@ -11,6 +11,8 @@ public sealed class AutomationTriggerState
         due=now.AddMinutes(Math.Max(1,script.IntervalMinutes));present=windowPresent;startup=atStartup&&script.Armed&&script.RunOnStartup;
         dailyDate=TimeOnly.TryParseExact(script.DailyTime,"HH:mm",CultureInfo.InvariantCulture,DateTimeStyles.None,out var time)&&TimeOnly.FromDateTime(now)>=time?now.Date:DateTime.MinValue;
     }
+    public bool NeedsPolling(AutomationScript script) => script.Armed &&
+        (startup || script.IntervalMinutes > 0 || script.DailyTime.Length > 0 || !string.IsNullOrWhiteSpace(script.WindowTrigger));
     public bool Take(AutomationScript script,DateTime now,bool windowPresent,bool canRun)
     {
         if(windowPresent&&!present)windowPending=true;present=windowPresent;if(!windowPresent)windowPending=false;

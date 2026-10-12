@@ -333,6 +333,11 @@ public sealed partial class ScreenshotEditorView : UserControl
     /// <summary>Releases timers, tokens and handlers; the hosting window calls it when it closes.</summary>
     internal void Dispose()
     {
+        if (_reviewClosed) return;
+        _previewTimer?.Stop();
+        if (_previewTimer != null) _previewTimer.Tick -= PreviewTick;
+        _previewTimer = null; _stylePreview.Source = null;
+        StopScanEffect();
         _textView?.Cancel(); _textView = null;
         CloseRedactionReview();
         CancelGesture(); _surface.MouseLeftButtonDown -= Begin; _surface.MouseMove -= Move; _surface.MouseLeftButtonUp -= Finish; _surface.LostMouseCapture -= LostCapture;

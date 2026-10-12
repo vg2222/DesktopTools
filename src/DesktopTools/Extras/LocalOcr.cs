@@ -1,3 +1,4 @@
+using DesktopTools.Native;
 using DesktopTools.Localization;
 using DesktopTools.Core;
 using System.Windows;
@@ -206,6 +207,7 @@ public static class LocalOcr
 
     public static async Task<OcrLayout> RecognizeLayoutAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
     {
+        using var layoutTiming = PipelineMetrics.Measure("ocr.layout");
         var primary = await RecognizeLayoutAtScaleAsync(image, languageTag, 2, cancellationToken);
         // Dark themes: read the polarity-neutral ink map as well and keep both readings, so light-on-dark secrets are not missed.
         OcrLayout? inkReading = null;
@@ -241,12 +243,13 @@ public static class LocalOcr
                 if (buffer[i] != buffer[0] || buffer[i+1] != buffer[1] || buffer[i+2] != buffer[2] || buffer[i+3] != buffer[3]) return true;
             return false;
         }
-        try { tinyRows = OcrRowRegions.Find(primary, cancellationToken, ContainsDetail); }
+        try { using var timing = PipelineMetrics.Measure("ocr.row-planning"); tinyRows = OcrRowRegions.Find(primary, cancellationToken, ContainsDetail); }
         catch (ArgumentException) { throw new SensitiveDataAnalysisException(L.T("Too much text for sensitive-data analysis. Crop the image and try again.")); }
         int tileSize = Math.Min(1600, (int)OcrEngine.MaxImageDimension / 3);
         int overlap = Math.Min(400, tileSize / 3);
         long rowTiles = tinyRows.Sum(r => (long)Math.Max(1, (int)Math.Ceiling((r.Width - (double)overlap) / (tileSize - overlap))));
         if (rowTiles > 256) throw new SensitiveDataAnalysisException(L.T("Too much text for sensitive-data analysis. Crop the image and try again."));
+        using (PipelineMetrics.Measure("ocr.small-rows"))
         foreach (var row in tinyRows)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -258,8 +261,9 @@ public static class LocalOcr
         // surrounding language. This keeps omitted code/password text visible
         // to the same detector without modifying the screenshot pixels.
         IReadOnlyList<Int32Rect> gaps;
-        try { gaps = OcrGapRegions.Find(primary, cancellationToken); }
+        try { using var timing = PipelineMetrics.Measure("ocr.gap-planning"); gaps = OcrGapRegions.Find(primary, cancellationToken); }
         catch (ArgumentException) { throw new SensitiveDataAnalysisException(L.T("Too much text for sensitive-data analysis. Crop the image and try again.")); }
+        using (PipelineMetrics.Measure("ocr.gaps"))
         foreach (var gap in gaps)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -275,10 +279,15 @@ public static class LocalOcr
         ReadScaler.Fant => System.Windows.Media.BitmapScalingMode.Fant, _ => System.Windows.Media.BitmapScalingMode.HighQuality
     };
 
-    /// <summary>The original magnification used for sensitive-data readings: WPF scaling, round-tripped through PNG into a software bitmap.</summary>
+    /// <summary>Preserve the original WPF magnification. Verified formats bypass PNG with identical bytes; other formats retain the codec path.</summary>
     private static async Task<SoftwareBitmap> ScaledBitmapAsync(BitmapSource tile, int scale)
     {
+        using var timing = PipelineMetrics.Measure("ocr.bitmap-preparation");
         var enlarged = new TransformedBitmap(tile, new ScaleTransform(scale, scale));
+        if (tile.Format == PixelFormats.Bgra32 || tile.Format == PixelFormats.Pbgra32 || tile.Format == PixelFormats.Bgr24 || tile.Format == PixelFormats.Gray8)
+            return SoftwareBitmapFactory.Create(enlarged);
+        // Other formats retain the original codec conversion until byte equivalence
+        // has been established for them as well.
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(enlarged));
         using var memory = new MemoryStream(); encoder.Save(memory);
         using var stream = new InMemoryRandomAccessStream();
@@ -312,8 +321,10 @@ public static class LocalOcr
                 int x = column * step, y = row * step;
                 cancellationToken.ThrowIfCancellationRequested();
                 var tile = new CroppedBitmap(image, new Int32Rect(x, y, Math.Min(tileSize, image.PixelWidth - x), Math.Min(tileSize, image.PixelHeight - y)));
-                using var bitmap = scaler != ReadScaler.Legacy ? OcrEnhancer.ToSoftwareBitmap(OcrEnhancer.Enlarge(tile, recognitionScale, ModeOf(scaler))) : await ScaledBitmapAsync(tile, recognitionScale);
-                var result = await engine.RecognizeAsync(bitmap).AsTask(cancellationToken);
+                using var bitmap = scaler != ReadScaler.Legacy ? SoftwareBitmapFactory.Create(OcrEnhancer.Enlarge(tile, recognitionScale, ModeOf(scaler))) : await ScaledBitmapAsync(tile, recognitionScale);
+                OcrResult result;
+                using (PipelineMetrics.Measure("ocr.windows-engine")) result = await engine.RecognizeAsync(bitmap).AsTask(cancellationToken);
+                using var assemblyTiming = PipelineMetrics.Measure("ocr.layout-assembly");
                 foreach (var nativeLine in result.Lines)
                 {
                     Rect lineRect = Rect.Empty;

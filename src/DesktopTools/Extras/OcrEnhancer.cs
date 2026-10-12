@@ -81,14 +81,20 @@ internal static class OcrEnhancer
     /// <summary>True when most of the picture is dark (a dark theme), judged from a coarse sample of its luma.</summary>
     public static bool IsMostlyDark(BitmapSource source)
     {
-        var pixels = ToBgra(source); long sum = 0; int count = 0;
+        using var timing = PipelineMetrics.Measure("ocr.polarity-sampling");
+        BitmapSource converted = source.Format == PixelFormats.Bgra32 ? source : new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+        // Preserve every old sampling point and conversion, but retain one row
+        // instead of copying an entire multi-megapixel image to examine a grid.
+        var pixels = new byte[checked(source.PixelWidth * 4)]; long sum = 0; int count = 0;
         int stepX = Math.Max(1, source.PixelWidth / 96), stepY = Math.Max(1, source.PixelHeight / 96);
         for (int y = 0; y < source.PixelHeight; y += stepY)
+        {
+            converted.CopyPixels(new Int32Rect(0, y, source.PixelWidth, 1), pixels, pixels.Length, 0);
             for (int x = 0; x < source.PixelWidth; x += stepX)
-            { int p = (y * source.PixelWidth + x) * 4; sum += (pixels[p] * 29 + pixels[p + 1] * 150 + pixels[p + 2] * 77) >> 8; count++; }
+            { int p = x * 4; sum += (pixels[p] * 29 + pixels[p + 1] * 150 + pixels[p + 2] * 77) >> 8; count++; }
+        }
         return count > 0 && sum / count < 115;
     }
-
     public static byte[] ToBgra(BitmapSource source)
     {
         BitmapSource converted = source.Format == PixelFormats.Bgra32 ? source : new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
@@ -113,7 +119,7 @@ internal static class OcrEnhancer
     public static SoftwareBitmap ToSoftwareBitmap(BitmapSource source)
     {
         var pixels = ToBgra(source);
-        var writer = new DataWriter();
+        using var writer = new DataWriter();
         writer.WriteBytes(pixels);
         IBuffer buffer = writer.DetachBuffer();
         return SoftwareBitmap.CreateCopyFromBuffer(buffer, BitmapPixelFormat.Bgra8, source.PixelWidth, source.PixelHeight, BitmapAlphaMode.Ignore);

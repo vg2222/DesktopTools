@@ -183,7 +183,7 @@ internal sealed partial class AppController
             // Do not close a capture selection/dialog or interrupt a native recording during finalization.
             if (IsBusy) throw new InvalidOperationException(L.T("Finish the current capture or dialog, then try updating again."));
             UpdateStatus = L.T("Preparing background installation…"); updateNotice?.UpdateMessage(UpdateStatus, 1); UpdateChanged?.Invoke();
-            if (utilityWindows.TryGetValue("Recorder", out var recorder)) await ((Extras.ScreenRecorderWindow)recorder).StopAsync();
+            await PrepareForShutdownAsync();
             var start = new ProcessStartInfo(installer) { UseShellExecute = false, CreateNoWindow = true };
             // A named event gives the installer time to unpack, validate this process and take a process handle.
             // Keep the app alive until that validation succeeds; the installer then waits for this app to exit.

@@ -29,7 +29,7 @@ internal sealed partial class AppController
         catch (Exception ex) { Report(L.T("Could not export settings: ") + ex.Message, NotificationKind.Warning); }
     }
 
-    internal void RequestSettingsImport(Window owner)
+    internal async void RequestSettingsImport(Window owner)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog { Title = L.T("Import settings"), Filter = L.T("DesktopTools data") + " (*.zip)|*.zip", CheckFileExists = true };
         if (dialog.ShowDialog(owner) != true) return;
@@ -41,6 +41,9 @@ internal sealed partial class AppController
         if (!ConfirmationDialog.Ask(owner, L.T("Import settings"),
                 L.F($"Replace your current data ({contents}) with the data in this file? DesktopTools restarts to apply it. A backup of the current data stays in the DesktopTools data folder."),
                 L.T("Import and restart"))) return;
+        try { await PrepareForShutdownAsync(); }
+        catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }
+        if (disposed) return;
         importArchive = dialog.FileName;
         Application.Current.Shutdown();
     }

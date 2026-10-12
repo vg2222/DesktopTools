@@ -4,6 +4,28 @@ internal static class AutomationTests
 {
     internal static void Run(Action<string,Action> test, Action<bool,string> check)
     {
+        test("Automation polling preserves deferred startup without polling manual workflows", () => {
+            var now = new DateTime(2026, 10, 2, 9, 0, 0);
+            var script = new AutomationScript { Armed = true, Shortcut = "Ctrl+Alt+F24" };
+            var state = new AutomationTriggerState(script, now, false, true);
+            check(!state.NeedsPolling(script), "Hotkey-only workflow requests polling");
+            script.IntervalMinutes = 1;
+            check(state.NeedsPolling(script), "Interval workflow lost polling");
+            script.Armed = false;
+            check(!state.NeedsPolling(script), "Disarmed schedule requests polling");
+            script.Armed = true; script.IntervalMinutes = 0; script.DailyTime = "09:01";
+            check(state.NeedsPolling(script), "Daily workflow lost polling");
+            script.DailyTime = ""; script.WindowTrigger = "Window";
+            check(state.NeedsPolling(script), "Window trigger lost polling");
+            script.WindowTrigger = ""; script.RunOnStartup = true;
+            state = new AutomationTriggerState(script, now, false, true);
+            check(state.NeedsPolling(script), "Startup workflow lost polling");
+            check(!state.Take(script, now, false, false) && state.NeedsPolling(script), "Busy startup stopped polling before dispatch");
+            check(state.Take(script, now, false, true) && !state.NeedsPolling(script), "Consumed startup-only workflow kept polling");
+            check(!state.Take(script, now.AddMinutes(1), false, true), "Consumed startup workflow ran twice");
+            state = new AutomationTriggerState(script, now, false, false);
+            check(!state.NeedsPolling(script), "Editing a startup-only workflow replayed startup");
+        });
         test("Automation v1 workflows upgrade without losing content",()=>{
             string path=Path.Combine(Path.GetTempPath(),"DesktopTools-automation-"+Guid.NewGuid());Directory.CreateDirectory(path);
             try{

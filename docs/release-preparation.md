@@ -16,7 +16,9 @@
 
 ## GitHub publication
 
-GitHub Actions workflows are manual-only for now. Pushing a branch or version tag does not start a hosted build or publish a release. Build and verify the final bundle locally, push the matching `v<version>` tag, then create a stable GitHub Release manually with `docs/releases/<version>.md` as its description. A manually started **Build release** workflow on a version tag can publish a release, so select its ref deliberately if using it later.
+The **Windows build and checks** workflow runs for pushes to `main`, pull requests and manual dispatches. It caches NuGet packages and checksum-pinned translation weights; model checksums are verified on every run, including cache hits. A newer run for the same branch or pull request cancels an older check run. Visible desktop, hardware and remote viewer acceptance checks remain manual.
+
+**Build release** and website publication are started manually. Pushing a version tag does not publish a release. Build and verify the final bundle locally, push the matching `v<version>` tag, then create a stable GitHub Release manually with `docs/releases/<version>.md` as its description. A manually started **Build release** workflow on a version tag can publish a release, so select its ref deliberately. Release runs for the same ref wait for an active run to finish.
 
 The release includes the installer, portable ZIP, `SHA256SUMS.txt` and `release.json`. The updater needs the first three; see [update protocol](updates.md). Download links and the latest-release badge work once the first stable release exists. No pending scan may be presented as a successful result.
 

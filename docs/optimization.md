@@ -19,7 +19,7 @@ The reader is `LocalOcr.RecognizeEnhancedAsync` / `RecognizeWordsAsync`: a quick
 
 `OCR_BENCH_MODES` also accepts single readings `v:<plain|ink|gray>:<scale>:<hq|legacy>`; with several modes the report adds an *oracle* row, the best any reading achieved, which is the ceiling for any selection logic.
 
-Where the time goes, roughly in order: the number and size of readings (`PlanFor`, `ReadingBudget` in `LocalOcr.cs`; cost is pixels x scale squared), `OcrEnhancer.InkMap` and `Enlarge`, the PNG round trip in `ScaledBitmapAsync`, and the pairwise matching in `OcrConsensus.Merge`. Ideas worth measuring: skip the ink-map reading on pictures that are clearly light and high-contrast, reuse the enlarged tiles between readings, decide the plan from the first reading's quality instead of always running all of it.
+Where the time goes, roughly in order: the number and size of readings (`PlanFor`, `ReadingBudget` in `LocalOcr.cs`; cost is pixels x scale squared), `OcrEnhancer.InkMap` and `Enlarge`, bitmap preparation in `ScaledBitmapAsync` (verified pixel formats now copy directly into an owned native buffer; other formats retain PNG conversion), and the pairwise matching in `OcrConsensus.Merge`. Ideas worth measuring: skip the ink-map reading on pictures that are clearly light and high-contrast, reuse the enlarged tiles between readings, decide the plan from the first reading's quality instead of always running all of it.
 
 Rules for this area:
 
@@ -39,3 +39,19 @@ Rules for this area:
 ## What to include in a pull request
 
 The command you ran, the numbers before and after on the same machine, the Windows version and display setup, and **Not tested** for anything you could not measure.
+
+## Maintenance measurements and regression commands
+
+See [the 2026-10-05 maintenance audit](maintenance-2026-10-05.md) for findings, accepted changes, same-machine timings, accuracy gates and remaining limits. No reading/magnification/language budgets were reduced.
+
+After building the solution, run the focused harness with `dotnet run --project tests/DesktopTools.IntegrationTests -c Release --no-build -- <mode>`:
+
+- `--maintenance-performance-only`: synthetic privacy pipeline stage timings and image rotation. Optional `DESKTOPTOOLS_PRIVACY_BASELINE` points to a same-machine generated geometry log from the original assembly; the complete geometry/categories must match.
+- `--maintenance-transport-only`: exact old-PNG/production bitmap bytes, alpha/formats/scales/DPI, native ownership and bounded tiny-transfer allocations.
+- `--maintenance-pixels-only`: bounded brightness sampling allocations and unchanged alpha/DPI/source results.
+- `--maintenance-lifecycle-only`: idle scheduling, post-dispose callbacks and asynchronous recorder shutdown preparation.
+- `--maintenance-models-ui-only` and `--maintenance-translation-only`: unchanged pixels/history, timer disposal and translation/cancellation/session isolation.
+- `--maintenance-idle-only`: 30 s smoke startup/idle sample (excludes normal native registration).
+- `--maintenance-recording-only`: 30 s silent owned-window recording with CPU/private-memory sampling; needs an interactive Windows session. This does not establish hours-long stability.
+
+Core tests contain stable allocation/coverage guards; performance timings are observations, not fragile CI speed thresholds. `scripts/test.ps1 -NoBuild` is supported only after a matching configuration/output solution build.

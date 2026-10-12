@@ -75,9 +75,12 @@ internal sealed partial class AppController : IDisposable
     }
     private async Task QuitAsync()
     {
-        if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
+        try { await PrepareForShutdownAsync(); }
+        catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }
         Application.Current.Shutdown();
     }
+    private Task PrepareForShutdownAsync()
+        => utilityWindows.TryGetValue("Recorder", out var window) ? ((ScreenRecorderWindow)window).StopAsync() : Task.CompletedTask;
     internal RecordingMarkerStore RecordingMarkers { get; }
     public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
     internal async void OpenVideoEditorAt(string path, TimeSpan position)
@@ -847,8 +850,8 @@ internal sealed partial class AppController : IDisposable
         // Embedded dialogs have no HWND. Their brushes update through resources on the main window.
         foreach (Window w in Application.Current.Windows) { if (!w.AllowsTransparency && new System.Windows.Interop.WindowInteropHelper(w).Handle != IntPtr.Zero) NativeWindowService.ApplyBackdrop(w, dark, Settings.Transparency && !SystemParameters.HighContrast); }
     }
-    private void DisplayChanged(object? sender, EventArgs e) => Application.Current.Dispatcher.BeginInvoke(() => { quickWheel?.Close(); captureCancellation?.Cancel(); Hud.StopAll(); RemoveOverlay(); StopPresentation(); lastRegion = null; Report(L.T("Display configuration changed. Activate a tool to use the updated layout.")); });
-    private void PreferenceChanged(object sender, UserPreferenceChangedEventArgs e) => Application.Current.Dispatcher.BeginInvoke(ApplyTheme);
+    private void DisplayChanged(object? sender, EventArgs e) => Application.Current.Dispatcher.BeginInvoke(() => { if (disposed) return; quickWheel?.Close(); captureCancellation?.Cancel(); Hud.StopAll(); RemoveOverlay(); StopPresentation(); lastRegion = null; Report(L.T("Display configuration changed. Activate a tool to use the updated layout.")); });
+    private void PreferenceChanged(object sender, UserPreferenceChangedEventArgs e) => Application.Current.Dispatcher.BeginInvoke(() => { if (!disposed) ApplyTheme(); });
     public async Task RunSmokeAsync()
     {
         try
