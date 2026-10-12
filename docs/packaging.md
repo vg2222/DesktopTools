@@ -5,8 +5,8 @@
 Regenerate them for a published release (hashes are read from that release's `SHA256SUMS.txt`):
 
 ```powershell
-python scripts/update-packaging.py 1.2.7
-winget validate --manifest packaging/winget/manifests/v/vg2222/DesktopTools/1.2.7
+python scripts/update-packaging.py 1.2.8
+winget validate --manifest packaging/winget/manifests/v/vg2222/DesktopTools/1.2.8
 ```
 
 Validated with `winget validate`. **Not tested:** an actual `winget install`, `scoop install` or `choco install` run, and acceptance by the winget, Scoop or Chocolatey moderation teams.
@@ -21,4 +21,4 @@ Nothing here is submitted automatically.
 
 ## ARM64
 
-`./scripts/publish.ps1 -Runtime win-arm64` creates `artifacts/DesktopTools-win-arm64.zip` from the same sources with the ARM64 .NET runtime, ARM64 ONNX Runtime and SkiaSharp natives and the ARM64 build of ScreenRecorderLib. The executable and every native DLL were checked to carry the ARM64 machine type, but the build has **not been run on ARM hardware**. The graphical installer and the update check still use the x64 build, which Windows 11 ARM runs through emulation; the winget, Scoop and Chocolatey files above also point to the x64 ZIP. Adding an `arm64` architecture entry to them needs a released ARM64 ZIP and its SHA-256, so it is left until one is published and verified.
+`./scripts/publish.ps1 -Runtime win-arm64` creates `artifacts/DesktopTools-win-arm64.zip` from the same sources with the ARM64 .NET runtime, ARM64 ONNX Runtime and SkiaSharp natives and the ARM64 build of ScreenRecorderLib. The executable and every native DLL were checked to carry the ARM64 machine type, but the build has **not been run on ARM hardware**. The graphical installer and the update check still use the x64 build, which Windows 11 ARM runs through emulation; the winget, Scoop and Chocolatey files above also point to the x64 ZIP. Release 1.2.8 also provides `DesktopTools-1.2.8-win-arm64-portable.zip` and `SHA256SUMS-ARM64.txt` for manual installation. The package-manager manifests remain on the x64 build; adding ARM64 entries needs separate package-manager acceptance testing.
