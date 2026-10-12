@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: vg2222.DesktopTools
+PackageVersion: 1.2.8
+InstallerLocale: en-US
+MinimumOSVersion: 10.0.22000.0
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+- RelativeFilePath: DesktopTools-win-x64\DesktopTools.exe
+  PortableCommandAlias: desktoptools
+Commands:
+- desktoptools
+ReleaseDate: 2026-10-12
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/vg2222/DesktopTools/releases/download/v1.2.8/DesktopTools-1.2.8-win-x64-portable.zip
+  InstallerSha256: FDD217FC07E4DE50DD9DB3A999F0DC7FE2D6848DDD0017421FF0F56A441AF79C
+ManifestType: installer
+ManifestVersion: 1.6.0
