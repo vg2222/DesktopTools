@@ -7,6 +7,8 @@
     <!-- WPF owns process DPI awareness via its manifest; WinForms is used only for tray integration. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
     <RecorderFlavor>x64</RecorderFlavor><RecorderFlavor Condition="'$(RuntimeIdentifier)' == 'win-arm64'">ARM64</RecorderFlavor>
+    <!-- Optional locally built recorder hotfix; the normal package stays immutable. -->
+    <RecorderBackendPath Condition="'$(RecorderBackendPath)' == ''">$(PkgScreenRecorderLib)/build/$(RecorderFlavor)/ScreenRecorderLib.dll</RecorderBackendPath>
   </PropertyGroup>
   <ItemGroup><PackageReference Include="ScreenRecorderLib" Version="7.0.1" GeneratePathProperty="true" ExcludeAssets="build" /><PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" /><PackageReference Include="QRCoder" Version="1.8.0" /><PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" /><PackageReference Include="SkiaSharp" Version="4.153.1" /><PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.153.1" /></ItemGroup>
   <ItemGroup><Content Include="Assets/Translation/**/*" Exclude="Assets/Translation/**/*.download" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Assets/Models/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
@@ -30,5 +32,5 @@
     <Content Include="Assets/Fonts/Inter-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <!-- The recorder backend is native; use its ARM64 build for the win-arm64 runtime and x64 everywhere else. -->
-  <ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>$(PkgScreenRecorderLib)/build/$(RecorderFlavor)/ScreenRecorderLib.dll</HintPath><Private>true</Private></Reference></ItemGroup>
+  <ItemGroup><Reference Include="ScreenRecorderLib"><HintPath>$(RecorderBackendPath)</HintPath><Private>true</Private></Reference></ItemGroup>
 </Project>

@@ -9,5 +9,7 @@
 *.mp4 binary
 *.ico binary
 *.zip binary
+# Preserve the whitespace and line endings of upstream patch context.
+patches/*.patch text eol=lf -whitespace
 src/DesktopTools/Assets/Translation/*.json text eol=lf
 src/DesktopTools/Assets/Translation/*/*.json text eol=lf
