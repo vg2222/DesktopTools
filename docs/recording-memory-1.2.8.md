@@ -1,6 +1,6 @@
 # Local recording memory fix for 1.2.8
 
-This change is based on DesktopTools tag `v1.2.8` (`7341dd123c08d10cf83104f9181549ab66c0fb2f`) and ScreenRecorderLib tag `v7.0.1` (`646383234187efd3854e6b1069612b80c3ab9981`). It is a local patch, not a published release.
+This change is based on DesktopTools tag `v1.2.8` (`7341dd123c08d10cf83104f9181549ab66c0fb2f`) and ScreenRecorderLib tag `v7.0.1` (`646383234187efd3854e6b1069612b80c3ab9981`). It shipped in 1.2.9 as a locally built backend; the default NuGet dependency is unchanged.
 
 ## Cause and change
 
