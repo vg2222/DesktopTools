@@ -37,7 +37,10 @@ internal static class Program
         {
             try
             {
-                if (args.Contains("--maintenance-recording-only")) await Test("Owned-window sustained recording measurement", MaintenancePerformanceChecks.RecordingMeasurementAsync);
+                if (args.Contains("--record-fixture-only")) await Test("Owned full-display recording fixture", RecordingMemoryChecks.FixtureAsync);
+                else if (args.Contains("--record-memory-metrics-only")) await Test("Saved recording memory plateau", RecordingMemoryChecks.VerifySavedAsync);
+                else if (args.Contains("--record-memory-only")) await Test("Full-display recording retains bounded memory", RecordingMemoryChecks.RunAsync);
+                else if (args.Contains("--maintenance-recording-only")) await Test("Owned-window sustained recording measurement", MaintenancePerformanceChecks.RecordingMeasurementAsync);
                 else if (args.Contains("--maintenance-transport-only")) await Test("Exact legacy OCR pixel transport", MaintenancePerformanceChecks.TransportEquivalenceAsync);
                 else if (args.Contains("--maintenance-pixels-only")) await Test("Bounded pixel sampling preserves polarity and originals", MaintenancePerformanceChecks.PixelSamplingAsync);
                 else if (args.Contains("--maintenance-performance-only")) await Test("Measured privacy pipeline without source logging", MaintenancePerformanceChecks.RunAsync);

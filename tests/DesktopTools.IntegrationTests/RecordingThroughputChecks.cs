@@ -15,11 +15,15 @@ internal static class RecordingThroughputChecks
 {
     // Each paint carries a binary ID. The offline decoder reads every encoded frame,
     // avoiding both metadata-only FPS claims and compression-noise pixel hashes.
-    private sealed class CounterWindow : Forms.Form
+    internal sealed class CounterWindow : Forms.Form
     {
         internal int Frame;
-        internal CounterWindow()
+        private readonly bool partialPaint;
+        private readonly Drawing.Bitmap? motionTile;
+        private readonly Drawing.TextureBrush? motionBrush;
+        internal CounterWindow(bool fullScreen = false)
         {
+            partialPaint = fullScreen;
             SetStyle(Forms.ControlStyles.AllPaintingInWmPaint | Forms.ControlStyles.UserPaint | Forms.ControlStyles.OptimizedDoubleBuffer, true);
             ClientSize = new Drawing.Size(640, 360); FormBorderStyle = Forms.FormBorderStyle.None;
             StartPosition = Forms.FormStartPosition.Manual; TopMost = true;
@@ -27,16 +31,51 @@ internal static class RecordingThroughputChecks
             var testScreen = primary ? Forms.Screen.PrimaryScreen! : Forms.Screen.AllScreens.FirstOrDefault(screen => !screen.Primary) ?? Forms.Screen.PrimaryScreen!;
             Location = new Drawing.Point(testScreen.Bounds.Left + (testScreen.Bounds.Width - ClientSize.Width) / 2,
                 testScreen.Bounds.Top + (testScreen.Bounds.Height - ClientSize.Height) / 2);
+            if (fullScreen) { ClientSize = testScreen.Bounds.Size; Location = testScreen.Bounds.Location; }
+            if (fullScreen && Environment.GetEnvironmentVariable("PROBE_MOTION") == "1")
+            {
+                motionTile = new Drawing.Bitmap(512, 512);
+                var pixels = motionTile.LockBits(new Drawing.Rectangle(0, 0, 512, 512), Drawing.Imaging.ImageLockMode.WriteOnly, Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var bytes = new byte[pixels.Stride * 512];
+                for (int y = 0; y < 512; y++)
+                for (int x = 0; x < 512; x++)
+                {
+                    int index = y * pixels.Stride + x * 4;
+                    int detail = unchecked((x / 4 * 73856093) ^ (y / 4 * 19349663));
+                    bytes[index] = (byte)(40 + (detail & 127)); bytes[index + 1] = (byte)(50 + ((detail >> 8) & 127));
+                    bytes[index + 2] = (byte)(60 + ((detail >> 16) & 127)); bytes[index + 3] = 255;
+                }
+                Marshal.Copy(bytes, 0, pixels.Scan0, bytes.Length); motionTile.UnlockBits(pixels);
+                motionBrush = new Drawing.TextureBrush(motionTile, Drawing.Drawing2D.WrapMode.Tile);
+            }
             Text = "DesktopTools numbered recording fixture";
         }
         protected override void OnPaint(Forms.PaintEventArgs e)
         {
-            e.Graphics.Clear(Drawing.Color.CornflowerBlue);
+            if (motionBrush != null)
+            {
+                motionBrush.ResetTransform(); motionBrush.TranslateTransform(Frame * 7 % 512, Frame * 3 % 512);
+                e.Graphics.FillRectangle(motionBrush, e.ClipRectangle);
+            }
+            else if (partialPaint) e.Graphics.FillRectangle(Drawing.Brushes.CornflowerBlue, e.ClipRectangle);
+            else e.Graphics.Clear(Drawing.Color.CornflowerBlue);
             for (int i = 0; i < 18; i++)
             {
                 bool white = i == 0 || i >= 2 && (Frame & (1 << (i - 2))) != 0;
                 e.Graphics.FillRectangle(white ? Drawing.Brushes.White : Drawing.Brushes.Black, 32 + i * 32, 132, 32, 96);
             }
+        }
+        internal void Advance()
+        {
+            Frame++;
+            if (motionBrush != null) Invalidate();
+            else Invalidate(new Drawing.Rectangle(32, 132, 18 * 32, 96));
+            Update();
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { motionBrush?.Dispose(); motionTile?.Dispose(); }
+            base.Dispose(disposing);
         }
     }
     internal static Task RunAsync() => RunAsync(false);

@@ -1,0 +1,169 @@
+diff --git a/ScreenRecorderLibNative/OutputManager.cpp b/ScreenRecorderLibNative/OutputManager.cpp
+index 6ec1164..01778a0 100644
+--- a/ScreenRecorderLibNative/OutputManager.cpp
++++ b/ScreenRecorderLibNative/OutputManager.cpp
+@@ -68,6 +68,8 @@ HRESULT OutputManager::Initialize(
+ 	if (m_MediaTransform) {
+ 		m_MediaTransform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, 0);
+ 	}
++	m_FrameAllocator.Release();
++	m_FramePoolEmptySince = 0;
+ 
+ 	RETURN_ON_BAD_HR(m_DeviceManager->ResetDevice(pDevice, m_ResetToken));
+ 	return S_OK;
+@@ -179,6 +181,11 @@ HRESULT OutputManager::FinalizeRecording()
+ 			}
+ 		}
+ 	}
++	m_SinkWriter.Release();
++	m_MediaTransform.Release();
++	m_FrameAllocator.Release();
++	LOG_INFO(L"Encoder surface pool dropped %llu video frames", m_FramePoolDrops);
++	m_FramePoolDrops = 0;
+ 	GetTimelineManager()->StopMediaClock();
+ 	return finalizeResult;
+ }
+@@ -475,46 +482,73 @@ HRESULT OutputManager::InitializeVideoSinkWriter(
+ 
+ HRESULT OutputManager::WriteFrameToVideo(_In_ INT64 frameStartPos, _In_ INT64 frameDuration, _In_ DWORD streamIndex, _In_ ID3D11Texture2D *pAcquiredDesktopImage)
+ {
+-	//The encoder works async, so the input frame has to be copied, else it can be overwritten before the encoder uses it. See issue #277.
+-	CComPtr<ID3D11Texture2D> pFrameCopy;
+-	D3D11_TEXTURE2D_DESC desc;
+-	pAcquiredDesktopImage->GetDesc(&desc);
+-	m_Device->CreateTexture2D(&desc, nullptr, &pFrameCopy);
+-	m_DeviceContext->CopyResource(pFrameCopy, pAcquiredDesktopImage);
+-
+-	IMFMediaBuffer *pMediaBuffer;
+-	HRESULT hr = MFCreateDXGISurfaceBuffer(__uuidof(ID3D11Texture2D), pFrameCopy, 0, FALSE, &pMediaBuffer);
+-	IMF2DBuffer *p2DBuffer;
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = pMediaBuffer->QueryInterface(__uuidof(IMF2DBuffer), reinterpret_cast<void **>(&p2DBuffer));
+-	}
+-	DWORD length;
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = p2DBuffer->GetContiguousLength(&length);
+-	}
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = pMediaBuffer->SetCurrentLength(length);
+-	}
+-	IMFSample *pSample;
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = MFCreateSample(&pSample);
+-	}
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = pSample->AddBuffer(pMediaBuffer);
+-	}
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = pSample->SetSampleTime(frameStartPos);
+-	}
+-	if (SUCCEEDED(hr))
+-	{
+-		hr = pSample->SetSampleDuration(frameDuration);
++	// The encoder owns submitted frames asynchronously (issue #277). Recycle a
++	// bounded set of allocator-owned surfaces only after Media Foundation releases
++	// their samples, instead of registering a new GPU allocation for every frame.
++	if (!m_FrameAllocator) {
++		D3D11_TEXTURE2D_DESC desc{};
++		pAcquiredDesktopImage->GetDesc(&desc);
++		CComPtr<IMFMediaType> mediaType;
++		RETURN_ON_BAD_HR(MFCreateMediaType(&mediaType));
++		RETURN_ON_BAD_HR(mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
++		RETURN_ON_BAD_HR(mediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32));
++		RETURN_ON_BAD_HR(MFSetAttributeSize(mediaType, MF_MT_FRAME_SIZE, desc.Width, desc.Height));
++		RETURN_ON_BAD_HR(MFSetAttributeRatio(mediaType, MF_MT_FRAME_RATE, GetEncoderOptions()->GetVideoFps(), 1));
++		RETURN_ON_BAD_HR(MFSetAttributeRatio(mediaType, MF_MT_PIXEL_ASPECT_RATIO, 1, 1));
++		RETURN_ON_BAD_HR(mediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
++		CComPtr<IMFAttributes> attributes;
++		RETURN_ON_BAD_HR(MFCreateAttributes(&attributes, 2));
++		RETURN_ON_BAD_HR(attributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
++		RETURN_ON_BAD_HR(attributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE));
++		CComPtr<IMFVideoSampleAllocatorEx> allocator;
++		RETURN_ON_BAD_HR(MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&allocator)));
++		RETURN_ON_BAD_HR(allocator->SetDirectXManager(m_DeviceManager));
++		RETURN_ON_BAD_HR(allocator->InitializeSampleAllocatorEx(4, 16, attributes, mediaType));
++		m_FrameAllocator = allocator;
++	}
++	CComPtr<IMFSample> pSample;
++	HRESULT hr = m_FrameAllocator->AllocateSample(&pSample);
++	// A slow encoder must not cause unbounded allocations or block Stop. Leave a
++	// timestamp gap rather than overwrite an in-flight frame or grow the pool.
++	if (hr == MF_E_SAMPLEALLOCATOR_EMPTY) {
++		++m_FramePoolDrops;
++		const auto now = GetTickCount64();
++		if (!m_FramePoolEmptySince) m_FramePoolEmptySince = now;
++		// Do not report a successful recording with permanently frozen video if
++		// an encoder stops releasing samples. This wait is measured, never slept.
++		if (now - m_FramePoolEmptySince >= 2000) {
++			LOG_ERROR("Video encoder retained the entire surface pool for two seconds");
++			return hr;
++		}
++		return S_OK;
+ 	}
++	RETURN_ON_BAD_HR(hr);
++	m_FramePoolEmptySince = 0;
++	CComPtr<IMFMediaBuffer> pMediaBuffer;
++	CComPtr<IMFDXGIBuffer> surface;
++	CComPtr<ID3D11Texture2D> pFrameCopy;
++	UINT subresource = 0;
++	RETURN_ON_BAD_HR(pSample->GetBufferByIndex(0, &pMediaBuffer));
++	RETURN_ON_BAD_HR(pMediaBuffer->QueryInterface(IID_PPV_ARGS(&surface)));
++	RETURN_ON_BAD_HR(surface->GetResource(IID_PPV_ARGS(&pFrameCopy)));
++	RETURN_ON_BAD_HR(surface->GetSubresourceIndex(&subresource));
++	D3D11_TEXTURE2D_DESC sourceDesc{}, destinationDesc{};
++	pAcquiredDesktopImage->GetDesc(&sourceDesc);
++	pFrameCopy->GetDesc(&destinationDesc);
++	if (sourceDesc.Width != destinationDesc.Width || sourceDesc.Height != destinationDesc.Height ||
++		sourceDesc.Format != destinationDesc.Format || sourceDesc.SampleDesc.Count != destinationDesc.SampleDesc.Count ||
++		sourceDesc.SampleDesc.Quality != destinationDesc.SampleDesc.Quality) {
++		LOG_ERROR("Capture surface changed incompatibly with the encoder surface pool");
++		return MF_E_INVALIDMEDIATYPE;
++	}
++	m_DeviceContext->CopySubresourceRegion(pFrameCopy, subresource, 0, 0, 0, pAcquiredDesktopImage, 0, nullptr);
++	CComPtr<IMF2DBuffer> p2DBuffer;
++	DWORD length = 0;
++	RETURN_ON_BAD_HR(pMediaBuffer->QueryInterface(IID_PPV_ARGS(&p2DBuffer)));
++	RETURN_ON_BAD_HR(p2DBuffer->GetContiguousLength(&length));
++	RETURN_ON_BAD_HR(pMediaBuffer->SetCurrentLength(length));
++	RETURN_ON_BAD_HR(pSample->SetSampleTime(frameStartPos));
++	RETURN_ON_BAD_HR(pSample->SetSampleDuration(frameDuration));
+ 
+ 	if (SUCCEEDED(hr))
+ 	{
+@@ -577,9 +611,6 @@ HRESULT OutputManager::WriteFrameToVideo(_In_ INT64 frameStartPos, _In_ INT64 fr
+ 			hr = m_SinkWriter->WriteSample(streamIndex, pSample);
+ 		}
+ 	}
+-	SafeRelease(&pSample);
+-	SafeRelease(&p2DBuffer);
+-	SafeRelease(&pMediaBuffer);
+ 	return hr;
+ }
+ 
+@@ -642,4 +673,4 @@ HRESULT OutputManager::WriteAudioSamplesToVideo(_In_ INT64 frameStartPos, _In_ I
+ 	SafeRelease(&pSample);
+ 	SafeRelease(&pBuffer);
+ 	return hr;
+-}
+\ No newline at end of file
++}
+diff --git a/ScreenRecorderLibNative/OutputManager.h b/ScreenRecorderLibNative/OutputManager.h
+index 2198e92..5186268 100644
+--- a/ScreenRecorderLibNative/OutputManager.h
++++ b/ScreenRecorderLibNative/OutputManager.h
+@@ -74,6 +74,9 @@ private:
+ 	CComPtr<IMFSinkWriterCallback> m_CallBack;
+ 	CComPtr<IMFTransform> m_MediaTransform;
+ 	CComPtr<IMFDXGIDeviceManager> m_DeviceManager;
++	CComPtr<IMFVideoSampleAllocatorEx> m_FrameAllocator;
++	ULONGLONG m_FramePoolEmptySince = 0;
++	UINT64 m_FramePoolDrops = 0;
+ 
+ 	UINT m_ResetToken;
+ 	IStream *m_OutStream;
