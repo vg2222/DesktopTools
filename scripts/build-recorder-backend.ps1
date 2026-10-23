@@ -37,9 +37,12 @@ $originalCL = $env:CL; $originalTrailingCL = $env:_CL_; $originalLink = $env:LIN
 Push-Location $NativeRepositoryPath
 try {
     # The upstream coroutine header predates C++20; use its existing compatibility mode.
-    $env:CL = "$originalCL /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS /MP4"
+    # Trim the checkout prefix from __FILE__ and keep only a bare PDB name so the DLL carries no local paths.
+    $sourcePrefix = $NativeRepositoryPath.TrimEnd('\') + '\'
+    $env:CL = "$originalCL /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS /MP4 /d1trimfile:$sourcePrefix"
     $env:_CL_ = "$originalTrailingCL /Z7"
-    if ($ImportLibraryDirectory) { $env:LINK = "$originalLink /LIBPATH:`"$ImportLibraryDirectory`"" }
+    $env:LINK = "$originalLink /PDBALTPATH:ScreenRecorderLib.pdb"
+    if ($ImportLibraryDirectory) { $env:LINK += " /LIBPATH:`"$ImportLibraryDirectory`"" }
     & $MSBuildPath @arguments
     if ($LASTEXITCODE -ne 0) { throw "Native recorder build failed ($LASTEXITCODE)." }
     $binary = Join-Path $NativeRepositoryPath 'ScreenRecorderLib/bin/x64/Release/ScreenRecorderLib.dll'
