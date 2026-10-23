@@ -5,8 +5,8 @@
 Regenerate them for a published release (hashes are read from that release's `SHA256SUMS.txt`):
 
 ```powershell
-python scripts/update-packaging.py 1.2.8
-winget validate --manifest packaging/winget/manifests/v/vg2222/DesktopTools/1.2.8
+python scripts/update-packaging.py 1.2.9
+winget validate --manifest packaging/winget/manifests/v/vg2222/DesktopTools/1.2.9
 ```
 
 Validated with `winget validate`. **Not tested:** an actual `winget install`, `scoop install` or `choco install` run, and acceptance by the winget, Scoop or Chocolatey moderation teams.
