@@ -3,8 +3,8 @@ $toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $packageArgs = @{
   packageName   = $env:ChocolateyPackageName
   unzipLocation = $toolsDir
-  url64bit      = 'https://github.com/vg2222/DesktopTools/releases/download/v1.2.7/DesktopTools-1.2.7-win-x64-portable.zip'
-  checksum64    = '277E9609D8764F8E5A5A330EFC98F376432427AD2C25BF430361C01D4A4B24F1'
+  url64bit      = 'https://github.com/vg2222/DesktopTools/releases/download/v1.2.8/DesktopTools-1.2.8-win-x64-portable.zip'
+  checksum64    = 'FDD217FC07E4DE50DD9DB3A999F0DC7FE2D6848DDD0017421FF0F56A441AF79C'
   checksumType64 = 'sha256'
 }
 Install-ChocolateyZipPackage @packageArgs
