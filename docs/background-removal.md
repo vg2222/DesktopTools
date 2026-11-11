@@ -2,7 +2,7 @@
 
 Open **Image tools → Open image → Background → Remove background**. Review the checkerboard preview, enable **Compare** and drag the divider to inspect both sides, then use **Export** to save a copy. Removal selects PNG to retain transparency. Undo restores the previous image; Cancel and closing the window discard unfinished results. JPEG flattens transparency onto white. Existing image size and history limits apply.
 
-Images stay on the computer. CPU inference uses the bundled 4.7 MB U2NetP model through Microsoft ONNX Runtime 1.29.0. There is no network request, model download, GPU requirement, or worker while idle. Each operation disposes its native session; concurrent requests are serialized. Cancellation interrupts inference, but model initialization must finish before cancellation is observed.
+Images stay on the computer. CPU inference uses the bundled 4.7 MB U2NetP model through Microsoft ONNX Runtime 1.31.1. There is no network request, model download, GPU requirement, or worker while idle. Each operation disposes its native session; concurrent requests are serialized. Cancellation interrupts inference, but model initialization must finish before cancellation is observed.
 
 This is automatic salient-object segmentation, not professional matting. The model sees a 320 × 320 image: hair, glass, shadows, low contrast and multiple subjects can produce imperfect edges or remove wanted content. Inspect the result before saving. There is no manual mask brush in this version. The 400 × 300 synthetic foreground fixture took 661 ms including model initialization on the development machine (12 logical processors); this is a single observation, not a performance guarantee or photographic quality assessment.
 

@@ -14,9 +14,9 @@ The screen recorder requires Microsoft Visual C++ x64 Redistributable. DesktopTo
 
 The unmodified Inter font files are bundled from the [official Inter 4.1 release](https://github.com/rsms/inter/releases/tag/v4.1), Copyright (c) 2016 The Inter Project Authors, under SIL Open Font License 1.1. The complete license is included in `Assets/Fonts/Inter-LICENSE.txt` in the portable application and `src/DesktopTools/Assets/Fonts/Inter-LICENSE.txt` in source. Fonts are embedded for offline use; no system installation is needed.
 
-## QRCoder 1.8.0
+## QRCoder 1.8.1
 
-QR images are generated locally using [QRCoder](https://www.nuget.org/packages/QRCoder/1.8.0), under the [MIT license](https://github.com/Shane32/QRCoder/blob/v1.8.0/LICENSE.txt).
+QR images are generated locally using [QRCoder](https://www.nuget.org/packages/QRCoder/1.8.1), under the [MIT license](https://github.com/Shane32/QRCoder/blob/v1.8.1/LICENSE.txt).
 
 The MIT License (MIT)
 
@@ -40,7 +40,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Background removal: ONNX Runtime 1.29.0 and U²-Net
+## Background removal: ONNX Runtime 1.31.1 and U²-Net
 
 [Microsoft ONNX Runtime](https://github.com/microsoft/onnxruntime) is distributed under MIT. Complete upstream license and third-party notices are bundled as `Assets/Models/ONNXRUNTIME-LICENSE.txt` and `Assets/Models/ONNXRUNTIME-NOTICES.txt`.
 
@@ -50,14 +50,14 @@ The compact U2NetP model implements [U²-Net](https://github.com/xuebinqin/U-2-N
 
 Text tools bundle OPUS-MT models developed by the Language Technology Research Group at the University of Helsinki, converted and quantized to ONNX by Xenova. English→Russian is Apache-2.0; Russian→English is CC BY 4.0. Full attribution, source links, modification descriptions and licenses are included in `Assets/Translation/ATTRIBUTION.md`, `EN-RU-APACHE-2.0.txt` and `CC-BY-4.0.txt`. Exact revisions and checksums are recorded in the bundled manifest. Optional language packs come from the same authors; their repositories, pinned revisions, licenses, sizes and SHA-256 checksums are recorded in `Assets/Translation/catalog.json`. Each downloaded pack includes its upstream README, attribution and license text. These assets retain their own licenses; DesktopTools source is MIT.
 
-Microsoft.ML.Tokenizers 2.0.0 is MIT licensed. Its complete license and third-party notices are included under `Assets/Translation/TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`. ONNX Runtime notices are documented above.
+Microsoft.ML.Tokenizers 2.0.1 is MIT licensed. Its complete license and third-party notices are included under `Assets/Translation/TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`. ONNX Runtime notices are documented above.
 
 ## Screen recording
 
 ScreenRecorderLib 7.0.1 — Copyright (c) 2017 Sverre Skodje, MIT. Source: https://github.com/sskodje/ScreenRecorderLib . Full license: docs/licenses/ScreenRecorderLib-LICENSE.txt. The x64 native wrapper is distributed with DesktopTools. Windows Media Foundation and Microsoft Visual C++ x64 runtime are operating-system/runtime prerequisites; see docs/screen-recorder.md.
 ## Animated WebP export
 
-SkiaSharp 4.153.1 — Copyright (c) 2015-2016 Xamarin, Inc.; (c) 2017-2018 Microsoft Corporation, MIT. Source: https://github.com/mono/SkiaSharp . Full license: docs/licenses/SkiaSharp-LICENSE.txt. Its native library bundles Skia (BSD-3-Clause) and libwebp (BSD-3-Clause); it is used only to encode the frames of animated WebP files exported from the video editor. The GIF encoder is original code.
+SkiaSharp 4.155.0 — Copyright (c) 2015-2016 Xamarin, Inc.; (c) 2017-2018 Microsoft Corporation, MIT. Source: https://github.com/mono/SkiaSharp . Full license: docs/licenses/SkiaSharp-LICENSE.txt. Its native library bundles Skia (BSD-3-Clause) and libwebp (BSD-3-Clause); it is used only to encode the frames of animated WebP files exported from the video editor. The GIF encoder is original code.
 
 # Microsoft Fluent System Icons
 

@@ -10,4 +10,4 @@ Immutable model revisions, asset URLs, sizes and SHA256 checksums are in `manife
 
 Optional offline packs use additional OPUS-MT models by Helsinki-NLP, converted and quantized by Xenova. `catalog.json` records each upstream repository, conversion repository, immutable revision, license, sizes and SHA-256 checksums. Downloads retain the upstream README, attribution and the corresponding full license text. Non-English pairs use two separate local models through English; no model weights are modified by DesktopTools.
 
-Runtime: Microsoft ONNX Runtime 1.29.0 (MIT; notices under `../Models`) and Microsoft.ML.Tokenizers 2.0.0 (MIT; `TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`). DesktopTools application source remains MIT; the separately licensed model assets retain the terms above.
+Runtime: Microsoft ONNX Runtime 1.31.1 (MIT; notices under `../Models`) and Microsoft.ML.Tokenizers 2.0.1 (MIT; `TOKENIZERS-LICENSE.txt` and `TOKENIZERS-NOTICES.txt`). DesktopTools application source remains MIT; the separately licensed model assets retain the terms above.
