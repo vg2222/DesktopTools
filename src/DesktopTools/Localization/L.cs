@@ -20,15 +20,40 @@ public static class L
         return Normalize(language);
     }
     public static void Use(string? language) => Language = Normalize(language);
+    /// <summary>Called with every text asked for in a non-English language that has no translation. Null in the app; the test harness lists them.</summary>
+    public static Action<string>? Missing { get; set; }
     public static string T(string? english)
     {
         if (english == null) return "";
-        return catalogs.TryGetValue(Language, out var catalog) && catalog.TryGetValue(english, out var translated) ? translated : english;
+        if (catalogs.TryGetValue(Language, out var catalog))
+        {
+            if (catalog.TryGetValue(english, out var translated)) return translated;
+            Missing?.Invoke(english);
+        }
+        return english;
     }
     public static string F(FormattableString message)
     {
         try { return string.Format(Culture, T(message.Format), message.GetArguments()); }
         catch (FormatException) { return message.ToString(Culture); }
+    }
+    private static readonly Dictionary<string, Dictionary<string, string>> sources = new(StringComparer.Ordinal);
+    /// <summary>The English source of an exactly translated label, or the text itself. Cached per language; used to pick icons, never shown.</summary>
+    public static string Source(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        if (Language == "en" || !catalogs.TryGetValue(Language, out var catalog)) return text;
+        Dictionary<string, string>? reverse;
+        lock (sources)
+        {
+            if (!sources.TryGetValue(Language, out reverse))
+            {
+                reverse = new Dictionary<string, string>(catalog.Count, StringComparer.Ordinal);
+                foreach (var (source, translated) in catalog) reverse.TryAdd(translated, source);
+                sources.Add(Language, reverse);
+            }
+        }
+        return reverse.TryGetValue(text, out var english) ? english : text;
     }
     // Notification severity is derived from source text, not the selected language.
     internal static string EnglishHint(string message)

@@ -114,6 +114,7 @@ internal sealed partial class MainWindow
         foreach (string group in new[] { "All" }.Concat(DashboardGroups))
         {
             var filter = Ui.Button(L.T(group), () => { selectedGroup = group; Search(); });
+            Ui.SetGlyph(filter, null); // filter chips stay text-only so the row is uniform
             filter.Tag = "filter-" + group; filter.Margin = new Thickness(0, 0, 6, 6); filter.Padding = new Thickness(12, 5, 12, 5);
             filterButtons.Add(group, filter); filters.Children.Add(filter);
         }

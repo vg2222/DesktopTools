@@ -36,6 +36,7 @@ internal sealed partial class MainWindow
         copy.Children.Add(Ui.Text(L.T(title), 28, true)); var detail = Ui.Text(L.T(description), 13, muted: true); detail.Margin = new Thickness(0, 9, 0, 0); copy.Children.Add(detail); panel.Children.Add(copy);
         var art = title == "News" ? NewsCheckAction() :
             DashboardGroups.Contains(title) ? DashboardArt(NavigationIcon(title), 60) : ToolArtwork(title, icon);
+        art.HorizontalAlignment = HorizontalAlignment.Right; // line up with the right edge of the rows below
         Grid.SetColumn(art, 1); panel.Children.Add(art); page.Children.Add(panel);
     }
     private static FrameworkElement ToolArtwork(string id, string icon, double size = 56, bool plain = false)

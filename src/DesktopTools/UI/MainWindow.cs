@@ -28,6 +28,17 @@ internal sealed partial class MainWindow : Window
     private readonly StackPanel page = new();
 
     private readonly Dictionary<string, Button> navigation = [];
+    private sealed class NavMark(Border fill, Border bar) { public readonly Border Fill = fill, Bar = bar; public bool On; }
+    private readonly Dictionary<string, NavMark> navMarks = [];
+    private void MarkNavigation(string selected)
+    {
+        foreach (var (name, mark) in navMarks)
+        {
+            bool on = name == selected;
+            if (mark.On == on) continue;
+            mark.On = on; Motion.Select(mark.Fill, mark.Bar, on, IsLoaded);
+        }
+    }
 
     private readonly ScrollViewer scroller;
 
@@ -77,7 +88,11 @@ internal sealed partial class MainWindow : Window
             var content = new Grid(); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.Children.Add(Ui.Icon(NavigationIcon(item), 18)); var label = Ui.Text(L.T(item), 13, true); label.FontWeight = FontWeights.Medium; label.Margin = new Thickness(12, 0, 0, 0); Grid.SetColumn(label, 1); content.Children.Add(label);
             if (item == "News") { content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); var badge = new Border { Width = 7, Height = 7, CornerRadius = new CornerRadius(4), VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed }; badge.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumn(badge, 2); content.Children.Add(badge); newsBadge = badge; }
 
-            var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
+            // Selection is drawn by the item itself so it can animate: a fill behind the row and an accent bar on its left edge.
+            var fill = new Border { CornerRadius = new CornerRadius(10), Margin = new Thickness(-14, -7, -14, -7), IsHitTestVisible = false, Opacity = 0 }; fill.SetResourceReference(Border.BackgroundProperty, "Selected"); Grid.SetColumnSpan(fill, 3); content.Children.Insert(0, fill);
+            var bar = new Border { Width = 3, Height = 18, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(-12, 0, 0, 0), IsHitTestVisible = false, RenderTransform = new ScaleTransform(1, 0) }; bar.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumnSpan(bar, 3); content.Children.Add(bar);
+            navMarks[item] = new NavMark(fill, bar);
+            var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.Background = Brushes.Transparent; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
 
             navigation[item] = b; (item is "Shortcuts" or "Settings" or "Diagnostics" or "Help" or "About" ? footer : navItems).Children.Add(b);
 
@@ -147,13 +162,14 @@ internal sealed partial class MainWindow : Window
 
             currentPage = destination; stateRefreshers.Clear(); page.Children.Clear(); if (pageChanged) SmoothScroll.ScrollToOffset(scroller, 0);
 
-            foreach (var (name, button) in navigation) { if (button.Content is Grid navGrid && navGrid.Children.OfType<TextBlock>().FirstOrDefault() is { } navLabel) navLabel.Text = L.T(name); if (name == destination) button.SetResourceReference(BackgroundProperty, "Selected"); else button.Background = Brushes.Transparent; }
+            foreach (var (name, button) in navigation) { if (button.Content is Grid navGrid && navGrid.Children.OfType<TextBlock>().FirstOrDefault() is { } navLabel) navLabel.Text = L.T(name); }
+            MarkNavigation(AidNames.Contains(destination) || destination is "Laser pointer" or "Cursor spotlight" or "Freeze frame" ? "Presentation tools" : destination);
 
             if (AidNames.Contains(destination))
 
             {
 
-                navigation["Presentation tools"].SetResourceReference(BackgroundProperty, "Selected");
+                
 
                 var back = Ui.Button(L.T("‹  Presentation tools"), () => Navigate("Presentation tools")); back.HorizontalAlignment = HorizontalAlignment.Left; back.Margin = new Thickness(0, 0, 0, 18); page.Children.Add(back);
 
@@ -165,7 +181,7 @@ internal sealed partial class MainWindow : Window
 
             {
 
-                navigation["Presentation tools"].SetResourceReference(BackgroundProperty, "Selected");
+                
 
                 var back = Ui.Button(L.T("‹  Presentation tools"), () => Navigate("Presentation tools")); back.HorizontalAlignment = HorizontalAlignment.Left; back.Margin = new Thickness(0, 0, 0, 18); page.Children.Add(back);
 
