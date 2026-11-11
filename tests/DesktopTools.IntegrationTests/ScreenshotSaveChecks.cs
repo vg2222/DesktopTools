@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -59,6 +60,30 @@ internal static class ScreenshotSaveChecks
             }
             capture.SetValue(controller, image);
         }
-        return Task.CompletedTask;
+        return AutoSaveAsync(controller, image, Path.Combine(directory, "auto"));
+    }
+
+    /// <summary>"Clipboard and folder" writes the PNG without a dialog, copies once, and never replaces an earlier file.</summary>
+    private static async Task AutoSaveAsync(AppController controller, BitmapSource image, string folder)
+    {
+        controller.UpdateSettings(s => { s.SaveDirectory = folder; s.CaptureOutput = DesktopTools.Core.CaptureAutoSave.Mode; });
+        int copies = 0;
+        Task<DesktopTools.Native.ClipboardResult> Copy(BitmapSource _) { copies++; return Task.FromResult(new DesktopTools.Native.ClipboardResult(true)); }
+        string? first = await controller.CopyAndSaveAsync(image, Copy), second = await controller.CopyAndSaveAsync(image, Copy);
+        if (first == null || second == null || first == second || !File.Exists(first) || !File.Exists(second))
+            throw new Exception("Auto-save did not write two separate files: " + controller.Status);
+        if (Path.GetDirectoryName(first) != folder || copies != 2) throw new Exception("Auto-save used the wrong folder or skipped the clipboard");
+        using (var stream = File.OpenRead(first))
+        {
+            var decoded = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames[0];
+            if (decoded.PixelWidth != 2 || decoded.PixelHeight != 1) throw new Exception("Auto-save wrote the wrong picture");
+        }
+        // A busy clipboard still keeps the file; an unwritable folder still copies and reports instead of throwing.
+        string? busy = await controller.CopyAndSaveAsync(image, _ => Task.FromResult(new DesktopTools.Native.ClipboardResult(false, "busy")));
+        if (busy == null || !File.Exists(busy)) throw new Exception("A busy clipboard lost the saved file");
+        string blocked = Path.Combine(folder, "blocked"); File.WriteAllText(blocked, "a file where the folder should be");
+        controller.UpdateSettings(s => s.SaveDirectory = blocked);
+        if (await controller.CopyAndSaveAsync(image, Copy) != null || copies != 3) throw new Exception("An unusable folder must report, not save or skip the copy");
+        foreach (var notice in Application.Current.Windows.OfType<NotificationWindow>().ToArray()) notice.Close();
     }
 }

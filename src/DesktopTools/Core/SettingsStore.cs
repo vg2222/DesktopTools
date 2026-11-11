@@ -139,7 +139,7 @@ public sealed class SettingsStore
         s.LaserMonitorMode = Known(s.LaserMonitorMode, "All", "Selected");
         s.SpotlightMonitorMode = Known(s.SpotlightMonitorMode, "All", "Selected");
         s.DefaultTool = Known(s.DefaultTool, "Pen", "Highlighter", "Arrow", "Line", "Rectangle", "Ellipse", "Text", "Number", "Select", "Eraser", "Redaction");
-        s.CaptureOutput = Known(s.CaptureOutput, "Clipboard", "Save");
+        s.CaptureOutput = Known(s.CaptureOutput, "Clipboard", "Save", CaptureAutoSave.Mode);
         s.CaptureMonitorMode = Known(s.CaptureMonitorMode, "All", "Selected");
         s.CaptureDelaySeconds = new[] { 0, 3, 5, 10 }.Contains(s.CaptureDelaySeconds) ? s.CaptureDelaySeconds : 0;
         s.Color = ValidColor(s.Color, "#FF2870FF"); s.LaserColor = ValidColor(s.LaserColor, "#FFFF4545");

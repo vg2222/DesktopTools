@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "クリップボードとフォルダー",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "「クリップボードとフォルダー」は、スクリーンショットをコピーし、確認なしで保存先に PNG を保存します。",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "フォルダーを選ぶまでは「ピクチャ\\DesktopTools」に保存されます。",
+  "Show in folder": "フォルダーで表示",
+  "Screenshot copied and saved": "スクリーンショットをコピーして保存しました",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "スクリーンショットを {0} に保存しましたが、クリップボードは使用中です。 ",
+  "Screenshot copied, but it could not be saved: ": "スクリーンショットをコピーしましたが、保存できませんでした: ",
+  "Screenshot could not be copied or saved: ": "スクリーンショットをコピーも保存もできませんでした: ",
+  "The saved screenshot is no longer there.": "保存したスクリーンショットはもうありません。",
+  "Could not open the folder: ": "フォルダーを開けませんでした: "
+}

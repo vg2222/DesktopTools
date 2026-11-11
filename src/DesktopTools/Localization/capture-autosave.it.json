@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Appunti e cartella",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "«Appunti e cartella» copia lo screenshot e salva un PNG nella posizione di salvataggio senza chiedere.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Salvato in Immagini\\DesktopTools finché non scegli una cartella.",
+  "Show in folder": "Mostra nella cartella",
+  "Screenshot copied and saved": "Screenshot copiato e salvato",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Screenshot salvato in {0}, ma gli appunti sono occupati. ",
+  "Screenshot copied, but it could not be saved: ": "Screenshot copiato, ma non è stato possibile salvarlo: ",
+  "Screenshot could not be copied or saved: ": "Impossibile copiare o salvare lo screenshot: ",
+  "The saved screenshot is no longer there.": "Lo screenshot salvato non è più lì.",
+  "Could not open the folder: ": "Impossibile aprire la cartella: "
+}

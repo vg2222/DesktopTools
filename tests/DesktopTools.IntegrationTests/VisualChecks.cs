@@ -149,7 +149,7 @@ internal static class VisualChecks
                 var menu = Field<ContextMenu>(pin, "_menu"); Check(menu.IsOpen && menu.Items.Count >= 8, "Compact pin menu failed to open.");
                 pin.Close(); Check(!menu.IsOpen, "Pin left an orphan action menu.");
                 typeof(AppController).GetProperty("LastCapture")!.SetValue(controller, sample);
-                typeof(AppController).GetMethod("ShowCaptureNotice", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(controller, null);
+                typeof(AppController).GetMethod("ShowCaptureNotice", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(controller, new object?[] { null, null });
                 var notice = Field<Window>(controller, "captureNotice"); await Task.Delay(180); var toast = Render(notice, $"ui-notice-{theme}");
                 byte[] pixel = new byte[4]; toast.CopyPixels(new Int32Rect(0, 0, 1, 1), pixel, 4, 0);
                 Check(notice.AllowsTransparency && pixel[3] == 0, "Notification still has a rectangular backplate at its corner."); notice.Close();

@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Presse-papiers et dossier",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "« Presse-papiers et dossier » copie la capture et enregistre un PNG dans le dossier d’enregistrement sans rien demander.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Enregistré dans Images\\DesktopTools jusqu’à ce que vous choisissiez un dossier.",
+  "Show in folder": "Afficher dans le dossier",
+  "Screenshot copied and saved": "Capture copiée et enregistrée",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Capture enregistrée dans {0}, mais le presse-papiers est occupé. ",
+  "Screenshot copied, but it could not be saved: ": "Capture copiée, mais impossible de l’enregistrer : ",
+  "Screenshot could not be copied or saved: ": "Impossible de copier ou d’enregistrer la capture : ",
+  "The saved screenshot is no longer there.": "La capture enregistrée n’est plus là.",
+  "Could not open the folder: ": "Impossible d’ouvrir le dossier : "
+}

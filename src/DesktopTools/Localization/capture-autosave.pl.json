@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Schowek i folder",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "„Schowek i folder” kopiuje zrzut ekranu i bez pytania zapisuje plik PNG w miejscu zapisu.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Zapisywane w Obrazy\\DesktopTools, dopóki nie wybierzesz folderu.",
+  "Show in folder": "Pokaż w folderze",
+  "Screenshot copied and saved": "Zrzut ekranu skopiowany i zapisany",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Zrzut ekranu zapisano w {0}, ale schowek jest zajęty. ",
+  "Screenshot copied, but it could not be saved: ": "Zrzut ekranu skopiowano, ale nie udało się go zapisać: ",
+  "Screenshot could not be copied or saved: ": "Nie udało się skopiować ani zapisać zrzutu ekranu: ",
+  "The saved screenshot is no longer there.": "Zapisanego zrzutu ekranu już tam nie ma.",
+  "Could not open the folder: ": "Nie udało się otworzyć folderu: "
+}

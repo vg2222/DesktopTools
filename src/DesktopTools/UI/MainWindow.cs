@@ -439,9 +439,9 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Include annotations"),L.T("Composite your current drawing into the screenshot."), Ui.Toggle(s.IncludeAnnotations, v => Change(x => x.IncludeAnnotations = v))),
 
-            Ui.Row(L.T("After capture"), null, Ui.Choice(new[] { "Clipboard", "Save" }, s.CaptureOutput, v => Change(x => x.CaptureOutput = v))),
+            Ui.Row(L.T("After capture"), L.T("Clipboard and folder copies the screenshot and saves a PNG to the save location without asking."), Ui.Choice(new[] { "Clipboard", "Save", CaptureAutoSave.Mode }, s.CaptureOutput, v => { Change(x => x.CaptureOutput = v); Navigate(currentPage); })),
 
-            Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
+            Ui.Row(L.T("Save location"), !string.IsNullOrEmpty(s.SaveDirectory) ? s.SaveDirectory : L.T(s.CaptureOutput == CaptureAutoSave.Mode ? "Saved to Pictures\\DesktopTools until you choose a folder." : "Chosen when you save your first screenshot."), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
 
         AutoRedactSettings();
         Group(L.T("Latest screenshot"), Ui.Row(L.T("Pin above applications"),L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)), Ui.Row(L.T("Edit screenshot"),L.T("Annotate, crop, or cover private details before sharing."), Ui.Button(L.T("Open editor"), controller.RedactLast)), Ui.Row(L.T("Save a copy"), null, Ui.Button(L.T("Save PNG"), controller.SaveLast)));

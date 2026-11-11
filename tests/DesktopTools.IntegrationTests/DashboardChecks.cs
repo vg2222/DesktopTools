@@ -198,7 +198,7 @@ internal static class DashboardChecks
                 Check(!Walk(content).OfType<Border>().Any(b => b.ActualWidth == 4), "Notification stripe retained");
                 var bmp = new RenderTargetBitmap(380,(int)Math.Ceiling(content.ActualHeight),96,96,PixelFormats.Pbgra32); bmp.Render(content); var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bmp)); using(var file = File.Create("notice-compact-" + kind + ".png")) png.Save(file); notice.Close();
             }
-            typeof(AppController).GetMethod("ShowCaptureNotice", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(controller, null);
+            typeof(AppController).GetMethod("ShowCaptureNotice", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(controller, new object?[] { null, null });
             var captureNotice = Field<Window>(controller, "captureNotice"); Check((captureNotice.Tag as string) == "Notifications", "Screenshot notice bypasses feature privacy");
             Check(captureNotice.Content is Border captureSurface && captureSurface.Margin == new Thickness(0) && captureSurface.CornerRadius.TopLeft == 22, "Screenshot notice surface mismatch"); captureNotice.Close();
             main.Navigate("Settings"); typeof(MainWindow).GetField("settingsTab", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(main,"Privacy"); main.Navigate("Settings"); main.UpdateLayout();

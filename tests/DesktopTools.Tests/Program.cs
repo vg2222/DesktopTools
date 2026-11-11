@@ -155,6 +155,7 @@ internal static class Program
         Test("Portable data export, validation and import", PortableDataTests.Run);
         Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
         Test("Screenshot library searches, prunes, recovers and clears", ScreenshotLibraryTests.Run);
+        Test("Capture auto-save chooses a folder, never reuses a name and persists", CaptureAutoSaveTests.Run);
         Test("Animated GIF encoder writes valid, compact animations", GifEncoderTests.Run);
         Test("Animated WebP container wraps lossy frames", AnimatedWebpTests.Run);
         Test("History restores erased objects and undoable clear", () =>

@@ -715,15 +715,28 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); return false; }
         finally { IsBusy = wasBusy; if (!IsBusy && State == OverlayState.Draw) overlay?.Activate(); }
     }
-    private void ShowCaptureNotice()
+    private void ShowCaptureNotice(string? title = null, string? savedPath = null)
     {
         captureNotice?.Close();
-        var notice = new NotificationWindow(L.T("Screenshot ready"), NotificationKind.Info, main,
+        // A screenshot that is already on disk offers its folder instead of a second save.
+        (string, Action) fileAction = savedPath == null ? ("Save PNG", SaveLast) : ("Show in folder", () => RevealInFolder(savedPath));
+        var notice = new NotificationWindow(title ?? L.T("Screenshot ready"), NotificationKind.Info, main,
             Settings.ScreenshotNotificationStyle, LastCapture,
-            [("Edit", RedactLast), ("Save PNG", SaveLast), ("Pin", PinLast)], Settings.NotificationSeconds);
+            [("Edit", RedactLast), fileAction, ("Pin", PinLast)], Settings.NotificationSeconds);
         captureNotice = notice;
         notice.Closed += (_, _) => { if (captureNotice == notice) captureNotice = null; };
         notice.Show();
+    }
+    private void RevealInFolder(string path)
+    {
+        try
+        {
+            // The path is passed as one quoted argument; a missing file opens its folder instead.
+            if (File.Exists(path)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe") { ArgumentList = { "/select," + path } })?.Dispose();
+            else if (Path.GetDirectoryName(path) is { } folder && Directory.Exists(folder)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder) { UseShellExecute = true })?.Dispose();
+            else Report(L.T("The saved screenshot is no longer there."));
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or IOException) { Report(L.T("Could not open the folder: ") + ex.Message); }
     }
     private readonly List<PinnedImageWindow> pinnedImages = [];
     internal bool HasLockedPins => pinnedImages.Any(pin => pin.IsLocked);
