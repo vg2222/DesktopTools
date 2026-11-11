@@ -1,0 +1,48 @@
+diff --git a/ScreenRecorderLibNative/RecordingManager.cpp b/ScreenRecorderLibNative/RecordingManager.cpp
+index 0f72681..d01c6ef 100644
+--- a/ScreenRecorderLibNative/RecordingManager.cpp
++++ b/ScreenRecorderLibNative/RecordingManager.cpp
+@@ -588,7 +588,6 @@ REC_RESULT RecordingManager::StartRecorderLoop(_In_ const std::vector<RECORDING_
+ 				continue;
+ 			}
+ 		}
+-		bool isFrameTimeout = false;
+ 		CAPTURED_FRAME capturedFrame{};
+ 		if (!m_IsPaused || IsAnySourcePreviewsActive()) {
+ 			// Get new frame
+@@ -598,14 +597,9 @@ REC_RESULT RecordingManager::StartRecorderLoop(_In_ const std::vector<RECORDING_
+ 				if (capturedFrame.FrameUpdateCount > 0) {
+ 					m_RestartCaptureCount = 0;
+ 				}
+-				else {
+-					//On stale frames, periodically flush sink writer to avoid encoder hoarding memory.
+-					if (m_TimelineManager->GetRenderedVideoFrameCount() % 100 == 0) {
+-						LOG_TRACE("Flushed ID3D11DeviceContext");
+-						isFrameTimeout = true;
+-						m_OutputManager->FlushSinkWriter();
+-					}
+-				}
++				// Unchanged frames used to flush the sink writer every hundredth frame. IMFSinkWriter::Flush discards the samples
++				// still queued for the encoder, which showed as freezes of 0.1-0.7 s in the file. The bounded sample pool
++				// already limits what the encoder can hold, so repeated frames are simply encoded.
+ 				if (capturedFrame.PtrInfo) {
+ 					pPtrInfo = capturedFrame.PtrInfo.value();
+ 				}
+diff --git a/ScreenRecorderLibNative/ScreenCaptureManager.cpp b/ScreenRecorderLibNative/ScreenCaptureManager.cpp
+index a4737b8..48fedb9 100644
+--- a/ScreenRecorderLibNative/ScreenCaptureManager.cpp
++++ b/ScreenRecorderLibNative/ScreenCaptureManager.cpp
+@@ -260,7 +260,12 @@ HRESULT ScreenCaptureManager::AcquireNextFrame(_In_  INT64 timeUntilNextFrame100
+ 				return timeUntilNextFrame100Nanos - timeWaited100Nanons;
+ 			}
+ 			else {
+-				return maxFrameLengt100Nanos - timeWaited100Nanons;
++				// An unchanged screen repeats its last frame every 100 ms rather than once a second: players and editors
++				// see a steady stream, and stopping loses at most that much of the ending. The first frame keeps the long wait.
++				INT64 idleFrameLength100Nanos = IsInitialFrameWriteComplete()
++					? min(maxFrameLengt100Nanos, max(timeUntilNextFrame100Nanos, static_cast<INT64>(1'000'000)))
++					: maxFrameLengt100Nanos;
++				return idleFrameLength100Nanos - timeWaited100Nanons;
+ 			}
+ 		});
+ 	auto GetMillisUntilNextFrame([&]() {
