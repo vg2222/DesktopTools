@@ -219,3 +219,20 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 3. Screenshot real pages with small text (a web shop button such as "Claim offer", a settings dialog, a spreadsheet, a code editor, a dark and a light theme, 100% and 150% scale). Compare the text view with what you see. Note misreadings of 9-10 pixel text separately; it is the known weak spot.
 4. With Russian as the OCR language, scan a page that mixes Russian and English; install another Windows language with a dictionary (for example German) and repeat. The second alphabet should be read only when the first result has many unknown words.
 
+## Auto-save, selection overlay, editor shortcuts and still-screen recording
+
+- [ ] Settings → Capture → After capture → **Clipboard and folder**: a capture is on the clipboard and a new `DesktopTools-<date>-<time>.png` is in the save location, with no dialog. Before a folder is chosen it goes to `Pictures\DesktopTools`. Two captures within one second give two files. The notice offers **Show in folder**.
+- [ ] With the save location on a removed drive or a read-only folder, the capture is still copied and the notice says it could not be saved.
+- [ ] With Auto Redact review on, the review window still opens first and nothing is saved until Copy or Save there.
+- [ ] Region selection with Freeze screen on: the loupe follows the pointer and shows exact pixels, the size badge matches the saved PNG's dimensions, and both stay on screen at every edge and corner, on each monitor and scale. With Freeze off (live screen) a smart suggestion can still be clicked.
+- [ ] Screenshot editor: V P H A R O T B E C choose tools, Delete removes the selected annotation, Ctrl+C copies, Ctrl+S saves, Ctrl+Shift+Z redoes; none of these fire while typing text or in a text field.
+- [ ] Record a mostly still desktop for a minute with a few clicks at the end, using the patched backend: playback has no freezes and includes the ending. Repeat with a window source and with a game.
+
+## Interface refresh (1.3.0)
+
+- [ ] Screenshot editor: **Extract text** is a labelled toolbar button beside **Check screenshot**; it opens the text view and Back to editing returns. It is not in the More menu, and Image tools still shows only its own Extract text button.
+- [ ] Settings pages, tool settings and utility windows: every row has an icon that fits its title, in English and in at least one other language; the icon lights up under the pointer. Long titles and descriptions still wrap without overlapping the control at the minimum window width.
+- [ ] Plain text buttons (Cancel, Save copy, Choose folder, Check for updates and similar) show a matching icon; buttons that already had their own icon show only one.
+- [ ] Context menus, the tray menu and drop-down lists unfold when opened; with Animations off, or Windows animations off, they appear at once and nothing is left half-transparent.
+- [ ] Opening any tool window: the content rises into place once and ends fully opaque and in its final position.
+- [ ] In a non-English language, pin and unpin a window, trigger a shortcut conflict, and open the translation picker: the notices and language names are translated.
