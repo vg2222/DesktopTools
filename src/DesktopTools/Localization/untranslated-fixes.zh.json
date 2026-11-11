@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "窗口已固定在其他窗口之上。",
+  "Window unpinned.": "窗口已取消固定。",
+  "Annotation opacity": "标注不透明度",
+  "Clear": "清除",
+  "Apply": "应用",
+  "Availability": "可用性",
+  "Invalid shortcut": "快捷键无效",
+  "Another DesktopTools action uses this shortcut.": "DesktopTools 的另一项操作正在使用此快捷键。",
+  "Windows has no available hotkey IDs.": "Windows 没有可用的热键 ID。"
+}

@@ -115,7 +115,7 @@ internal sealed partial class AppController : IDisposable
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
-        try { Report(windowPins.ToggleForeground() ? "Window pinned above other windows." : "Window unpinned."); }
+        try { Report(L.T(windowPins.ToggleForeground() ? "Window pinned above other windows." : "Window unpinned.")); }
         catch (Exception ex) { Report(L.T("Could not pin window: ") + ex.Message); }
     }
     public async Task PickScreenColorAsync()

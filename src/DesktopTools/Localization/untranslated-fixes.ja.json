@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "ウィンドウを他のウィンドウの前面に固定しました。",
+  "Window unpinned.": "ウィンドウの固定を解除しました。",
+  "Annotation opacity": "注釈の不透明度",
+  "Clear": "クリア",
+  "Apply": "適用",
+  "Availability": "利用可否",
+  "Invalid shortcut": "無効なショートカット",
+  "Another DesktopTools action uses this shortcut.": "このショートカットは DesktopTools の別の操作で使用されています。",
+  "Windows has no available hotkey IDs.": "Windows に使用可能なホットキー ID がありません。"
+}

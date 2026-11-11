@@ -37,12 +37,12 @@ public sealed class HotkeyService : IDisposable
         {
             if (!HotkeyGesture.TryParse(pair.Value, out var gesture, out string? error))
             {
-                unavailable[pair.Key] = error ?? "Invalid shortcut";
+                unavailable[pair.Key] = error ?? L.T("Invalid shortcut");
                 continue;
             }
             if (next.ContainsKey(gesture))
             {
-                unavailable[pair.Key] = "Another DesktopTools action uses this shortcut.";
+                unavailable[pair.Key] = L.T("Another DesktopTools action uses this shortcut.");
                 continue;
             }
             int id;
@@ -52,7 +52,7 @@ public sealed class HotkeyService : IDisposable
                 while (registrations.ContainsValue(id) || next.ContainsValue(id)) id++;
                 if (id > 0xBFFF)
                 {
-                    unavailable[pair.Key] = "Windows has no available hotkey IDs.";
+                    unavailable[pair.Key] = L.T("Windows has no available hotkey IDs.");
                     continue;
                 }
                 if (!NativeMethods.RegisterHotKey(source.Handle, id, gesture.Modifiers | 0x4000, gesture.VirtualKey))

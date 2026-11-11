@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "Окно закреплено поверх других окон.",
+  "Window unpinned.": "Окно откреплено.",
+  "Annotation opacity": "Непрозрачность пометок",
+  "Clear": "Очистить",
+  "Apply": "Применить",
+  "Availability": "Доступность",
+  "Invalid shortcut": "Недопустимое сочетание клавиш",
+  "Another DesktopTools action uses this shortcut.": "Это сочетание уже используется другим действием DesktopTools.",
+  "Windows has no available hotkey IDs.": "В Windows не осталось свободных идентификаторов горячих клавиш."
+}

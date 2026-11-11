@@ -33,7 +33,12 @@ internal static class GitHubGallery
     {
         string previousDirectory = Environment.CurrentDirectory;
         string repo = Path.GetFullPath(Path.Combine(previousDirectory, "../.."));
-        string output = Path.Combine(repo, "docs/screenshots/gallery");
+        // GALLERY_LANGUAGE renders every screen in another language into GALLERY_OUT and lists the text that stayed English; the published gallery is untouched.
+        string language = Environment.GetEnvironmentVariable("GALLERY_LANGUAGE") is { Length: > 0 } chosen ? chosen : "en";
+        string output = Environment.GetEnvironmentVariable("GALLERY_OUT") is { Length: > 0 } folder ? Path.GetFullPath(folder) : Path.Combine(repo, "docs/screenshots/gallery");
+        if (language != "en" && output == Path.Combine(repo, "docs/screenshots/gallery")) throw new InvalidOperationException("Set GALLERY_OUT when GALLERY_LANGUAGE is not en.");
+        var missingKeys = new SortedSet<string>(StringComparer.Ordinal); var english = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        L.Missing = key => { lock (missingKeys) missingKeys.Add(key); };
         string demo = Path.Combine(repo, "artifacts/github-gallery-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output); Directory.CreateDirectory(demo);
         Environment.CurrentDirectory = demo;
@@ -43,11 +48,11 @@ internal static class GitHubGallery
             using var controller = new AppController(true);
             controller.UpdateSettings(s =>
             {
-                s.Language = "en"; s.Theme = "Dark"; s.Animations = false; s.Transparency = false;
+                s.Language = language; s.Theme = "Dark"; s.Animations = false; s.Transparency = false;
                 s.SharingWelcomeSeen = true; s.StartAtLogin = false; s.RecordingMicrophone = false; s.RecordingSystemAudio = false;
                 s.RecordingQuality = "High"; s.RecordingFramesPerSecond = 60;
             });
-            L.Use("en"); controller.OpenMain();
+            L.Use(language); controller.OpenMain();
             var main = Field<MainWindow>(controller, "main"); main.Width = 1120; main.Height = 800;
 
             async Task Capture(Window window, string name)
@@ -61,6 +66,7 @@ internal static class GitHubGallery
                 bitmap.Render(window); Save(bitmap, Path.Combine(output, name + ".png"));
                 inventory.Add($"{name}.png,{width},{height}");
                 Console.WriteLine($"CAPTURE {name}: {width} x {height}");
+                if (language != "en") foreach (var text in VisibleTexts(window)) if (LooksEnglish(text)) english.TryAdd(text, name);
             }
 
             foreach (var page in new[] { ("Home", "01-home-dark"), ("Capture tools", "02-capture-tools-dark"), ("Presentation tools", "03-presentation-tools-dark"), ("Media tools", "04-media-tools-dark") })
@@ -70,17 +76,17 @@ internal static class GitHubGallery
             string samplePath = Path.Combine(demo, "Presentation.png"); Save(sample, samplePath);
             var editor = new ScreenshotEditorWindow(sample, _ => { }, _ => { }, editorLayout: "A") { Width = 1120, Height = 800 };
             editor.Show();
-            var document = Field<ScreenshotEditDocument>(editor, "_document");
+            var document = editor.View.Document; // the editor body lives in its view since it became embeddable
             document.Add(new Annotation { Kind = AnnotationKind.Rectangle, Points = [new Point(92, 252), new Point(775, 475)], Color = Color.FromRgb(45, 118, 246), Thickness = 5 });
             document.Add(new Annotation { Kind = AnnotationKind.Arrow, Points = [new Point(1040, 646), new Point(760, 455)], Color = Color.FromRgb(45, 118, 246), Thickness = 7, ArrowHeadSize = 1.2 });
             document.Add(new Annotation { Kind = AnnotationKind.Text, Points = [new Point(1010, 667)], Text = "Keep the message clear", Color = Color.FromRgb(45, 118, 246), FontSize = 31, Bold = true });
-            Call(editor, "Update"); await Capture(editor, "05-screenshot-editor-dark"); editor.Close();
+            Call(editor.View, "Update"); await Capture(editor, "05-screenshot-editor-dark"); editor.Close();
 
             var image = new ImageToolsWindow(_ => { }) { Width = 1120, Height = 790 };
             image.Show(); typeof(ImageToolsWindow).GetField("original", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(image, samplePath);
             Call(image, "SetImage", sample);
             await Capture(image, "06-image-editor-dark");
-            Walk(image).OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Crop").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Walk(image).OfType<Button>().Single(b => AutomationProperties.GetName(b) == L.T("Crop")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Walk(image).OfType<ComboBox>().Single(c => Equals(c.Tag, "crop-ratio")).SelectedItem = "4:3";
             await Capture(image, "07-image-crop-dark"); image.Close();
 
@@ -127,9 +133,49 @@ internal static class GitHubGallery
             controller.OpenSetup(restart: true); await Capture(main, "24-first-run-setup-dark");
             Application.Current.Windows.OfType<SetupWindow>().Single().Close();
             File.WriteAllLines(Path.Combine(output, "dimensions.csv"), inventory);
+            if (language != "en")
+            {
+                // The remaining pages and settings tabs, so the report covers the whole main window.
+                int extra = 0;
+                foreach (var page in new[] { "Home", "News", "Text tools", "Desktop utilities", "Profiles", "Diagnostics", "About", "Draw", "Capture", "Utilities", "Present", "Click indicators", "Shortcut display", "Stopwatch", "Countdown", "Screen ruler", "Screen blackout" })
+                { main.Navigate(page); await Capture(main, $"x{++extra:00}-{page.Replace(' ', '-').ToLowerInvariant()}"); }
+                foreach (string tab in new[] { "Behavior", "Notifications" })
+                {
+                    typeof(MainWindow).GetField("settingsTab", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(main, tab);
+                    main.Navigate("Settings"); await Capture(main, $"x{++extra:00}-settings-{tab.ToLowerInvariant()}");
+                }
+                var report = new List<string> { $"Language: {language}", "", $"== Text asked for but not in the catalog ({missingKeys.Count}):" };
+                report.AddRange(missingKeys.Select(key => "  " + key.Replace("\n", "\\n")));
+                report.Add(""); report.Add($"== Visible text that stayed English ({english.Count}), with the first screen it appeared on:");
+                report.AddRange(english.Select(pair => $"  [{pair.Value}] {pair.Key.Replace("\n", "\\n")}"));
+                File.WriteAllLines(Path.Combine(output, "untranslated.txt"), report);
+                Console.WriteLine($"UNTRANSLATED {missingKeys.Count} missing keys, {english.Count} English texts -> {Path.Combine(output, "untranslated.txt")}");
+            }
             main.Hide();
         }
-        finally { Environment.CurrentDirectory = previousDirectory; }
+        finally { Environment.CurrentDirectory = previousDirectory; L.Missing = null; L.Use("en"); }
+    }
+
+    /// <summary>Every piece of text a person can read in the window: labels, button captions, placeholders, tooltips and accessible names.</summary>
+    private static IEnumerable<string> VisibleTexts(Window window)
+    {
+        foreach (var node in Walk(window))
+        {
+            if (node is UIElement { IsVisible: false }) continue;
+            if (node is TextBlock block && !string.IsNullOrWhiteSpace(block.Text)) yield return block.Text.Trim();
+            if (node is ContentControl { Content: string content } && !string.IsNullOrWhiteSpace(content)) yield return content.Trim();
+            if (node is FrameworkElement { ToolTip: ToolTip { Content: string tip } }) yield return tip.Trim();
+            if (node is FrameworkElement element && AutomationProperties.GetName(element) is { Length: > 0 } name) yield return name.Trim();
+        }
+    }
+
+    /// <summary>Two or more ordinary Latin words and nothing in the target script: an English sentence or label, not a name, unit or path.</summary>
+    private static bool LooksEnglish(string text)
+    {
+        if (text.Any(c => c > 0x024F && char.IsLetter(c))) return false;                       // has Cyrillic, CJK, etc.
+        if (text.Contains('\\') || text.Contains("://") || text.Contains('@')) return false;    // paths, links, addresses
+        var words = System.Text.RegularExpressions.Regex.Matches(text, "[A-Za-z]{3,}").Select(m => m.Value).Where(w => w is not ("DesktopTools" or "GitHub" or "Windows" or "Microsoft" or "Ctrl" or "Alt" or "Shift" or "Esc" or "Enter" or "PNG" or "JPEG" or "JPG" or "WebP" or "GIF" or "MP4" or "FPS" or "OCR" or "HEX" or "RGB" or "HSL" or "MIT" or "Inter" or "Presentation" or "edited" or "demo")).ToArray();
+        return words.Length >= 2 || words.Length == 1 && text.Length <= 24 && words[0].Length >= 4;
     }
 
     private static void Save(BitmapSource bitmap, string path)

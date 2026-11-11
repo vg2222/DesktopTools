@@ -36,7 +36,12 @@ internal static class TranslationPacks
             return Catalog.SelectMany(pack => pack.Direction.Split('-')).Distinct().Select(code =>
             {
                 string name;
-                try { name = CultureInfo.GetCultureInfo(code).DisplayName; }
+                try
+                {
+                    // In the app's language where it has the name; otherwise the language's own name, which its speakers recognise.
+                    var culture = CultureInfo.GetCultureInfo(code); string english = culture.EnglishName, shown = DesktopTools.Localization.L.T(english);
+                    name = DesktopTools.Localization.L.Language != "en" && shown == english ? culture.NativeName : shown;
+                }
                 catch (CultureNotFoundException) { name = code; }
                 return new TranslationLanguage(code, name, preferred.Contains(code));
             }).OrderByDescending(language => language.Preferred).ThenBy(language => language.Name, StringComparer.CurrentCulture).ToArray();
