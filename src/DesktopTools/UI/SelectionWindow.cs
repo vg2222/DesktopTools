@@ -56,8 +56,15 @@ internal sealed class SelectionWindow : Window
                     surface.InvalidateVisual();
                 }
             }
-            else QueueHover();
+            else
+            {
+                QueueHover();
+                // The loupe follows the pointer over a still frame; a live screen keeps its cheaper repaint.
+                if (FrozenFrame != null) { surface.Pointer = Clamp(e.GetPosition(surface)); surface.InvalidateVisual(); }
+            }
+            if (start.HasValue && FrozenFrame != null) surface.Pointer = Clamp(e.GetPosition(surface));
         };
+        SizeChanged += (_, _) => { if (ActualWidth > 0 && ActualHeight > 0) surface.PixelScale = new Vector(monitor.Bounds.Width / ActualWidth, monitor.Bounds.Height / ActualHeight); };
         MouseLeftButtonUp += (_, e) =>
         {
             if (!start.HasValue) return;
@@ -66,7 +73,7 @@ internal sealed class SelectionWindow : Window
             if (result != null || !this.smartRegion) CompleteSelection(result);
             else { SetSuggestedRegion(null); QueueHover(); }
         };
-        MouseLeave += (_, _) => { if (!start.HasValue) { hoverTimer.Stop(); hoverRevision++; SetSuggestedRegion(null); } };
+        MouseLeave += (_, _) => { if (!start.HasValue) { hoverTimer.Stop(); hoverRevision++; surface.Pointer = null; SetSuggestedRegion(null); } };
         KeyDown += (_, e) => { if (e.Key == Key.Escape) Close(); };
         Closed += (_, _) => { hoverTimer.Stop(); hoverRevision++; completion.TrySetResult(selected); };
     }
@@ -156,25 +163,199 @@ internal sealed class SelectionWindow : Window
         Close();
     }
     private Point Clamp(Point p) => new(Math.Clamp(p.X, 0, ActualWidth), Math.Clamp(p.Y, 0, ActualHeight));
-    private sealed class SelectionSurface : FrameworkElement
+    /// <summary>
+    /// Three layers so a mouse move repaints only what moved: the still frame and its dimming never change, the hint never changes,
+    /// and <see cref="Marks"/> redraws the selection, its size and the loupe.
+    /// </summary>
+    private sealed class SelectionSurface : System.Windows.Controls.Grid
     {
-        public bool TextScan { get; set; }
-        public bool SmartRegion { get; set; }
+        private static readonly Brush Dim = Frozen(new SolidColorBrush(Color.FromArgb(110, 0, 0, 0)));
+        private static readonly Brush HitFill = Frozen(new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)));
+        private static readonly Brush Plate = Frozen(new SolidColorBrush(Color.FromArgb(232, 22, 23, 27)));
+        private static readonly Pen PlateRim = FrozenPen(new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)), 1);
+        private static readonly Pen Outline = FrozenPen(new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)), 3);
+        private static readonly Pen White = FrozenPen(Brushes.White, 1.5);
+        private static readonly Pen Bracket = FrozenPen(Brushes.White, 3);
+        private static readonly Pen LoupeGrid = FrozenPen(new SolidColorBrush(Color.FromArgb(46, 255, 255, 255)), 1);
+        private static readonly Typeface Face = new(new FontFamily("Segoe UI Variable Text, Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+        private static T Frozen<T>(T value) where T : Freezable { value.Freeze(); return value; }
+        private static Pen FrozenPen(Brush brush, double thickness) => Frozen(new Pen(brush, thickness));
+
+        private readonly Marks marks;
+        private readonly HintPlate hint;
+        private BitmapSource? frozenFrame;
+        public bool TextScan { get => hint.TextScan; set => hint.TextScan = value; }
+        public bool SmartRegion { get => hint.SmartRegion; set => hint.SmartRegion = value; }
         public bool IsSuggestion { get; set; }
-        public BitmapSource? FrozenFrame { get; set; }
         public Rect Selection { get; set; }
-        protected override void OnRender(DrawingContext dc)
+        /// <summary>Pointer position in surface DIPs, or null while the pointer is elsewhere; drives the loupe.</summary>
+        public Point? Pointer { get; set; }
+        /// <summary>Physical pixels per surface DIP, so the size badge shows what the PNG will measure.</summary>
+        public Vector PixelScale { get; set; } = new(1, 1);
+        public BitmapSource? FrozenFrame
         {
-            if (FrozenFrame != null) dc.DrawImage(FrozenFrame, new Rect(RenderSize));
-            var full = new RectangleGeometry(new Rect(RenderSize));
-            dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(95, 0, 0, 0)), null, new CombinedGeometry(GeometryCombineMode.Exclude, full, new RectangleGeometry(Selection)));
-            dc.DrawRectangle(Brushes.Transparent, new Pen(IsSuggestion ? Application.Current?.TryFindResource("Accent") as Brush ?? Brushes.DodgerBlue : Brushes.White, IsSuggestion ? 2 : 1), Selection);
-            var hint = TextScan ? "Drag to scan screen text   ·   Esc to cancel" : SmartRegion
-                ? "Click highlighted area · Drag a custom region · Esc to cancel" : "Drag to capture a region   ·   Esc to cancel";
-            var text = new FormattedText(L.T(hint), System.Globalization.CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 15, Brushes.White, 1)
-            { MaxTextWidth = Math.Max(120, RenderSize.Width - 72) };
-            dc.DrawRoundedRectangle(new SolidColorBrush(Color.FromArgb(220, 25, 25, 28)), null, new Rect(20, 20, text.Width + 32, text.Height + 24), 12, 12);
-            dc.DrawText(text, new Point(36, 32));
+            get => frozenFrame;
+            set
+            {
+                frozenFrame = value;
+                // With a still frame the dimming is one unchanging rectangle and the selection is the frame drawn again on top.
+                Children.Clear();
+                if (value != null)
+                {
+                    Children.Add(new System.Windows.Controls.Image { Source = value, Stretch = Stretch.Fill, IsHitTestVisible = false });
+                    Children.Add(new System.Windows.Shapes.Rectangle { Fill = Dim, IsHitTestVisible = false });
+                }
+                Children.Add(marks); Children.Add(hint);
+            }
+        }
+        public SelectionSurface()
+        {
+            marks = new Marks(this); hint = new HintPlate();
+            Background = Brushes.Transparent; // the whole surface takes the mouse, including the clear selection
+            Children.Add(marks); Children.Add(hint);
+            Loaded += (_, _) =>
+            {
+                if (!Motion.Enabled) return;
+                // The hint drops into place; the frame and dimming appear at once so the screen never seems to blink.
+                hint.Opacity = 0; hint.RenderTransform = new TranslateTransform(0, -8);
+                var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                hint.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(1, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease });
+                hint.RenderTransform.BeginAnimation(TranslateTransform.YProperty, new System.Windows.Media.Animation.DoubleAnimation(0, TimeSpan.FromMilliseconds(220)) { EasingFunction = ease });
+            };
+        }
+        public new void InvalidateVisual() => marks.InvalidateVisual();
+
+        private sealed class HintPlate : FrameworkElement
+        {
+            public bool TextScan { get; set; }
+            public bool SmartRegion { get; set; }
+            public HintPlate() => IsHitTestVisible = false;
+            protected override void OnRender(DrawingContext dc)
+            {
+                var hint = TextScan ? "Drag to scan screen text   ·   Esc to cancel" : SmartRegion
+                    ? "Click highlighted area · Drag a custom region · Esc to cancel" : "Drag to capture a region   ·   Esc to cancel";
+                var text = new FormattedText(L.T(hint), System.Globalization.CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Face, 14, Brushes.White, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+                { MaxTextWidth = Math.Max(120, RenderSize.Width - 72) };
+                var plate = new Rect(20, 20, text.Width + 36, text.Height + 22);
+                dc.DrawRoundedRectangle(Plate, PlateRim, plate, plate.Height / 2, plate.Height / 2);
+                dc.DrawText(text, new Point(plate.X + 18, plate.Y + 11));
+            }
+        }
+
+        private sealed class Marks(SelectionSurface owner) : FrameworkElement
+        {
+            protected override void OnRender(DrawingContext dc)
+            {
+                var size = RenderSize; var selection = owner.Selection; var frame = owner.FrozenFrame;
+                bool has = !selection.IsEmpty && selection.Width > 0 && selection.Height > 0;
+                if (frame == null)
+                {
+                    // Live screen: dim everything except the selection.
+                    Geometry mask = has ? new CombinedGeometry(GeometryCombineMode.Exclude, new RectangleGeometry(new Rect(size)), new RectangleGeometry(selection)) : new RectangleGeometry(new Rect(size));
+                    dc.DrawGeometry(Dim, null, mask);
+                    // A fully transparent pixel of a layered window lets the click fall through to the desktop; this keeps the opening clickable.
+                    if (has) dc.DrawRectangle(HitFill, null, selection);
+                }
+                else if (has)
+                {
+                    dc.PushClip(new RectangleGeometry(selection)); dc.DrawImage(frame, new Rect(size)); dc.Pop();
+                }
+                if (has)
+                {
+                    var accent = Application.Current?.TryFindResource("Accent") as Brush ?? Brushes.DodgerBlue;
+                    dc.DrawRectangle(null, Outline, selection);
+                    dc.DrawRectangle(null, owner.IsSuggestion ? new Pen(accent, 2) : White, selection);
+                    if (!owner.IsSuggestion) DrawBrackets(dc, selection);
+                    DrawSize(dc, selection, size);
+                }
+                if (frame != null && owner.Pointer is Point pointer) DrawLoupe(dc, frame, pointer, size);
+            }
+
+            private static void DrawBrackets(DrawingContext dc, Rect r)
+            {
+                double arm = Math.Min(14, Math.Min(r.Width, r.Height) / 3);
+                if (arm < 4) return;
+                foreach (var (corner, dx, dy) in new[] { (r.TopLeft, 1, 1), (r.TopRight, -1, 1), (r.BottomLeft, 1, -1), (r.BottomRight, -1, -1) })
+                {
+                    dc.DrawLine(Bracket, corner, new Point(corner.X + dx * arm, corner.Y));
+                    dc.DrawLine(Bracket, corner, new Point(corner.X, corner.Y + dy * arm));
+                }
+            }
+
+            private void DrawSize(DrawingContext dc, Rect r, Size surface)
+            {
+                int width = Math.Max(1, (int)Math.Round(r.Width * owner.PixelScale.X)), height = Math.Max(1, (int)Math.Round(r.Height * owner.PixelScale.Y));
+                var text = new FormattedText($"{width} × {height}", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Face, 12, Brushes.White, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                var plate = new Size(text.Width + 16, text.Height + 8);
+                // Below the selection when there is room, otherwise inside its lower edge; always fully on the surface.
+                double y = r.Bottom + 8 + plate.Height <= surface.Height ? r.Bottom + 8 : Math.Max(0, r.Bottom - plate.Height - 8);
+                // Centred, so it stays clear of the loupe that follows the pointer at a corner.
+                double x = Math.Clamp(r.X + (r.Width - plate.Width) / 2, 0, Math.Max(0, surface.Width - plate.Width));
+                dc.DrawRoundedRectangle(Plate, PlateRim, new Rect(new Point(x, y), plate), 6, 6);
+                dc.DrawText(text, new Point(x + 8, y + 4));
+            }
+
+            private readonly byte[] loupePixels = new byte[15 * 15 * 4];
+            private readonly Dictionary<Color, Brush> loupeBrushes = [];
+            private BitmapSource? loupeSource; private BitmapSource? loupeBgra;
+            private bool TryReadPixels(BitmapSource frame, Int32Rect area)
+            {
+                try
+                {
+                    if (!ReferenceEquals(loupeSource, frame))
+                    {
+                        // Converted once per frame; captures are already BGRA so this is normally the frame itself.
+                        loupeSource = frame;
+                        loupeBgra = frame.Format == PixelFormats.Bgra32 || frame.Format == PixelFormats.Bgr32 || frame.Format == PixelFormats.Pbgra32 ? frame : Frozen(new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0));
+                    }
+                    loupeBgra!.CopyPixels(area, loupePixels, area.Width * 4, 0); return true;
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException or System.Runtime.InteropServices.COMException) { return false; }
+            }
+
+            /// <summary>An 8x view of the pixels under the pointer, so an edge can be placed exactly.</summary>
+            private void DrawLoupe(DrawingContext dc, BitmapSource frame, Point pointer, Size surface)
+            {
+                if (surface.Width <= 0 || surface.Height <= 0) return;
+                const int cells = 15; const double side = 120, cell = side / cells;
+                double px = pointer.X * frame.PixelWidth / surface.Width, py = pointer.Y * frame.PixelHeight / surface.Height;
+                int cx = Math.Clamp((int)Math.Floor(px), 0, frame.PixelWidth - 1), cy = Math.Clamp((int)Math.Floor(py), 0, frame.PixelHeight - 1);
+                // Beside the pointer, flipping to the other side near the right and bottom edges.
+                double x = pointer.X + 22 + side > surface.Width ? pointer.X - 22 - side : pointer.X + 22;
+                double y = pointer.Y + 22 + side + 26 > surface.Height ? pointer.Y - 22 - side - 26 : pointer.Y + 22;
+                var box = new Rect(Math.Max(0, x), Math.Max(0, y), side, side);
+                var shape = new RectangleGeometry(new Rect(box.X, box.Y, side, side + 26), 10, 10);
+                dc.DrawGeometry(Plate, null, shape);
+                dc.PushClip(new RectangleGeometry(box, 10, 10)); dc.DrawRectangle(Brushes.Black, null, box);
+                // Each source pixel is drawn as its own square: exact colours and hard edges, whatever the renderer's image filtering.
+                int left = cx - cells / 2, top = cy - cells / 2;
+                int x0 = Math.Max(0, left), y0 = Math.Max(0, top), x1 = Math.Min(frame.PixelWidth, left + cells), y1 = Math.Min(frame.PixelHeight, top + cells);
+                if (x1 > x0 && y1 > y0 && TryReadPixels(frame, new Int32Rect(x0, y0, x1 - x0, y1 - y0)))
+                {
+                    int stride = (x1 - x0) * 4;
+                    for (int row = y0; row < y1; row++)
+                        for (int column = x0; column < x1; column++)
+                        {
+                            int o = (row - y0) * stride + (column - x0) * 4;
+                            var color = Color.FromRgb(loupePixels[o + 2], loupePixels[o + 1], loupePixels[o]);
+                            if (!loupeBrushes.TryGetValue(color, out var fill))
+                            {
+                                if (loupeBrushes.Count > 512) loupeBrushes.Clear();
+                                loupeBrushes[color] = fill = Frozen(new SolidColorBrush(color));
+                            }
+                            // Squares overlap by a hair so anti-aliasing leaves no seams between them.
+                            dc.DrawRectangle(fill, null, new Rect(box.X + (column - left) * cell, box.Y + (row - top) * cell, cell + .5, cell + .5));
+                        }
+                }
+                var centre = new Rect(box.X + (cells / 2) * cell, box.Y + (cells / 2) * cell, cell, cell);
+                dc.DrawLine(LoupeGrid, new Point(centre.X + cell / 2, box.Y), new Point(centre.X + cell / 2, box.Bottom));
+                dc.DrawLine(LoupeGrid, new Point(box.X, centre.Y + cell / 2), new Point(box.Right, centre.Y + cell / 2));
+                dc.DrawRectangle(null, Outline, centre); dc.DrawRectangle(null, White, centre);
+                dc.Pop();
+                dc.DrawGeometry(null, PlateRim, shape);
+                var label = new FormattedText($"{cx}, {cy}", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Face, 11.5, Brushes.White, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                dc.DrawText(label, new Point(box.X + (side - label.Width) / 2, box.Bottom + (26 - label.Height) / 2));
+            }
         }
     }
 }
