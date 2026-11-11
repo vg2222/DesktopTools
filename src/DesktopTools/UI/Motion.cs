@@ -249,7 +249,9 @@ public static class Motion
             timer.Stop();
             window.Close();
         };
-        window.ContentRendered += (_, _) => { if (appeared) return; appeared = true; if (window.Content is FrameworkElement content) CompleteNoticeEntrance(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
+        // WPF can raise ContentRendered after Closed for a window closed before its first frame; a timer
+        // started then never stops and keeps the closed window and its screenshot alive.
+        window.ContentRendered += (_, _) => { if (appeared || closed) return; appeared = true; if (window.Content is FrameworkElement content) CompleteNoticeEntrance(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
         window.Closed += (_, _) => { closed = true; timer.Stop(); };
         return extended =>
         {
