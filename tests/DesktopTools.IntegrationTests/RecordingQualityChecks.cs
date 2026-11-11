@@ -51,7 +51,9 @@ internal static class RecordingQualityChecks
             var hud = new RecordingHudWindow("Экран 1 · 2560 × 1440", () => toggles++, () => stops++, true); hud.Show(); await Task.Delay(40); hud.Update(TimeSpan.FromSeconds(154), false, false); hud.UpdateLayout();
             var image = new RenderTargetBitmap((int)hud.ActualWidth, (int)hud.ActualHeight, 96, 96, PixelFormats.Pbgra32); image.Render(hud);
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image)); using (var output = File.Create($"record-hud-{theme}.png")) encoder.Save(output);
-            var buttons = Children(hud).OfType<Button>().ToArray(); int previous = toggles;
+            // The marker button comes first but is collapsed here; address Pause by its name, not its position.
+            var buttons = Children(hud).OfType<Button>().Where(b => System.Windows.Automation.AutomationProperties.GetName(b) == L.T("Pause")).ToArray(); int previous = toggles;
+            if (buttons.Length != 1) throw new Exception("HUD pause button not found");
             buttons[0].RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); if (toggles != previous + 1) throw new Exception("HUD pause not connected");
             hud.Update(TimeSpan.FromSeconds(154), true, false);
             if (System.Windows.Automation.AutomationProperties.GetName(buttons[0]) != L.T("Resume")) throw new Exception("Paused HUD did not offer resume");

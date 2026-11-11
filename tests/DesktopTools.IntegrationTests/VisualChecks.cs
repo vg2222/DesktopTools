@@ -119,7 +119,10 @@ internal static class VisualChecks
                     var pinOption = options.ContextMenu.Items.OfType<MenuItem>().First();
                     pinOption.IsChecked = false; pinOption.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Check(!note.Topmost, "Note pin menu did not update window");
                     pinOption.IsChecked = true; pinOption.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-                    var editors = Descendants(note).OfType<TextBox>().ToArray(); editors[0].Text = "Meeting notes"; editors[1].Text = "Discuss the design\nReview next steps\nKeep useful ideas close";
+                    // The header holds the editable title; the editor view keeps its own (hidden) title box, so pick by role, not order.
+                    var editors = Descendants(note).OfType<TextBox>().ToArray();
+                    editors.Single(t => t.Name != "NoteTitle" && System.Windows.Automation.AutomationProperties.GetName(t) == "Note title").Text = "Meeting notes";
+                    editors.Single(t => t.Name == "NoteBody").Text = "Discuss the design\nReview next steps\nKeep useful ideas close";
                     await Task.Delay(280); Render(note, $"ui-floating-note-{theme}");
                     Check(notes.TryFlush(), "Notes did not save"); note.Close();
                     Check(new NotesStore(Path.Combine(Environment.CurrentDirectory, "visual-notes")).Load().Any(n => n.Title == "Meeting notes"), "Closed note did not persist");

@@ -52,7 +52,7 @@ internal static class BlackoutChecks
             controller.UpdateSettings(s => s.BlackoutSharingOnly = true); controller.Hud.ToggleBlackout();
             try
             {
-                var windows = Application.Current.Windows.Cast<Window>().Where(w => ReferenceEquals(w.Tag, AppCapturePrivacy.PresentationSurface)).ToArray();
+                var windows = Application.Current.Windows.Cast<Window>().Where(w => ReferenceEquals(w.Tag, AppCapturePrivacy.BlackoutSurface)).ToArray();
                 Check(windows.Length == MonitorService.GetAll().Count, "Missing monitor masks");
                 Check(windows.All(w => w.Background == Brushes.Transparent && !w.IsHitTestVisible && !AppCapturePrivacy.IsControlWindow(w)), "Sharing mask affects local input/appearance or gets excluded");
                 await Task.Delay(200); NativeWindowService.SynchronizeDesktop(); Check(CapturePixel(rect)[2] == 0, "Real HUD mask did not blank capture");
@@ -60,7 +60,7 @@ internal static class BlackoutChecks
                 controller.Hud.ToggleBlackout(); controller.UpdateSettings(s => s.BlackoutSharingOnly = false);
                 Check(!controller.Hud.IsBlackoutVisible, "Changing mode retained old mask");
                 controller.Hud.ToggleBlackout();
-                Check(Application.Current.Windows.Cast<Window>().Where(w => ReferenceEquals(w.Tag, AppCapturePrivacy.PresentationSurface)).All(w => w.Background == Brushes.Black), "Local blackout no longer opaque black");
+                Check(Application.Current.Windows.Cast<Window>().Where(w => ReferenceEquals(w.Tag, AppCapturePrivacy.BlackoutSurface)).All(w => w.Background == Brushes.Black), "Local blackout no longer opaque black");
                 controller.CancelActiveTool(); Check(!controller.Hud.IsBlackoutVisible, "Escape retained local blackout");
             }
             finally { controller.Hud.StopAll(); }
