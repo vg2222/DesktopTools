@@ -3,7 +3,7 @@
 ## Source and documentation
 
 - Keep build output, local release bundles, private notes, credentials and test captures out of Git. Ignore rules do not remove already tracked files; inspect the staged inventory before committing.
-- Keep all five READMEs aligned. Each uses the shared rounded hero and three screenshots from `assets/readme`. `scripts/prepare-readme-media.py` regenerates them using Python and Pillow; source media remain unchanged.
+- Keep all five READMEs aligned. Each uses the shared rounded hero and three screenshots from `assets/readme`. Regenerate the gallery with the integration harness (`--github-gallery`), then run `scripts/prepare-readme-media.py` for the three screenshots and `scripts/make-readme-hero.py` for the animated hero (Python with Pillow and numpy, plus ffmpeg); every picture is a render of the app, never a desktop capture.
 - Confirm the project version, `v<version>` tag and `docs/releases/<version>.md` agree. Record compatibility boundaries rather than presenting unperformed hardware checks as passed.
 - After making the repository public, enable private vulnerability reporting in GitHub settings. Review branch protection and Actions permissions before accepting contributions.
 

@@ -43,13 +43,13 @@ Sécurité : [sommes de contrôle SHA-256](https://github.com/vg2222/DesktopTool
 
 ### ✏️ Expliquez avec une capture d’écran
 
-Ajoutez des flèches, des formes et du texte, puis exportez une copie tout en préservant l’original.
+Ajoutez des flèches, des formes et du texte, récupérez le texte de l’image avec **Extraire le texte**, puis exportez une copie tout en préservant l’original. Pas envie de boîtes de dialogue ? Choisissez **Presse-papiers et dossier** : chaque capture est copiée et enregistrée en une seule étape.
 
 ![Éditeur de captures d’écran avec annotations](assets/readme/editor.png)
 
 ### 🎬 Enregistrez exactement la bonne vue
 
-Choisissez un écran, une fenêtre ou une zone, puis réglez le son et la qualité avant d’enregistrer.
+Choisissez un écran, une fenêtre ou une zone, puis réglez le son et la qualité avant d’enregistrer. Un écran immobile s’enregistre sans blocage ni fin tronquée.
 
 ![Enregistreur d’écran avec une source sélectionnée](assets/readme/recorder.png)
 
@@ -86,7 +86,7 @@ La page **Diagnostic** vérifie les composants système, les langues OCR Windows
 
 L’enregistrement d’écran, la traduction hors ligne et la suppression d’arrière-plan nécessitent Microsoft Visual C++ x64 Redistributable. L’enregistrement et le montage vidéo utilisent Windows Media Foundation. Les fréquences d’enregistrement jusqu’à 144 IPS sont des objectifs ; les performances réelles dépendent de la source, de l’encodeur et du matériel. Consultez la page [Compatibilité](docs/compatibility.md) pour connaître les limites de capture et la couverture actuelle des tests. Le programme d’installation vérifie le composant Visual C++ et propose la page de téléchargement de Microsoft si nécessaire.
 
-L’application prend en charge **l’anglais, le russe, l’allemand, le français et l’espagnol**, ainsi que les apparences claire, sombre et système. Les outils de texte proposent [20 langues de traduction hors ligne](docs/offline-languages.md) ; anglais–russe est inclus. Les langues Windows compatibles apparaissent en premier. L’OCR utilise les reconnaisseurs installés dans Windows.
+L’application est disponible en **12 langues** (anglais, russe, allemand, français, espagnol, ukrainien, chinois simplifié, portugais, japonais, polonais, turc et italien), ainsi que les apparences claire, sombre et système. Les outils de texte proposent [20 langues de traduction hors ligne](docs/offline-languages.md) ; anglais–russe est inclus. Les langues Windows compatibles apparaissent en premier. L’OCR utilise les reconnaisseurs installés dans Windows.
 
 <details>
 <summary><strong>🛠️ Compiler et contribuer</strong></summary>

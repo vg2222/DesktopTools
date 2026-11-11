@@ -43,13 +43,13 @@ Pin what you use most and find the rest in one place.
 
 ### ✏️ Explain it in a screenshot
 
-Add arrows, shapes and text, then export a copy while preserving your original.
+Add arrows, shapes and text, pull the text out of the picture with **Extract text**, then export a copy while preserving your original. Prefer no dialogs? Choose **Clipboard and folder** and every screenshot is copied and saved in one step.
 
 ![Screenshot editor with annotations](assets/readme/editor.png)
 
 ### 🎬 Record the right view
 
-Choose a monitor, window or region and set the sound and quality before recording.
+Choose a monitor, window or region and set the sound and quality before recording. Still screens record without freezes or a cut-off ending.
 
 ![Screen recorder with a selected source](assets/readme/recorder.png)
 
@@ -87,7 +87,7 @@ Use **Diagnostics** to check native components, Windows OCR languages and shortc
 
 Screen recording, offline translation and image background removal need Microsoft Visual C++ x64 Redistributable; recording also needs Windows Media Foundation. Other image tools and screen OCR remain usable without the Visual C++ runtime. Recording rates up to 144 FPS are targets; actual performance depends on the source, encoder and hardware. See [compatibility](docs/compatibility.md) for capture limitations and current testing coverage. Setup checks the runtime and offers the Microsoft download page when needed.
 
-The app supports **English, Russian, German, French and Spanish**, plus light, dark and system appearance. Text tools offer [20 offline translation languages](docs/offline-languages.md), with English–Russian bundled. Compatible Windows languages appear first; OCR uses the recognizers installed in Windows.
+The app speaks **12 languages** (English, Russian, German, French, Spanish, Ukrainian, Simplified Chinese, Portuguese, Japanese, Polish, Turkish and Italian), plus light, dark and system appearance. Text tools offer [20 offline translation languages](docs/offline-languages.md), with English–Russian bundled. Compatible Windows languages appear first; OCR uses the recognizers installed in Windows.
 
 <details>
 <summary><strong>🛠️ Build and contribute</strong></summary>

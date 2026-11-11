@@ -43,13 +43,13 @@ Hefte deine meistgenutzten Werkzeuge an und finde alle anderen an einem Ort.
 
 ### ✏️ Erkläre es mit einem Screenshot
 
-Füge Pfeile, Formen und Text hinzu und exportiere anschließend eine Kopie, während das Original erhalten bleibt.
+Füge Pfeile, Formen und Text hinzu, hole den Text mit **Text extrahieren** aus dem Bild und exportiere anschließend eine Kopie, während das Original erhalten bleibt. Lieber ohne Dialoge? Mit **Zwischenablage und Ordner** wird jeder Screenshot in einem Schritt kopiert und gespeichert.
 
 ![Screenshot-Editor mit Anmerkungen](assets/readme/editor.png)
 
 ### 🎬 Nimm genau den richtigen Ausschnitt auf
 
-Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualität vor der Aufnahme ein.
+Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualität vor der Aufnahme ein. Ein unbewegter Bildschirm wird ohne Hänger und ohne abgeschnittenes Ende aufgenommen.
 
 ![Bildschirmrekorder mit ausgewählter Quelle](assets/readme/recorder.png)
 
@@ -86,7 +86,7 @@ Unter **Diagnose** kannst du Systemkomponenten, Windows-OCR-Sprachen und Konflik
 
 Für Bildschirmaufnahmen, Offline-Übersetzung und Hintergrundentfernung wird Microsoft Visual C++ x64 Redistributable benötigt. Aufnahme und Videoschnitt verwenden Windows Media Foundation. Aufnahmeraten bis 144 FPS sind Zielwerte; die tatsächliche Leistung hängt von Quelle, Encoder und Hardware ab. Unter [Kompatibilität](docs/compatibility.md) findest du Einschränkungen bei der Aufnahme und den aktuellen Testumfang. Das Setup prüft die Visual-C++-Laufzeit und bietet bei Bedarf die Downloadseite von Microsoft an.
 
-Die App unterstützt **Englisch, Russisch, Deutsch, Französisch und Spanisch** sowie helle, dunkle und systemabhängige Darstellung. Text tools bietet [20 Offline-Übersetzungssprachen](docs/offline-languages.md); Englisch–Russisch ist enthalten. Kompatible Windows-Sprachen stehen zuerst. OCR verwendet die in Windows installierten Erkennungsprogramme.
+Die App spricht **12 Sprachen** (Englisch, Russisch, Deutsch, Französisch, Spanisch, Ukrainisch, vereinfachtes Chinesisch, Portugiesisch, Japanisch, Polnisch, Türkisch und Italienisch) und bietet helle, dunkle und systemabhängige Darstellung. Text tools bietet [20 Offline-Übersetzungssprachen](docs/offline-languages.md); Englisch–Russisch ist enthalten. Kompatible Windows-Sprachen stehen zuerst. OCR verwendet die in Windows installierten Erkennungsprogramme.
 
 <details>
 <summary><strong>🛠️ Bauen und mitwirken</strong></summary>

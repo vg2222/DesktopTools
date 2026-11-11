@@ -43,13 +43,13 @@ Fija las que más usas y encuentra el resto en un solo lugar.
 
 ### ✏️ Explícalo con una captura de pantalla
 
-Añade flechas, formas y texto; después, exporta una copia sin modificar el original.
+Añade flechas, formas y texto, extrae el texto de la imagen con **Extraer texto** y, después, exporta una copia sin modificar el original. ¿Sin cuadros de diálogo? Elige **Portapapeles y carpeta** y cada captura se copia y se guarda en un solo paso.
 
 ![Editor de capturas de pantalla con anotaciones](assets/readme/editor.png)
 
 ### 🎬 Graba la vista adecuada
 
-Elige un monitor, una ventana o una zona y configura el sonido y la calidad antes de grabar.
+Elige un monitor, una ventana o una zona y configura el sonido y la calidad antes de grabar. Una pantalla quieta se graba sin congelaciones ni final cortado.
 
 ![Grabador de pantalla con una fuente seleccionada](assets/readme/recorder.png)
 
@@ -86,7 +86,7 @@ La página **Atajos** muestra todas las asignaciones de funciones. Las asignacio
 
 La grabación de pantalla, la traducción sin conexión y la eliminación de fondos necesitan Microsoft Visual C++ x64 Redistributable. La grabación y edición de vídeo usan Windows Media Foundation. Las frecuencias de grabación de hasta 144 FPS son objetivos; el rendimiento real depende de la fuente, el codificador y el hardware. Consulta la página de [compatibilidad](docs/compatibility.md) para conocer las limitaciones de captura y la cobertura actual de las pruebas. El instalador comprueba el componente Visual C++ y ofrece la página de descarga de Microsoft si es necesario.
 
-La aplicación admite **inglés, ruso, alemán, francés y español**, además de los modos claro, oscuro y del sistema. Las herramientas de texto ofrecen [20 idiomas de traducción sin conexión](docs/offline-languages.md); inglés–ruso está incluido. Los idiomas compatibles de Windows aparecen primero. El OCR utiliza los reconocedores instalados en Windows.
+La aplicación está disponible en **12 idiomas** (inglés, ruso, alemán, francés, español, ucraniano, chino simplificado, portugués, japonés, polaco, turco e italiano), además de los modos claro, oscuro y del sistema. Las herramientas de texto ofrecen [20 idiomas de traducción sin conexión](docs/offline-languages.md); inglés–ruso está incluido. Los idiomas compatibles de Windows aparecen primero. El OCR utiliza los reconocedores instalados en Windows.
 
 <details>
 <summary><strong>🛠️ Compilar y contribuir</strong></summary>

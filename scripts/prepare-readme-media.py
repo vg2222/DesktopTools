@@ -1,6 +1,10 @@
-"""Create rounded README copies; requires Pillow. Originals are never modified."""
+"""Create rounded README screenshots from the gallery; requires Pillow. Originals are never modified.
+
+Run the integration harness with --github-gallery first so the gallery shows the current interface.
+The animated hero has its own script, scripts/make-readme-hero.py.
+"""
 from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw, ImageSequence
+from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "assets/readme"
@@ -28,22 +32,4 @@ for source, name in (
     with Image.open(ROOT / "docs/screenshots/gallery" / source) as image:
         rounded(image).save(OUT / name, optimize=True)
 
-with Image.open(ROOT / "assets/desktop-tools-hero.gif") as source:
-    frames, durations = [], []
-    for frame in ImageSequence.Iterator(source):
-        durations.append(frame.info.get("duration", 100))
-        rgba = rounded(frame)
-        # GIF has binary transparency. Reserve one palette entry for the corners.
-        indexed = rgba.convert("RGB").quantize(colors=255, dither=Image.Dither.NONE)
-        indexed.paste(255, mask=rgba.getchannel("A").point(lambda value: 255 if value < 128 else 0))
-        indexed.info["transparency"] = 255
-        frames.append(indexed)
-    frames[0].save(OUT / "hero.gif", save_all=True, append_images=frames[1:],
-                   duration=durations, loop=source.info.get("loop", 0),
-                   transparency=255, disposal=1, optimize=True)
-    with Image.open(OUT / "hero.gif") as result:
-        actual = [frame.info.get("duration", 100) for frame in ImageSequence.Iterator(result)]
-        if actual != durations or result.size != source.size:
-            raise RuntimeError("GIF timing or dimensions changed")
-    print(f"Hero: {len(frames)} frames, {sum(durations)} ms; dimensions and timing preserved.")
-print("Created three rounded PNGs and one animated GIF in assets/readme.")
+print("Created three rounded PNGs in assets/readme. The animated hero is built by scripts/make-readme-hero.py.")
