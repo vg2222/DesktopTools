@@ -39,6 +39,10 @@ public sealed class AppSettings
     /// <summary>Where optional AI models run. This update supports only "Processor" (spec section 10).</summary>
     public string AiDevice { get; set; } = "Processor";
     public string ScreenTextLanguage { get; set; } = "en-US";
+    /// <summary>Which engine reads screen text: "Windows" (Windows OCR, the default) or "Pack" (the optional OCR pack, spec section 8).</summary>
+    public string OcrEngine { get; set; } = "Windows";
+    /// <summary>The OCR pack script group last chosen: "latin", "cyrillic" or "chinese-japanese"; empty follows the screen text language.</summary>
+    public string OcrPackScript { get; set; } = "";
     /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
     public bool ScreenshotLibraryEnabled { get; set; }
     public int ScreenshotLibraryLimit { get; set; } = 300;

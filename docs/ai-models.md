@@ -28,6 +28,43 @@ DesktopTools 1.4.0 (working name) plans optional model packs that the user downl
 - **Settings → Behavior → Reset all app data** deletes all packs, translation packs and acceptance records with the rest of the app data.
 - Uninstalling with **Delete all DesktopTools data** removes them too; **Keep notes and settings** keeps them.
 
+## OCR pack
+
+The first optional models. They give Text tools, the text view (Scan screen text, Extract text) and the screenshot library a second text reader beside Windows OCR.
+
+| Pack id | Model (PaddlePaddle's own ONNX on Hugging Face) | Size | Needed for |
+|---|---|---|---|
+| `ocr-text-detector` | PP-OCRv5 mobile detector | 4.8 MB | every alphabet |
+| `ocr-latin` | PP-OCRv5 Latin recognizer | 8.0 MB | English and other Latin-alphabet languages |
+| `ocr-cyrillic` | PP-OCRv5 East Slavic recognizer | 7.9 MB | Russian, Ukrainian, Belarusian |
+| `ocr-chinese-japanese` | PP-OCRv5 Chinese/Japanese recognizer | 16.5 MB | Chinese and Japanese, with Latin letters and digits |
+
+- **Choosing it:** Text tools → *Text from screenshot* → **Text reader**: *Windows OCR* (default) or *DesktopTools OCR pack*. With the pack, the language list shows the three alphabets; the one matching the Windows display language is preselected (Russian, Ukrainian and Belarusian → Cyrillic; Chinese and Japanese → Chinese and Japanese; everything else → Latin). Other Cyrillic languages (Bulgarian, Serbian, Macedonian) use letters the East Slavic recognizer does not have, so they are not mapped to it.
+- **Downloading:** **Download** beside the choice asks for consent to each missing pack (the text finder and the chosen alphabet), with the same licence window as Settings → AI models, and only then downloads them. Declining any of them downloads nothing.
+- **Fallback:** while a needed pack is not downloaded or is damaged, text is read with Windows OCR and the result says so. A damaged pack is marked **Damaged** on the AI models page. If neither the pack nor any Windows OCR language is available, nothing is read and the message says why.
+- **How it reads:** the picture is cut into overlapping 1,024-pixel strips for the detector, lines are found (DB post-processing, threshold 0.3, box score 0.6, unclip 1.5), each line is scaled to 48 pixels high and read in batches of eight lines of similar width, then words are put back into reading order. Pictures with a side over 8,192 pixels are refused with a request to crop them to that size; pictures over 48 million pixels, or with more than 10,000 lines, with *Too much text in this picture. Crop it and try again.*
+- **Memory:** the model sessions stay loaded for 60 seconds after the last reading, so repeated scans do not reload them, and are then released. Quit releases them at once; **Remove** releases them, or, if a reading is running, as soon as it finishes.
+- Settings saved: `OcrEngine` (`Windows` or `Pack`) and `OcrPackScript` (`latin`, `cyrillic`, `chinese-japanese`, or empty for the default). An unknown engine value means Windows OCR; an unknown alphabet means the one that matches the Windows display language. Profiles include both.
+
+### Accuracy
+
+`--ocr-bench` (120 generated images, 788 English and Russian phrases, seed 7; mode `pack` reads with the pack directly) on the PC below:
+
+| Reader | Exact phrases | Time for 120 images |
+|---|---|---|
+| Plain Windows OCR (one reading) | 66.8 % | — |
+| Windows OCR with DesktopTools preparation (current default) | 92.6 % | 33 s |
+| DesktopTools OCR pack | **99.2 %** | 48 s (includes model load) |
+
+| Text height | 9 px | 10 px | 11 px | 12 px | 13 px | 14 px | 16 px | 18 px | 22 px | 28 px |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Windows OCR (current) | 76 % | 81 % | 90 % | 99 % | 98 % | 88 % | 94 % | 98 % | 97 % | 97 % |
+| OCR pack | 98 % | 99 % | 100 % | 100 % | 99 % | 100 % | 99 % | 98 % | 99 % | 100 % |
+
+The pack's remaining mistakes are mostly a stray character between words ("Claim n your y reward", "Скачать , сейчас") and single-letter confusions ("joumey", "Cohumn", "Continué"). Chinese and Japanese: only a smoke test (one short line of each read exactly); accuracy **Not tested**. Real screenshots are noisier than these generated images.
+
+Measured on the PC listed under [Feasibility results](#feasibility-results), processor only.
+
 ## Feasibility results
 
 Measured on one PC: Intel Core i5-11600K (6 cores, 12 threads), 16 GB RAM, NVIDIA GeForce RTX 3060 Ti 8 GB (driver 32.0.16.1692), Windows 11 Pro build 26300.9711, .NET SDK 10.0.402, ONNX Runtime 1.31.1 CPU (graphics card runs: ONNX Runtime DirectML 1.24.4). Single observations, not performance guarantees.

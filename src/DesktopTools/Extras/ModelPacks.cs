@@ -194,7 +194,7 @@ internal static class ModelPacks
         if (!InstallGate.Wait(0)) throw new ModelPackException(L.T("Wait for the current download to finish, then try again."));
         try
         {
-            if (AiRuntime.LoadedModelPath is { } loaded && loaded.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) AiRuntime.ReleaseAll();
+            if (AiRuntime.LoadedModelPaths.Any(loaded => loaded.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))) AiRuntime.ReleaseAll();
             if (Directory.Exists(directory))
             {
                 // Rename first so a half-deleted folder never looks like a pack. Once renamed, the pack is gone:

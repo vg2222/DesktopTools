@@ -39,8 +39,9 @@ public sealed partial class TextSelectionView : UserControl
         backButton = Ui.Button(L.T("Back to editing"), () => { Cancel(); backToEditing?.Invoke(); }, true);
         backButton.Content = Ui.IconLabel("Undo", L.T("Back to editing"), primary: true); backButton.Visibility = backToEditing == null ? Visibility.Collapsed : Visibility.Visible;
         toolbar.Children.Add(backButton);
-        var languages = LocalOcr.Languages;
-        languageChoice = new ComboBox { ItemsSource = languages, SelectedItem = LocalOcr.SelectLanguage(languages, languageTag), MinWidth = 190, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
+        // The list follows the engine chosen in Text tools: Windows OCR languages, or the OCR pack's script groups.
+        var languages = LocalOcr.Choices();
+        languageChoice = new ComboBox { ItemsSource = languages, SelectedItem = LocalOcr.SelectChoice(languages, languageTag), MinWidth = 190, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
         System.Windows.Automation.AutomationProperties.SetName(languageChoice, L.T("OCR language"));
         languageChoice.SelectionChanged += async (_, _) => { if (IsLoaded || scan != null || Model != null) await RecognizeAsync(); };
         toolbar.Children.Add(languageChoice);
@@ -104,7 +105,8 @@ public sealed partial class TextSelectionView : UserControl
         scanOverlay.Start(image.PixelWidth, image.PixelHeight, Math.Max(8, Math.Min(image.PixelWidth, image.PixelHeight) * 0.015));
         try
         {
-            var layout = await LocalOcr.RecognizeWordsAsync(image, language.Tag, cts.Token);
+            var reading = await LocalOcr.ReadWordsAsync(image, language.Tag, cts.Token);
+            var layout = reading.Layout;
             cts.Token.ThrowIfCancellationRequested();
             if (scan != cts) return;
             var model = new TextSelectionModel(layout); var links = TextLinkDetector.Find(model);
@@ -112,6 +114,8 @@ public sealed partial class TextSelectionView : UserControl
             status.Text = layout.Words.Count == 0
                 ? L.T("No text found. Try another language or a tighter crop.")
                 : L.F($"{layout.Words.Count} words found") + "   •   " + L.T("Drag to select text · double-click a word · triple-click a line · Ctrl+A selects all");
+            // A missing or damaged OCR pack was replaced by Windows OCR: say so first.
+            if (reading.Notice != null) status.Text = reading.Notice + "   •   " + status.Text;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex) { if (scan == cts) status.Text = L.T("Text recognition unavailable: ") + ex.Message; }

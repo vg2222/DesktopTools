@@ -88,6 +88,8 @@ internal static class Program
         var applied = ProfileStore.ApplyTo(current, teaching);
         Check(applied.StartAtLogin && applied.Theme == "Dark" && !applied.Transparency && applied.SaveDirectory == "C:/keep" && applied.CaptureOutput == "Save" && applied.MonitorMode == "Primary" && applied.PaletteX == -330 && applied.PaletteY == 123, "profile preserves all general and machine settings");
         Check(applied.Thickness == 5 && current.Thickness == 3, "profile applies tool settings without mutating current");
+        var reader = ProfileStore.ApplyTo(new DesktopTools.Core.AppSettings(), new DesktopTools.Core.AppSettings { OcrEngine = "Pack", OcrPackScript = "cyrillic", ScreenTextLanguage = "ru-RU" });
+        Check(reader.OcrEngine == "Pack" && reader.OcrPackScript == "cyrillic" && reader.ScreenTextLanguage == "ru-RU", "profile carries the text reader and its alphabet");
         profiles.Save("My tools", applied);
         applied.ClickColor = "#FF112233"; applied.ClickSize = 88; applied.ShortcutDisplaySeconds = 3; applied.ShortcutAnimations = false; applied.CountdownMinutes = 12; applied.RulerLength = 450;
         profiles.Save("Presentation", applied);

@@ -1,3 +1,4 @@
+using DesktopTools.Core;
 using DesktopTools.Localization;
 using DesktopTools.Native;
 using DesktopTools.UI;
@@ -18,7 +19,11 @@ internal sealed class TextToolsWindow : Window
     private readonly TextBlock status = Ui.Text(L.T("Select text in an app, scan an area, or paste text here."), 12, muted: true);
     private readonly Border activity = new() { Height = 4, CornerRadius = new CornerRadius(2), Opacity = 0, Margin = new Thickness(0, 10, 0, 10) };
     private readonly Button translate, cancel, copy;
-    private readonly ComboBox ocrLanguage;
+    private readonly ComboBox ocrLanguage, ocrEngine;
+    private readonly Button ocrPackDownload;
+    private readonly TextBlock ocrPackStatus = Ui.Text("", 12, muted: true);
+    private readonly ProgressBar ocrPackProgress = new() { Minimum = 0, Maximum = 1, Height = 5, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 6, 0, 0) };
+    private const string WindowsEngine = "Windows OCR", PackEngine = "DesktopTools OCR pack";
     private readonly TranslationLanguagePicker languagePair;
     private readonly Button downloadPack, refreshLanguages;
     private readonly TextBlock packStatus = Ui.Text("", 12, muted: true);
@@ -70,12 +75,26 @@ internal sealed class TextToolsWindow : Window
         packStatus.Margin = new Thickness(0, 0, 12, 0); packRow.Children.Add(packStatus);
         translationSettings.Children.Add(packRow); translationSettings.Children.Add(packProgress);
         directionRow = translationSettings; settings.Children.Add(directionRow);
-        var languages = LocalOcr.Languages;
-        ocrLanguage = new ComboBox { ItemsSource = languages, MinWidth = 180, SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage) };
-        ocrLanguage.SelectionChanged += (_, _) => { if (!synchronizingSettings && ocrLanguage.SelectedItem is OcrLanguage selected) controller.UpdateSettings(s => s.ScreenTextLanguage = selected.Tag); };
+        // Windows OCR stays the default; the optional OCR pack is a second engine (spec section 8). The language list follows the engine.
+        ocrEngine = Ui.Choice([WindowsEngine, PackEngine], controller.Settings.OcrEngine == "Pack" ? PackEngine : WindowsEngine,
+            value => { if (!synchronizingSettings) controller.UpdateSettings(s => s.OcrEngine = value == PackEngine ? "Pack" : "Windows"); });
+        ocrEngine.Tag = "ocr-engine"; ocrEngine.MinWidth = 180;
+        System.Windows.Automation.AutomationProperties.SetName(ocrEngine, L.T("Text reader"));
+        var languages = LocalOcr.Choices();
+        ocrLanguage = new ComboBox { ItemsSource = languages, MinWidth = 180, SelectedItem = LocalOcr.SelectChoice(languages, SavedOcrTag()) };
+        ocrLanguage.SelectionChanged += (_, _) => { if (!synchronizingSettings && ocrLanguage.SelectedItem is OcrLanguage selected) SaveOcrChoice(selected); RefreshOcrPackStatus(); };
         var ocrChoices = new StackPanel { Orientation = Orientation.Horizontal }; ocrChoices.Children.Add(ocrLanguage);
         refreshLanguages = Ui.IconButton("Refresh", L.T("Refresh Windows OCR languages"), RefreshOcrLanguages); ocrChoices.Children.Add(refreshLanguages);
-        languageRow = Ui.Row(L.T("Screen text language"), L.T("Uses installed Windows OCR language packs."), ocrChoices); settings.Children.Add(languageRow);
+        ocrPackDownload = Ui.Button(L.T("Download"), async () => await DownloadOcrPackAsync());
+        ocrPackDownload.Content = Ui.IconLabel("Save", L.T("Download")); ocrPackDownload.Tag = "ocr-pack-download"; ocrPackDownload.Margin = new Thickness(8, 0, 0, 0);
+        ocrChoices.Children.Add(ocrPackDownload);
+        var ocrSettings = new StackPanel();
+        ocrSettings.Children.Add(Ui.Row(L.T("Text reader"), L.T("Windows OCR is built in. The DesktopTools OCR pack is an optional download that reads small text more accurately."), ocrEngine));
+        ocrSettings.Children.Add(Ui.Row(L.T("Screen text language"), L.T("Uses installed Windows OCR language packs, or the OCR pack's alphabets."), ocrChoices));
+        ocrPackStatus.TextWrapping = TextWrapping.Wrap; ocrPackStatus.Tag = "ocr-pack-status"; ocrPackStatus.Margin = new Thickness(0, 0, 0, 8);
+        ocrSettings.Children.Add(ocrPackStatus); ocrSettings.Children.Add(ocrPackProgress);
+        languageRow = ocrSettings; settings.Children.Add(languageRow);
+        RefreshOcrPackStatus();
         DockPanel.SetDock(settings, Dock.Top); root.Children.Add(settings);
         var footer = new StackPanel(); activity.SetResourceReference(Border.BackgroundProperty, "Accent"); footer.Children.Add(activity);
         status.TextWrapping = TextWrapping.Wrap; footer.Children.Add(status);
@@ -144,27 +163,101 @@ internal sealed class TextToolsWindow : Window
             lastDirection = controller.Settings.TranslationDirection; Invalidate();
             languagePair.SetDirection(lastDirection);
         }
-        var language = LocalOcr.Languages.FirstOrDefault(l => l.Tag == controller.Settings.ScreenTextLanguage);
-        if (language != null && !Equals(ocrLanguage.SelectedItem, language))
+        string engine = LocalOcr.PackEngineChosen ? PackEngine : WindowsEngine;
+        if (!Equals(ocrEngine.SelectedItem, engine))
         {
-            operation?.Cancel(); synchronizingSettings = true;
-            try { ocrLanguage.SelectedItem = language; } finally { synchronizingSettings = false; }
+            synchronizingSettings = true;
+            try { ocrEngine.SelectedItem = engine; } finally { synchronizingSettings = false; }
+        }
+        var shown = (ocrLanguage.ItemsSource as IEnumerable<OcrLanguage>)?.ToArray() ?? [];
+        bool packShown = shown.Any(l => OcrPackPipeline.TryParseTag(l.Tag, out _));
+        if (packShown != LocalOcr.PackEngineChosen) { operation?.Cancel(); RefreshOcrLanguages(); }
+        else
+        {
+            var language = shown.FirstOrDefault(l => l.Tag == SavedOcrTag());
+            if (language != null && !Equals(ocrLanguage.SelectedItem, language))
+            {
+                operation?.Cancel(); synchronizingSettings = true;
+                try { ocrLanguage.SelectedItem = language; } finally { synchronizingSettings = false; }
+            }
         }
         RefreshButtons(); UpdateAnimation();
     }
     private void RefreshOcrLanguages()
     {
         if (closed || IsProcessing) return;
-        var languages = LocalOcr.Languages;
+        var languages = LocalOcr.Choices();
         synchronizingSettings = true;
         try
         {
             ocrLanguage.ItemsSource = languages;
-            ocrLanguage.SelectedItem = LocalOcr.SelectLanguage(languages, controller.Settings.ScreenTextLanguage);
+            ocrLanguage.SelectedItem = LocalOcr.SelectChoice(languages, SavedOcrTag());
         }
         finally { synchronizingSettings = false; }
-        if (ocrLanguage.SelectedItem is OcrLanguage selected && controller.Settings.ScreenTextLanguage != selected.Tag)
-            controller.UpdateSettings(s => s.ScreenTextLanguage = selected.Tag);
+        if (ocrLanguage.SelectedItem is OcrLanguage selected) SaveOcrChoice(selected);
+        RefreshOcrPackStatus();
+    }
+    /// <summary>The reading tag the settings point at: the pack's saved script group with the pack engine, else the Windows OCR language.</summary>
+    private string SavedOcrTag() => controller.Settings.OcrEngine == "Pack" && OcrPackPipeline.TryParseKey(controller.Settings.OcrPackScript, out var script)
+        ? OcrPackPipeline.Tag(script) : controller.Settings.ScreenTextLanguage;
+    private void SaveOcrChoice(OcrLanguage selected)
+    {
+        if (OcrPackPipeline.TryParseTag(selected.Tag, out var script))
+        {
+            string key = OcrPackPipeline.Key(script);
+            if (controller.Settings.OcrPackScript != key) controller.UpdateSettings(s => s.OcrPackScript = key);
+        }
+        else if (controller.Settings.ScreenTextLanguage != selected.Tag) controller.UpdateSettings(s => s.ScreenTextLanguage = selected.Tag);
+    }
+    private OcrPackScript? SelectedPackScript => ocrLanguage.SelectedItem is OcrLanguage language && OcrPackPipeline.TryParseTag(language.Tag, out var script) ? script : null;
+    internal string OcrPackStatusText => ocrPackStatus.Text;
+    private void RefreshOcrPackStatus()
+    {
+        if (closed || ocrPackDownload == null) return;
+        var script = SelectedPackScript;
+        var missing = script is { } chosen ? OcrPackEngine.MissingPacks(chosen) : [];
+        ocrPackDownload.Visibility = missing.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ocrPackDownload.IsEnabled = !IsProcessing;
+        refreshLanguages.Visibility = script == null ? Visibility.Visible : Visibility.Collapsed;
+        ocrPackStatus.Visibility = script == null ? Visibility.Collapsed : Visibility.Visible;
+        ocrPackStatus.Text = script == null ? ""
+            : missing.Any(pack => ModelPacks.StateOf(pack) == ModelPackState.Damaged) ? L.T("The OCR pack is damaged. Download it again to use it.")
+            : missing.Count > 0 ? L.F($"Not downloaded yet ({ModelPacks.FormatSize(missing.Sum(pack => pack.TotalBytes))}). Until then, text is read with Windows OCR.")
+            : L.T("OCR pack ready. Text is read on this PC.");
+    }
+    /// <summary>Asks for each missing pack's licence in the consent window (text finder first), then downloads the accepted ones.</summary>
+    private async Task DownloadOcrPackAsync()
+    {
+        if (closed || IsProcessing || SelectedPackScript is not { } script) return;
+        var packs = OcrPackEngine.MissingPacks(script);
+        if (packs.Count == 0) { RefreshOcrPackStatus(); return; }
+        var consents = ModelPacks.Consents();
+        try
+        {
+            foreach (var pack in packs)
+                if (!ModelConsentWindow.Ask(this, pack, consents)) { status.Text = L.T("Download canceled."); return; }
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException) { status.Text = L.T("Could not download the OCR pack: ") + ex.Message; return; }
+        var cancellation = Begin(L.T("Downloading the OCR pack…"), TimeSpan.FromMinutes(30));
+        ocrPackProgress.Visibility = Visibility.Visible; ocrPackProgress.Value = 0;
+        try
+        {
+            for (int i = 0; i < packs.Count; i++)
+            {
+                int index = i;
+                var progress = new Progress<double>(value => { if (!closed && operation == cancellation) ocrPackProgress.Value = (index + value) / packs.Count; });
+                await ModelPacks.InstallAsync(packs[i], consents, progress, cancellation.Token);
+            }
+            if (!closed) status.Text = L.T("OCR pack ready. Text is read on this PC.");
+        }
+        catch (OperationCanceledException) { if (!closed) status.Text = L.T("Download canceled."); }
+        catch (Exception ex) { if (!closed) status.Text = L.T("Could not download the OCR pack: ") + ex.Message; }
+        finally
+        {
+            if (!closed) ocrPackProgress.Visibility = Visibility.Collapsed;
+            End(cancellation);
+            if (!closed) RefreshOcrLanguages();
+        }
     }
     private void RefreshPackStatus()
     {
@@ -234,12 +327,14 @@ internal sealed class TextToolsWindow : Window
         var cancellation = Begin(L.T("Recognizing text…"));
         try
         {
-            string recognized = await LocalOcr.RecognizeAsync(image, language.Tag, cancellation.Token); cancellation.Token.ThrowIfCancellationRequested();
+            var (recognized, notice) = await LocalOcr.ReadTextAsync(image, language.Tag, cancellation.Token); cancellation.Token.ThrowIfCancellationRequested();
             if (recognized.Length > LocalTranslation.MaxCharacters) throw new InvalidOperationException(L.T("Select a smaller text area (up to 4,000 characters)."));
             if (!closed && operation == cancellation)
             {
                 writingSource = true; try { source.Text = recognized; } finally { writingSource = false; }
                 status.Text = string.IsNullOrWhiteSpace(recognized) ? L.T("No text found. Try another language or a tighter crop.") : L.T("Text ready. Review and edit it before copying.");
+                // A missing or damaged OCR pack was replaced by Windows OCR: say so first.
+                if (notice != null) status.Text = notice + " " + status.Text;
             }
         }
         catch (OperationCanceledException) { if (!closed && operation == cancellation) status.Text = L.T("Processing canceled. You can try again."); }
@@ -252,7 +347,17 @@ internal sealed class TextToolsWindow : Window
     }
     private void End(CancellationTokenSource completed)
     {
-        if (operation == completed) { operation = null; if (!closed) { RefreshButtons(); UpdateAnimation(); } }
+        if (operation == completed)
+        {
+            operation = null;
+            if (!closed)
+            {
+                // The engine may have changed while this ran (the list is not rebuilt during an operation).
+                bool packShown = (ocrLanguage.ItemsSource as IEnumerable<OcrLanguage>)?.Any(l => OcrPackPipeline.TryParseTag(l.Tag, out _)) == true;
+                if (packShown != LocalOcr.PackEngineChosen) RefreshOcrLanguages();
+                RefreshButtons(); UpdateAnimation();
+            }
+        }
         completed.Dispose();
     }
     private void RefreshButtons()
@@ -260,7 +365,8 @@ internal sealed class TextToolsWindow : Window
         translate.IsEnabled = !closed && !IsProcessing && controller.Settings.TranslationEnabled && !string.IsNullOrWhiteSpace(source.Text);
         if (translate.IsEnabled) translate.IsEnabled = TranslationPacks.Missing(languagePair.Direction).Count == 0;
         languagePair.IsEnabled = refreshLanguages.IsEnabled = !IsProcessing; RefreshPackStatus();
-        copy.IsEnabled = !IsProcessing && !string.IsNullOrWhiteSpace(ocrMode ? source.Text : output.Text); cancel.Visibility = IsProcessing ? Visibility.Visible : Visibility.Collapsed; ocrLanguage.IsEnabled = !IsProcessing;
+        copy.IsEnabled = !IsProcessing && !string.IsNullOrWhiteSpace(ocrMode ? source.Text : output.Text); cancel.Visibility = IsProcessing ? Visibility.Visible : Visibility.Collapsed; ocrLanguage.IsEnabled = ocrEngine.IsEnabled = !IsProcessing;
+        if (ocrPackDownload != null) ocrPackDownload.IsEnabled = !IsProcessing;
     }
     private IReadOnlyList<string> RefreshRuntimeWarning()
     {

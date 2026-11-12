@@ -18,7 +18,7 @@ internal sealed partial class AppController
         CaptureHistory.Add(image);
         if (!Settings.ScreenshotLibraryEnabled) return;
         string? language = null;
-        try { language = LocalOcr.SelectLanguage(LocalOcr.Languages, Settings.ScreenTextLanguage)?.Tag; } catch (Exception) { }
+        try { language = LocalOcr.DefaultTag(); } catch (Exception) { }
         _ = Library.AddAsync(image, language, Settings.ScreenshotLibraryLimit);
     }
 

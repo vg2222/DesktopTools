@@ -250,6 +250,16 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] A downloaded translation pack appears under **Translation packs**; Remove deletes it and Text tools offers it again.
 - [ ] Update or repair the app with packs installed: they stay installed. Export settings: the zip has no `Models` entries. Reset all app data: the `Models` folder is gone.
 
+### OCR pack (1.4.0)
+
+- [ ] Text tools → Text from screenshot → **Text reader** shows Windows OCR (default) and DesktopTools OCR pack. Choosing the pack lists Latin alphabet, Cyrillic, Chinese and Japanese; the one for the Windows display language is preselected; the status line says what is missing and **Download** is shown. Check English and one other language, light and dark, 100 % and 200 %.
+- [ ] **Download** with the network off: the consent window opens for the text finder, then for the alphabet; after accepting, a clear error names the host and nothing is installed. Decline the second window: nothing is downloaded. With the network on: both packs download with the progress bar, the status reads *OCR pack ready*, and Settings → AI models lists both as installed.
+- [ ] With the pack chosen and installed, Scan screen text over small (9–11 px) UI text on a secondary monitor, select words and copy: the text matches the screen; repeat in Extract text (screenshot editor, Image tools) and the library's text search for a new screenshot.
+- [ ] Choose the pack but leave an alphabet not downloaded: scanning works with Windows OCR and says the pack for that alphabet is not downloaded. Damage the chosen recognizer (change one byte of `inference.onnx` or `inference.yml`): the scan falls back with the damaged notice, and the AI models page shows **Damaged** with **Download again**.
+- [ ] Remove a pack on the AI models page while a scan with it is running: the scan finishes or reports a clear error, nothing crashes, and the next scan falls back to Windows OCR with the not-downloaded notice.
+- [ ] Switch the reader back to Windows OCR: the Windows language list returns, the saved Windows language is kept, and scans no longer load the pack (memory drops back within about a minute after the last pack scan).
+- [ ] Chinese and Japanese: scan a real Chinese and a real Japanese page and have someone who reads them judge the result (accuracy is **Not tested** by the automated checks).
+
 ## Smart file names and hidden file details (1.4.0)
 
 - [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.

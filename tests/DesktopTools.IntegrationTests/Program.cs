@@ -135,6 +135,8 @@ internal static class Program
                 else if (args.Contains("--model-consent-ui-only")) await Test("Model licence and consent window in every language and theme", ModelConsentUiChecks.RunAsync);
                 else if (args.Contains("--ai-runtime-only")) await Test("Shared model session runtime: checksum, reuse, idle release and serialization", AiRuntimeChecks.RunAsync);
                 else if (args.Contains("--model-packs-only")) await Test("Model pack download, verification, damage and removal", ModelPackChecks.RunAsync);
+                else if (args.Contains("--ocr-pack-preview")) await Test("OCR pack manual preview in Text tools", OcrPackChecks.PreviewAsync);
+                else if (args.Contains("--ocr-pack-only")) await Test("OCR pack: engine choice, fallback to Windows OCR, and reading with the real pack when its files are present", () => OcrPackChecks.RunAsync(Results.Add));
                 else if (args.Contains("--offline-packs-only")) await Test("Offline model downloads, pivot translation, integrity and Windows OCR language matching", OfflineLanguageChecks.RunAsync);
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);
                 else if (args.Contains("--toggles-only")) await Test("Switch animations survive Home, utility and aid updates", ToggleAnimationChecks.RunAsync);

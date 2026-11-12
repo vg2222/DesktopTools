@@ -16,6 +16,9 @@ public sealed record OcrLanguage(string Tag, string Name)
     public override string ToString() => Name;
 }
 
+/// <summary>A reading with its word boxes, and a message for the person when the chosen engine could not be used (null otherwise).</summary>
+public sealed record OcrReading(OcrLayout Layout, string? Notice);
+
 /// <summary>How a tile is magnified before the engine reads it. Legacy is WPF's own scaler (the one sensitive-data detection was tuned on).</summary>
 internal enum ReadScaler { Legacy, HighQuality, Linear, Fant, Nearest }
 
@@ -23,6 +26,85 @@ public static class LocalOcr
 {
     public static IReadOnlyList<OcrLanguage> Languages => OcrEngine.AvailableRecognizerLanguages
         .Select(l => new OcrLanguage(l.LanguageTag, l.DisplayName)).OrderBy(l => l.Name, StringComparer.CurrentCulture).ToArray();
+
+    /// <summary>
+    /// The engine settings that Scan screen text, Extract text and the screenshot library read with (spec section 8), kept in step with
+    /// <see cref="AppSettings"/> by the controller: engine "Windows" or "Pack", the pack script group key, and the Windows OCR language.
+    /// </summary>
+    internal static (string Engine, string PackScript, string WindowsTag) Preference { get; set; } = ("Windows", "", "en-US");
+
+    internal static void ApplySettings(AppSettings settings) => Preference = (settings.OcrEngine, settings.OcrPackScript, settings.ScreenTextLanguage);
+
+    internal static bool PackEngineChosen => Preference.Engine == "Pack";
+
+    internal static string ScriptName(OcrPackScript script) => script switch
+    {
+        OcrPackScript.Cyrillic => L.T("Cyrillic"), OcrPackScript.ChineseJapanese => L.T("Chinese and Japanese"), _ => L.T("Latin alphabet")
+    };
+
+    /// <summary>What the language list offers: the pack's three script groups when the pack engine is chosen (marked when not downloaded), otherwise the Windows OCR languages.</summary>
+    public static IReadOnlyList<OcrLanguage> Choices()
+    {
+        if (!PackEngineChosen) return Languages;
+        return Enum.GetValues<OcrPackScript>().Select(script => new OcrLanguage(OcrPackPipeline.Tag(script),
+            OcrPackEngine.IsInstalled(script) ? ScriptName(script) : L.F($"{ScriptName(script)} (not downloaded)"))).ToArray();
+    }
+
+    /// <summary>The choice to preselect: a saved tag when it is listed; for the pack, the saved script group or the one that fits the Windows language.</summary>
+    public static OcrLanguage? SelectChoice(IReadOnlyList<OcrLanguage> choices, string? savedTag)
+    {
+        if (!choices.Any(choice => OcrPackPipeline.TryParseTag(choice.Tag, out _))) return SelectLanguage(choices, savedTag);
+        var exact = choices.FirstOrDefault(choice => choice.Tag == savedTag);
+        if (exact != null) return exact;
+        var script = OcrPackPipeline.TryParseKey(Preference.PackScript, out var saved) ? saved : OcrPackPipeline.ScriptForLanguage(Preference.WindowsTag);
+        return choices.FirstOrDefault(choice => choice.Tag == OcrPackPipeline.Tag(script)) ?? choices.FirstOrDefault();
+    }
+
+    /// <summary>The reading tag background readers (the screenshot library) use, or null when nothing can read.</summary>
+    public static string? DefaultTag() => PackEngineChosen ? SelectChoice(Choices(), null)?.Tag : SelectLanguage(Languages, Preference.WindowsTag)?.Tag;
+
+    /// <summary>The Windows OCR language used in place of a pack script group: one of the same alphabet, the saved one first.</summary>
+    internal static OcrLanguage? WindowsLanguageFor(OcrPackScript script, IReadOnlyList<OcrLanguage> languages, string? savedTag)
+    {
+        var sameScript = languages.Where(language => OcrPackPipeline.ScriptForLanguage(language.Tag) == script).ToArray();
+        return sameScript.Length > 0 ? SelectLanguage(sameScript, savedTag) : SelectLanguage(languages, savedTag);
+    }
+
+    /// <summary>
+    /// Reads words with the engine the tag names: a Windows language tag uses Windows OCR as before; a <c>pack:</c> tag uses the OCR pack, and when
+    /// that pack is missing or damaged the picture is read with Windows OCR instead and <see cref="OcrReading.Notice"/> says why.
+    /// </summary>
+    public static async Task<OcrReading> ReadWordsAsync(BitmapSource image, string tag, CancellationToken cancellationToken = default)
+    {
+        if (!OcrPackPipeline.TryParseTag(tag, out var script)) return new(await RecognizeWordsAsync(image, tag, cancellationToken), null);
+        try { return new(await OcrPackEngine.RecognizeWordsAsync(image, script, cancellationToken), null); }
+        catch (OcrPackUnavailableException e)
+        {
+            var (language, notice) = Fallback(script, e);
+            return new(await RecognizeWordsAsync(image, language.Tag, cancellationToken), notice);
+        }
+    }
+
+    /// <summary>The text of a picture, by the same engine choice and fallback as <see cref="ReadWordsAsync"/>.</summary>
+    public static async Task<(string Text, string? Notice)> ReadTextAsync(BitmapSource image, string tag, CancellationToken cancellationToken = default)
+    {
+        if (!OcrPackPipeline.TryParseTag(tag, out var script)) return (await RecognizeAsync(image, tag, cancellationToken), null);
+        try { return (OcrEnhancer.Compose(OcrEnhancer.Lines(await OcrPackEngine.RecognizeWordsAsync(image, script, cancellationToken))), null); }
+        catch (OcrPackUnavailableException e)
+        {
+            var (language, notice) = Fallback(script, e);
+            return (await RecognizeAsync(image, language.Tag, cancellationToken), notice);
+        }
+    }
+
+    private static (OcrLanguage Language, string Notice) Fallback(OcrPackScript script, OcrPackUnavailableException error)
+    {
+        var language = WindowsLanguageFor(script, Languages, Preference.WindowsTag)
+            ?? throw new InvalidOperationException(L.T("The OCR pack is not available and no Windows OCR language is installed.") + " " + error.Message);
+        return (language, error.Damaged
+            ? L.T("The OCR pack is damaged. Download it again on the AI models page. The text was read with Windows OCR.")
+            : L.F($"The OCR pack for {ScriptName(script)} is not downloaded. The text was read with Windows OCR."));
+    }
 
     internal static OcrLanguage? SelectLanguage(IReadOnlyList<OcrLanguage> languages, string? savedTag)
     {

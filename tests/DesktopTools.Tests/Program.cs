@@ -209,6 +209,7 @@ internal static class Program
         Test("Model catalog parses and rejects unsafe entries", ModelCatalogTests.Run);
         Test("Model consent records persist, expire on change and recover", ModelConsentTests.Run);
         Test("Smart file names stay valid, drop sensitive parts and never overwrite", SmartFileNamesTests.Run);
+        Test("OCR pack pipeline, catalog entries and engine settings", OcrPackPipelineTests.Run);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 

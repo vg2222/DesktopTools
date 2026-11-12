@@ -194,7 +194,7 @@ internal sealed partial class AppController : IDisposable
         this.smoke = smoke; AppCapturePrivacy.Initialize();
         RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
-        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool;
+        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings);
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)
         { IsAvailable = id => FeatureAvailability.IsAvailable(Settings, id) };
         Hud.Changed += UpdateEscape;
@@ -345,6 +345,7 @@ internal sealed partial class AppController : IDisposable
                 string mode = presentationMode; StopPresentation(); TogglePresentation(mode);
             }
             if (!Settings.FreezeEnabled && frozenFrame != null) { frozenFrame = null; overlay?.SetFrozen(null); }
+            LocalOcr.ApplySettings(Settings);
             SettingsChanged?.Invoke();
             if (Palette != null) Palette.Refresh(); return true;
         }

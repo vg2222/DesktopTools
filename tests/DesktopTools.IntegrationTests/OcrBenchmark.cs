@@ -148,6 +148,9 @@ internal static class OcrBenchmark
     {
         if (name == "single") return (image, tag) => LocalOcr.RecognizeSinglePassAsync(image, tag);
         if (name == "current") return (image, tag) => LocalOcr.RecognizeAsync(image, tag);
+        // The optional OCR pack, called directly so a missing pack fails instead of falling back to Windows OCR.
+        if (name == "pack") return async (image, tag) => OcrEnhancer.Compose(OcrEnhancer.Lines(
+            await OcrPackEngine.RecognizeWordsAsync(image, DesktopTools.Core.OcrPackPipeline.ScriptForLanguage(tag), System.Threading.CancellationToken.None)));
         if (name.StartsWith("v:"))   // v:<plain|ink|gray>:<scale>:<hq|linear|nearest|fant|legacy>
         {
             var p = name.Split(':');
@@ -165,6 +168,15 @@ internal static class OcrBenchmark
         var english = LocalOcr.SelectLanguage(languages, "en-US") ?? throw new Exception("No English OCR language installed");
         var russian = languages.FirstOrDefault(l => l.Tag.StartsWith("ru", StringComparison.OrdinalIgnoreCase));
         var samples = Build(images, seed);
+        string? packRoot = null; IDisposable? packs = null;
+        if (modes.Contains("pack"))
+        {
+            packRoot = Path.GetFullPath("ocr-bench-packs-" + Guid.NewGuid().ToString("N"));
+            if (!OcrPackChecks.InstallDevPacks(packRoot)) throw new Exception($"NOT TESTED: the pack mode needs the model files in {OcrPackChecks.Source}");
+            packs = ModelPacks.UseForTests(ModelPacks.Catalog, packRoot, OcrPackChecks.NoNetwork());
+        }
+        try
+        {
         Console.WriteLine($"Benchmark: {samples.Count} images, {samples.Sum(x => x.Lines.Length)} phrases, seed {seed}, language {english.Name}");
         string folder = Path.Combine(Environment.CurrentDirectory, "ocr-bench"); Directory.CreateDirectory(folder);
         var report = new System.Text.StringBuilder();
@@ -216,5 +228,11 @@ internal static class OcrBenchmark
         }
         Console.WriteLine(report.ToString());
         File.WriteAllText(Path.Combine(folder, "report.txt"), report.ToString());
+        }
+        finally
+        {
+            packs?.Dispose(); AiRuntime.ReleaseAll();
+            if (packRoot != null) try { Directory.Delete(packRoot, true); } catch (IOException) { }
+        }
     }
 }

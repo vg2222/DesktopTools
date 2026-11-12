@@ -1,1 +1,128 @@
-[]
+[
+  {
+    "id": "ocr-text-detector",
+    "name": "OCR pack: text finder",
+    "purpose": "Finds the lines of text in a picture. Every OCR pack language needs it.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx",
+    "revision": "e6f4fa85f00e168c862bc462aebca69eef9b3d3d",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Finds horizontal lines of text. Very small, faint or decorative text can be missed.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx/resolve/e6f4fa85f00e168c862bc462aebca69eef9b3d3d/inference.onnx",
+        "sha256": "a431985659dc921974177a95adcfbb90fd9e51989a5e04d70d0b75f597b6e61d",
+        "bytes": 4826518
+      }
+    ]
+  },
+  {
+    "id": "ocr-latin",
+    "name": "OCR pack: Latin alphabet",
+    "purpose": "Reads English and other languages written in the Latin alphabet.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx",
+    "revision": "89d3a50e2c27e2e7cceeab0e944c25c807d5db4f",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx/resolve/89d3a50e2c27e2e7cceeab0e944c25c807d5db4f/inference.onnx",
+        "sha256": "7888113072263cb471b93f66dd5e2ad70548dc526fa1ace760d0d973dd121498",
+        "bytes": 8042023
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx/resolve/89d3a50e2c27e2e7cceeab0e944c25c807d5db4f/inference.yml",
+        "sha256": "0bbe984570f597af3638e50bdf2e8276f3ab26a61966096538b3b0d1849f5c84",
+        "bytes": 6817
+      }
+    ]
+  },
+  {
+    "id": "ocr-cyrillic",
+    "name": "OCR pack: Cyrillic",
+    "purpose": "Reads Russian, Ukrainian and Belarusian text.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx",
+    "revision": "9a32171fc5718746875e1a261818884517975013",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx/resolve/9a32171fc5718746875e1a261818884517975013/inference.onnx",
+        "sha256": "b3018ef2b09a0250b6e0c8e871c927098363e5fd4df890cc68e8358eb0aaf1bd",
+        "bytes": 7887627
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx/resolve/9a32171fc5718746875e1a261818884517975013/inference.yml",
+        "sha256": "025039bac23eb4a308efcefa4d58eab3af440767815c6ba6938468bf6353ee5a",
+        "bytes": 4538
+      }
+    ]
+  },
+  {
+    "id": "ocr-chinese-japanese",
+    "name": "OCR pack: Chinese and Japanese",
+    "purpose": "Reads Chinese and Japanese text, with Latin letters and digits mixed in.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx",
+    "revision": "ed152b8b495f84de93cda5709d768548a9127622",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "DesktopTools has not measured its accuracy on Chinese or Japanese text.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx/resolve/ed152b8b495f84de93cda5709d768548a9127622/inference.onnx",
+        "sha256": "da72dc72ca4dc220df0dfde68c1dedc31c58d3e76a25871122e5056227d50092",
+        "bytes": 16534782
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx/resolve/ed152b8b495f84de93cda5709d768548a9127622/inference.yml",
+        "sha256": "5dfeb2777f6d0db8177d8128a8acfcf6e6276dc4ac73ea3bf0dc06d6a5e85d8e",
+        "bytes": 148345
+      }
+    ]
+  }
+]

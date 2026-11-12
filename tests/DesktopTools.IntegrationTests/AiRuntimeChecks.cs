@@ -88,6 +88,33 @@ internal static class AiRuntimeChecks
             Check(thrown is InvalidOperationException, "Caller exception was not passed through");
             Check(await AiRuntime.RunAsync(model, U2NetPHash, _ => 7, CancellationToken.None) == 7, "Runtime unusable after a caller exception");
 
+            // A set of models (the OCR pack's detector and recognizer) loads and is reused as one unit.
+            string root = Path.GetFullPath("ai-runtime-set-" + Guid.NewGuid().ToString("N"));
+            string packFolder = Path.Combine(root, "set-pack");
+            Directory.CreateDirectory(packFolder);
+            string one = Path.Combine(packFolder, "one.onnx"), two = Path.Combine(packFolder, "two.onnx");
+            File.Copy(model, one); File.Copy(model, two);
+            try
+            {
+                var set = new[] { (one, U2NetPHash), (two, U2NetPHash) };
+                var sessions = await AiRuntime.RunAsync(set, loaded => loaded.ToArray(), CancellationToken.None);
+                Check(sessions.Length == 2 && !ReferenceEquals(sessions[0], sessions[1]), "Set did not load two sessions");
+                Check(AiRuntime.LoadedModelPaths.SequenceEqual([one, two]), "Loaded paths: " + string.Join(", ", AiRuntime.LoadedModelPaths));
+                var again = await AiRuntime.RunAsync(set, loaded => loaded.ToArray(), CancellationToken.None);
+                Check(ReferenceEquals(again[0], sessions[0]) && ReferenceEquals(again[1], sessions[1]), "Same set was not reused");
+                // One wrong hash in a set: the damaged file is named and nothing stays loaded.
+                AiRuntime.ReleaseAll();
+                var damaged = await Fails(AiRuntime.RunAsync(new[] { (one, U2NetPHash), (two, new string('0', 64)) }, _ => 0, CancellationToken.None));
+                Check(damaged is InvalidDataException && AiRuntime.DamagedPath(damaged) == two && AiRuntime.LoadedModelPaths.Count == 0, "Damaged file in a set: " + damaged);
+                // Removing a pack whose folder holds a loaded file releases the set first, so the folder can be deleted.
+                await AiRuntime.RunAsync(set, _ => 0, CancellationToken.None);
+                var pack = new DesktopTools.Core.ModelPack("set-pack", "n", "p", "f", "pub", "a", "https://huggingface.co/x/y", "r1", "mit", "MIT.txt", "a", "t", ["l"],
+                    [new("one.onnx", "https://huggingface.co/x/y/resolve/r1/one.onnx", U2NetPHash, new FileInfo(one).Length)]);
+                ModelPacks.Remove(pack, new DesktopTools.Core.ModelConsentStore(root), root);
+                Check(AiRuntime.LoadedModelPaths.Count == 0 && !Directory.Exists(packFolder), "Remove did not release the loaded set");
+            }
+            finally { AiRuntime.ReleaseAll(); if (Directory.Exists(root)) Directory.Delete(root, true); }
+
             AiRuntime.ReleaseAll();
             Check(AiRuntime.LoadedModelPath == null, "ReleaseAll left a session");
             File.Delete(copy); // nothing holds the file after release

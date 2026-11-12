@@ -65,7 +65,12 @@ Optional AI models are **not distributed with DesktopTools** and are not covered
 
 | Model | Publisher and source | Revision | Licence | Used by |
 |---|---|---|---|---|
-| *None yet. Each feature that adds a catalog entry adds its row here.* | | | | |
+| PP-OCRv5 mobile text detector (`ocr-text-detector`) | PaddlePaddle, [PP-OCRv5_mobile_det_onnx](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx); model from [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | `e6f4fa85f00e168c862bc462aebca69eef9b3d3d` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
+| PP-OCRv5 mobile Latin recognizer (`ocr-latin`) | PaddlePaddle, [latin_PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx) | `89d3a50e2c27e2e7cceeab0e944c25c807d5db4f` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
+| PP-OCRv5 mobile East Slavic recognizer (`ocr-cyrillic`) | PaddlePaddle, [eslav_PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx) | `9a32171fc5718746875e1a261818884517975013` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
+| PP-OCRv5 mobile Chinese/Japanese recognizer (`ocr-chinese-japanese`) | PaddlePaddle, [PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx) | `ed152b8b495f84de93cda5709d768548a9127622` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
+
+The OCR pack repositories carry no licence file of their own; their model cards state Apache-2.0, as does PaddleOCR. The app shows and stores the bundled `Assets/Models/Licenses/Apache-2.0.txt` for them.
 
 # Microsoft Fluent System Icons
 

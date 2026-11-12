@@ -14,8 +14,8 @@ internal static class AiRuntime
 {
     private static readonly SemaphoreSlim gate = new(1, 1);
     private static readonly object timerLock = new();
-    private static InferenceSession? session;
-    private static string? loadedPath;
+    private static InferenceSession[]? sessions;
+    private static string[] loadedPaths = [];
     private static DateTime lastUse;
     private static Timer? idleTimer;
     private static volatile bool releaseRequested;
@@ -24,30 +24,52 @@ internal static class AiRuntime
     internal static Func<DateTime> Clock { get; set; } = () => DateTime.UtcNow;
     /// <summary>The device sessions are created on. The AiDevice setting has one value, "Processor", in this update.</summary>
     internal static string Device => "Processor";
-    internal static string? LoadedModelPath => loadedPath;
+    /// <summary>The first loaded model file, or null.</summary>
+    internal static string? LoadedModelPath => loadedPaths.Length > 0 ? loadedPaths[0] : null;
+    /// <summary>Every model file of the loaded set (one file for most features; the OCR pack loads its detector and a recognizer together).</summary>
+    internal static IReadOnlyList<string> LoadedModelPaths => loadedPaths;
 
     /// <summary>Loads (or reuses) the session for this file after verifying its SHA-256. One model is loaded at a time; callers are serialized.</summary>
-    internal static async Task<T> RunAsync<T>(string modelPath, string sha256, Func<InferenceSession, T> use, CancellationToken token)
+    internal static Task<T> RunAsync<T>(string modelPath, string sha256, Func<InferenceSession, T> use, CancellationToken token) =>
+        RunAsync([(modelPath, sha256)], loaded => use(loaded[0]), token);
+
+    /// <summary>
+    /// Loads (or reuses) one session per file, as one unit, after verifying every SHA-256. One set is loaded at a time and replaces any other;
+    /// callers are serialized. A file that fails its check throws <see cref="InvalidDataException"/> whose <see cref="DamagedPath"/> names it, and nothing stays loaded.
+    /// </summary>
+    internal static async Task<T> RunAsync<T>(IReadOnlyList<(string Path, string Sha256)> models, Func<IReadOnlyList<InferenceSession>, T> use, CancellationToken token)
     {
-        string path = Path.GetFullPath(modelPath);
+        if (models.Count == 0) throw new ArgumentException("No model files given.", nameof(models));
+        string[] paths = models.Select(model => Path.GetFullPath(model.Path)).ToArray();
         await gate.WaitAsync(token);
         try
         {
             return await Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
-                if (session == null || !string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase))
+                if (sessions == null || !paths.SequenceEqual(loadedPaths, StringComparer.OrdinalIgnoreCase))
                 {
                     ReleaseLocked();
-                    Verify(path, sha256, token);
-                    using var options = Options();
-                    var created = new InferenceSession(path, options);
-                    if (token.IsCancellationRequested) { created.Dispose(); token.ThrowIfCancellationRequested(); }
-                    session = created; loadedPath = path;
+                    for (int i = 0; i < paths.Length; i++)
+                        try { Verify(paths[i], models[i].Sha256, token); }
+                        catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, paths[i]); throw; }
+                    var created = new List<InferenceSession>();
+                    try
+                    {
+                        foreach (string path in paths)
+                        {
+                            using var options = Options();
+                            try { created.Add(new InferenceSession(path, options)); }
+                            catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, path); throw; }
+                            token.ThrowIfCancellationRequested();
+                        }
+                    }
+                    catch { foreach (var item in created) item.Dispose(); throw; }
+                    sessions = created.ToArray(); loadedPaths = paths;
                     StartTimer();
                 }
                 lastUse = Clock();
-                try { return use(session); }
+                try { return use(sessions); }
                 finally { lastUse = Clock(); }
             }, token);
         }
@@ -58,11 +80,19 @@ internal static class AiRuntime
         }
     }
 
+    private const string DamagedPathKey = "DesktopTools.ModelPath";
+    /// <summary>The full path of the model file that failed its SHA-256 check, when <paramref name="error"/> is that failure.</summary>
+    internal static string? DamagedPath(Exception error) => error is InvalidDataException && error.Data[DamagedPathKey] is string path ? path : null;
+    private const string FailedPathKey = "DesktopTools.FailedModelPath";
+    /// <summary>The full path of the model file whose check or loading threw <paramref name="error"/>; null for errors while a loaded model runs.</summary>
+    internal static string? FailedPath(Exception error) => error.Data[FailedPathKey] as string;
+    private static void NoteFailedPath(Exception error, string path) { try { error.Data[FailedPathKey] = path; } catch (Exception) { } }
+
     /// <summary>Releases the session when it has not been used for <see cref="IdleRelease"/>. Never waits for a running call.</summary>
     internal static void ReleaseIdle()
     {
         if (!gate.Wait(0)) return;
-        try { if (session != null && Clock() - lastUse >= IdleRelease) ReleaseLocked(); }
+        try { if (sessions != null && Clock() - lastUse >= IdleRelease) ReleaseLocked(); }
         finally { gate.Release(); }
     }
 
@@ -80,8 +110,8 @@ internal static class AiRuntime
     private static void ReleaseLocked()
     {
         releaseRequested = false;
-        var old = session; session = null; loadedPath = null;
-        old?.Dispose();
+        var old = sessions; sessions = null; loadedPaths = [];
+        if (old != null) foreach (var item in old) item.Dispose();
         lock (timerLock) { idleTimer?.Dispose(); idleTimer = null; }
     }
 
@@ -103,7 +133,7 @@ internal static class AiRuntime
         byte[] buffer = new byte[1 << 20]; int read;
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0) { token.ThrowIfCancellationRequested(); hash.AppendData(buffer, 0, read); }
         if (!Convert.ToHexString(hash.GetHashAndReset()).Equals(sha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException(L.T("A model file is damaged. Download the model again on the AI models page."));
+            throw new InvalidDataException(L.T("A model file is damaged. Download the model again on the AI models page.")) { Data = { [DamagedPathKey] = path } };
     }
 
     private static SessionOptions Options()

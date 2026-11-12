@@ -39,7 +39,7 @@ internal sealed class ScreenshotLibrary
                 if (!string.IsNullOrEmpty(ocrLanguageTag))
                 {
                     // A screenshot without readable text, or a machine without an OCR language, is still kept; it just has nothing to search.
-                    try { text = (await LocalOcr.RecognizeAsync(frozen, ocrLanguageTag).ConfigureAwait(false)).Trim(); }
+                    try { text = (await LocalOcr.ReadTextAsync(frozen, ocrLanguageTag).ConfigureAwait(false)).Text.Trim(); }
                     catch (Exception ex) when (ex is not OutOfMemoryException) { text = ""; }
                 }
                 Index.Add(new LibraryEntry(id, DateTimeOffset.Now, frozen.PixelWidth, frozen.PixelHeight, text.Length > 20000 ? text[..20000] : text), limit);

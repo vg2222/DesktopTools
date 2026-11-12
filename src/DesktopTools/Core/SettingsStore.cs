@@ -136,6 +136,8 @@ public sealed class SettingsStore
         s.PrimaryColor = ValidColor(s.PrimaryColor, "#2563EB"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
         s.Theme = Known(s.Theme, "System", "Light", "Dark");
         s.AiDevice = Known(s.AiDevice, "Processor");
+        s.OcrEngine = Known(s.OcrEngine, "Windows", "Pack");
+        s.OcrPackScript = Known(s.OcrPackScript, "", "latin", "cyrillic", "chinese-japanese");
         s.MonitorMode = Known(s.MonitorMode, "Cursor", "Primary");
         s.LaserMonitorMode = Known(s.LaserMonitorMode, "All", "Selected");
         s.SpotlightMonitorMode = Known(s.SpotlightMonitorMode, "All", "Selected");
