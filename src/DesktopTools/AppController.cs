@@ -79,8 +79,13 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }
         Application.Current.Shutdown();
     }
-    private Task PrepareForShutdownAsync()
-        => utilityWindows.TryGetValue("Recorder", out var window) ? ((ScreenRecorderWindow)window).StopAsync() : Task.CompletedTask;
+    private async Task PrepareForShutdownAsync()
+    {
+        if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
+        // A reset or import deletes or replaces app data; a model or translation download must have closed its files first.
+        if (!await ModelPacks.StopDownloadsAsync(TimeSpan.FromSeconds(10)))
+            throw new InvalidOperationException(L.T("Wait for the current download to finish, then try again."));
+    }
     internal RecordingMarkerStore RecordingMarkers { get; }
     public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
     internal async void OpenVideoEditorAt(string path, TimeSpan position)
@@ -888,6 +893,7 @@ internal sealed partial class AppController : IDisposable
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         automation?.Dispose();
+        AiRuntime.ReleaseAll();
         StopUpdateChecks();
         trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
     }

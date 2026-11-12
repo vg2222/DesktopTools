@@ -59,6 +59,14 @@ ScreenRecorderLib 7.0.1 — Copyright (c) 2017 Sverre Skodje, MIT. Source: https
 
 SkiaSharp 4.155.0 — Copyright (c) 2015-2016 Xamarin, Inc.; (c) 2017-2018 Microsoft Corporation, MIT. Source: https://github.com/mono/SkiaSharp . Full license: docs/licenses/SkiaSharp-LICENSE.txt. Its native library bundles Skia (BSD-3-Clause) and libwebp (BSD-3-Clause); it is used only to encode the frames of animated WebP files exported from the video editor. The GIF encoder is original code.
 
+## Optional models
+
+Optional AI models are **not distributed with DesktopTools** and are not covered by its MIT license. When a user chooses Download on Settings → AI models, the app shows the model's licence, and only after the user accepts it downloads the files directly from the model's publisher at a pinned revision, checked against SHA-256 checksums in the app's built-in catalog (`Assets/Models/catalog.json`). Each model stays under its own licence; DesktopTools keeps a copy of that licence, an attribution and the source address in the model's folder. The licence texts the catalog can refer to are bundled in `Assets/Models/Licenses/`. These models are not part of DesktopTools and were not created, trained or owned by the DesktopTools project. See [docs/ai-models.md](docs/ai-models.md).
+
+| Model | Publisher and source | Revision | Licence | Used by |
+|---|---|---|---|---|
+| *None yet. Each feature that adds a catalog entry adds its row here.* | | | | |
+
 # Microsoft Fluent System Icons
 
 UI icons and the application-grid icon are from Microsoft Fluent System Icons 1.1.341, licensed under MIT. Original SVGs, attribution and the full license are in `src/DesktopTools/Assets/Icons`. The application ICO is a rasterization of the original color SVG.

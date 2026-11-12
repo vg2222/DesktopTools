@@ -21,7 +21,8 @@ internal sealed partial class MainWindow
             ("Profiles", "Profiles"), ("Save as a new profile", "Save"), ("Drawing defaults", "Pen"),
             ("Drawing controls", "Pen"), ("Capture behavior", "Capture"), ("Latest screenshot", "Image"),
             ("Capture again", "Capture"), ("Recent screenshots", "Image"), ("Laser pointer", "Laser"),
-            ("Cursor spotlight", "Spotlight"), ("Freeze frame", "Freeze"), ("Using the stopwatch", "Timer") })
+            ("Cursor spotlight", "Spotlight"), ("Freeze frame", "Freeze"), ("Using the stopwatch", "Timer"),
+            ("Optional models", "Star"), ("Translation packs", "Translate") })
             if (title.Equals(L.T(label), StringComparison.CurrentCultureIgnoreCase)) return icon;
         if (title.Contains(L.T("Shortcut"), StringComparison.CurrentCultureIgnoreCase)) return "Shortcuts";
         if (title.Contains(L.T("Theme"), StringComparison.CurrentCultureIgnoreCase)) return "Image";

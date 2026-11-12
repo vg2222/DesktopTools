@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text.Json;
 using Windows.System.UserProfile;
 
@@ -22,10 +21,14 @@ internal static class TranslationPacks
         using var stream = typeof(TranslationPacks).Assembly.GetManifestResourceStream("DesktopTools.TranslationPacks")!;
         return JsonSerializer.Deserialize<TranslationPack[]>(stream)!;
     });
-    private static readonly HttpClient client = new() { Timeout = TimeSpan.FromMinutes(15) };
-    private static readonly SemaphoreSlim installGate = new(1, 1);
+    // No overall time limit: ModelPacks.DownloadFilesAsync stops a download that stalls, and the user can cancel.
+    private static readonly HttpClient client = ModelPacks.CreateClient();
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> damagedDirectories = new(StringComparer.OrdinalIgnoreCase);
-    internal static string Root => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "Translation");
+    private static string? rootOverride;
+    internal static string Root => rootOverride ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "Translation");
+    /// <summary>Points <see cref="Root"/> at a test folder until disposed.</summary>
+    internal static IDisposable UseRootForTests(string root) { rootOverride = root; return new RootReset(); }
+    private sealed class RootReset : IDisposable { public void Dispose() => rootOverride = null; }
     internal static IReadOnlyList<TranslationPack> Catalog => catalog.Value;
 
     internal static IReadOnlyList<TranslationLanguage> Languages
@@ -67,6 +70,35 @@ internal static class TranslationPacks
     internal static void MarkDamaged(string directory) => damagedDirectories.TryAdd(directory, 0);
     private static bool Complete(string directory) => new[] { "encoder_model_quantized.onnx", "decoder_model_merged_quantized.onnx", "source.spm", "vocab.json", "config.json" }
         .All(file => File.Exists(Path.Combine(directory, file)));
+    /// <summary>Packs downloaded into <paramref name="root"/>; the bundled English–Russian packs are not listed.</summary>
+    internal static IReadOnlyList<TranslationPack> Downloaded(string? root = null) =>
+        Catalog.Where(pack => Complete(Path.Combine(root ?? Root, pack.Direction))).ToArray();
+    internal static long SizeOnDisk(string direction, string? root = null)
+    {
+        try
+        {
+            var directory = new DirectoryInfo(Path.Combine(root ?? Root, Find(direction).Direction));
+            return directory.Exists ? directory.EnumerateFiles("*", SearchOption.AllDirectories).Sum(file => file.Length) : 0;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return 0; }
+    }
+    /// <summary>Deletes a downloaded pack. Waits for any pack download to finish first.</summary>
+    internal static void Remove(string direction, string? root = null)
+    {
+        root ??= Root;
+        string directory = Path.Combine(root, Find(direction).Direction);
+        if (!ModelPacks.InstallGate.Wait(0)) throw new ModelPackException(DesktopTools.Localization.L.T("Wait for the current download to finish, then try again."));
+        try
+        {
+            if (!Directory.Exists(directory)) return;
+            // Rename first so a half-deleted folder is never used; a translation in progress keeps its files open and the rename fails cleanly.
+            string trash = Path.Combine(root, ".download-remove-" + Guid.NewGuid().ToString("N"));
+            Directory.Move(directory, trash);
+            damagedDirectories.TryRemove(directory, out _);
+            Directory.Delete(trash, recursive: true);
+        }
+        finally { ModelPacks.InstallGate.Release(); }
+    }
     internal static IReadOnlyList<TranslationPack> Missing(string direction) => Route(direction)
         .Where(pair => DirectoryFor(pair) == null).Select(Find).ToArray();
 
@@ -74,37 +106,17 @@ internal static class TranslationPacks
     {
         var pack = Find(direction);
         root ??= Root;
-        await installGate.WaitAsync(token);
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token, ModelPacks.StopToken);
+        token = stop.Token;
+        await ModelPacks.InstallGate.WaitAsync(token);
         string stage = Path.Combine(root, ".download-" + Guid.NewGuid().ToString("N"));
         try
         {
+            ModelPacks.CleanStaging(root);
             if (DirectoryFor(direction, root) != null) { progress?.Report(1); return; }
             Directory.CreateDirectory(stage);
-            long total = pack.Files.Sum(file => file.Bytes), completed = 0;
-            foreach (var file in pack.Files)
-            {
-                token.ThrowIfCancellationRequested();
-                using var response = await client.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, token);
-                response.EnsureSuccessStatusCode();
-                await using var input = await response.Content.ReadAsStreamAsync(token);
-                await using (var output = File.Create(Path.Combine(stage, file.File)))
-                {
-                    byte[] buffer = new byte[128 * 1024]; long received = 0;
-                    int read;
-                    while ((read = await input.ReadAsync(buffer, token)) > 0)
-                    {
-                        received += read;
-                        if (received > file.Bytes) throw new InvalidDataException("Translation pack download exceeds its expected size.");
-                        await output.WriteAsync(buffer.AsMemory(0, read), token);
-                        progress?.Report((double)(completed + received) / total);
-                    }
-                    if (received != file.Bytes) throw new InvalidDataException("Translation pack download is incomplete.");
-                }
-                await using var check = File.OpenRead(Path.Combine(stage, file.File));
-                string hash = Convert.ToHexString(await SHA256.HashDataAsync(check, token));
-                if (!hash.Equals(file.Sha256, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Translation pack checksum mismatch.");
-                completed += file.Bytes;
-            }
+            await ModelPacks.DownloadFilesAsync(pack.Files.Select(file => new DesktopTools.Core.ModelPackFile(file.File, file.Url, file.Sha256, file.Bytes)).ToArray(),
+                stage, progress, token, client);
             await File.WriteAllTextAsync(Path.Combine(stage, "ATTRIBUTION.txt"),
                 $"OPUS-MT by the University of Helsinki Language Technology Research Group.\nhttps://huggingface.co/{pack.Upstream}\nONNX conversion: https://huggingface.co/{pack.Repository}/tree/{pack.Revision}\nLicense: {pack.License}\nQuantized ONNX weights. Input text is processed locally.\n", token);
             string license = pack.License == "apache-2.0" ? "EN-RU-APACHE-2.0.txt" : "CC-BY-4.0.txt";
@@ -119,7 +131,7 @@ internal static class TranslationPacks
         finally
         {
             try { if (Directory.Exists(stage)) Directory.Delete(stage, recursive: true); }
-            finally { installGate.Release(); }
+            finally { ModelPacks.InstallGate.Release(); }
         }
     }
 }

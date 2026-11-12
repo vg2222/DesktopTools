@@ -671,15 +671,16 @@ internal sealed partial class MainWindow : Window
         FeatureSettingsSearch();
 
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 18) };
-        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates" })
+        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates", AiModelsTab })
         {
             var tab = Ui.Button(L.T(name), () => { if (settingsTab == name) return; settingsTab = name; Navigate("Settings"); SmoothScroll.ScrollToOffset(scroller, 0); Motion.Transition(page); });
-            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
+            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", AiModelsTab => "Star", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
             tab.Margin = new Thickness(0, 0, 7, 7);
             if (name == settingsTab) { tab.SetResourceReference(BackgroundProperty, "Selected"); tab.SetResourceReference(BorderBrushProperty, "Accent"); tab.BorderThickness = new Thickness(1); }
             tabs.Children.Add(tab);
         }
         page.Children.Add(tabs);
+        if (settingsTab != AiModelsTab) aiModelsStatus = null;
         if (settingsTab == "Behavior") Group(L.T("Language"), Ui.Row(L.T("Interface language"), L.T("DesktopTools restarts automatically to apply the new language."),
             Ui.Choice(L.LanguageNames, L.LanguageNames[Array.IndexOf(L.Languages, s.Language)], async name =>
             {
@@ -695,6 +696,10 @@ internal sealed partial class MainWindow : Window
                 Ui.Row(L.T("Use custom background"), null, Ui.Toggle(s.UseCustomBackground, v => Change(x => x.UseCustomBackground = v))));
             Group(L.T("Effects"), Ui.Row(L.T("Transparency"),L.T("Use opaque surfaces when disabled."), Ui.Toggle(s.Transparency, v => Change(x => x.Transparency = v))),
                 Ui.Row(L.T("Animations"),L.T("Also respects the Windows animation preference."), Ui.Toggle(s.Animations, v => Change(x => x.Animations = v))));
+        }
+        else if (settingsTab == AiModelsTab)
+        {
+            AiModelsSettings();
         }
         else if (settingsTab == "Updates")
         {
@@ -741,7 +746,7 @@ internal sealed partial class MainWindow : Window
                 Ui.Row(L.T("Restore defaults"), L.T("Resets app settings and shortcuts."), Ui.Button(L.T("Reset preferences"), () => { if (!ConfirmationDialog.Ask(this, L.T("Reset preferences"), L.T("Reset all preferences? Your current drawing will be cleared."), L.T("Reset preferences"))) return; Change(x => { var defaults = new AppSettings(); foreach (var p in typeof(AppSettings).GetProperties().Where(p => p.CanWrite)) p.SetValue(x, p.GetValue(defaults)); }); Navigate("Settings"); })),
                 Ui.Row(L.T("Export settings"), L.T("Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded."), Ui.Button(L.T("Export…"), () => controller.RequestSettingsExport(this))),
                 Ui.Row(L.T("Import settings"), L.T("Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts."), Ui.Button(L.T("Import…"), () => controller.RequestSettingsImport(this))),
-                Ui.Row(L.T("Reset all app data"), L.T("Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them."), Ui.Button(L.T("Delete app data"), () => controller.RequestDataReset(this))));
+                Ui.Row(L.T("Reset all app data"), L.T("Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.") + " " + L.T("Downloaded AI models and translation packs are deleted too."), Ui.Button(L.T("Delete app data"), () => controller.RequestDataReset(this))));
         }
     }
     private void PickAppearance(bool background)

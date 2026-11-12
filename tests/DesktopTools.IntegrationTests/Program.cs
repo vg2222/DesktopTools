@@ -131,6 +131,10 @@ internal static class Program
                 else if (args.Contains("--recorder-only")) await Test("Screen recording lifecycle and MP4 output", RecordingChecks.RunAsync);
                 else if (args.Contains("--text-tools-only")) await Test("Text tools animation, translation, OCR and cancellation", TextToolsChecks.RunAsync);
                 else if (args.Contains("--translation-only")) await Test("Local EN-RU translation", TranslationChecks.RunAsync);
+                else if (args.Contains("--ai-models-page-only")) await Test("AI models settings page: list, consent before download, progress, remove, translation packs", AiModelsPageChecks.RunAsync);
+                else if (args.Contains("--model-consent-ui-only")) await Test("Model licence and consent window in every language and theme", ModelConsentUiChecks.RunAsync);
+                else if (args.Contains("--ai-runtime-only")) await Test("Shared model session runtime: checksum, reuse, idle release and serialization", AiRuntimeChecks.RunAsync);
+                else if (args.Contains("--model-packs-only")) await Test("Model pack download, verification, damage and removal", ModelPackChecks.RunAsync);
                 else if (args.Contains("--offline-packs-only")) await Test("Offline model downloads, pivot translation, integrity and Windows OCR language matching", OfflineLanguageChecks.RunAsync);
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);
                 else if (args.Contains("--toggles-only")) await Test("Switch animations survive Home, utility and aid updates", ToggleAnimationChecks.RunAsync);

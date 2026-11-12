@@ -36,6 +36,8 @@ public sealed class AppSettings
     public string TranslationShortcut { get; set; } = "Ctrl+Alt+R";
     public string ScreenTextShortcut { get; set; } = "Ctrl+Alt+E";
     public string TranslationDirection { get; set; } = "en-ru";
+    /// <summary>Where optional AI models run. This update supports only "Processor" (spec section 10).</summary>
+    public string AiDevice { get; set; } = "Processor";
     public string ScreenTextLanguage { get; set; } = "en-US";
     /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
     public bool ScreenshotLibraryEnabled { get; set; }

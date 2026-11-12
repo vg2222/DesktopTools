@@ -20,6 +20,10 @@ internal static class DataResetChecks
         string data = Path.Combine(root, "DesktopTools");
         Directory.CreateDirectory(data);
         File.WriteAllText(Path.Combine(data, "settings.json"), "{}");
+        // Downloaded model packs and the consent record go with the explicit full reset (spec 1 and 2.4).
+        Directory.CreateDirectory(Path.Combine(data, "Models", "fixture-pack"));
+        File.WriteAllText(Path.Combine(data, "Models", "fixture-pack", "model.onnx"), "model");
+        File.WriteAllText(Path.Combine(data, "Models", "consents.json"), "[]");
         string external = Path.Combine(root, "exported.png");
         File.WriteAllText(external, "original");
         try

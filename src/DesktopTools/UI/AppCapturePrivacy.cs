@@ -27,7 +27,7 @@ internal static class AppCapturePrivacy
         // Shared dialogs belong to the tool that opened them. A separately named tool
         // (for example OCR opened from an image editor) keeps its own privacy setting.
         while (!(window.Tag is string tag && (FeatureGroups.Contains(tag) || IndividualTools.Contains(tag))) &&
-            (window is ConfirmationDialog or SaveBeforeDisableDialog or FeatureSetupWindow or ColorPickerWindow || window.GetType() == typeof(Window)) &&
+            (window is ConfirmationDialog or SaveBeforeDisableDialog or FeatureSetupWindow or ColorPickerWindow or ModelConsentWindow || window.GetType() == typeof(Window)) &&
             window.Owner is { } owner)
             window = owner;
         return window;

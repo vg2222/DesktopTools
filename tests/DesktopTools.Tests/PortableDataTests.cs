@@ -17,19 +17,28 @@ internal static class PortableDataTests
             File.WriteAllText(Path.Combine(a, "notes", "n1.json"), "{\"Title\":\"First\"}"); File.WriteAllText(Path.Combine(a, "notes", "n2.json"), "{\"Title\":\"Second\"}");
             File.WriteAllText(Path.Combine(a, "profiles", "Talk.json"), "{}");
             File.WriteAllText(Path.Combine(a, "notes", "ignore.txt"), "not part of the archive");
+            // Model packs and licence acceptances stay on this PC: never exported, never replaced by an import.
+            Directory.CreateDirectory(Path.Combine(a, "Models", "x")); File.WriteAllText(Path.Combine(a, "Models", "x", "model.onnx"), "model");
+            File.WriteAllText(Path.Combine(a, "Models", "consents.json"), "[]");
             string zip = Path.Combine(root, "export.zip");
             var exported = PortableData.Export(a, zip, "1.2.7");
             Check(exported.Notes == 2 && exported.Profiles == 1 && exported.HasSettings && exported.HasAutomation, "export counts");
             var validated = PortableData.Validate(zip);
             Check(validated.Notes == 2 && validated.AppVersion == "1.2.7", "validate summary");
+            using (var archive = ZipFile.OpenRead(zip))
+                Check(!archive.Entries.Any(e => e.FullName.StartsWith("Models", StringComparison.OrdinalIgnoreCase) || e.FullName.EndsWith(".onnx", StringComparison.OrdinalIgnoreCase) || e.FullName.Contains("consents", StringComparison.OrdinalIgnoreCase)), "export contains model files or consents");
             // import into a machine that already has different data: it is replaced, and the old data is kept as a backup
             File.WriteAllText(Path.Combine(b, "settings.json"), "{\"Version\":3,\"Language\":\"en\"}");
             Directory.CreateDirectory(Path.Combine(b, "notes")); File.WriteAllText(Path.Combine(b, "notes", "old.json"), "{}");
+            Directory.CreateDirectory(Path.Combine(b, "Models", "y")); File.WriteAllText(Path.Combine(b, "Models", "y", "model.onnx"), "kept");
+            File.WriteAllText(Path.Combine(b, "Models", "consents.json"), "[\"kept\"]");
             string backup = PortableData.Import(zip, b);
             Check(File.ReadAllText(Path.Combine(b, "settings.json")).Contains("\"de\""), "settings replaced");
             Check(File.Exists(Path.Combine(b, "notes", "n1.json")) && !File.Exists(Path.Combine(b, "notes", "old.json")), "notes replaced");
             using (var kept = ZipFile.OpenRead(backup)) Check(kept.Entries.Any(e => e.FullName == "notes/old.json"), "backup holds previous notes");
             Check(!Directory.EnumerateDirectories(b, "import-staging-*").Any(), "staging removed");
+            Check(File.ReadAllText(Path.Combine(b, "Models", "y", "model.onnx")) == "kept" && File.ReadAllText(Path.Combine(b, "Models", "consents.json")) == "[\"kept\"]", "import changed model packs or consents");
+            using (var kept = ZipFile.OpenRead(backup)) Check(!kept.Entries.Any(e => e.FullName.StartsWith("Models", StringComparison.OrdinalIgnoreCase)), "import backup copied model files");
 
             // hostile or foreign archives
             string traversal = Path.Combine(root, "traversal.zip");

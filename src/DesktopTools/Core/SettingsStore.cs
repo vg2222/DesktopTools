@@ -135,6 +135,7 @@ public sealed class SettingsStore
         s.ThemePreset = Known(s.ThemePreset, "Classic", "Ocean", "Forest", "Violet", "Custom");
         s.PrimaryColor = ValidColor(s.PrimaryColor, "#2563EB"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
         s.Theme = Known(s.Theme, "System", "Light", "Dark");
+        s.AiDevice = Known(s.AiDevice, "Processor");
         s.MonitorMode = Known(s.MonitorMode, "Cursor", "Primary");
         s.LaserMonitorMode = Known(s.LaserMonitorMode, "All", "Selected");
         s.SpotlightMonitorMode = Known(s.SpotlightMonitorMode, "All", "Selected");
