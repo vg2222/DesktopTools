@@ -26,6 +26,13 @@ public sealed partial class ScreenshotEditorView
     private Button _findButton = null!, _hideAllButton = null!, _acceptButton = null!, _ignoreButton = null!, _skipButton = null!, _cancelScan = null!;
     private readonly List<Button> _exportButtons = [];
     private Func<BitmapSource, ScreenshotExportAction, Task<bool>>? _exportAsync;
+    private readonly HiddenDetailsOption _hiddenDetails = new();
+
+    /// <summary>
+    /// What the image's source file carries and whether the next saved copy leaves it out. Screenshots have no source file;
+    /// Image tools passes the imported file's details and keeps the choice for that image's export.
+    /// </summary>
+    internal void ShowHiddenDetails(HiddenDetails? details, bool remove, Action<bool>? changed) => _hiddenDetails.Show(details, remove, changed);
     internal Func<BitmapSource, string, IReadOnlyCollection<string>, CancellationToken, Task<IReadOnlyList<SensitiveFinding>>> AnalyzeSensitiveData { get; set; }
         = (image, language, categories, token) => SensitiveDataAnalyzer.AnalyzeAsync(image, language, categories, token);
 
@@ -105,6 +112,7 @@ public sealed partial class ScreenshotEditorView
         // Keep the result list directly below the primary action. Secondary
         // actions must not push all findings outside a short window's viewport.
         foreach (var action in new UIElement[] { choices, _skipButton, manual }) { pane.Children.Remove(action); pane.Children.Add(action); }
+        _hiddenDetails.View.Margin = new Thickness(0, 10, 0, 4); pane.Children.Add(_hiddenDetails.View);
         var optionsButton = Ui.Button(L.T("Detection options"), () => optionsPane.Visibility = optionsPane.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible);
         optionsButton.SetResourceReference(BorderBrushProperty, "Divider");
         optionsButton.Content = Ui.IconLabel("Settings", L.T("Detection options")); optionsButton.Margin = new Thickness(0, 8, 0, 0);

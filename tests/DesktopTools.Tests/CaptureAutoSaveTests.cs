@@ -32,6 +32,11 @@ internal static class CaptureAutoSaveTests
             Check(new SettingsStore(root).Load().CaptureOutput == CaptureAutoSave.Mode, "mode persists");
             settings.CaptureOutput = "Somewhere else"; store.Save(settings);
             Check(new SettingsStore(root).Load().CaptureOutput == "Clipboard", "unknown output recovers to Clipboard");
+            settings = store.Load(); Check(settings.CaptureFileNames == "Date and time", "date-and-time names are the default");
+            settings.CaptureFileNames = "Smart"; store.Save(settings);
+            Check(new SettingsStore(root).Load().CaptureFileNames == "Smart", "smart names persist");
+            settings.CaptureFileNames = "Clever"; store.Save(settings);
+            Check(new SettingsStore(root).Load().CaptureFileNames == "Date and time", "unknown file names recover to date and time");
         }
         finally { try { Directory.Delete(root, true); } catch (IOException) { } }
     }

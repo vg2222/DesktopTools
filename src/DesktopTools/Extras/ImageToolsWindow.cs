@@ -328,7 +328,10 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         try { LoadImage(dialog.FileName, ImageTransforms.Load(dialog.FileName)); }
         catch (Exception ex) { Error(ex); }
     }
-    internal void LoadImage(string path, BitmapSource loaded) { original = path; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; history = new ImageEditHistory(loaded); SetImage(loaded); }
+    /// <summary>Whether this image's next export leaves out hidden details. Set in the Hide private data panel or the export dialog; never saved.</summary>
+    internal bool RemoveHiddenDetails { get; private set; }
+    private HiddenDetails? sourceDetails;
+    internal void LoadImage(string path, BitmapSource loaded) { RemoveHiddenDetails = false; sourceDetails = ImageHiddenDetails.Describe(path); original = path; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; history = new ImageEditHistory(loaded); SetImage(loaded); }
     private void SetImage(BitmapSource image)
     {
         originalImage ??= image; history ??= new ImageEditHistory(image); previewZoom.Value = 1; imageScroll.ScrollToHome();
@@ -356,7 +359,8 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         if (bitmap == null) return;
         if (annotateView != null) selectMode(lastModeBeforeAnnotate);
         if (showingOriginal) ToggleOriginalPreview();
-        var dialog = new ImageExportDialog(bitmap, original, outputFormat, (int)quality.Value) { Owner = owner }; dialog.ShowDialog();
+        var dialog = new ImageExportDialog(bitmap, original, outputFormat, (int)quality.Value, removeHiddenDetails: RemoveHiddenDetails, sourceDetails: sourceDetails) { Owner = owner }; dialog.ShowDialog();
+        RemoveHiddenDetails = dialog.RemoveHiddenDetails;
         if (dialog.SavedPath == null) return;
         savedImage = bitmap; status.Text = L.T("Saved copy: ") + dialog.SavedPath; report(L.T("Image copy saved."));
     }
@@ -396,6 +400,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     {
         if (bitmap == null || removal != null || annotateView != null) return;
         var view = new ScreenshotEditorView(bitmap, _ => { }, report, applyToImage: true, autoRedact: getAutoRedact?.Invoke(), hosted: true);
+        view.ShowHiddenDetails(sourceDetails, RemoveHiddenDetails, remove => RemoveHiddenDetails = remove);
         if (translate != null) view.TranslateRequested += translate;
         view.CloseRequested += () => { };   // Esc inside the embedded editor must not close Image tools
         annotateView = view; Grid.SetColumnSpan(view, 2); workspace.Children.Add(view);

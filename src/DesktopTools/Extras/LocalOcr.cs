@@ -205,6 +205,32 @@ public static class LocalOcr
         return string.Join(Environment.NewLine, result.Lines.Select(line => line.Text));
     }
 
+    /// <summary>
+    /// The most prominent line of a screenshot for a smart file name: one engine pass at native size, then the line of 3 to 60 characters
+    /// with the tallest median word height. Null when nothing qualifies. The caller bounds the time with <paramref name="token"/>.
+    /// </summary>
+    internal static async Task<string?> HeadlineAsync(BitmapSource image, string languageTag, CancellationToken token)
+    {
+        if (image.PixelWidth > OcrEngine.MaxImageDimension || image.PixelHeight > OcrEngine.MaxImageDimension) return null;
+        var layout = await RecognizeLayoutAtScaleAsync(image, languageTag, 1, token);
+        return HeadlineOf(layout);
+    }
+
+    internal static string? HeadlineOf(OcrLayout layout)
+    {
+        string? best = null; double bestHeight = 0;
+        foreach (var line in layout.Words.GroupBy(w => w.LineIndex))
+        {
+            var words = line.OrderBy(w => w.Bounds.X).ToArray();
+            string text = string.Join(" ", words.Select(w => w.Text.Trim()).Where(t => t.Length > 0));
+            if (text.Length is < 3 or > 60) continue;
+            var heights = words.Select(w => w.Bounds.Height).Order().ToArray();
+            double median = heights.Length % 2 == 1 ? heights[heights.Length / 2] : (heights[heights.Length / 2 - 1] + heights[heights.Length / 2]) / 2;
+            if (median > bestHeight) { bestHeight = median; best = text; }
+        }
+        return best;
+    }
+
     public static async Task<OcrLayout> RecognizeLayoutAsync(BitmapSource image, string languageTag, CancellationToken cancellationToken = default)
     {
         using var layoutTiming = PipelineMetrics.Measure("ocr.layout");

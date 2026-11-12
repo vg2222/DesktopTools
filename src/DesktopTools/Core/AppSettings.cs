@@ -96,6 +96,8 @@ public sealed class AppSettings
     public bool IncludeAnnotations { get; set; } = true;
     public string CaptureOutput { get; set; } = "Clipboard";
     public string SaveDirectory { get; set; } = "";
+    /// <summary>"Date and time" (default) or "Smart": app, window title and date, see <see cref="SmartFileNames"/>.</summary>
+    public string CaptureFileNames { get; set; } = "Date and time";
     public bool? HideMainWindowFromCapture { get; set; } = false;
     public string[] VisibleCaptureFeatures { get; set; } = [];
     public bool HideControlsFromCapture { get; set; }

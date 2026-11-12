@@ -123,6 +123,48 @@ internal static class Program
         Check(canvasWindow.Background == System.Windows.Media.Brushes.Transparent && new System.Windows.Interop.WindowInteropHelper(canvasWindow).Handle == IntPtr.Zero, "annotation canvas bypasses backdrop and HWND creation");
         canvasWindow.Close();
         System.IO.Directory.Delete(profileDirectory);
+        DescribeWindowChecks(Check);
         Console.WriteLine($"{checks} native checks passed.");
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool GetWindowRect(nint hwnd, out NativeRect rect);
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)] private struct NativeRect { public int Left, Top, Right, Bottom; }
+
+    private static void DescribeWindowChecks(Action<bool, string> Check)
+    {
+        // On a secondary monitor (not at the desktop origin) when one exists, so the check does not cover the primary screen.
+        var screen = MonitorService.GetAll().OrderByDescending(m => m.Bounds.Left != 0 || m.Bounds.Top != 0).First();
+        var target = new System.Windows.Window
+        {
+            Title = "DesktopTools name target", Width = 420, Height = 260, Topmost = true, ShowActivated = false,
+            WindowStartupLocation = System.Windows.WindowStartupLocation.Manual,
+            Left = screen.Bounds.Left / screen.ScaleX + 200, Top = screen.Bounds.Top / screen.ScaleY + 200,
+        };
+        try
+        {
+            target.Show();
+            Pump();
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(target).Handle;
+            GetWindowRect(hwnd, out var rect);
+            int cx = (rect.Left + rect.Right) / 2, cy = (rect.Top + rect.Bottom) / 2;
+            var found = NativeWindowService.DescribeTopWindowAt(cx, cy, excludeProcessId: 0);
+            Check(found is not null && found.Title == "DesktopTools name target", $"describe the top window at a point ({cx},{cy}) rect {rect.Left},{rect.Top},{rect.Right},{rect.Bottom}: {found}");
+            Check(found is not null && found.App.Length > 0, "the window description names the app: " + found?.App);
+            var excluded = NativeWindowService.DescribeTopWindowAt(cx, cy, excludeProcessId: Environment.ProcessId);
+            Check(excluded?.Title != "DesktopTools name target", "an excluded process is never described");
+            Check(NativeWindowService.DescribeTopWindowAt(-200000, -200000, 0) is null, "a point outside every monitor describes nothing");
+            target.WindowState = System.Windows.WindowState.Minimized;
+            Pump();
+            Check(NativeWindowService.DescribeTopWindowAt(cx, cy, 0)?.Title != "DesktopTools name target", "a minimized window is never described");
+        }
+        finally { target.Close(); }
+    }
+
+    private static void Pump()
+    {
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, () => frame.Continue = false);
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+        System.Threading.Thread.Sleep(150);
     }
 }

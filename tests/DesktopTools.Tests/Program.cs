@@ -208,6 +208,7 @@ internal static class Program
         Test("Smart region chooses useful regions under the pointer", SmartRegionDetectorTests.Run);
         Test("Model catalog parses and rejects unsafe entries", ModelCatalogTests.Run);
         Test("Model consent records persist, expire on change and recover", ModelConsentTests.Run);
+        Test("Smart file names stay valid, drop sensitive parts and never overwrite", SmartFileNamesTests.Run);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 

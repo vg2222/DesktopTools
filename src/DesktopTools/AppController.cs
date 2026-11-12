@@ -622,6 +622,7 @@ internal sealed partial class AppController : IDisposable
             var offset = inkMonitor == null ? new Vector() : inkMonitor.Bounds.TopLeft - monitor.Bounds.TopLeft;
             var capturedImage = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
             lastRegion = (monitor, r); autoReviewOpened = Settings.AutoRedact.Enabled;
+            pendingCaptureWindow = DescribeCapturedWindow(monitor, pixels, desktop.PixelWidth, desktop.PixelHeight);
             statusNotice?.Close();
             await HandleCapturedImageAsync(capturedImage);
         }
@@ -629,7 +630,7 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(L.T("Capture failed: ") + ex.Message); }
         finally
         {
-            selector?.Close(); selector = null; captureCancellation = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
+            selector?.Close(); selector = null; captureCancellation = null; pendingCaptureWindow = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
             if (overlay != null) { if (State == OverlayState.Hidden) overlay.Hide(); else { overlay.Show(); overlay.Mode(State == OverlayState.Draw); } }
             if (State == OverlayState.Draw) Palette?.Show();
             else if (!disposed && !autoReviewOpened) NativeWindowService.RestoreForeground(captureForeground);
@@ -699,14 +700,14 @@ internal sealed partial class AppController : IDisposable
     {
         var image = LastCapture;
         if (image == null) { Report(L.T("Capture a screenshot first.")); return; }
-        TrySaveImage(image, EnsureMainWindow(), showDialog);
+        TrySaveImage(image, EnsureMainWindow(), showDialog, window: WindowFor(image));
     }
     internal bool TrySaveImage(BitmapSource image, Window owner, Func<SaveFileDialog, Window, bool?> showDialog,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, WindowDescription? window = null)
     {
         if (cancellationToken.IsCancellationRequested) return false;
         bool wasBusy = IsBusy; IsBusy = true;
-        var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = $"DesktopTools-{DateTime.Now:yyyyMMdd-HHmmss}.png", DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
+        var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = SuggestedSaveName(image, window, DateTime.Now), DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
         try
         {
             // A notification can expire inside the native dialog's nested message loop.

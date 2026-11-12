@@ -21,25 +21,30 @@ internal sealed partial class AppController
             captureNotice?.Close();
             // Keep the drawing input surface away from the review editor; ink stays saved.
             machine.Hide(); overlay?.Hide(); Palette?.Hide();
-            OpenAutoRedactReview(image); return;
+            var reviewed = pendingCaptureWindow; pendingCaptureWindow = null;
+            OpenAutoRedactReview(image, reviewed); return;
         }
-        LastCapture = image; RememberCapture(image);
+        var window = pendingCaptureWindow; pendingCaptureWindow = null;
+        LastCapture = image; RememberCapture(image); captureNameContext = (image, window);
         if (Settings.CaptureOutput == "Save") SaveLast();
-        else if (Settings.CaptureOutput == CaptureAutoSave.Mode) await CopyAndSaveAsync(image);
+        else if (Settings.CaptureOutput == CaptureAutoSave.Mode) await CopyAndSaveAsync(image, window: window);
         else { await CopyAsync(image); ShowCaptureNotice(); }
     }
 
     /// <summary>Copies the screenshot and writes it to the save location in one step, with no dialog. Existing files are never replaced.</summary>
-    internal async Task<string?> CopyAndSaveAsync(BitmapSource image, Func<BitmapSource, Task<ClipboardResult>>? copy = null)
+    internal async Task<string?> CopyAndSaveAsync(BitmapSource image, Func<BitmapSource, Task<ClipboardResult>>? copy = null, WindowDescription? window = null)
     {
+        // Only the file name waits for a smart name (and its OCR headline); the clipboard is written straight away.
+        var naming = AutoSaveStemAsync(image, window, DateTime.Now);
         string directory = CaptureAutoSave.ResolveDirectory(Settings.SaveDirectory, Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
         // The picture is frozen, so the PNG is encoded off the UI thread while the clipboard is written.
-        var saving = Task.Run(() =>
+        var saving = Task.Run(async () =>
         {
+            string stem = await naming.ConfigureAwait(false);
             Directory.CreateDirectory(directory);
             for (int attempt = 0; ; attempt++)
             {
-                string path = CaptureAutoSave.UniquePath(directory, DateTime.Now, File.Exists);
+                string path = CaptureAutoSave.UniquePath(directory, stem, File.Exists);
                 try
                 {
                     using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -63,11 +68,11 @@ internal sealed partial class AppController
         return saved;
     }
 
-    private void OpenAutoRedactReview(BitmapSource image)
+    private void OpenAutoRedactReview(BitmapSource image, WindowDescription? window = null)
     {
         ScreenshotEditorWindow? review = null;
         review = new ScreenshotEditorWindow(image, _ => { }, Report, autoRedact: Settings.AutoRedact, reviewBeforeOutput: true,
-            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken),
+            exportAsync: (result, action) => ExportReviewedImageAsync(result, action, review!, cancellationToken: review!.ExportCancellationToken, window: window),
             translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null);
         screenshotReviews.Add(review); review.Closed += (_, _) => screenshotReviews.Remove(review);
         review.SourceInitialized += (_, _) => NativeWindowService.ApplyBackdrop(review, Dark, Settings.Transparency);
@@ -76,17 +81,17 @@ internal sealed partial class AppController
 
     internal async Task<bool> ExportReviewedImageAsync(BitmapSource image, ScreenshotExportAction action, Window owner,
         Func<SaveFileDialog, Window, bool?>? choosePath = null, CancellationToken cancellationToken = default,
-        Action<DataObject>? writeClipboard = null)
+        Action<DataObject>? writeClipboard = null, WindowDescription? window = null)
     {
         if (disposed || cancellationToken.IsCancellationRequested) return false;
         bool success = action switch
         {
             ScreenshotExportAction.Copy => await TryCopyAsync(image, cancellationToken, writeClipboard),
-            ScreenshotExportAction.Save => TrySaveImage(image, owner, choosePath ?? ((dialog, window) => dialog.ShowDialog(window)), cancellationToken),
+            ScreenshotExportAction.Save => TrySaveImage(image, owner, choosePath ?? ((dialog, parent) => dialog.ShowDialog(parent)), cancellationToken, window),
             _ => false
         };
         if (!success || disposed || cancellationToken.IsCancellationRequested) return false;
-        LastCapture = image; RememberCapture(image); ShowCaptureNotice(); return true;
+        LastCapture = image; RememberCapture(image); captureNameContext = (image, window); ShowCaptureNotice(); return true;
     }
     private void CloseScreenshotReviews() { foreach (var review in screenshotReviews.ToArray()) review.Close(); screenshotReviews.Clear(); }
 }

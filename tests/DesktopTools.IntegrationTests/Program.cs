@@ -139,6 +139,7 @@ internal static class Program
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);
                 else if (args.Contains("--toggles-only")) await Test("Switch animations survive Home, utility and aid updates", ToggleAnimationChecks.RunAsync);
                 else if (args.Contains("--blackout-only")) await Test("Sharing blackout capture, cancellation and settings", BlackoutChecks.RunAsync);
+                else if (args.Contains("--hidden-details-only")) await Test("Hidden file details: today's exports measured, then described and removed on request", () => HiddenDetailsChecks.RunAsync(Results.Add));
                 else if (args.Contains("--background-only")) await Test("Local background removal, alpha, undo and cancellation", BackgroundRemovalChecks.RunAsync);
                 else if (args.Contains("--video-seek-only")) await Test("Coalesced video seeks, playhead dragging and stale-request cleanup", VideoSeekChecks.RunAsync);
                 else if (args.Contains("--video-thumbnails-only")) await Test("Bounded portrait and wide video thumbnails", VideoThumbnailChecks.RunAsync);

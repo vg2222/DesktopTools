@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "Versteckte Angaben entfernen (Standort, Gerät, Datum, Autor)",
+  "This file contains hidden details: {0}.": "Diese Datei enthält versteckte Angaben: {0}.",
+  "This file has no hidden details.": "Diese Datei enthält keine versteckten Angaben.",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "Versteckte Angaben konnten nicht gelesen werden. Aktivieren Sie das Kästchen, um eine Kopie ohne solche Angaben zu speichern.",
+  "location": "Standort",
+  "device": "Gerät",
+  "date": "Datum",
+  "author": "Autor",
+  "other": "Sonstiges"
+}

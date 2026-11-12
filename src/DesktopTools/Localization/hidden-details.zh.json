@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "删除隐藏信息（位置、设备、日期、作者）",
+  "This file contains hidden details: {0}.": "此文件包含隐藏信息：{0}。",
+  "This file has no hidden details.": "此文件不包含隐藏信息。",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "无法读取隐藏信息。勾选此框可保存不含任何隐藏信息的副本。",
+  "location": "位置",
+  "device": "设备",
+  "date": "日期",
+  "author": "作者",
+  "other": "其他"
+}

@@ -14,13 +14,16 @@ public static class CaptureAutoSave
     /// <summary>
     /// A timestamped PNG name that is not taken. Two captures in the same second get -2, -3 and so on; nothing is ever overwritten.
     /// </summary>
-    public static string UniquePath(string directory, DateTime time, Func<string, bool> exists)
+    public static string UniquePath(string directory, DateTime time, Func<string, bool> exists) =>
+        UniquePath(directory, SmartFileNames.Fallback(time), exists);
+
+    /// <summary>A PNG name built from <paramref name="stem"/> that is not taken: stem.png, then stem-2.png, stem-3.png and so on.</summary>
+    public static string UniquePath(string directory, string stem, Func<string, bool> exists)
     {
-        string stem = $"DesktopTools-{time:yyyyMMdd-HHmmss}";
         string path = Path.Combine(directory, stem + ".png");
         for (int copy = 2; exists(path); copy++)
         {
-            if (copy > 9999) throw new IOException("Too many screenshots share this second.");
+            if (copy > 9999) throw new IOException("Too many screenshots share this name.");
             path = Path.Combine(directory, $"{stem}-{copy}.png");
         }
         return path;

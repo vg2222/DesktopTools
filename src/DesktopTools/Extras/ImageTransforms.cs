@@ -69,8 +69,31 @@ internal static class ImageTransforms
             "png" => new PngBitmapEncoder(), "jpg" or "jpeg" => new JpegBitmapEncoder { QualityLevel = quality },
             "bmp" => new BmpBitmapEncoder(), _ => throw new ArgumentException(L.T("Choose PNG, JPEG or BMP."))
         };
-        encoder.Frames.Add(BitmapFrame.Create(encoder is JpegBitmapEncoder ? Flatten(source) : source));
+        var prepared = encoder is JpegBitmapEncoder ? Flatten(source) : source;
+        // A frame built in memory (ForEncoding's copy) is written as it is; decoded frames are wrapped as before.
+        encoder.Frames.Add(prepared is BitmapFrame { Decoder: null } built ? built : BitmapFrame.Create(prepared));
         using var stream = new MemoryStream(); encoder.Save(stream); return stream.ToArray();
+    }
+    /// <summary>
+    /// A decoded file frame wrapped for encoding on another thread, with the same metadata the encoder would copy.
+    /// Without this, encoding an unedited imported image off the UI thread fails once the picture has been shown.
+    /// </summary>
+    internal static BitmapSource ForEncoding(BitmapSource source)
+    {
+        if (source is not BitmapFrame { Decoder: not null } decoded) return source;
+        var pixels = ImageHiddenDetails.CopyPixels(source);
+        // Damaged metadata must not stop the export: the copy then goes out without it.
+        BitmapMetadata? metadata = null;
+        try
+        {
+            metadata = (decoded.Metadata as BitmapMetadata)?.Clone();
+            // PNG keeps its colour profile in an iCCP chunk inside the metadata; drop it for the reason below.
+            if (metadata != null && metadata.Format == "png" && metadata.ContainsQuery("/iCCP")) metadata.RemoveQuery("/iCCP");
+            metadata?.Freeze();
+        }
+        catch (Exception) { metadata = null; }
+        // No colour profile: the decoded pixels are already converted to sRGB, and attaching the source profile would apply it twice.
+        var frame = BitmapFrame.Create(pixels, null, metadata, null); frame.Freeze(); return frame;
     }
     internal static void Export(BitmapSource source, string path, string original, int quality = 92)
     {

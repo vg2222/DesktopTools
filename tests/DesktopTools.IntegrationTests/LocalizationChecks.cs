@@ -66,6 +66,13 @@ internal static class LocalizationChecks
                             main.UpdateLayout();
                         }
                         if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture") Render(main, language + "-" + theme + "-" + page);
+                        if (page == "Capture")
+                        {
+                            var fileNames = Descendants(main).OfType<TextBlock>().FirstOrDefault(t => t.Text == L.T("File names"))
+                                ?? throw new Exception("File names setting is missing: " + language);
+                            fileNames.BringIntoView(new Rect(0, 0, Math.Max(1, fileNames.ActualWidth), 200)); await Task.Delay(20); main.UpdateLayout();
+                            Render(main, language + "-" + theme + "-Capture-FileNames");
+                        }
                     }
                     var combo = Ui.Choice(new[] { "Pen", "Arrow" }, "Pen", _ => { });
                     if (!Equals(combo.SelectedItem, "Pen")) throw new Exception("Translated stored choice");

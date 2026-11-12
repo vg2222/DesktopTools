@@ -236,3 +236,27 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 - [ ] Context menus, the tray menu and drop-down lists unfold when opened; with Animations off, or Windows animations off, they appear at once and nothing is left half-transparent.
 - [ ] Opening any tool window: the content rises into place once and ends fully opaque and in its final position.
 - [ ] In a non-English language, pin and unpin a window, trigger a shortcut conflict, and open the translation picker: the notices and language names are translated.
+
+## Optional AI models (1.4.0)
+
+Use a catalog with at least one entry (a developer build may point a test catalog at the files in `E:\DesktopTools-ai-spikes\models`).
+
+- [ ] Settings → AI models: each entry shows name, purpose, licence, state and download size; **Run on** offers only Processor; the short warning is under the list. Check English and one other language, light and dark.
+- [ ] Download with the network off: the consent window opens, and after accepting, a clear message names the host; nothing appears installed and no `.download-*` folder stays in `%LOCALAPPDATA%\DesktopTools\Models`.
+- [ ] Start a download, quit DesktopTools from the tray part-way, restart: the pack is **Not downloaded**, the next download starts cleanly and leftovers are removed.
+- [ ] Download, then **Remove**: the confirmation appears, the folder and its entry in `consents.json` are gone, and the row offers Download again.
+- [ ] Consent window on a 100 % and a 200 % display: the licence text scrolls, nothing is clipped, Download is disabled until the checkbox is ticked, Escape closes without downloading.
+- [ ] Damage a downloaded file (change one byte): the feature reports the damage and the page shows **Damaged** with **Download again**.
+- [ ] A downloaded translation pack appears under **Translation packs**; Remove deletes it and Text tools offers it again.
+- [ ] Update or repair the app with packs installed: they stay installed. Export settings: the zip has no `Models` entries. Reset all app data: the `Models` folder is gone.
+
+## Smart file names and hidden file details (1.4.0)
+
+- [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.
+- [ ] With "Smart", capture a region over a browser tab on a secondary monitor: the saved name starts with the browser name and contains the page title; capture the bare desktop: the name is the date-and-time one; capture an Outlook or Mail window whose title shows an e-mail address: the address is not in the name. Two captures in one second give `-2`. The Save PNG dialog suggests the same smart name.
+- [ ] With "Smart", capture a Notepad window with an untitled document: the name is "Notepad – Untitled – <date>" (a real title is used as it is; OCR is not tried). Capture a region of the bare desktop with a large line of text on it (for example a sticky note or wallpaper text): that headline appears in the name, or the name is the date-and-time one if OCR took longer than 800 ms.
+- [ ] With "Smart", capture windows whose titles hold a phone number, an IBAN, a card number or an API key: none of it appears in the name.
+- [ ] Image tools: open a phone photo with location (JPEG) and a PNG that has text chunks. Annotate → Hide data shows "This file contains hidden details: …"; Export shows the same line and the checkbox. Export unticked and ticked, then check each copy in File Explorer → Properties → Details: ticked has no GPS, camera, date taken, author or comments; the original file's Properties and modified time are unchanged.
+- [ ] A tick in the Hide data panel is ticked in the export dialog for the same image; opening another image starts unticked. A screenshot in the editor says it has no hidden details and the checkbox is unavailable.
+- [ ] A wide-gamut photo with an embedded Display P3 profile, exported as PNG ticked and unticked, looks the same in the Photos app as the original next to it (colours far outside sRGB may be slightly less saturated: exports are sRGB).
+

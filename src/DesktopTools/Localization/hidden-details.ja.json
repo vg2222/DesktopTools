@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "隠し情報を削除 (位置情報、デバイス、日付、作成者)",
+  "This file contains hidden details: {0}.": "このファイルには隠し情報が含まれています: {0}。",
+  "This file has no hidden details.": "このファイルに隠し情報はありません。",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "隠し情報を読み取れませんでした。チェックを入れると、隠し情報を含まないコピーを保存します。",
+  "location": "位置情報",
+  "device": "デバイス",
+  "date": "日付",
+  "author": "作成者",
+  "other": "その他"
+}
