@@ -43,6 +43,12 @@ public sealed class AppSettings
     public string OcrEngine { get; set; } = "Windows";
     /// <summary>The OCR pack script group last chosen: "latin", "cyrillic" or "chinese-japanese"; empty follows the screen text language.</summary>
     public string OcrPackScript { get; set; } = "";
+    /// <summary>Which transcript model to use: "Fast" (Whisper base, the default) or "Accurate" (Whisper small).</summary>
+    public string TranscriptModel { get; set; } = "Fast";
+    /// <summary>The spoken language of recordings to transcribe: "auto" detects it, otherwise a Whisper language code.</summary>
+    public string TranscriptLanguage { get; set; } = "auto";
+    /// <summary>Set once the user has read the note about recording and transcribing other people.</summary>
+    public bool TranscriptNoticeAccepted { get; set; }
     /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
     public bool ScreenshotLibraryEnabled { get; set; }
     public int ScreenshotLibraryLimit { get; set; } = 300;

@@ -87,7 +87,23 @@ internal sealed partial class AppController : IDisposable
             throw new InvalidOperationException(L.T("Wait for the current download to finish, then try again."));
     }
     internal RecordingMarkerStore RecordingMarkers { get; }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
+    internal TranscriptStore Transcripts { get; }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load, Transcripts, this) { WindowState = WindowState.Maximized }); }
+    /// <summary>Opens the video editor on a recording with its Transcript tab showing. Nothing is transcribed until the user asks.</summary>
+    internal async void OpenVideoEditorForTranscript(string path)
+    {
+        if (!Settings.VideoEditorEnabled) return;
+        try
+        {
+            OpenVideoEditor();
+            if (utilityWindows.TryGetValue("Video", out var window) && window is VideoEditorWindow editor)
+            {
+                editor.ShowTranscriptTab();
+                await editor.LoadAndSeekAsync(path, TimeSpan.Zero);
+            }
+        }
+        catch (Exception ex) { Report(L.T("Could not open the recording for a transcript: ") + ex.Message); }
+    }
     internal async void OpenVideoEditorAt(string path, TimeSpan position)
     {
         if (!Settings.VideoEditorEnabled) return;
@@ -192,6 +208,7 @@ internal sealed partial class AppController : IDisposable
     public AppController(bool smoke)
     {
         this.smoke = smoke; AppCapturePrivacy.Initialize();
+        Transcripts = new TranscriptStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-transcripts") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "transcripts"));
         RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
         Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings);

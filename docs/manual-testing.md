@@ -260,6 +260,17 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] Switch the reader back to Windows OCR: the Windows language list returns, the saved Windows language is kept, and scans no longer load the pack (memory drops back within about a minute after the last pack scan).
 - [ ] Chinese and Japanese: scan a real Chinese and a real Japanese page and have someone who reads them judge the result (accuracy is **Not tested** by the automated checks).
 
+### Transcripts (1.4.0)
+
+- [ ] Record a short clip with system audio (play speech, for example Windows text-to-speech) on a secondary monitor. The saved-recording notice shows **Transcribe**; it opens the video editor with the **Transcript** tab. With the video editor disabled, the button is not shown.
+- [ ] First Transcribe: the consent notice appears once; **Cancel** transcribes nothing, **Continue** does not ask again. Then, with the network off and no model: the licence window opens, and after accepting a clear error names the host and nothing is installed. Decline the licence: *Download canceled.* and nothing is downloaded. With the network on: the model downloads, the status says it is ready, and transcription starts.
+- [ ] Transcribe the clip with Fast and with Accurate, once with **Automatic** and once with the language chosen: lines appear with times; choosing a time moves the playhead; search filters lines; edit a line, close and reopen the video: the edit is kept. `<video>.srt` is next to the video and plays in the Windows Media Player as captions.
+- [ ] Put your own `<video>.srt` next to a video, then transcribe: DesktopTools asks before replacing it; declining keeps your file unchanged and says the transcript is kept in DesktopTools.
+- [ ] **Save captions** as `.vtt` and `.txt`; open both and check times and text. Export a trimmed MP4 with a removed middle section, accept **Save captions for the copy?**: the captions next to the copy line up with its speech.
+- [ ] Transcribe a recording of 30 minutes or more: progress advances, the window stays responsive, **Cancel** stops within a few seconds, and memory returns to normal afterwards. Transcribe a video without audio: *This video has no audio track to transcribe.* Transcribe silence or music only: few or no invented lines.
+- [ ] Damage a model file (change one byte): Transcribe reports the model as damaged and the AI models page shows **Damaged** with **Download again**.
+- [ ] Check the tab in English and one other language, light and dark, 100 % and 200 %: nothing is clipped; long labels wrap.
+
 ## Smart file names and hidden file details (1.4.0)
 
 - [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.

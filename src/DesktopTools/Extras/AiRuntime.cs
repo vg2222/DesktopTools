@@ -37,7 +37,16 @@ internal static class AiRuntime
     /// Loads (or reuses) one session per file, as one unit, after verifying every SHA-256. One set is loaded at a time and replaces any other;
     /// callers are serialized. A file that fails its check throws <see cref="InvalidDataException"/> whose <see cref="DamagedPath"/> names it, and nothing stays loaded.
     /// </summary>
-    internal static async Task<T> RunAsync<T>(IReadOnlyList<(string Path, string Sha256)> models, Func<IReadOnlyList<InferenceSession>, T> use, CancellationToken token)
+    internal static Task<T> RunAsync<T>(IReadOnlyList<(string Path, string Sha256)> models, Func<IReadOnlyList<InferenceSession>, T> use, CancellationToken token) =>
+        RunAsync(models, use, token, prepare: null);
+
+    /// <summary>
+    /// As above; each file whose index has a step in <paramref name="prepare"/> is read once, its SHA-256 checked on those bytes, and its session
+    /// is created from the bytes that step returns. Used to drop unneeded outputs of a model in memory; the file on disk is never changed.
+    /// Other files are verified and loaded from disk as usual, so a large file is not held in memory twice.
+    /// </summary>
+    internal static async Task<T> RunAsync<T>(IReadOnlyList<(string Path, string Sha256)> models, Func<IReadOnlyList<InferenceSession>, T> use, CancellationToken token,
+        IReadOnlyDictionary<int, Func<byte[], byte[]>>? prepare)
     {
         if (models.Count == 0) throw new ArgumentException("No model files given.", nameof(models));
         string[] paths = models.Select(model => Path.GetFullPath(model.Path)).ToArray();
@@ -51,15 +60,22 @@ internal static class AiRuntime
                 {
                     ReleaseLocked();
                     for (int i = 0; i < paths.Length; i++)
-                        try { Verify(paths[i], models[i].Sha256, token); }
-                        catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, paths[i]); throw; }
+                        if (prepare == null || !prepare.ContainsKey(i))
+                            try { Verify(paths[i], models[i].Sha256, token); }
+                            catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, paths[i]); throw; }
                     var created = new List<InferenceSession>();
                     try
                     {
-                        foreach (string path in paths)
+                        for (int i = 0; i < paths.Length; i++)
                         {
+                            string path = paths[i];
                             using var options = Options();
-                            try { created.Add(new InferenceSession(path, options)); }
+                            try
+                            {
+                                if (prepare != null && prepare.TryGetValue(i, out var step))
+                                    created.Add(new InferenceSession(step(ReadVerified(path, models[i].Sha256, token)), options));
+                                else created.Add(new InferenceSession(path, options));
+                            }
                             catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, path); throw; }
                             token.ThrowIfCancellationRequested();
                         }
@@ -134,6 +150,19 @@ internal static class AiRuntime
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0) { token.ThrowIfCancellationRequested(); hash.AppendData(buffer, 0, read); }
         if (!Convert.ToHexString(hash.GetHashAndReset()).Equals(sha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException(L.T("A model file is damaged. Download the model again on the AI models page.")) { Data = { [DamagedPathKey] = path } };
+    }
+
+    private static byte[] ReadVerified(string path, string sha256, CancellationToken token)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException(L.T("A model file is missing. Download the model again on the AI models page."), path);
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 20);
+        if (stream.Length > int.MaxValue) throw new InvalidDataException("The model file is too large to load.");
+        var bytes = new byte[stream.Length];
+        int offset = 0, read;
+        while (offset < bytes.Length && (read = stream.Read(bytes, offset, Math.Min(1 << 20, bytes.Length - offset))) > 0) { token.ThrowIfCancellationRequested(); offset += read; }
+        if (offset != bytes.Length || !Convert.ToHexString(SHA256.HashData(bytes)).Equals(sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(L.T("A model file is damaged. Download the model again on the AI models page.")) { Data = { [DamagedPathKey] = path } };
+        return bytes;
     }
 
     private static SessionOptions Options()

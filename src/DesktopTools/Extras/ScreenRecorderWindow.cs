@@ -342,6 +342,13 @@ internal sealed class ScreenRecorderWindow : Window
     private void ShowSavedMarkers(string videoPath)
     {
         markerList.Children.Clear();
+        if (controller.Settings.VideoEditorEnabled)
+        {
+            var transcribe = Ui.ActionButton("Text", L.T("Transcribe"), () => controller.OpenVideoEditorForTranscript(videoPath));
+            transcribe.Tag = "recording-transcribe"; transcribe.HorizontalAlignment = HorizontalAlignment.Left; transcribe.Margin = new Thickness(0, 10, 0, 2);
+            Ui.Tip(transcribe, L.T("Open the recording in the video editor to make a transcript on this PC."));
+            markerList.Children.Add(transcribe);
+        }
         if (markerTimeline.Markers.Count == 0) return;
         var heading = Ui.Text(L.T("Recording markers"), 12, true);
         heading.Margin = new Thickness(0, 10, 0, 4); markerList.Children.Add(heading);

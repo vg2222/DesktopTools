@@ -136,6 +136,8 @@ internal static class Program
                 else if (args.Contains("--ai-runtime-only")) await Test("Shared model session runtime: checksum, reuse, idle release and serialization", AiRuntimeChecks.RunAsync);
                 else if (args.Contains("--model-packs-only")) await Test("Model pack download, verification, damage and removal", ModelPackChecks.RunAsync);
                 else if (args.Contains("--ocr-pack-preview")) await Test("OCR pack manual preview in Text tools", OcrPackChecks.PreviewAsync);
+                else if (args.Contains("--transcript-recording")) await Test("Transcripts end to end: speech played aloud, recorded with system audio, transcribed from the recorder's Transcribe button", () => TranscriptChecks.RecordingAsync(Results.Add));
+                else if (args.Contains("--transcript-only")) await Test("Transcripts: audio decoding, store and caption files, editor panel, and real models when present", () => TranscriptChecks.RunAsync(Results.Add));
                 else if (args.Contains("--ocr-pack-only")) await Test("OCR pack: engine choice, fallback to Windows OCR, and reading with the real pack when its files are present", () => OcrPackChecks.RunAsync(Results.Add));
                 else if (args.Contains("--offline-packs-only")) await Test("Offline model downloads, pivot translation, integrity and Windows OCR language matching", OfflineLanguageChecks.RunAsync);
                 else if (args.Contains("--translation-metadata")) await Test("Translation model metadata", TranslationChecks.MetadataAsync);

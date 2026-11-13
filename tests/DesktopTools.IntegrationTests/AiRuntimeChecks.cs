@@ -115,6 +115,29 @@ internal static class AiRuntimeChecks
             }
             finally { AiRuntime.ReleaseAll(); if (Directory.Exists(root)) Directory.Delete(root, true); }
 
+            // A prepare step runs once per load on the verified bytes; here it keeps only the first output of a real model.
+            AiRuntime.ReleaseAll();
+            int prepared = 0; string? firstOutput = null;
+            byte[] KeepFirstStep(byte[] bytes)
+            {
+                prepared++; firstOutput = DesktopTools.Core.OnnxModelEdit.OutputNames(bytes)[0];
+                return DesktopTools.Core.OnnxModelEdit.KeepOutputs(bytes, [firstOutput]);
+            }
+            var KeepFirst = new System.Collections.Generic.Dictionary<int, Func<byte[], byte[]>> { [0] = KeepFirstStep };
+            int originalOutputs;
+            using (var probe = new InferenceSession(model)) originalOutputs = probe.OutputMetadata.Count;
+            var trimmed = await AiRuntime.RunAsync([(model, U2NetPHash)], loaded => loaded[0], CancellationToken.None, KeepFirst);
+            Check(prepared == 1 && originalOutputs > 1 && trimmed.OutputMetadata.Keys.SequenceEqual([firstOutput!]), $"Prepared outputs: {string.Join(", ", trimmed.OutputMetadata.Keys)} of {originalOutputs}");
+            var trimmedAgain = await AiRuntime.RunAsync([(model, U2NetPHash)], loaded => loaded[0], CancellationToken.None, KeepFirst);
+            Check(prepared == 1 && ReferenceEquals(trimmed, trimmedAgain), "A loaded set was prepared again");
+            AiRuntime.ReleaseAll();
+            var damagedPrepared = await Fails(AiRuntime.RunAsync([(model, new string('0', 64))], _ => 0, CancellationToken.None, KeepFirst));
+            Check(damagedPrepared is InvalidDataException && AiRuntime.DamagedPath(damagedPrepared) == Path.GetFullPath(model) && prepared == 1 && AiRuntime.LoadedModelPath == null,
+                "A damaged file reached prepare: " + damagedPrepared);
+            var failedPrepare = await Fails(AiRuntime.RunAsync<int>([(model, U2NetPHash)], _ => 0, CancellationToken.None, new System.Collections.Generic.Dictionary<int, Func<byte[], byte[]>> { [0] = _ => throw new InvalidDataException("bad graph") }));
+            Check(failedPrepare is InvalidDataException && AiRuntime.FailedPath(failedPrepare) == Path.GetFullPath(model) && AiRuntime.DamagedPath(failedPrepare) == null && AiRuntime.LoadedModelPath == null,
+                "A failing prepare step: " + failedPrepare);
+
             AiRuntime.ReleaseAll();
             Check(AiRuntime.LoadedModelPath == null, "ReleaseAll left a session");
             File.Delete(copy); // nothing holds the file after release

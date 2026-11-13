@@ -69,8 +69,12 @@ Optional AI models are **not distributed with DesktopTools** and are not covered
 | PP-OCRv5 mobile Latin recognizer (`ocr-latin`) | PaddlePaddle, [latin_PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx) | `89d3a50e2c27e2e7cceeab0e944c25c807d5db4f` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
 | PP-OCRv5 mobile East Slavic recognizer (`ocr-cyrillic`) | PaddlePaddle, [eslav_PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx) | `9a32171fc5718746875e1a261818884517975013` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
 | PP-OCRv5 mobile Chinese/Japanese recognizer (`ocr-chinese-japanese`) | PaddlePaddle, [PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx) | `ed152b8b495f84de93cda5709d768548a9127622` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
+| Whisper base, ONNX export (`speech-fast`) | Xenova (Joshua Lochner), [Xenova/whisper-base](https://huggingface.co/Xenova/whisper-base); model by OpenAI, [openai/whisper](https://github.com/openai/whisper) | `64da57285918e20ea79ea5c88eed7197933abaa8` | MIT (OpenAI code and weights); export card Apache-2.0 | Video editor (Transcript) |
+| Whisper small, ONNX export (`speech-accurate`) | Xenova (Joshua Lochner), [Xenova/whisper-small](https://huggingface.co/Xenova/whisper-small); model by OpenAI, [openai/whisper](https://github.com/openai/whisper) | `2d67713f236afa48a18992566e7647f6ca848e13` | MIT (OpenAI code and weights); export card Apache-2.0 | Video editor (Transcript) |
 
 The OCR pack repositories carry no licence file of their own; their model cards state Apache-2.0, as does PaddleOCR. The app shows and stores the bundled `Assets/Models/Licenses/Apache-2.0.txt` for them.
+
+The Whisper export repositories also carry no licence file; OpenAI's repository licenses the code and model weights under MIT, and the export model cards state Apache-2.0. The app shows and stores the bundled `Assets/Models/Licenses/Whisper-MIT-Apache-2.0.txt`, which contains both texts. Whisper was trained on 680,000 hours of audio collected from the web; OpenAI has not published that dataset.
 
 # Microsoft Fluent System Icons
 

@@ -210,6 +210,11 @@ internal static class Program
         Test("Model consent records persist, expire on change and recover", ModelConsentTests.Run);
         Test("Smart file names stay valid, drop sensitive parts and never overwrite", SmartFileNamesTests.Run);
         Test("OCR pack pipeline, catalog entries and engine settings", OcrPackPipelineTests.Run);
+        Test("Caption files format, parse and follow trims and cuts", CaptionFilesTests.Run);
+        Test("Whisper decoding rules, features, segments and vocabulary", WhisperDecodingTests.Run);
+        Test("Speech packs list exactly the reviewed Whisper files", SpeechPackCatalogTests.Run);
+        Test("Transcript settings fall back to known values", SpeechPackCatalogTests.Settings);
+        Test("ONNX model keeps only the named graph outputs", OnnxModelEditTests.Run);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 
