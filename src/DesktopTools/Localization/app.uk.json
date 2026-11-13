@@ -1,4 +1,6 @@
 {
+  "Support": "Підтримати",
+  "Support DesktopTools": "Підтримати DesktopTools",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} і {1} використовують однакову комбінацію клавіш.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: комбінація клавіш недоступна. {1} Попередні комбінації не змінено.",

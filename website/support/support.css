@@ -1,0 +1,146 @@
+.support-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse at 17% 35%, #17101d 0%, transparent 46%), var(--background);
+}
+
+.support-page .header-inner { justify-content: space-between; }
+
+.support-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-content: center;
+  align-items: center;
+  gap: clamp(28px, 5vw, 76px);
+  max-width: 1160px;
+  padding-block: clamp(52px, 10vh, 125px);
+}
+
+.support-emblem {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  margin-bottom: 24px;
+  border: 1px solid #563044;
+  border-radius: 20px;
+  background: #291521;
+  color: #ff647b;
+}
+
+.support-emblem .support-heart { width: 32px; height: 32px; }
+
+.support-intro h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2.4rem, 4.7vw, 4.5rem);
+  font-weight: 760;
+  letter-spacing: -.06em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.support-intro p { max-width: 34ch; margin: 0; font-size: clamp(1.05rem, 1.5vw, 1.2rem); }
+.support-intro .support-thanks { margin-top: 12px; color: var(--muted); font-size: .98rem; }
+
+.donation-card {
+  min-width: 0;
+  padding: clamp(18px, 3vw, 34px);
+  border: 1px solid #30304a;
+  border-radius: 25px;
+  background: var(--surface-raised);
+  box-shadow: 0 18px 65px rgb(0 0 0 / 25%);
+}
+
+.donation-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.donation-heading h2 { margin: 0; font-size: 1.65rem; letter-spacing: -.035em; }
+.donation-network {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 5px 10px;
+  border: 1px solid #563044;
+  border-radius: 9px;
+  background: #251622;
+  color: #ffc8d0;
+  font-size: .86rem;
+  font-weight: 650;
+}
+
+.donation-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 20px;
+  padding-top: 22px;
+}
+
+.donation-details label { display: block; margin-bottom: 6px; color: var(--muted); font-size: .85rem; }
+#donation-address {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 9px;
+  border: 1px solid #363852;
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--text);
+  font: 500 clamp(.66rem, 1.05vw, .82rem) ui-monospace, Consolas, monospace;
+}
+
+.donation-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 9px 14px; margin-top: 12px; }
+.donation-actions .button { min-height: 39px; padding-inline: 12px; gap: 7px; border-radius: 10px; font-size: .82rem; cursor: pointer; }
+.donation-explorer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-block: 4px;
+  color: var(--accent-light);
+  font-size: .8rem;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.donation-explorer img { filter: invert(1); }
+.donation-status { min-height: 1.45em; margin: 6px 0 0; color: #d5d6ff; font-size: .82rem; }
+.donation-qr { display: grid; justify-items: center; width: 148px; margin: 0; color: var(--muted); text-align: center; font-size: .8rem; }
+.donation-qr img { border-radius: 8px; image-rendering: pixelated; }
+.donation-qr figcaption { margin-top: 5px; }
+
+.donation-network-note {
+  margin: 17px 0 0;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+  color: #ffc8d0;
+  font-size: .88rem;
+}
+
+@media (max-width: 1050px) {
+  .support-main { max-width: 690px; grid-template-columns: minmax(0, 1fr); }
+  .support-intro h1 { text-wrap: initial; }
+  #donation-address { font-size: .82rem; }
+}
+
+@media (max-width: 540px) {
+  .support-main { padding-block: 46px 56px; }
+  .donation-details { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .donation-qr { justify-self: center; }
+  #donation-address { font-size: clamp(.67rem, 3.1vw, .82rem); }
+}
+
+@media (max-width: 350px) {
+  .support-page { --shell: calc(100% - 32px); }
+  .support-page .header-inner { gap: 8px; }
+  .donation-card { padding-inline: 13px; }
+}

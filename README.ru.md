@@ -106,4 +106,6 @@ Windows 11 · 64-разрядная версия · Отдельная уста�
 
 Если DesktopTools занял место на вашем рабочем столе, [поставьте ему звезду](https://github.com/vg2222/DesktopTools). Нашли проблему? [Сообщите об ошибке](https://github.com/vg2222/DesktopTools/issues/new?template=bug_report.yml) или [предложите новую функцию](https://github.com/vg2222/DesktopTools/issues/new?template=feature_request.yml).
 
+Все функции приложения бесплатны. Если хотите сделать добровольный взнос, [поддержите DesktopTools](https://www.desktoptools.cc/support/).
+
 [Лицензия MIT](LICENSE) · [Уведомления о сторонних компонентах](THIRD-PARTY-NOTICES.md) · [Политика безопасности](SECURITY.md)

@@ -106,4 +106,6 @@ Unter [Mitwirken](CONTRIBUTING.md) erfährst du, wie du Prüfungen ausführst un
 
 Wenn DesktopTools einen Platz auf deinem Desktop verdient hat, [gib dem Projekt einen Stern](https://github.com/vg2222/DesktopTools). Etwas gefunden, das Aufmerksamkeit braucht? [Melde einen Fehler](https://github.com/vg2222/DesktopTools/issues/new?template=bug_report.yml) oder [schlage eine Funktion vor](https://github.com/vg2222/DesktopTools/issues/new?template=feature_request.yml).
 
+Alle App-Funktionen sind kostenlos. Wenn du freiwillig spenden möchtest, kannst du [DesktopTools unterstützen](https://www.desktoptools.cc/support/).
+
 [MIT-Lizenz](LICENSE) · [Hinweise zu Drittanbieterkomponenten](THIRD-PARTY-NOTICES.md) · [Sicherheitsrichtlinie](SECURITY.md)

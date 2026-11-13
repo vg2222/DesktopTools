@@ -1,4 +1,6 @@
 {
+  "Support": "Destekle",
+  "Support DesktopTools": "DesktopTools’u destekle",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} ve {1} aynı kısayolu kullanıyor.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: kısayol kullanılamıyor. {1} Önceki kısayollarınız değişmedi.",

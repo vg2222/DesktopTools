@@ -1,4 +1,6 @@
 {
+  "Support": "支援する",
+  "Support DesktopTools": "DesktopTools を支援する",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} と {1} が同じショートカットを使っています。",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: ショートカットを使用できません。{1} 以前のショートカットは変更されていません。",

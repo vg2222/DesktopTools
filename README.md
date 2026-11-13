@@ -107,4 +107,6 @@ See [Contributing](CONTRIBUTING.md) for running checks and proposing changes, [A
 
 If DesktopTools earns a place on your desktop, [give it a star](https://github.com/vg2222/DesktopTools). Found something that needs attention? [Report a bug](https://github.com/vg2222/DesktopTools/issues/new?template=bug_report.yml) or [request a feature](https://github.com/vg2222/DesktopTools/issues/new?template=feature_request.yml).
 
+Every app feature is free. If you’d like to make a voluntary donation, [support DesktopTools](https://www.desktoptools.cc/support/).
+
 [MIT License](LICENSE) · [Third-party notices](THIRD-PARTY-NOTICES.md) · [Security policy](SECURITY.md)

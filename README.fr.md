@@ -106,4 +106,6 @@ Consultez [Contribuer](CONTRIBUTING.md) pour exécuter les vérifications et pro
 
 Si DesktopTools a trouvé sa place sur votre bureau, [ajoutez-lui une étoile](https://github.com/vg2222/DesktopTools). Vous avez repéré un problème ? [Signalez un bug](https://github.com/vg2222/DesktopTools/issues/new?template=bug_report.yml) ou [proposez une fonctionnalité](https://github.com/vg2222/DesktopTools/issues/new?template=feature_request.yml).
 
+Toutes les fonctionnalités sont gratuites. Si vous souhaitez faire un don, vous pouvez [soutenir DesktopTools](https://www.desktoptools.cc/support/).
+
 [Licence MIT](LICENSE) · [Mentions relatives aux composants tiers](THIRD-PARTY-NOTICES.md) · [Politique de sécurité](SECURITY.md)

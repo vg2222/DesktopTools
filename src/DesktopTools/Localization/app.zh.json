@@ -1,4 +1,6 @@
 {
+  "Support": "支持",
+  "Support DesktopTools": "支持 DesktopTools",
   "{0}: {1}": "{0}：{1}",
   "{0} and {1} use the same shortcut.": "{0} 和 {1} 使用了相同的快捷键。",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}：快捷键不可用。{1} 之前的快捷键保持不变。",

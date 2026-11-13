@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-page="support">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#03040a" />
+    <meta name="description" content="Support DesktopTools with a voluntary donation. Every app feature is free." />
+    <title>Support DesktopTools</title>
+    <link rel="canonical" href="https://www.desktoptools.cc/support/" />
+    <link rel="icon" href="../images/app-icon.png" type="image/png" />
+    <link rel="stylesheet" href="../styles.css?v=support-1" />
+    <link rel="stylesheet" href="./support.css" />
+    <script defer src="../site.js?v=support-1"></script>
+    <script defer src="./copy.js"></script>
+  </head>
+  <body class="support-page">
+    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="../" data-language-link aria-label="DesktopTools home" data-i18n-aria="brandHome"><img src="../images/app-icon.png" width="30" height="30" alt="" /><span>DesktopTools</span></a>
+        <div class="header-end">
+          <label class="sr-only" for="language" data-i18n="languageLabel">Language</label>
+          <select id="language">
+            <option value="en" lang="en">English</option><option value="ru" lang="ru">Русский</option><option value="de" lang="de">Deutsch</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option>
+          </select>
+        </div>
+      </div>
+    </header>
+    <main id="main" class="shell support-main">
+      <div class="support-intro">
+        <span class="support-emblem" aria-hidden="true"><span class="support-heart"></span></span>
+        <h1 data-i18n="supportTitle">Support DesktopTools</h1>
+        <p data-i18n="supportDescription">Every app feature is free. Donations are optional.</p>
+        <p class="support-thanks" data-i18n="supportThanks">Your support helps keep DesktopTools in development.</p>
+      </div>
+
+      <section class="donation-card" aria-labelledby="donation-token">
+        <div class="donation-heading">
+          <img src="../icons/usdt.svg" width="46" height="46" alt="" />
+          <h2 id="donation-token">USDT</h2>
+          <span class="donation-network"><img src="../icons/tron.svg" width="19" height="19" alt="" />Tron (TRC-20)</span>
+        </div>
+        <div class="donation-details">
+          <div>
+            <label for="donation-address" data-i18n="donationAddress">Public wallet address</label>
+            <input id="donation-address" type="text" readonly spellcheck="false" dir="ltr" value="TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5" />
+            <div class="donation-actions">
+              <button id="copy-address" class="button button-primary" type="button" hidden>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M15 4H6a2 2 0 0 0-2 2v9" /></svg>
+                <span data-i18n="copyAddress">Copy address</span>
+              </button>
+              <a class="donation-explorer" href="https://tronscan.org/address/TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5/transactions" target="_blank" rel="noopener noreferrer">
+                <span data-i18n="viewTronscan">View on TRONSCAN</span>
+                <img src="../icons/arrow_up_right_24_regular.svg" width="14" height="14" alt="" />
+              </a>
+            </div>
+            <p id="copy-status" role="status" class="donation-status"></p>
+          </div>
+          <figure class="donation-qr">
+            <img src="./usdt-tron-qr.png" width="148" height="148" alt="" />
+            <figcaption data-i18n="scanAddress">Scan in your wallet</figcaption>
+          </figure>
+        </div>
+        <p class="donation-network-note" data-i18n="donationNetworkNote">Send only USDT using the Tron (TRC-20) network.</p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <div><a class="brand" href="../" data-language-link aria-label="DesktopTools home" data-i18n-aria="brandHome"><img src="../images/app-icon.png" width="32" height="32" alt="" /><span>DesktopTools</span></a><p data-i18n="footerLine">Free, open-source tools for Windows 11.</p></div>
+        <div class="footer-links">
+          <a href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/vg2222/DesktopTools/issues" target="_blank" rel="noopener noreferrer" data-i18n="issues">Issues</a>
+          <a href="https://github.com/vg2222/DesktopTools/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="license">MIT License</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

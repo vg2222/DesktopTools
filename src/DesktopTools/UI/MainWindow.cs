@@ -98,6 +98,13 @@ internal sealed partial class MainWindow : Window
 
         }
 
+        var support = CreateSupportButton("Support", ButtonKind.Ghost);
+        support.Tag = "sidebar-support";
+        support.HorizontalContentAlignment = HorizontalAlignment.Left;
+        support.MinHeight = 37;
+        support.Margin = new Thickness(0, 0, 0, 4);
+        Ui.Tip(support, L.T("Support DesktopTools"));
+        footer.Children.Add(support);
         AddUpdateIndicator(footer);
         controller.NewsChanged += OnNewsChanged;
         RefreshNewsUi();

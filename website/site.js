@@ -1,5 +1,15 @@
 const translations = {
   en: {
+    supportTitle: "Support DesktopTools",
+    supportDescription: "Every app feature is free. Donations are optional.",
+    supportThanks: "Your support helps keep DesktopTools in development.",
+    donationAddress: "Public wallet address",
+    copyAddress: "Copy address",
+    addressCopied: "Address copied",
+    copyAddressManually: "Select and copy the address manually.",
+    viewTronscan: "View on TRONSCAN",
+    scanAddress: "Scan in your wallet",
+    donationNetworkNote: "Send only USDT using the Tron (TRC-20) network.",
     pageTitle: "DesktopTools - Screenshot & Recording for Windows 11",
     description: "Free, open-source Windows 11 app for screenshots, screen recording, annotation, OCR and more. Work locally with no account or telemetry.",
     skip: "Skip to content", brandHome: "DesktopTools home", mainNav: "Main navigation", languageLabel: "Language",
@@ -30,6 +40,16 @@ const translations = {
     footerLine: "Free, open-source tools for Windows 11.", issues: "Issues", contribute: "Contribute", license: "MIT License"
   },
   ru: {
+    supportTitle: "Поддержать DesktopTools",
+    supportDescription: "Все функции приложения бесплатны. Донаты добровольные.",
+    supportThanks: "Ваша поддержка помогает развивать DesktopTools.",
+    donationAddress: "Публичный адрес кошелька",
+    copyAddress: "Скопировать адрес",
+    addressCopied: "Адрес скопирован",
+    copyAddressManually: "Выделите и скопируйте адрес вручную.",
+    viewTronscan: "Открыть в TRONSCAN",
+    scanAddress: "Отсканируйте в кошельке",
+    donationNetworkNote: "Отправляйте только USDT через сеть Tron (TRC-20).",
     pageTitle: "DesktopTools | Инструменты для рабочего стола Windows",
     description: "DesktopTools объединяет снимки экрана, запись, инструменты презентации и повседневные утилиты в Windows 11. Бесплатно, открытый код, локальная обработка.",
     skip: "Перейти к содержимому", brandHome: "Главная DesktopTools", mainNav: "Основная навигация", languageLabel: "Язык",
@@ -60,6 +80,16 @@ const translations = {
     footerLine: "Бесплатные инструменты с открытым кодом для Windows 11.", issues: "Проблемы", contribute: "Участвовать", license: "Лицензия MIT"
   },
   de: {
+    supportTitle: "DesktopTools unterstützen",
+    supportDescription: "Alle App-Funktionen sind kostenlos. Spenden sind freiwillig.",
+    supportThanks: "Deine Unterstützung hilft, DesktopTools weiterzuentwickeln.",
+    donationAddress: "Öffentliche Wallet-Adresse",
+    copyAddress: "Adresse kopieren",
+    addressCopied: "Adresse kopiert",
+    copyAddressManually: "Wähle die Adresse aus und kopiere sie manuell.",
+    viewTronscan: "Auf TRONSCAN ansehen",
+    scanAddress: "In deiner Wallet scannen",
+    donationNetworkNote: "Sende nur USDT über das Tron-Netzwerk (TRC-20).",
     pageTitle: "DesktopTools | Werkzeuge für deinen Windows-Desktop",
     description: "DesktopTools vereint Screenshots, Bildschirmaufnahmen, Präsentationswerkzeuge und praktische Helfer unter Windows 11. Kostenlos, quelloffen und lokal.",
     skip: "Zum Inhalt springen", brandHome: "DesktopTools Startseite", mainNav: "Hauptnavigation", languageLabel: "Sprache",
@@ -90,6 +120,16 @@ const translations = {
     footerLine: "Kostenlose, quelloffene Werkzeuge für Windows 11.", issues: "Probleme", contribute: "Mitmachen", license: "MIT-Lizenz"
   },
   fr: {
+    supportTitle: "Soutenir DesktopTools",
+    supportDescription: "Toutes les fonctionnalités sont gratuites. Les dons sont facultatifs.",
+    supportThanks: "Votre soutien aide à poursuivre le développement de DesktopTools.",
+    donationAddress: "Adresse publique du portefeuille",
+    copyAddress: "Copier l’adresse",
+    addressCopied: "Adresse copiée",
+    copyAddressManually: "Sélectionnez et copiez l’adresse manuellement.",
+    viewTronscan: "Voir sur TRONSCAN",
+    scanAddress: "Scannez avec votre portefeuille",
+    donationNetworkNote: "Envoyez uniquement des USDT via le réseau Tron (TRC-20).",
     pageTitle: "DesktopTools | Des outils pour le bureau Windows",
     description: "DesktopTools réunit captures d’écran, enregistrement, outils de présentation et utilitaires sur Windows 11. Gratuit, open source et local.",
     skip: "Aller au contenu", brandHome: "Accueil DesktopTools", mainNav: "Navigation principale", languageLabel: "Langue",
@@ -120,6 +160,16 @@ const translations = {
     footerLine: "Des outils gratuits et open source pour Windows 11.", issues: "Problèmes", contribute: "Contribuer", license: "Licence MIT"
   },
   es: {
+    supportTitle: "Apoyar DesktopTools",
+    supportDescription: "Todas las funciones son gratuitas. Las donaciones son voluntarias.",
+    supportThanks: "Tu apoyo ayuda a seguir desarrollando DesktopTools.",
+    donationAddress: "Dirección pública de la billetera",
+    copyAddress: "Copiar dirección",
+    addressCopied: "Dirección copiada",
+    copyAddressManually: "Selecciona y copia la dirección manualmente.",
+    viewTronscan: "Ver en TRONSCAN",
+    scanAddress: "Escanea con tu billetera",
+    donationNetworkNote: "Envía solo USDT a través de la red Tron (TRC-20).",
     pageTitle: "DesktopTools | Herramientas para tu escritorio Windows",
     description: "DesktopTools reúne capturas, grabación de pantalla, herramientas de presentación y utilidades en Windows 11. Gratis, de código abierto y local.",
     skip: "Ir al contenido", brandHome: "Inicio de DesktopTools", mainNav: "Navegación principal", languageLabel: "Idioma",
@@ -164,8 +214,9 @@ function setLanguage(language, updateUrl = false) {
   const chosen = supportedLanguages.includes(language) ? language : "en";
   const copy = translations[chosen];
   document.documentElement.lang = chosen;
-  document.title = copy.pageTitle;
-  document.querySelector('meta[name="description"]').content = copy.description;
+  const isSupportPage = document.documentElement.dataset?.page === "support";
+  document.title = isSupportPage ? copy.supportTitle : copy.pageTitle;
+  document.querySelector('meta[name="description"]').content = isSupportPage ? copy.supportDescription : copy.description;
   document.querySelectorAll("[data-i18n]").forEach(element => {
     const value = copy[element.dataset.i18n];
     if (value) element.textContent = value;
@@ -177,6 +228,12 @@ function setLanguage(language, updateUrl = false) {
   document.querySelectorAll("[data-i18n-aria]").forEach(element => {
     const value = copy[element.dataset.i18nAria];
     if (value) element.setAttribute("aria-label", value);
+  });
+  document.querySelectorAll("[data-language-link]").forEach(link => {
+    const url = new URL(link.href);
+    if (chosen === "en") url.searchParams.delete("lang");
+    else url.searchParams.set("lang", chosen);
+    link.href = url.href;
   });
   selector.value = chosen;
   try { localStorage.setItem("desktoptools-site-language", chosen); } catch { /* Storage can be unavailable. */ }

@@ -1,12 +1,25 @@
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Shapes;
 using DesktopTools.Localization;
 
 namespace DesktopTools.UI;
 
 internal sealed partial class MainWindow
 {
+    private static readonly Uri SupportPage = new("https://www.desktoptools.cc/support/");
+
+    private Button CreateSupportButton(string label, ButtonKind kind = ButtonKind.Secondary)
+    {
+        var button = Ui.ActionButton("Heart", L.T(label), () => controller.OpenUpdateLink(SupportPage), kind);
+        var heart = (Shape)((StackPanel)button.Content).Children[0];
+        heart.SetResourceReference(Shape.FillProperty, SystemParameters.HighContrast ? "Text" : "Danger");
+        AutomationProperties.SetName(button, L.T("Support DesktopTools"));
+        return button;
+    }
+
     private void About()
     {
         var body = new StackPanel { MaxWidth = 680, HorizontalAlignment = HorizontalAlignment.Stretch };
@@ -19,6 +32,11 @@ internal sealed partial class MainWindow
         var components = Ui.Button(L.T("Component licenses"), () => ShowLicense("Component licenses", "DesktopTools.ThirdPartyNotices")); components.Tag = "about-components";
         rows.Children.Add(Ui.Row(L.T("Components"), null, components));
         rows.Children.Add(Ui.Row(L.T("Source code"), null, Ui.Button("GitHub", () => controller.OpenUpdateLink(new Uri(DesktopTools.Updates.GitHubReleaseClient.RepositoryUrl)))));
+        var support = CreateSupportButton("Support DesktopTools");
+        support.Tag = "about-support";
+        support.HorizontalAlignment = HorizontalAlignment.Left;
+        support.Margin = new Thickness(0, 10, 0, 10);
+        rows.Children.Add(support);
         body.Children.Add(Ui.Card(rows));
         body.Children.Add(UpdateCard(preferences: false));
         var version = Ui.Text(VersionLabel, 12, muted: true); version.HorizontalAlignment = HorizontalAlignment.Center; version.Margin = new Thickness(0, 12, 0, 0); body.Children.Add(version); page.Children.Add(body);

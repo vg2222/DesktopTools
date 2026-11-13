@@ -65,7 +65,19 @@ internal static class LocalizationChecks
                             freeze.IsChecked = true;
                             main.UpdateLayout();
                         }
-                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture") Render(main, language + "-" + theme + "-" + page);
+                        if (page == "About")
+                        {
+                            var buttons = Descendants(main).OfType<Button>().ToArray();
+                            foreach (var (tag, label) in new[] { ("sidebar-support", "Support"), ("about-support", "Support DesktopTools") })
+                            {
+                                var button = buttons.Single(b => b.Tag as string == tag);
+                                if (button.Content is not StackPanel content ||
+                                    content.Children.OfType<TextBlock>().Single().Text != L.T(label) ||
+                                    (language != "en" && L.T(label) == label))
+                                    throw new Exception("Untranslated support action: " + language + "/" + tag);
+                            }
+                        }
+                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture" or "About") Render(main, language + "-" + theme + "-" + page);
                         if (page == "Capture")
                         {
                             var fileNames = Descendants(main).OfType<TextBlock>().FirstOrDefault(t => t.Text == L.T("File names"))

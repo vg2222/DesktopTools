@@ -1,4 +1,6 @@
 {
+  "Support": "Soutenir",
+  "Support DesktopTools": "Soutenir DesktopTools",
   "{0}: {1}": "{0} : {1}",
   "{0} and {1} use the same shortcut.": "{0} et {1} utilisent le même raccourci.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0} : raccourci indisponible. {1} Vos anciens raccourcis restent inchangés.",

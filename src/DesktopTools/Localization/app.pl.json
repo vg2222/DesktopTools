@@ -1,4 +1,6 @@
 {
+  "Support": "Wesprzyj",
+  "Support DesktopTools": "Wesprzyj DesktopTools",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} i {1} używają tego samego skrótu.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: skrót jest niedostępny. {1} Poprzednie skróty pozostały bez zmian.",

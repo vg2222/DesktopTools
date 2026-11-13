@@ -1,4 +1,6 @@
 {
+  "Support": "Apoyar",
+  "Support DesktopTools": "Apoyar DesktopTools",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} y {1} usan el mismo atajo.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: atajo no disponible. {1} Los atajos anteriores no han cambiado.",
