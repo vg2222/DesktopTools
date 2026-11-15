@@ -9,77 +9,113 @@ const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(site, 'styles.css'), 'utf8');
 const script = fs.readFileSync(path.join(site, 'site.js'), 'utf8');
 
-assert.match(html, /<nav class="primary-nav"[\s\S]*?href="\.\/support\/"/, 'Support must be in the header navigation');
-assert.match(html, /class="feature-grid"/, 'Feature cards should form a clear responsive grid');
-assert.equal((html.match(/class="feature-card"/g) || []).length, 5);
-for (const [, icon] of css.matchAll(/url\(["'](\.\/icons\/[^"']+)["']\)/g)) assert.ok(fs.existsSync(path.join(site, icon)), `Missing icon ${icon}`);
-for (const id of ['features', 'workflow', 'privacy', 'download']) {
-  assert.match(html, new RegExp(`id="${id}"`), `Missing ${id} section`);
+function attribute(tag, name) {
+  return tag.match(new RegExp('(?:^|\\s)' + name + '=["\']([^"\']*)["\']'))?.[1];
 }
-for (const key of ['heroCapture', 'heroRecord', 'heroPresent', 'heroBody', 'downloadWindows']) {
-  assert.match(html, new RegExp(`data-i18n="${key}"`), `Missing ${key} in page`);
+for (const id of ['features', 'privacy', 'faq', 'download']) {
+  assert.match(html, new RegExp('<section\\b[^>]*\\bid="' + id + '"'), 'Missing ' + id + ' section');
 }
-assert.match(html, /class="hero hero-centered"/, 'Hero background should span the viewport');
-assert.match(html, /class="hero-copy"/, 'Hero content should remain centered within the full-width section');
-assert.match(html, /class="hero-emblem"/, 'The centered hero should show the app logo');
-assert.doesNotMatch(html, /hero-stage|hero-tabs|data-hero-tool|role="tablist"/, 'The unwanted right-side hero card is still present');
-assert.equal((html.match(/class="windows-mark"/g) || []).length, 2, 'Both download buttons should use the new Windows mark');
-assert.doesNotMatch(html, /⊞/, 'The old text glyph is still used for Windows');
-assert.match(html, /<link rel="icon" href="\.\/images\/app-icon\.png"/, 'Favicon does not use the app icon');
-assert.equal((html.match(/src="\.\/images\/app-icon\.png"/g) || []).length, 3, 'Use the app icon in header, hero and footer');
-assert.doesNotMatch(html, /home-current\.png/, 'Outdated product screenshot is still embedded');
-assert.doesNotMatch(html, /in-action|action-video|action\.js|action\.css|hero-watch/, 'The cancelled walkthrough must not be served');
-assert.match(html, /https:\/\/github\.com\/vg2222\/DesktopTools\/releases\/latest/);
+const panels = [...html.matchAll(/<article\b[^>]*class="panel"[^>]*>([\s\S]*?)<\/article>/g)];
+assert.equal(panels.length, 4, 'Four showcase articles explain the main tools');
+for (const [, panel] of panels) {
+  const images = [...panel.matchAll(/<img\b[^>]*>/g)];
+  assert.equal(images.length, 1, 'Each showcase article needs one app screenshot');
+  const tag = images[0][0];
+  const src = attribute(tag, 'src');
+  assert.match(src ?? '', /^\.\/images\/screens\/[^/]+\.webp$/, 'Showcase screenshots must be local WebP files');
+  assert.ok(fs.statSync(path.resolve(site, src)).isFile(), 'Missing showcase screenshot ' + src);
+  for (const dimension of ['width', 'height']) {
+    assert.match(attribute(tag, dimension) ?? '', /^[1-9]\d*$/, 'Screenshot needs a positive ' + dimension);
+  }
+  assert.ok(attribute(tag, 'alt')?.trim(), 'Screenshot needs descriptive alt text: ' + src);
+  assert.ok(attribute(tag, 'data-i18n-alt'), 'Screenshot needs translated alt text: ' + src);
+}
+assert.equal((html.match(/<article\b[^>]*class="tool-card"/g) || []).length, 6, 'Six tool cards cover the smaller jobs');
+const faq = html.match(/<section\b[^>]*\bid="faq"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+const questions = [...faq.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)];
+assert.equal(questions.length, 7, 'FAQ should have seven native disclosure elements');
+for (const [, question] of questions) {
+  assert.match(question, /<summary\b[^>]*>[^<]+<\/summary>/, 'Each FAQ needs a readable question');
+  assert.match(question, /<p\b[^>]*>[\s\S]*?\S[\s\S]*?<\/p>/, 'Each FAQ needs an answer');
+}
+assert.match(html, /<link rel="icon" href="\.\/images\/app-icon\.png"/, 'Favicon must use the app icon');
+assert.ok(fs.readFileSync(path.join(site, 'images/app-icon.png')).equals(
+  fs.readFileSync(path.join(root, 'src/DesktopTools/Assets/Icons/AppIcon.png'))), 'Website icon must match the app icon');
 assert.match(html, /README\.md#-local-first-by-design/, 'Privacy link must point to the project privacy details');
-assert.ok(fs.readFileSync(path.join(site, 'images', 'app-icon.png')).equals(fs.readFileSync(path.join(root, 'src', 'DesktopTools', 'Assets', 'Icons', 'AppIcon.png'))), 'Website icon must match the app icon');
 
 const dictionarySource = script.match(/const translations = (\{[\s\S]*?\n\});/);
 assert.ok(dictionarySource, 'Translation dictionaries were not found');
-const translations = vm.runInNewContext(`(${dictionarySource[1]})`);
+const translations = vm.runInNewContext('(' + dictionarySource[1] + ')');
 assert.deepEqual(Object.keys(translations).sort(), ['de', 'en', 'es', 'fr', 'ru']);
-const englishKeys = Object.keys(translations.en).sort();
+const englishKeys = Object.keys(translations.en);
 for (const [language, dictionary] of Object.entries(translations)) {
-  assert.deepEqual(Object.keys(dictionary).sort(), englishKeys, `${language} has missing translation keys`);
-}
-for (const attribute of ['data-i18n', 'data-i18n-alt', 'data-i18n-aria']) {
-  for (const key of [...html.matchAll(new RegExp(`${attribute}="([^"]+)"`, 'g'))].map(match => match[1])) {
-    assert.ok(englishKeys.includes(key), `Missing English translation for ${key}`);
+  assert.deepEqual(Object.keys(dictionary), englishKeys, language + ' needs the English key set and order');
+  for (const key of englishKeys) {
+    assert.ok(typeof dictionary[key] === 'string' && dictionary[key].trim(), language + '.' + key + ' must have text');
+    const placeholders = text => (text.match(/\{[^{}]+\}/g) || []).sort();
+    assert.deepEqual(placeholders(dictionary[key]), placeholders(translations.en[key]), language + '.' + key + ' must preserve placeholders');
   }
 }
-for (const match of html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) {
-  const assetPath = match[1].split('?')[0];
-  assert.ok(fs.existsSync(path.join(site, assetPath)), `Missing local asset ${assetPath}`);
+for (const page of ['index.html', 'support/index.html']) {
+  const content = fs.readFileSync(path.join(site, page), 'utf8');
+  for (const [, attributeName, key] of content.matchAll(/\b(data-i18n(?:-alt|-aria)?)="([^"]+)"/g)) {
+    for (const [language, dictionary] of Object.entries(translations)) {
+      assert.ok(Object.hasOwn(dictionary, key), page + ': ' + attributeName + '=' + key + ' missing in ' + language);
+    }
+  }
 }
-assert.match(css, /prefers-reduced-motion/, 'Reduced-motion styling is missing');
+
+function checkLocalAsset(reference, file) {
+  // Anchors, embedded data and external URLs do not refer to files in the site.
+  if (!reference || /^(?:#|[a-z][a-z\d+.-]*:|\/\/)/i.test(reference)) return;
+  const relative = decodeURIComponent(reference.split(/[?#]/)[0]);
+  if (!relative) return;
+  const asset = relative.startsWith('/') ? path.join(site, relative.slice(1)) : path.resolve(path.dirname(file), relative);
+  assert.ok(fs.existsSync(asset), path.relative(site, file) + ': missing local asset ' + reference);
+}
+function checkAssets(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) { checkAssets(file); continue; }
+    if (!/\.(?:html|css)$/.test(file)) continue;
+    const content = fs.readFileSync(file, 'utf8');
+    if (file.endsWith('.html')) {
+      for (const [, reference] of content.matchAll(/\b(?:src|href|poster)=["']([^"']+)["']/g)) checkLocalAsset(reference, file);
+      for (const [, sources] of content.matchAll(/\bsrcset="([^"]+)"/g)) {
+        for (const source of sources.split(',')) checkLocalAsset(source.trim().split(/\s+/)[0], file);
+      }
+      for (const [, source] of content.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/g)) {
+        assert.doesNotMatch(source, /^(?:https?:)?\/\//i, 'Scripts must remain local');
+      }
+    }
+    for (const match of content.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/g)) {
+      checkLocalAsset(match[1] ?? match[2] ?? match[3], file);
+    }
+    for (const [, reference] of content.matchAll(/@import\s+["']([^"']+)["']/g)) checkLocalAsset(reference, file);
+  }
+}
+checkAssets(site);
+
+assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?animation:\s*none\s*!important/, 'Reduced motion must disable animations');
+assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.reveal-ready\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*none;/, 'Reduced motion must leave reveal content visible');
 assert.match(css, /html\s*\{\s*scroll-behavior:\s*smooth;/, 'Smooth scrolling is missing');
 assert.match(css, /animation-timeline:\s*scroll\(root block\)/, 'Scroll progress effect is missing');
-assert.match(script, /IntersectionObserver/, 'Section reveal behavior is missing');
+assert.match(script, /new IntersectionObserver/, 'Section reveal behavior is missing');
 
-function colorToken(name) {
-  const value = css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1];
-  assert.ok(value, `Missing ${name} color token`);
-  return [1, 3, 5].map(index => parseInt(value.slice(index, index + 2), 16) / 255);
-}
-function luminance(rgb) {
-  const linear = rgb.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-  return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
-}
-function hue(rgb) {
-  const [red, green, blue] = rgb;
-  const max = Math.max(...rgb), min = Math.min(...rgb), range = max - min;
-  if (!range) return 0;
-  let degrees = max === red ? ((green - blue) / range) % 6 : max === green ? (blue - red) / range + 2 : (red - green) / range + 4;
-  return (degrees * 60 + 360) % 360;
-}
-const background = colorToken('background');
-const accent = colorToken('accent');
-assert.ok(luminance(background) < 0.003, 'Background is not substantially darker');
-assert.ok(luminance(accent) < 0.13, 'Primary accent is still too bright');
-assert.ok(hue(accent) >= 230 && hue(accent) <= 255, 'Primary accent should be purple-blue');
-assert.ok((1.05) / (luminance(accent) + 0.05) >= 4.5, 'White button text needs adequate contrast');
+const accentHex = css.match(/--accent:\s*(#[0-9a-f]{6})\s*;/i)?.[1];
+assert.ok(accentHex, 'Missing accent color token');
+const accent = [1, 3, 5].map(index => parseInt(accentHex.slice(index, index + 2), 16) / 255);
+const linear = accent.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+const [red, green, blue] = accent;
+const max = Math.max(...accent), min = Math.min(...accent), range = max - min;
+assert.ok(range > 0, 'Accent must be chromatic');
+const degrees = max === red ? ((green - blue) / range) % 6 : max === green ? (blue - red) / range + 2 : (red - green) / range + 4;
+const hue = (degrees * 60 + 360) % 360;
+assert.ok(hue >= 250 && hue <= 300, 'Accent should be purple, got hue ' + hue);
+assert.ok(1.05 / (luminance + 0.05) >= 4.5, 'White button text needs at least 4.5:1 contrast');
 
-const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'pages.yml'), 'utf8');
+const workflow = fs.readFileSync(path.join(root, '.github/workflows/pages.yml'), 'utf8');
 assert.match(workflow, /workflow_dispatch:/, 'Publishing must require a manual action');
 assert.doesNotMatch(workflow, /^\s*(push|schedule):/m, 'Publishing must not run automatically');
-
-console.log('Website checks passed.');
+console.log('Website structure, translations, assets and accessibility checks passed.');

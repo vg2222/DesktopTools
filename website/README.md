@@ -1,22 +1,61 @@
 # DesktopTools website
 
-This is a static website for DesktopTools with no runtime dependencies. It uses the app's existing Fluent icon assets and a browser drawing playground. No screenshots or video walkthrough are included.
+This is a static website for DesktopTools with no runtime dependencies, build step or third-party scripts. It uses the app's existing Fluent icon assets and real app screenshots.
 
 To preview it locally, serve this directory with any static HTTP server. For example, from `website/` run `python -m http.server 8000` and open `http://localhost:8000`.
 
 The site does not publish automatically. After review and approval, set the repository's GitHub **Settings → Pages → Build and deployment → Source** to **GitHub Actions**, then manually run `.github/workflows/pages.yml` from the Actions tab. GitHub will show the published URL after the workflow succeeds.
 
-The main release button opens the latest GitHub release, where visitors can choose the installer or portable ZIP. To update website text, edit the relevant HTML page and all five language dictionaries in `site.js`. The English HTML is the no-JavaScript fallback. The indigo hero uses the app's real logo and a geometric Windows mark for download buttons. The feature grid, separate drawing demo, four project principles and release details share the same responsive system-font layout. Smooth scrolling, a reading-progress line and section reveals are enabled when the visitor has not requested reduced motion.
+Both download buttons open the latest GitHub release, where visitors can choose the installer or portable ZIP. To update website text, edit the relevant HTML page and all five language dictionaries in `site.js`, keeping the same keys in English order. Translate screenshot alt text and accessible labels as well as visible copy; preserve `{coin}` and `{network}` placeholders. The English HTML is the no-JavaScript fallback.
+
+The home page has a centered hero with a screenshot of the app, followed by these sections:
+
+- `#features`: four alternating showcase panels for screenshots, recording, presenting and text tools, followed by six smaller tool cards.
+- `#privacy`: local processing, free features, open source and account-free use, plus the limits of capture exclusion.
+- `#faq`: six native `details` disclosures.
+- `#download`: a final download button and links to checksums and source contributions.
+
+The header links to Features, Privacy, FAQ and the separate Support page. The responsive dark layout uses system fonts and a purple accent. Smooth scrolling, CSS scroll progress and IntersectionObserver reveals respect reduced motion; content stays visible without JavaScript or IntersectionObserver.
 
 Search and sharing metadata use `https://www.desktoptools.cc/` as the canonical URL. `index.html` contains Open Graph tags for Discord, Telegram, Reddit and other link previews, plus a large X card and truthful `SoftwareApplication` structured data. The social image is `images/social-preview.png`, a 1200 × 630 crop of the latest `assets/desktop-tools-social-preview-v4.png`; keep its dimensions and metadata in sync. `sitemap.xml` lists both canonical pages. If the site moves again, update every absolute URL in `index.html`, `sitemap.xml` and `tests/website-seo.test.cjs` before publishing.
 
 After publishing, verify the URL-prefix property in Google Search Console and submit `https://www.desktoptools.cc/sitemap.xml`. Google may take time to crawl and index the page, and neither metadata nor a submitted sitemap guarantees a search result. The five language choices currently render client-side from one HTML page; they are not separate localized pages for search indexing. Link-preview services may cache older images and metadata for a while.
 
-The feature section includes a small browser drawing and spotlight demo, not an app screenshot. Drag with a mouse or touch to draw; focus the surface and press Enter for a sample mark, use arrow keys to move the spotlight, or Escape to clear. The circular page glow follows fine pointers when reduced motion is off. Both effects are in `effects.js`; drawings are temporary and never uploaded.
+## Screenshots and a future demo video
 
-`ambient.css` adds indigo lighting and a faint hero grid; hover and finite section reveals are in `styles.css`. Motion respects the visitor's reduced-motion setting; there are no perpetual animation loops or scroll hijacking. Navigation marks the current section using IntersectionObserver, including when motion is disabled.
+The WebP images in `images/screens/` were converted from PNG renders produced by the `--github-gallery` integration harness. The source gallery is `docs/screenshots/gallery/`; these are real application windows with clean demo content, not mockups or personal desktop captures. From the repository root on Windows, regenerate the gallery with:
 
-From the repository root, run `node tests/website.test.cjs` to check sections, translations, local assets and manual-only publishing, `node tests/website-interactions.test.cjs` to check language switching and reduced-motion behavior, `node tests/website-navigation.test.cjs` to check the current-section navigation, `node tests/website-ambient.test.cjs` to check page-wide pointer tracking, and `node tests/website-seo.test.cjs` to check search and sharing metadata, sitemap and preview-image dimensions.
+```powershell
+dotnet run --project tests/DesktopTools.IntegrationTests/DesktopTools.IntegrationTests.csproj -c Release -p:NuGetAudit=false -- --github-gallery
+```
+
+`scripts/capture-screenshots.ps1` runs that harness and packages the gallery index. The generated gallery directory is ignored by Git; a checkout may contain only some of these PNGs. Website conversion is a separate authoring step: resize the selected PNGs and export them as WebP with your image tool, then place the results under `images/screens/`. Do not change the original gallery PNGs as a side effect of exporting website copies.
+
+| Website file | Harness PNG output |
+| --- | --- |
+| `home.webp` | `01-home-dark.png` |
+| `presentation.webp` | `03-presentation-tools-dark.png` |
+| `editor.webp` | `05-screenshot-editor-dark.png` |
+| `recorder.webp` | `09-screen-recorder-dark.png` |
+| `teleprompter.webp` | `13-teleprompter-dark.png` |
+| `text.webp` | `18-text-from-screenshot-dark.png` |
+
+`home.webp` is the hero image; the four panels use `editor.webp`, `recorder.webp`, `teleprompter.webp` and `text.webp`. `presentation.webp` is available as an alternate. When replacing an image, keep its HTML `width` and `height` in sync with the exported dimensions, and update alt text in the HTML and every dictionary if the content changes.
+
+To add a recorded demo later, put a reviewed recording with non-sensitive demo content in a local directory such as `media/`. Replace the hero image inside `.product-frame` with a native `video` element, local `source` files and `home.webp` as its `poster`. Use `controls`, `playsinline` and `preload="none"`, keep explicit dimensions, and add a translated accessible label and a fallback link to the recording. Provide captions or a transcript for spoken content. Leave playback user-initiated so reduced-motion visitors do not get an autoplaying demo. The existing `.product-frame video` and `.panel-media video` rules support video without a layout change or a third-party player. Update the relevant tests if a showcase screenshot is replaced by video.
+
+## Website checks
+
+From the repository root, run every website check in PowerShell:
+
+```powershell
+Get-ChildItem tests/website*.test.cjs | ForEach-Object {
+    node $_.FullName
+    if ($LASTEXITCODE -ne 0) { throw "Failed: $($_.Name)" }
+}
+```
+
+`website.test.cjs` checks sections, screenshots, tool cards, FAQ markup, all five translation dictionaries on both pages, local HTML/CSS assets, reduced motion, scroll progress, accent contrast, the app icon and manual-only publishing. `website-interactions.test.cjs` checks language switching, translated alt text and labels, language-preserving links, header scrolling and reveal behavior. `website-navigation.test.cjs` checks navigation targets and both download links. `website-support.test.cjs` checks wallet rendering and clipboard behavior. `website-seo.test.cjs` checks search and sharing metadata, the sitemap and preview-image dimensions.
 
 ## Support wallets
 
