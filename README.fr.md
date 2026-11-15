@@ -53,9 +53,18 @@ Choisissez un écran, une fenêtre ou une zone, puis réglez le son et la qualit
 
 ![Enregistreur d’écran avec une source sélectionnée](assets/readme/recorder.png)
 
+## Outils d’IA locale facultatifs
+
+- **Lire du texte :** conservez l’OCR de Windows ou téléchargez le pack OCR pour les textes latins, cyrilliques slaves orientaux ou chinois/japonais. La lecture à l’écran, l’extraction de texte et la bibliothèque de captures suivent votre choix.
+- **Transcrire des enregistrements :** l’onglet Transcription de l’éditeur vidéo crée des lignes horodatées que vous pouvez rechercher et corriger, avec un modèle vocal rapide ou précis. Enregistrez en SRT, VTT ou texte ; l’export MP4 peut être accompagné d’un fichier de sous-titres séparé adapté aux coupes.
+- **Améliorer les images :** le pack facultatif de qualité supérieure pour les arrière-plans produit des masques plus fins, avec des retouches pour restaurer ou effacer. La détection facultative des visages suggère des zones à masquer lors de la vérification d’une capture ; vous décidez quoi cacher.
+- **Noms et détails cachés :** activez les noms intelligents de captures à partir de l’application et du titre de la fenêtre, ou supprimez les détails cachés lors de l’export d’une copie d’image. L’original reste intact et aucun téléchargement de modèle n’est nécessaire.
+
+L’IA utilise uniquement le processeur. La traduction accepte désormais jusqu’à 20 000 caractères avec une progression et un meilleur choix de traduction par phrase. Consultez les [modèles, mesures et limites](docs/ai-models.md) et les [notes de version 1.3.0](docs/releases/1.3.0.md).
+
 ## 🔒 Conçu pour un traitement local
 
-Aucun compte. Aucune télémétrie. Aucun traitement de votre contenu dans le cloud. Vos captures d’écran, notes, reconnaissances de texte, traductions et suppressions d’arrière-plan sont traitées sur votre PC. Les packs supplémentaires nécessitent un téléchargement unique ; votre texte n’est jamais envoyé au serveur des modèles.
+Aucun compte. Aucune télémétrie. Aucun traitement de votre contenu dans le cloud. Vos images, enregistrements, notes et textes restent sur votre PC. Les modèles facultatifs ne sont téléchargés qu’à votre demande et après acceptation de la licence de leur éditeur. Les téléchargements utilisent l’URL de l’éditeur à une révision fixée et sont vérifiés par taille et SHA-256 ; le serveur de téléchargement peut voir votre adresse IP. Le modèle d’arrière-plan et la traduction anglais–russe inclus restent disponibles sans téléchargement facultatif.
 
 Vous choisissez où enregistrer les images et les enregistrements. La vérification automatique des mises à jour contacte GitHub pour obtenir les informations de version ; elle ne téléverse ni vos médias ni vos notes. Modifiez sa fréquence ou désactivez-la dans **Paramètres → Mises à jour**. La page **Actualités** peut consulter chaque heure les annonces de ce dépôt ; elle dispose de son propre interrupteur. Les avis de sécurité n’installent jamais une mise à jour sans votre accord.
 
@@ -86,7 +95,7 @@ La page **Diagnostic** vérifie les composants système, les langues OCR Windows
 
 L’enregistrement d’écran, la traduction hors ligne et la suppression d’arrière-plan nécessitent Microsoft Visual C++ x64 Redistributable. L’enregistrement et le montage vidéo utilisent Windows Media Foundation. Les fréquences d’enregistrement jusqu’à 144 IPS sont des objectifs ; les performances réelles dépendent de la source, de l’encodeur et du matériel. Consultez la page [Compatibilité](docs/compatibility.md) pour connaître les limites de capture et la couverture actuelle des tests. Le programme d’installation vérifie le composant Visual C++ et propose la page de téléchargement de Microsoft si nécessaire.
 
-L’application est disponible en **12 langues** (anglais, russe, allemand, français, espagnol, ukrainien, chinois simplifié, portugais, japonais, polonais, turc et italien), ainsi que les apparences claire, sombre et système. Les outils de texte proposent [20 langues de traduction hors ligne](docs/offline-languages.md) ; anglais–russe est inclus. Les langues Windows compatibles apparaissent en premier. L’OCR utilise les reconnaisseurs installés dans Windows.
+L’application est disponible en **12 langues** (anglais, russe, allemand, français, espagnol, ukrainien, chinois simplifié, portugais, japonais, polonais, turc et italien), ainsi que les apparences claire, sombre et système. Les outils de texte proposent [20 langues de traduction hors ligne](docs/offline-languages.md) ; anglais–russe est inclus. Les langues Windows compatibles apparaissent en premier. L’OCR de Windows utilise les reconnaisseurs installés ; le pack OCR facultatif fournit ses propres alphabets.
 
 <details>
 <summary><strong>🛠️ Compiler et contribuer</strong></summary>

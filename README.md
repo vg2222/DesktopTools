@@ -53,9 +53,18 @@ Choose a monitor, window or region and set the sound and quality before recordin
 
 ![Screen recorder with a selected source](assets/readme/recorder.png)
 
+## Optional local AI tools
+
+- **Read text:** keep Windows OCR or download the OCR pack for Latin, East Slavic Cyrillic or Chinese/Japanese text. Scan screen text, Extract text and the screenshot library follow your choice.
+- **Transcribe recordings:** the video editor's Transcript tab makes searchable, editable timed lines with Fast or Accurate speech models. Save SRT, VTT or text; an MP4 export can have a separate caption file matched to its edits.
+- **Improve images:** an optional background quality pack adds finer masks, with Restore/Erase touch-up. The optional face finder suggests faces to cover in Check screenshot; you decide what to hide.
+- **Names and hidden details:** turn on Smart screenshot names based on the app and window title, or tick Remove hidden details when exporting an image copy. Both leave the original unchanged and need no model download.
+
+AI runs on the processor only. Translation now handles up to 20,000 characters with progress and improved sentence decoding. See [models, measurements and limits](docs/ai-models.md) and [1.3.0 release notes](docs/releases/1.3.0.md).
+
 ## 🔒 Local-first by design
 
-No account. No telemetry. No cloud processing of your content. Your screenshots, notes, OCR, translation and background removal are processed on your PC. Additional translation packs need a one-time download; your text is never sent to the model host.
+No account. No telemetry. No cloud processing of your content. Images, recordings, notes and text stay on your PC. Optional models download only when you request them and accept the publisher’s licence. Downloads use the publisher’s URL at a pinned revision and are checked for size and SHA-256; the download host can see your IP address. The bundled background model and English–Russian translation remain available without an optional download.
 
 You choose where to save images and recordings. Automatic update checks contact GitHub for release information; they do not upload your media or notes. Change the check interval or turn automatic checks off in **Settings → Updates**. The new **News** page can check this repository for announcements once an hour; its automatic checks have a separate switch. Security notices never install updates without your confirmation.
 
@@ -87,7 +96,7 @@ Use **Diagnostics** to check native components, Windows OCR languages and shortc
 
 Screen recording, offline translation and image background removal need Microsoft Visual C++ x64 Redistributable; recording also needs Windows Media Foundation. Other image tools and screen OCR remain usable without the Visual C++ runtime. Recording rates up to 144 FPS are targets; actual performance depends on the source, encoder and hardware. See [compatibility](docs/compatibility.md) for capture limitations and current testing coverage. Setup checks the runtime and offers the Microsoft download page when needed.
 
-The app speaks **12 languages** (English, Russian, German, French, Spanish, Ukrainian, Simplified Chinese, Portuguese, Japanese, Polish, Turkish and Italian), plus light, dark and system appearance. Text tools offer [20 offline translation languages](docs/offline-languages.md), with English–Russian bundled. Compatible Windows languages appear first; OCR uses the recognizers installed in Windows.
+The app speaks **12 languages** (English, Russian, German, French, Spanish, Ukrainian, Simplified Chinese, Portuguese, Japanese, Polish, Turkish and Italian), plus light, dark and system appearance. Text tools offer [20 offline translation languages](docs/offline-languages.md), with English–Russian bundled. Compatible Windows languages appear first; Windows OCR uses installed recognizers, and the optional OCR pack supplies its own alphabets.
 
 <details>
 <summary><strong>🛠️ Build and contribute</strong></summary>

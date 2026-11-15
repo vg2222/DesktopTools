@@ -39,11 +39,11 @@
   "Face finder ready. Check the screenshot again to include faces.": "Пошук облич готовий. Перевірте знімок ще раз, щоб урахувати обличчя.",
   "The face finder is not downloaded.": "Пошук облич не завантажено.",
   "Face finder": "Пошук облич",
-  "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Знаходить, де на знімку екрана є обличчя, щоб «Перевірити знімок» міг запропонувати їх закрити. Не визначає, хто це, і нічого не зберігає про обличчя.",
+  "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Знаходить обличчя на знімку екрана, щоб під час перевірки знімка можна було запропонувати їх закрити. Не визначає, кого зображено, і нічого не зберігає про обличчя.",
   "Screenshot editor (Check screenshot)": "Редактор знімків (Перевірити знімок)",
   "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE — загальнодоступний набір даних для виявлення облич, як описано в репозиторії навчання видавця.",
   "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.": "Знаходить обличчя розміром приблизно від 10 до 300 пікселів; дуже малі, дуже великі, повернуті або закриті обличчя можуть бути пропущені.",
   "Can mark things that only look like faces.": "Може позначити те, що лише схоже на обличчя.",
-  "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Не вдалося завантажити модель високої якості. Закрийте інші програми й спробуйте ще раз або виберіть «Вбудована».",
+  "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Не вдалося завантажити модель високої якості в пам’ять. Закрийте інші програми й спробуйте ще раз або виберіть «Вбудована».",
   "Faces were not checked this time. Check the screenshot again.": "Цього разу обличчя не перевірялися. Перевірте знімок екрана ще раз."
 }

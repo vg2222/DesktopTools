@@ -1,6 +1,6 @@
 # Optional AI models
 
-DesktopTools 1.4.0 (working name) plans optional model packs that the user downloads from each model's publisher, at a pinned revision, after accepting that model's licence. DesktopTools does not host or bundle these models. This page records which models were checked, what was verified on the publisher's own page, and how each one behaved in feasibility checks run on 2026-11-12. Design: [the local AI update spec](superpowers/specs/2026-11-11-local-ai-update-design.md); checks: [the feasibility plan](superpowers/plans/2026-11-11-ai-feasibility-checks.md).
+DesktopTools offers optional model packs downloaded from each model's publisher, at a pinned revision, after you accept the model's licence. It does not host or bundle these optional weights. The compact U2NetP background model and English–Russian translation are still bundled. This page separates current behavior from the historical feasibility checks; only packs in the embedded catalogs are available in the app. Full publishers, revisions, licence copies, training-data disclosures and file pins: [optional-model inventory](licenses/optional-models.md).
 
 > This model is not part of DesktopTools. It was not created, trained, or owned by the DesktopTools project, and DesktopTools is not affiliated with or endorsed by its publisher.
 
@@ -8,15 +8,16 @@ DesktopTools 1.4.0 (working name) plans optional model packs that the user downl
 
 - **Settings → AI models** lists every optional model the app knows, with its purpose, licence, state (not downloaded, installed, damaged) and size. Downloaded translation packs from Text tools are listed on the same page and can be removed there. **Run on** shows where models run; this version uses the processor only.
 - **Download** opens a window that shows the model's publisher, original authors, source page, pinned revision, licence name and full licence text, training data, known limitations, download size and the warning above. Download stays disabled until you tick *I have read and accept this licence*. Nothing is requested from the network before you accept.
-- Files come straight from the publisher's own host (Hugging Face, GitHub, or the publisher's storage) at a pinned revision. Each file is checked against the SHA-256 checksum and size in the app's built-in catalog; a file that does not match is discarded and nothing is installed. A cancelled or failed download leaves nothing behind.
+- Files come straight from the publisher's own host (Hugging Face, GitHub, or the publisher's storage) at a pinned revision. Each file is checked against the SHA-256 checksum and size in the app's built-in catalog; a file that does not match is discarded and nothing is installed. A cancelled or failed download installs no partial pack; a hard process interruption can leave staging files, which the next install cleans up.
 - Models run only on this PC. Images, recordings and text you process are not sent anywhere. DesktopTools sends no telemetry.
-- A pack whose files later fail their checksum is shown as **Damaged** with **Download again**.
+- A pack whose files later fail their checksum is shown as **Damaged** with **Download again**. Initial list checks use file presence and size; full checksums are checked at install and when loading models. The page does not continuously hash every file.
+- Accepting a licence contacts no server by itself. The requested download contacts the named publisher and its allowed HTTPS download hosts; they can see your IP address. Consent records are local.
 
 ## Where packs are stored
 
 - Model packs: `%LOCALAPPDATA%\DesktopTools\Models\<pack id>\`. Each pack folder also holds `LICENSE.txt`, `ATTRIBUTION.txt` and `SOURCE.txt` (source page and revision).
 - Translation packs keep their own folder: `%LOCALAPPDATA%\DesktopTools\Translation\<direction>\`.
-- Updates and repairs leave both folders alone. **Export settings** does not include models or licence acceptances, and **Import settings** does not change them.
+- Portable builds use the same per-user local app-data folders, not a Models folder beside the executable. Updates and repairs leave both folders alone. **Export settings** does not include models or licence acceptances, and **Import settings** does not change them.
 
 ## Record of your acceptance
 
@@ -30,14 +31,14 @@ DesktopTools 1.4.0 (working name) plans optional model packs that the user downl
 
 ## OCR pack
 
-The first optional models. They give Text tools, the text view (Scan screen text, Extract text) and the screenshot library a second text reader beside Windows OCR.
+These optional models give Text tools, the text view (Scan screen text, Extract text) and the screenshot library a second text reader beside Windows OCR.
 
 | Pack id | Model (PaddlePaddle's own ONNX on Hugging Face) | Size | Needed for |
 |---|---|---|---|
 | `ocr-text-detector` | PP-OCRv5 mobile detector | 4.8 MB | every alphabet |
 | `ocr-latin` | PP-OCRv5 Latin recognizer | 8.0 MB | English and other Latin-alphabet languages |
 | `ocr-cyrillic` | PP-OCRv5 East Slavic recognizer | 7.9 MB | Russian, Ukrainian, Belarusian |
-| `ocr-chinese-japanese` | PP-OCRv5 Chinese/Japanese recognizer | 16.5 MB | Chinese and Japanese, with Latin letters and digits |
+| `ocr-chinese-japanese` | PP-OCRv5 Chinese/Japanese recognizer | 16.7 MB including character list | Chinese and Japanese, with Latin letters and digits |
 
 - **Choosing it:** Text tools → *Text from screenshot* → **Text reader**: *Windows OCR* (default) or *DesktopTools OCR pack*. With the pack, the language list shows the three alphabets; the one matching the Windows display language is preselected (Russian, Ukrainian and Belarusian → Cyrillic; Chinese and Japanese → Chinese and Japanese; everything else → Latin). Other Cyrillic languages (Bulgarian, Serbian, Macedonian) use letters the East Slavic recognizer does not have, so they are not mapped to it.
 - **Downloading:** **Download** beside the choice asks for consent to each missing pack (the text finder and the chosen alphabet), with the same licence window as Settings → AI models, and only then downloads them. Declining any of them downloads nothing.
@@ -69,7 +70,7 @@ Measured on the PC listed under [Feasibility results](#feasibility-results), pro
 
 Image tools → Background → **Background model** offers *Built-in* (the bundled 4.7 MB U2NetP, unchanged) and *High quality (optional download)*: BiRefNet-lite, pack `background-quality`, 224 MB, MIT, from the author's GitHub release `v1` (`BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx`). A release tag is not a commit: if the author ever replaced the file, its SHA-256 would no longer match and the download would be refused (nothing installed), so the catalog would need a new entry. Choosing High quality and **Remove background** asks for the licence in the consent window before the first download; declining keeps the image and the choice and downloads nothing. A missing or damaged pack never falls back silently to the built-in model: the status says so and offers the download. The model sees a 1,024 × 1,024 picture; the mask is scaled back to the original size and multiplied into its alpha, and the original file is never changed.
 
-- **Memory:** the model needs about 5.7 GB of private memory while it runs, so it runs with ONNX Runtime's memory arena off (with the arena on it failed with "bad allocation" on a 16 GB PC) and is refused up front, with a message suggesting Built-in, when less than 6 GB of commit memory is free. The session stays loaded for 60 seconds after the last removal, then is released; Quit and **Remove** release it at once.
+- **Memory:** the model needs about 5.7 GB of private memory while it runs, so it runs with ONNX Runtime's memory arena off (with the arena on it failed with "bad allocation" on a 16 GB PC) and is refused up front, with a message suggesting Built-in, when less than 6 GiB of commit memory is available. The session stays loaded for 60 seconds after the last removal, then is released; Quit and **Remove** request release; an active call must finish before deferred release.
 - **Touch up:** after a removal, **Restore** and **Erase** paint on the mask with a round brush (4–200 px); each stroke is one undo step, Export uses the touched-up mask, and any other edit or opening another image ends Touch up.
 
 Why BiRefNet-lite and not full U²-Net (rembg `u2net.onnx`, 176 MB, Apache-2.0): measured on the PC listed under [Feasibility results](#feasibility-results), ONNX Runtime CPU, 4 threads, on composites of a transparent subject and generated hair over busy, similar-colour and plain backgrounds (same preprocessing as the app):
@@ -90,30 +91,38 @@ Full U²-Net gives no gain on hair; BiRefNet-lite halves the edge error (hair ov
 - **Speed:** 60 px face found in 156 ms including the model load, 200 px face in 38 ms; screenshots larger than the model input are scaled down and boxes mapped back (checked at 3840 × 2160).
 - Real photos of many people, small faces in crowds, and faces of different skin tones and ages: **Not tested** beyond the single photo above.
 
+## Transcripts and translation
+
+The [video editor](video-editor.md#transcript) offers Fast (`speech-fast`, 292,076,206 bytes) and Accurate (`speech-accurate`, 969,285,022 bytes), both multilingual Whisper exports. The current packs contain the encoder, merged decoder, vocabulary, merges and generation configuration; the older feasibility totals below included additional support files. Captions are separate SRT/VTT/TXT files, not burned into video. Working transcripts and corrections stay under `%LOCALAPPDATA%\DesktopTools\transcripts`; users must review recognition errors.
+
+[Text tools](text-tools.md#translation-limits) uses beam search (at most four beams), accepts 20,000 characters and shows progress. New optional translation downloads use the same licence consent; existing packs keep working. OPUS-MT's training disclosure is OPUS parallel corpora collected from public translated texts with their own terms. Every direction's publisher, licence and revision is in [the inventory](licenses/optional-models.md#translation-packs).
+
 ## Feasibility results
+
+**Historical developer checks, not a feature list.** The object eraser and ISNet were dropped. Upscaling and GPU support are planned for a later update; none is exposed in this release. Older sample sizes, download totals and prototype pipelines below are retained as research evidence. The current pack list and exact pins are in [the inventory](licenses/optional-models.md).
 
 Measured on one PC: Intel Core i5-11600K (6 cores, 12 threads), 16 GB RAM, NVIDIA GeForce RTX 3060 Ti 8 GB (driver 32.0.16.1692), Windows 11 Pro build 26300.9711, .NET SDK 10.0.402, ONNX Runtime 1.31.1 CPU (graphics card runs: ONNX Runtime DirectML 1.24.4). Single observations, not performance guarantees.
 
 | Feature | Chosen model | Licence status | Download | Processor (CPU) | Graphics card (DirectML) | Decision |
 |---|---|---|---|---|---|---|
-| Object eraser | LaMa, `Carve/LaMa-ONNX` `lama_fp32.onnx` | Admitted (Apache-2.0) | 208.0 MB | 1.8–2.2 s per erase; session load 7–13 s; about 1.4 GiB private memory | Fails at run (MatMul node error, catchable) | Use LaMa on CPU. MI-GAN not needed as speed fallback |
+| Object eraser | LaMa, `Carve/LaMa-ONNX` `lama_fp32.onnx` | Admitted (Apache-2.0) | 208.0 MB | 1.8–2.2 s per erase; session load 7–13 s; about 1.4 GiB private memory | Fails at run (MatMul node error, catchable) | **Dropped from this update by the owner (2026-11-12); no eraser pack** |
 | Image upscaling | No candidate qualifies cleanly. Nearest: RealPLKSR ×4, `darktable-org/upscale-realplksr-onnx` | Unclear (weights licence stated only by the converter); Qualcomm Real-ESRGAN rejected by owner (zip on S3, no published checksum) | 29.7 MB | 1920×1080 → 4×: 244 s, peak 1.0 GiB (Swin2SR, the only clean licence: about 24 min) | 12.3 s (Swin2SR 50.7 s), output matches CPU | **Dropped from this update** (owner, 2026-11-13). Swin2SR is the candidate for a later update with GPU support. See [Upscaler](#task-2-upscaler) |
 | Transcripts, fast | Whisper base, `Xenova/whisper-base` | Admitted (MIT upstream, Apache-2.0 card) | 295 MB | 2.9–3.6 s per audio minute; peak 1.5 GiB (pruned encoder) | Encoder correct and 10× faster; decoder loop gives wrong text | CPU; strip encoder attention outputs |
 | Transcripts, accurate | Whisper small, `Xenova/whisper-small` | Admitted (MIT upstream, Apache-2.0 card) | 972 MB | 8.0–10.5 s per audio minute; peak 2.7 GiB (pruned encoder) | As base | CPU |
-| OCR pack | PP-OCRv5 mobile detector + Latin / East Slavic / Chinese-Japanese recognizers (PaddlePaddle's own ONNX) | Admitted (Apache-2.0) | 4.8 MB + 8.0 / 7.9 / 16.5 MB | 20 benchmark images: 99.2–100 % exact phrases vs 95.1 % current reader; full screen 2560×1440 about 5 s | Detector 17× faster; recognizer slower (new shape per line); same accuracy | Recommended engine; batch recognition |
+| OCR pack | PP-OCRv5 mobile detector + Latin / East Slavic / Chinese-Japanese recognizers (PaddlePaddle's own ONNX) | Admitted (Apache-2.0) | 4.8 MB + 8.0 / 7.9 / 16.5 MB | 20 benchmark images: 99.2–100 % exact phrases vs 95.1 % current reader; full screen 2560×1440 about 5 s | Detector 17× faster; recognizer slower (new shape per line); same accuracy | Implemented as the optional second engine with batch recognition; Windows OCR remains the default |
 | Background removal, quality | BiRefNet-lite (author's GitHub release v1); full U²-Net measured and not chosen | Admitted (MIT; U²-Net Apache-2.0); ISNet dropped by owner | 224 MB | 7.9 s at 1920 × 1080, about 5.7 GB private memory; edge error −46 % against the built-in model | **Not tested** | In catalog (`background-quality`); see [Background quality pack](#background-quality-pack) |
 | Face suggestions | YuNet `face_detection_yunet_2026may.onnx` | Admitted (MIT) | 0.2 MB | 38–156 ms per screenshot; threshold 0.6 (faceless screenshots ≤ 0.074, faces 0.94–0.96) | **Not tested** | In catalog (`faces`); Ultra-Light-Fast not needed. See [Face finder](#face-finder) |
 | Processor / graphics card choice | — | DirectML runtime licence is proprietary; Unclear against SignPath's OSI rule | +18.5 MB (DirectML.dll) | — | See [Graphics card](#task-6-graphics-card) | **Processor only for this update** |
 
-## Candidates and verification
+## Historical candidates and verification
 
 Licences were read on the publisher's own page at the revision listed. Model files are kept for later developer tests in `E:\DesktopTools-ai-spikes\models\<pack>\` (index: `E:\DesktopTools-ai-spikes\models\manifest-all.tsv`); test inputs are in `E:\DesktopTools-ai-spikes\inputs`.
 
 | Pack | Candidate | Status | Publisher / revision | File | Bytes | SHA-256 |
 |---|---|---|---|---|---|---|
-| Eraser | LaMa | **Admitted** | [Carve/LaMa-ONNX](https://huggingface.co/Carve/LaMa-ONNX/tree/c3c0c9e468934d62e79c329e35d82dd09ff8c444) `c3c0c9e468934d62e79c329e35d82dd09ff8c444`, card apache-2.0; original [advimman/lama](https://github.com/advimman/lama) Apache-2.0; conversion code Carve-Photos/lama Apache-2.0 | `lama_fp32.onnx` (publisher's recommended file) | 208,044,816 | `1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6` |
+| Eraser | LaMa | Dropped; historical licence check only | [Carve/LaMa-ONNX](https://huggingface.co/Carve/LaMa-ONNX/tree/c3c0c9e468934d62e79c329e35d82dd09ff8c444) `c3c0c9e468934d62e79c329e35d82dd09ff8c444`, card apache-2.0; original [advimman/lama](https://github.com/advimman/lama) Apache-2.0; conversion code Carve-Photos/lama Apache-2.0 | `lama_fp32.onnx` (publisher's recommended file) | 208,044,816 | `1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6` |
 | Eraser | LaMa (alternative file) | Not used | same revision | `lama.onnx` (publisher does not recommend) | 207,479,252 | `351e481e287f345b7fbfd026068cfb9ec0c7f24b440e6501458ebe54a833d1a1` |
-| Eraser, fallback | MI-GAN | **Admitted** | [andraniksargsyan/migan](https://huggingface.co/andraniksargsyan/migan/tree/406830d0fa60666da0071c342ad2fbc8f30c5c64) `406830d0fa60666da0071c342ad2fbc8f30c5c64` (first author; linked from the official [Picsart-AI-Research/MI-GAN](https://github.com/Picsart-AI-Research/MI-GAN) README); code MIT, `LICENSE-WEIGHTS` MIT | `migan_pipeline_v2.onnx` | 28,079,181 | `6f1f3530a1a2324b19752018ce756088b07973cda8d7d890034ace5c8a48c40b` |
+| Eraser, fallback | MI-GAN | Dropped; historical licence check only | [andraniksargsyan/migan](https://huggingface.co/andraniksargsyan/migan/tree/406830d0fa60666da0071c342ad2fbc8f30c5c64) `406830d0fa60666da0071c342ad2fbc8f30c5c64` (first author; linked from the official [Picsart-AI-Research/MI-GAN](https://github.com/Picsart-AI-Research/MI-GAN) README); code MIT, `LICENSE-WEIGHTS` MIT | `migan_pipeline_v2.onnx` | 28,079,181 | `6f1f3530a1a2324b19752018ce756088b07973cda8d7d890034ace5c8a48c40b` |
 | Upscaling | RealPLKSR ×4 (MSSIM pretrain, no GAN) | **Unclear** | [darktable-org/upscale-realplksr-onnx](https://huggingface.co/darktable-org/upscale-realplksr-onnx/tree/0bb636eeeed5fffd256571c3cc440d9fdf62467e) `0bb636eeeed5fffd256571c3cc440d9fdf62467e`, card mit; card says weights MIT "from upstream" [dslisleedh/PLKSR](https://github.com/dslisleedh/PLKSR) (MIT); the weights were actually released by neosr-project in [PLKSR issue #4](https://github.com/dslisleedh/PLKSR/issues/4) (Google Drive), whose MIT statement reads as covering the code; conversion script darktable-ai GPL-3.0+ (not shipped, not run by us); training data not documented | `onnx/model_x4.onnx` | 29,711,010 | `8ce692652494e2e5c31e1f7c7ab61eb084e9a450cde727a374f5d6746cfe054b` (shown by Hugging Face for the LFS file; download matches) |
 | Upscaling | Swin2SR real-world ×4 (BSRGAN, PSNR) | **Admitted**, too slow on CPU | [onnx-community/swin2SR-realworld-sr-x4-64-bsrgan-psnr-ONNX](https://huggingface.co/onnx-community/swin2SR-realworld-sr-x4-64-bsrgan-psnr-ONNX/tree/9b3baf051f6708d0b697580489e4415b64c7378e) `9b3baf051f6708d0b697580489e4415b64c7378e`, card apache-2.0; converted from [caidas/swin2SR-realworld-sr-x4-64-bsrgan-psnr](https://huggingface.co/caidas/swin2SR-realworld-sr-x4-64-bsrgan-psnr) `bb13f02e` (apache-2.0), from [mv-lab/swin2sr](https://github.com/mv-lab/swin2sr) Apache-2.0 release v0.0.1 `Swin2SR_RealworldSR_X4_64_BSRGAN_PSNR.pth` | `onnx/model.onnx` | 53,827,735 | `987d88b356554161cbb8f67b7a8f4162cad6dc147839c344e3d5142140f25d6f` (shown by Hugging Face for the LFS file; download matches) |
 | Upscaling | Xenova Swin2SR ×4 exports (`realworld` `d0e99269`, `classical` `c60eac19`, `compressed` `7d3f2242`) | **Unclear** (cards state no licence) → not used | — | — | — | — |
@@ -127,7 +136,7 @@ Licences were read on the publisher's own page at the revision listed. Model fil
 | OCR | Latin recognizer | **Admitted** | PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx `89d3a50e2c27e2e7cceeab0e944c25c807d5db4f` | `inference.onnx` (+ `inference.yml` 6,817 B `0bbe9845…c5f84`) | 8,042,023 | `7888113072263cb471b93f66dd5e2ad70548dc526fa1ace760d0d973dd121498` |
 | OCR | East Slavic recognizer | **Admitted** | PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx `9a32171fc5718746875e1a261818884517975013` | `inference.onnx` (+ `inference.yml` 4,538 B `025039ba…ee5a`) | 7,887,627 | `b3018ef2b09a0250b6e0c8e871c927098363e5fd4df890cc68e8358eb0aaf1bd` |
 | OCR | Chinese / Japanese recognizer | **Admitted** | PaddlePaddle/PP-OCRv5_mobile_rec_onnx `ed152b8b495f84de93cda5709d768548a9127622` | `inference.onnx` (+ `inference.yml` 148,345 B `5dfeb277…5d8e`) | 16,534,782 | `da72dc72ca4dc220df0dfde68c1dedc31c58d3e76a25871122e5056227d50092` |
-| Background | Full U²-Net | **Admitted** | rembg release v0.0.0 ([danielgatis/rembg](https://github.com/danielgatis/rembg) MIT; [xuebinqin/U-2-Net](https://github.com/xuebinqin/U-2-Net) Apache-2.0), same lineage as the bundled U2NetP | `u2net.onnx` | 175,997,641 | `8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491` |
+| Background | Full U²-Net | Not chosen; measured comparison only | rembg release v0.0.0 ([danielgatis/rembg](https://github.com/danielgatis/rembg) MIT; [xuebinqin/U-2-Net](https://github.com/xuebinqin/U-2-Net) Apache-2.0), same lineage as the bundled U2NetP | `u2net.onnx` | 175,997,641 | `8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491` |
 | Background | ISNet general-use | **Unclear** → not downloaded | [xuebinqin/DIS](https://github.com/xuebinqin/DIS) states Apache-2.0 for code and metric only; weights on Google Drive with no licence statement; DIS5K has its own terms | (rembg `isnet-general-use.onnx` 178,648,008 B) | — | — |
 | Background | BiRefNet-lite | **Admitted** | Author's [ZhengPeng7/BiRefNet](https://github.com/ZhengPeng7/BiRefNet) MIT, GitHub release v1; identical file in onnx-community/BiRefNet_lite `de15b22b` (card mit) | `BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx` | 224,005,088 | `5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333` |
 | Faces | YuNet 2026may | **Admitted** | [opencv/opencv_zoo](https://github.com/opencv/opencv_zoo) commit `48b10fa505aeb51fbd127fc60a5c660040e823b7`; model folder README: all files MIT (Copyright (c) 2020 Shiqi Yu) | `models/face_detection_yunet/face_detection_yunet_2026may.onnx` (dynamic size) | 229,738 | `ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0` |
@@ -164,7 +173,7 @@ Requirement: a ready ONNX file on the publisher's own page at a pinned revision,
 - Crop with context: square around the mask's bounding box plus 128 px context (minimum 256), resized to 512, result resized back, only masked pixels written. Pixels outside the mask changed: 0 in all 9 cases. Tested on a generated 1280×720 screenshot-like image and two public-domain/CC0 photos (scikit-image astronaut, coffee); images in `artifacts/spikes/out/erase-*.png`.
 - LaMa CPU: 1.8–2.2 s per erase, session load 7–13 s, about 1.4 GiB private memory while loaded.
 - MI-GAN: uint8 in/out, any size, 0.5–0.8 s, but visibly worse (smears on photos) and changes pixels outside the mask unless composited.
-- Decision: LaMa.
+- Historical prototype choice: LaMa. **Superseded by the owner on 2026-11-12: object eraser removed from this update.**
 
 ## Task 4: OCR pack
 
@@ -173,7 +182,7 @@ Requirement: a ready ONNX file on the publisher's own page at a pinned revision,
 - 20 images from the existing `--ocr-bench` generator (10 English, 10 Russian): exact phrases 122/123 (99.2 %) at native size, 123/123 with the publisher's 960 px resize, vs 117/123 (95.1 %) for the current Windows reader; gains at 9 px and 13 px Russian text. Per image: detector 19–89 ms + recognizer 54–134 ms vs 105–671 ms today.
 - Full-screen 2560×1440 generated screen (~150 lines): about 5 s and 1.2–1.35 GiB at native size; 960 px resize 2.8–3.5 s but 16 small lines lost. Recognition runs one line at a time; batching is the obvious speed-up.
 - Word boxes from CTC time steps are good enough for selection (off by up to a fraction of a character).
-- Decision: recommended engine. Run the full 120-image benchmark in the OCR plan. Chinese/Japanese accuracy **Not tested**.
+- Historical recommendation: offer this as the second engine. The implemented 120-image benchmark and batched pipeline are described under [OCR pack](#ocr-pack); Windows OCR remains the default. Broader Chinese/Japanese accuracy is **Not tested**.
 
 ## Task 5: transcripts
 
@@ -199,10 +208,9 @@ Requirement: a ready ONNX file on the publisher's own page at a pinned revision,
 - Decision: **ship Processor only in this update.** A try/catch fallback is not enough when one failure is silent wrong output and another an uncatchable crash; the switch would downgrade ONNX Runtime for the whole app; and the DirectML licence must be checked against SignPath's requirement that all components use an OSI-approved licence. Revisit with Windows ML or a newer GPU backend, an allow-list of verified models and out-of-process inference; the upscaler gain (14×) is the strongest reason.
 - AMD and Intel graphics, PCs with no dedicated card, other Windows builds: **Not tested**.
 
-## Legal findings
+## Owner review before release
 
-- **SignPath Foundation** ([terms](https://signpath.org/terms), read 2026-11-12): no statement found about components downloaded at run time. Related requirements: the privacy policy must say the program "will not transfer any information to other networked systems unless specifically requested by the user"; and "The project must use an OSI-approved Open Source license … for all components."
-- **EU AI Act Article 50** ([Commission guidelines C(2026) 5054 final, 20.7.2026](https://ai-act-service-desk.ec.europa.eu/sites/default/files/2026-07/guidelines_on_the_implementation_of_the_transparency_obligations_for_certain_ai_systems_under_article_50_of_the_ai_act_bzptwqhk0ikg1dtlddap41psfy_131215.pdf), section 4.3, paragraphs 90–92, pp. 28–29): examples covered by the standard-editing exception include "sharpening for enhanced clarity", "deleting and obscuring backgrounds", pixel filling for clarity and transcriptions of conversations. Marking is required for "Removal, replacement or insertion of objects or persons" that "changes meaning and substance of the content"; a system usable both ways gets the exception only for content altered in a minor, non-substantial way. The guidelines are not binding.
+The design leaves the sufficiency of training-data disclosure undecided. The catalogs show the known datasets and explicitly state where they are not itemised or published; this does not settle their terms. The owner should review that disclosure and the final consent wording before release. See section 2 of the repository design (`docs/superpowers/specs/2026-11-11-local-ai-update-design.md`). Historical feasibility decisions do not add models to the shipped catalog.
 
 ## Spike code
 

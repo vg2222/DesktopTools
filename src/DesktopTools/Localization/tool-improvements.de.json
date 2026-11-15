@@ -1,7 +1,7 @@
 {
   "Translation pack: {0} → {1}": "Übersetzungspaket: {0} → {1}",
   "Translates text between these two languages on this PC.": "Übersetzt Text zwischen diesen beiden Sprachen auf diesem PC.",
-  "Text tools (Translate)": "Text-Tools (Übersetzen)",
+  "Text tools (Translate)": "Textwerkzeuge (Übersetzen)",
   "OPUS parallel corpora (opus.nlpl.eu), collected from public translated texts with their own terms.": "OPUS-Parallelkorpora (opus.nlpl.eu), gesammelt aus öffentlichen übersetzten Texten mit eigenen Bedingungen.",
   "Translates one sentence at a time, so context across sentences can be lost.": "Übersetzt Satz für Satz, daher kann satzübergreifender Kontext verloren gehen.",
   "Names, numbers and technical terms can be translated wrongly.": "Namen, Zahlen und Fachbegriffe können falsch übersetzt werden.",
@@ -41,7 +41,7 @@
   "Face finder": "Gesichtssuche",
   "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Findet, wo sich Gesichter in einem Screenshot befinden, damit „Screenshot prüfen“ vorschlagen kann, sie abzudecken. Sie erkennt nicht, wer jemand ist, und speichert nichts über Gesichter.",
   "Screenshot editor (Check screenshot)": "Screenshot-Editor (Screenshot prüfen)",
-  "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE, ein öffentlicher Datensatz zur Gesichtserkennung, wie im Trainings-Repository des Herausgebers beschrieben.",
+  "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE, ein öffentlicher Datensatz zur Gesichtsdetektion, wie im Trainings-Repository des Herausgebers beschrieben.",
   "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.": "Findet Gesichter von etwa 10 bis 300 Pixeln Breite; sehr kleine, sehr große, abgewandte oder verdeckte Gesichter können übersehen werden.",
   "Can mark things that only look like faces.": "Kann Dinge markieren, die nur wie Gesichter aussehen.",
   "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Das hochwertige Modell konnte nicht geladen werden. Schließen Sie andere Apps und versuchen Sie es erneut, oder wählen Sie „Integriert“.",

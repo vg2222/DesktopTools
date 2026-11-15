@@ -39,11 +39,11 @@
   "Face finder ready. Check the screenshot again to include faces.": "Поиск лиц готов. Проверьте снимок ещё раз, чтобы учесть лица.",
   "The face finder is not downloaded.": "Поиск лиц не загружен.",
   "Face finder": "Поиск лиц",
-  "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Находит, где на снимке экрана есть лица, чтобы «Проверить снимок» мог предложить их закрыть. Не определяет, кто это, и ничего не сохраняет о лицах.",
+  "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Находит лица на снимке экрана, чтобы при проверке снимка можно было предложить их закрыть. Не определяет, кто изображён, и ничего не сохраняет о лицах.",
   "Screenshot editor (Check screenshot)": "Редактор снимков (Проверить снимок)",
   "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE — общедоступный набор данных для обнаружения лиц, как описано в репозитории обучения издателя.",
   "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.": "Находит лица размером примерно от 10 до 300 пикселей; очень маленькие, очень большие, повёрнутые или закрытые лица могут быть пропущены.",
   "Can mark things that only look like faces.": "Может отметить то, что лишь похоже на лицо.",
-  "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Не удалось загрузить модель высокого качества. Закройте другие приложения и повторите попытку или выберите «Встроенная».",
+  "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Не удалось загрузить модель высокого качества в память. Закройте другие приложения и повторите попытку или выберите «Встроенная».",
   "Faces were not checked this time. Check the screenshot again.": "В этот раз лица не проверялись. Проверьте снимок экрана ещё раз."
 }

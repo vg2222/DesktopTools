@@ -7,7 +7,7 @@
   "Reads English and other languages written in the Latin alphabet.": "Liest Englisch und andere Sprachen in lateinischer Schrift.",
   "Reads Russian, Ukrainian and Belarusian text.": "Liest russischen, ukrainischen und belarussischen Text.",
   "Reads Chinese and Japanese text, with Latin letters and digits mixed in.": "Liest chinesischen und japanischen Text, auch mit eingestreuten lateinischen Buchstaben und Ziffern.",
-  "Text tools (DesktopTools OCR pack)": "Text-Tools (DesktopTools-OCR-Paket)",
+  "Text tools (DesktopTools OCR pack)": "Textwerkzeuge (DesktopTools-OCR-Paket)",
   "PaddleOCR internal and public data; the publisher does not itemise it.": "Interne und öffentliche Daten von PaddleOCR; der Herausgeber schlüsselt sie nicht auf.",
   "Reads horizontal text. Vertical and strongly rotated text is not supported.": "Liest waagerechten Text. Senkrechter und stark gedrehter Text wird nicht unterstützt.",
   "Text in another alphabet on the same picture can be misread.": "Text in einem anderen Alphabet im selben Bild kann falsch gelesen werden.",

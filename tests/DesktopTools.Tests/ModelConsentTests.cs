@@ -20,7 +20,7 @@ internal static class ModelConsentTests
 
             var store = new ModelConsentStore(directory);
             Check(!store.IsCurrent(pack, license) && store.All.Count == 0, "Consent current before Accept");
-            store.Accept(pack, license, now, "1.4.0");
+            store.Accept(pack, license, now, "1.3.0");
             Check(store.IsCurrent(pack, license), "Consent not current after Accept");
             Check(Directory.GetFiles(directory, "*.tmp").Length == 0, "Accept left a temporary file");
             Check(File.Exists(Path.Combine(directory, "consents.json")), "consents.json not written");
@@ -28,7 +28,7 @@ internal static class ModelConsentTests
             var reloaded = new ModelConsentStore(directory);
             Check(reloaded.IsCurrent(pack, license), "Consent lost on reload");
             var record = reloaded.All.Single();
-            Check(record.PackId == pack.Id && record.Revision == "abc123" && record.LicenseId == "bsd-3-clause" && record.AcceptedAt == now && record.AppVersion == "1.4.0"
+            Check(record.PackId == pack.Id && record.Revision == "abc123" && record.LicenseId == "bsd-3-clause" && record.AcceptedAt == now && record.AppVersion == "1.3.0"
                 && record.LicenseSha256 == ModelConsentStore.LicenseHash(license), "Record fields");
 
             Check(!reloaded.IsCurrent(pack with { Revision = "def456" }, license), "Consent survives a new revision");
@@ -37,7 +37,7 @@ internal static class ModelConsentTests
             Check(reloaded.IsCurrent(pack, license.Replace("\r\n", "\n")), "Line endings alone ask again");
 
             var other = pack with { Id = "other-pack" };
-            reloaded.Accept(other, license, now, "1.4.0");
+            reloaded.Accept(other, license, now, "1.3.0");
             reloaded.Accept(pack, license + "changed", now.AddDays(1), "1.4.1");   // a fresh acceptance replaces the old record
             Check(reloaded.All.Count == 2 && reloaded.All.Single(r => r.PackId == pack.Id).AppVersion == "1.4.1", "Re-acceptance did not replace the record");
             reloaded.Remove(pack.Id);
@@ -48,7 +48,7 @@ internal static class ModelConsentTests
             var damaged = new ModelConsentStore(directory);
             Check(damaged.All.Count == 0 && !damaged.IsCurrent(other, license), "Malformed file did not load as empty");
             Check(File.ReadAllText(Path.Combine(directory, "consents.json.invalid")) == "{broken", "Malformed file not kept as consents.json.invalid");
-            damaged.Accept(pack, license, now, "1.4.0");
+            damaged.Accept(pack, license, now, "1.3.0");
             Check(new ModelConsentStore(directory).IsCurrent(pack, license), "Store unusable after recovery");
             Check(Directory.GetFiles(directory, "*.tmp").Length == 0, "Temporary file left after recovery");
 

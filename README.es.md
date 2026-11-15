@@ -53,9 +53,18 @@ Elige un monitor, una ventana o una zona y configura el sonido y la calidad ante
 
 ![Grabador de pantalla con una fuente seleccionada](assets/readme/recorder.png)
 
+## Herramientas opcionales de IA local
+
+- **Leer texto:** conserva el OCR de Windows o descarga el paquete OCR para texto latino, cirílico eslavo oriental o chino/japonés. El escaneo de pantalla, la extracción de texto y la biblioteca de capturas siguen tu elección.
+- **Transcribir grabaciones:** la pestaña Transcripción del editor de vídeo crea líneas con tiempos que puedes buscar y corregir, con modelos de voz rápido o preciso. Guarda SRT, VTT o texto; al exportar un MP4 puedes guardar subtítulos separados adaptados a sus cortes.
+- **Mejorar imágenes:** el paquete opcional de mayor calidad de fondo ofrece máscaras más detalladas, con retoques para restaurar o borrar. El detector opcional de caras sugiere zonas que tapar al comprobar una captura; tú decides qué ocultar.
+- **Nombres y detalles ocultos:** activa nombres inteligentes para las capturas a partir de la aplicación y el título de la ventana, o elimina los detalles ocultos al exportar una copia de una imagen. El original queda intacto y no hace falta descargar modelos.
+
+La IA solo usa el procesador. La traducción admite ahora hasta 20.000 caracteres con progreso y una mejor selección de traducciones por frase. Consulta [modelos, mediciones y límites](docs/ai-models.md) y las [notas de la versión 1.3.0](docs/releases/1.3.0.md).
+
 ## 🔒 Diseñado para trabajar de forma local
 
-Sin cuenta. Sin telemetría. Sin procesar tu contenido en la nube. Tus capturas, notas, reconocimiento de texto, traducciones y eliminación de fondos se procesan en tu PC. Los paquetes adicionales se descargan una sola vez; tu texto nunca se envía al servidor de modelos.
+Sin cuenta. Sin telemetría. Sin procesar tu contenido en la nube. Tus imágenes, grabaciones, notas y textos permanecen en tu PC. Los modelos opcionales solo se descargan cuando lo pides y aceptas la licencia del editor. Las descargas usan la URL del editor con una revisión fijada y se comprueban por tamaño y SHA-256; el servidor de descarga puede ver tu dirección IP. El modelo de fondo y la traducción inglés–ruso incluidos siguen disponibles sin descargas opcionales.
 
 Tú eliges dónde guardar las imágenes y grabaciones. La comprobación automática de actualizaciones consulta GitHub para obtener información sobre las versiones; no sube tus archivos multimedia ni tus notas. Cambia el intervalo o desactiva las comprobaciones automáticas en **Configuración → Actualizaciones**. La página **Noticias** puede consultar cada hora los anuncios de este repositorio y tiene su propio interruptor. Los avisos de seguridad nunca instalan una actualización sin tu confirmación.
 
@@ -86,7 +95,7 @@ La página **Atajos** muestra todas las asignaciones de funciones. Las asignacio
 
 La grabación de pantalla, la traducción sin conexión y la eliminación de fondos necesitan Microsoft Visual C++ x64 Redistributable. La grabación y edición de vídeo usan Windows Media Foundation. Las frecuencias de grabación de hasta 144 FPS son objetivos; el rendimiento real depende de la fuente, el codificador y el hardware. Consulta la página de [compatibilidad](docs/compatibility.md) para conocer las limitaciones de captura y la cobertura actual de las pruebas. El instalador comprueba el componente Visual C++ y ofrece la página de descarga de Microsoft si es necesario.
 
-La aplicación está disponible en **12 idiomas** (inglés, ruso, alemán, francés, español, ucraniano, chino simplificado, portugués, japonés, polaco, turco e italiano), además de los modos claro, oscuro y del sistema. Las herramientas de texto ofrecen [20 idiomas de traducción sin conexión](docs/offline-languages.md); inglés–ruso está incluido. Los idiomas compatibles de Windows aparecen primero. El OCR utiliza los reconocedores instalados en Windows.
+La aplicación está disponible en **12 idiomas** (inglés, ruso, alemán, francés, español, ucraniano, chino simplificado, portugués, japonés, polaco, turco e italiano), además de los modos claro, oscuro y del sistema. Las herramientas de texto ofrecen [20 idiomas de traducción sin conexión](docs/offline-languages.md); inglés–ruso está incluido. Los idiomas compatibles de Windows aparecen primero. El OCR de Windows utiliza los reconocedores instalados; el paquete OCR opcional aporta sus propios alfabetos.
 
 <details>
 <summary><strong>🛠️ Compilar y contribuir</strong></summary>

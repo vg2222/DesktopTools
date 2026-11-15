@@ -205,7 +205,7 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 2. Put a web address, an e-mail address and a phone number in the region. They should be underlined; Ctrl+click opens them (use a harmless address), the context menu copies the link. Press F2 on a misread word, correct it, copy again: the correction is used. Close and reopen: the picture is unchanged.
 3. Select a region with no text and a very large region: expect "No text found" and the existing crop guidance, no frozen window. Close the window while it is still reading.
 4. With translation enabled, select words and press Translate: Text tools opens with exactly that text. Disable translation: the button disappears.
-5. Screenshot editor: draw something, More menu ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
+5. Screenshot editor: draw something, toolbar ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
 6. Image tools: open a PNG. The tabs Resize, Crop, Output, Background and **Annotate** sit in a row under the title. In Annotate draw, then **Check screenshot** and **Hide all found**; switch to Crop: the drawing is baked in as one step, Undo removes it. While in Annotate, the title-bar Undo/Redo are disabled; closing the window with unbaked drawings asks to save.
 7. The title-bar picture button changes to a pen while the original is shown and back again; hover text and screen-reader name say "Show original" / "Show edited". Press it while in Annotate: the drawing is baked and the original is shown on the normal canvas.
 8. Image tools **Extract text** (the text icon next to it): the workspace is replaced by the text view, title-bar Undo/Redo/Original are disabled, **Back to editing** returns to the same tab.
@@ -237,9 +237,9 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 - [ ] Opening any tool window: the content rises into place once and ends fully opaque and in its final position.
 - [ ] In a non-English language, pin and unpin a window, trigger a shortcut conflict, and open the translation picker: the notices and language names are translated.
 
-## Optional AI models (1.4.0)
+## Optional AI models (1.3.0)
 
-Use a catalog with at least one entry (a developer build may point a test catalog at the files in `E:\DesktopTools-ai-spikes\models`).
+Use the shipped catalog with disposable test media and an isolated test data folder. These are cases to run, not a record of passing tests; record the date, Windows build, hardware, display scaling and result. Any case not run is **Not tested**.
 
 - [ ] Settings → AI models: each entry shows name, purpose, licence, state and download size; **Run on** offers only Processor; the short warning is under the list. Check English and one other language, light and dark.
 - [ ] Download with the network off: the consent window opens, and after accepting, a clear message names the host; nothing appears installed and no `.download-*` folder stays in `%LOCALAPPDATA%\DesktopTools\Models`.
@@ -250,7 +250,7 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] A downloaded translation pack appears under **Translation packs**; Remove deletes it and Text tools offers it again.
 - [ ] Update or repair the app with packs installed: they stay installed. Export settings: the zip has no `Models` entries. Reset all app data: the `Models` folder is gone.
 
-### OCR pack (1.4.0)
+### OCR pack (1.3.0)
 
 - [ ] Text tools → Text from screenshot → **Text reader** shows Windows OCR (default) and DesktopTools OCR pack. Choosing the pack lists Latin alphabet, Cyrillic, Chinese and Japanese; the one for the Windows display language is preselected; the status line says what is missing and **Download** is shown. Check English and one other language, light and dark, 100 % and 200 %.
 - [ ] **Download** with the network off: the consent window opens for the text finder, then for the alphabet; after accepting, a clear error names the host and nothing is installed. Decline the second window: nothing is downloaded. With the network on: both packs download with the progress bar, the status reads *OCR pack ready*, and Settings → AI models lists both as installed.
@@ -260,7 +260,7 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] Switch the reader back to Windows OCR: the Windows language list returns, the saved Windows language is kept, and scans no longer load the pack (memory drops back within about a minute after the last pack scan).
 - [ ] Chinese and Japanese: scan a real Chinese and a real Japanese page and have someone who reads them judge the result (accuracy is **Not tested** by the automated checks).
 
-### Transcripts (1.4.0)
+### Transcripts (1.3.0)
 
 - [ ] Record a short clip with system audio (play speech, for example Windows text-to-speech) on a secondary monitor. The saved-recording notice shows **Transcribe**; it opens the video editor with the **Transcript** tab. With the video editor disabled, the button is not shown.
 - [ ] First Transcribe: the consent notice appears once; **Cancel** transcribes nothing, **Continue** does not ask again. Then, with the network off and no model: the licence window opens, and after accepting a clear error names the host and nothing is installed. Decline the licence: *Download canceled.* and nothing is downloaded. With the network on: the model downloads, the status says it is ready, and transcription starts.
@@ -271,17 +271,17 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] Damage a model file (change one byte): Transcribe reports the model as damaged and the AI models page shows **Damaged** with **Download again**.
 - [ ] Check the tab in English and one other language, light and dark, 100 % and 200 %: nothing is clipped; long labels wrap.
 
-### Background quality, face finder and translation (1.4.0)
+### Background quality, face finder and translation (1.3.0)
 
-- [ ] Image tools → open a photo with hair or fur → Background → **Background model** → *High quality (optional download)* → **Remove background**: the consent window opens; decline: *Download canceled.*, the image and the choice are kept and nothing is downloaded. Accept: the download progress shows, then the removal runs and the result is visibly cleaner at the hair than *Built-in*. Check on a secondary monitor, English and one other language, light and dark, 100 % and 200 %.
-- [ ] With less than 6 GB of free memory (open large apps first), High quality is refused with the message suggesting Built-in; the image is unchanged. Damage the pack (change one byte): the status says it is damaged and offers the download again; the built-in model is not used silently.
+- [ ] Image tools → open a photo with hair or fur → Background → **Background model** → *High quality (optional download)* → **Remove background**: the consent window opens; decline: *Download canceled.*, the image and the choice are kept and nothing is downloaded. Accept: the download progress shows, then the removal runs and compare the hair against *Built-in* and record any improvement or regression (the quality model can remove wanted content). Check on a secondary monitor, English and one other language, light and dark, 100 % and 200 %.
+- [ ] On a test PC with less than 6 GiB of available commit memory, High quality is refused with the message suggesting Built-in; the image is unchanged. Damage the pack (change one byte): the status says it is damaged and offers the download again; the built-in model is not used silently.
 - [ ] After a removal, **Touch up**: **Restore** brings back a removed area, **Erase** removes a leftover; change **Brush size** from 4 to 200 px; each stroke is one Undo step, and undoing past the removal turns the brush off; rotate or crop: Touch up ends. Export a PNG: the touched-up mask is in the copy and the original file is unchanged.
 - [ ] Screenshot editor → **Check screenshot** on a capture containing a photo of a face: the face row under the findings offers the face finder with its size; **Download** opens the consent window; after accepting, *Face finder ready*; check again: the face is suggested with the other findings and nothing is hidden until chosen. A capture without faces suggests none.
 - [ ] Text tools → choose a language pair that needs a new translation pack → **Download**: the consent window opens for each new pack; decline any: *Download canceled.* and nothing is downloaded. Accept: the packs download with progress and translation works.
 - [ ] Translate a passage of about 10,000–20,000 characters: the progress bar advances, the window stays responsive, **Cancel** stops within a few seconds; text over 20,000 characters is refused with the length message. Translate again within a minute: it starts without reloading; memory drops back about a minute after the last translation.
 - [ ] Have someone who reads Russian (and each language of any downloaded pack) judge a few translations; subjective quality is **Not tested** by the automated checks.
 
-## Smart file names and hidden file details (1.4.0)
+## Smart file names and hidden file details (1.3.0)
 
 - [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.
 - [ ] With "Smart", capture a region over a browser tab on a secondary monitor: the saved name starts with the browser name and contains the page title; capture the bare desktop: the name is the date-and-time one; capture an Outlook or Mail window whose title shows an e-mail address: the address is not in the name. Two captures in one second give `-2`. The Save PNG dialog suggests the same smart name.
@@ -291,3 +291,12 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] A tick in the Hide data panel is ticked in the export dialog for the same image; opening another image starts unticked. A screenshot in the editor says it has no hidden details and the checkbox is unavailable.
 - [ ] A wide-gamut photo with an embedded Display P3 profile, exported as PNG ticked and unticked, looks the same in the Photos app as the original next to it (colours far outside sRGB may be slightly less saturated: exports are sRGB).
 
+
+## Additional local AI release checks (1.3.0)
+
+- [ ] Before consent, observe network activity: opening the pack list or consent window sends no model request. Cancel leaves files untouched. Accept a pack: only catalog publisher/download hosts are contacted, files match catalog size/SHA-256, and no test content is uploaded. Check the same flow for a translation route needing two packs; decline the second and verify neither is downloaded.
+- [ ] Inspect a completed model folder for licence, attribution and source revision; a translation folder has its README, attribution and licence. Export/import settings excludes model files and acceptance records. With disposable app data, test update, repair and both uninstall data choices. Retain captions beside user videos unless the user deletes them.
+- [ ] Retry a cancelled, truncated or checksum-mismatched download in a developer fixture; it starts cleanly and never offers a partial pack as installed. Change the fixture revision or licence text: the next download asks for fresh consent, while an already installed pack continues to work.
+- [ ] Start a translation, then Check screenshot with the face pack installed: text findings remain usable and the face row says faces were not checked if the runtime is busy. Repeat after the translation finishes. Check harmless faceless pages for false positives and a range of consenting subjects for missed faces.
+- [ ] Run repeated OCR, background removal, transcription and translation; switch between them and close each window mid-work. After idle, removal and Quit, check session/handle release. Separately run and record the design's 200-screenshot / 50-editor memory plateau scenario; idle model release alone does not prove that scenario.
+- [ ] Review every new consent, OCR, transcript, filename, metadata and background/face dialog in all 12 UI languages at minimum size, both themes, 100% and 200% scale. Use the exact-string review list in [the language review](localization-review-1.3.0.md). Verify recording/sharing privacy from an actual receiving viewer; API success alone is insufficient.

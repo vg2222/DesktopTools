@@ -41,7 +41,7 @@
   "Face finder": "Localizador de rostos",
   "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.": "Encontra onde há rostos em uma captura para que Verificar captura possa sugerir cobri-los. Não reconhece quem é a pessoa e não guarda nada sobre rostos.",
   "Screenshot editor (Check screenshot)": "Editor de capturas (Verificar captura)",
-  "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE, um conjunto de dados público de detecção de rostos, conforme descrito no repositório de treinamento do publicador.",
+  "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.": "WIDER FACE, um conjunto de dados público de detecção de rostos, conforme descrito no repositório de treinamento do editor.",
   "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.": "Encontra rostos de cerca de 10 a 300 pixels; rostos muito pequenos, muito grandes, virados ou cobertos podem passar despercebidos.",
   "Can mark things that only look like faces.": "Pode marcar coisas que apenas parecem rostos.",
   "The high-quality model could not be loaded. Close other apps and try again, or choose Built-in.": "Não foi possível carregar o modelo de alta qualidade. Feche outros aplicativos e tente novamente, ou escolha Integrado.",

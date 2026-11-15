@@ -41,7 +41,7 @@
   "This video has no audio track to transcribe.": "У цьому відео немає звукової доріжки для розшифровки.",
   "No speech was found.": "Мовлення не знайдено.",
   "Captions were not saved next to the video. The transcript is kept in DesktopTools.": "Субтитри не збережено поруч із відео. Розшифровка зберігається в DesktopTools.",
-  "Made by a speech model on this PC. It can mishear words or invent text during silence; check it before you rely on it.": "Створено мовною моделлю на цьому ПК. Вона може недочути слова або вигадати текст у тиші; перевірте результат, перш ніж на нього покладатися.",
+  "Made by a speech model on this PC. It can mishear words or invent text during silence; check it before you rely on it.": "Створено моделлю розпізнавання мовлення на цьому ПК. Вона може недочути слова або вигадати текст у тиші; перевірте результат, перш ніж на нього покладатися.",
   "Transcripts: fast model": "Розшифровка: швидка модель",
   "Turns speech in recordings into text. Smaller and quicker; about 3 to 4 seconds per minute of audio on a typical processor.": "Перетворює мовлення в записах на текст. Менша й швидша; близько 3–4 секунд на хвилину звуку на звичайному процесорі.",
   "Video editor (Transcript)": "Відеоредактор (розшифровка)",

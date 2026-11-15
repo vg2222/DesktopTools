@@ -74,6 +74,10 @@ Optional AI models are **not distributed with DesktopTools** and are not covered
 | BiRefNet-lite, general (`background-quality`) | Peng Zheng, [ZhengPeng7/BiRefNet](https://github.com/ZhengPeng7/BiRefNet), GitHub release asset | `v1` (`BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx`) | MIT | Image tools (Background, High quality) |
 | YuNet face detector (`faces`) | OpenCV, [opencv_zoo/face_detection_yunet](https://github.com/opencv/opencv_zoo/tree/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet); model by Shiqi Yu and co-authors | `48b10fa505aeb51fbd127fc60a5c660040e823b7` | MIT | Screenshot editor (Check screenshot, face suggestions) |
 
+The complete [optional-model inventory](docs/licenses/optional-models.md) lists every AI and translation pack, publisher, pinned revision, licence text and training-data disclosure. It also records every AI file's size and SHA-256; the embedded translation catalog supplies those pins for all translation files. No NuGet package was added or upgraded since 1.3.0. Full optional-model licence copies are available offline under `docs/licenses/` as well as in the app's `Assets/Models/Licenses/` directory.
+
+Training data for PP-OCRv5: PaddleOCR internal and public data; the publisher does not itemise it. OPUS-MT translation uses OPUS parallel corpora collected from public translated texts with their own terms. These disclosures do not claim that dataset terms are unrestricted.
+
 The OCR pack repositories carry no licence file of their own; their model cards state Apache-2.0, as does PaddleOCR. The app shows and stores the bundled `Assets/Models/Licenses/Apache-2.0.txt` for them.
 
 The Whisper export repositories also carry no licence file; OpenAI's repository licenses the code and model weights under MIT, and the export model cards state Apache-2.0. The app shows and stores the bundled `Assets/Models/Licenses/Whisper-MIT-Apache-2.0.txt`, which contains both texts. Whisper was trained on 680,000 hours of audio collected from the web; OpenAI has not published that dataset.
