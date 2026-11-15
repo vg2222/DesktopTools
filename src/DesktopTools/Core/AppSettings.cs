@@ -80,7 +80,7 @@ public sealed class AppSettings
     public bool DrawingEnabled { get; set; } = true;
     public bool CaptureEnabled { get; set; } = true;
     public string ThemePreset { get; set; } = "Classic";
-    public string PrimaryColor { get; set; } = "#2563EB";
+    public string PrimaryColor { get; set; } = "#6A45E0";
     public string BackgroundColor { get; set; } = "#F3F5FA";
     public bool UseCustomBackground { get; set; }
     public bool Animations { get; set; } = true;

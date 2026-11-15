@@ -857,12 +857,12 @@ internal sealed partial class AppController : IDisposable
     public void ApplyTheme()
     {
         bool dark = Dark; Motion.AppEnabled = Settings.Animations;
-        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#2563EB" };
+        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#6A45E0" };
         if (Settings.ThemePreset != "Custom") Settings.PrimaryColor = accentHex;
         Color accent = (Color)ColorConverter.ConvertFromString(accentHex); accent.A = 255;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         Application.Current.Resources["AccentText"] = new SolidColorBrush(.2126 * accent.R + .7152 * accent.G + .0722 * accent.B > 160 ? Colors.Black : Colors.White);
-        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
+        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#E6E1FB", "#FF332D4D"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
         if (Settings.UseCustomBackground)
         {
             Color background = (Color)ColorConverter.ConvertFromString(Settings.BackgroundColor); background.A = 255;

@@ -133,7 +133,7 @@ public sealed class SettingsStore
         s.TeleprompterText ??= ""; if (s.TeleprompterText.Length > 50000) s.TeleprompterText = s.TeleprompterText[..50000];
         s.TeleprompterShortcut = Shortcut(s.TeleprompterShortcut, "Ctrl+Alt+M");
         s.ThemePreset = Known(s.ThemePreset, "Classic", "Ocean", "Forest", "Violet", "Custom");
-        s.PrimaryColor = ValidColor(s.PrimaryColor, "#2563EB"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
+        s.PrimaryColor = ValidColor(s.PrimaryColor, "#6A45E0"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
         s.Theme = Known(s.Theme, "System", "Light", "Dark");
         s.AiDevice = Known(s.AiDevice, "Processor");
         s.OcrEngine = Known(s.OcrEngine, "Windows", "Pack");
