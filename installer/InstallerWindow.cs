@@ -505,7 +505,7 @@ internal sealed partial class InstallerWindow : Window
         }
         if (accent)
         {
-            var glow = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 24, ShadowDepth = 0, Opacity = .45 };
+            var glow = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 24, ShadowDepth = 0, Opacity = .22 };
             if (!SystemParameters.HighContrast) button.Effect = glow;
             void Glow(double target)
             {

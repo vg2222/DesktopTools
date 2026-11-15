@@ -216,6 +216,8 @@ internal static class Ui
         labels.Children.Add(Text(title, 14, true));
         if (description != null) { var t = Text(description, 12, muted: true); t.Margin = new Thickness(0, 5, 0, 0); labels.Children.Add(t); }
         // Labels and control keep their positions in Children; the badge is appended so existing lookups are unaffected.
+        // A control keeps its own height when the description wraps to several lines.
+        if (control.VerticalAlignment == VerticalAlignment.Stretch) control.VerticalAlignment = VerticalAlignment.Center;
         grid.Children.Add(labels); Grid.SetColumn(control, 1); grid.Children.Add(control); grid.Children.Add(badge);
         grid.Background = Brushes.Transparent; grid.MouseEnter += (_, _) => Light(true); grid.MouseLeave += (_, _) => Light(false); AutomationProperties.SetName(control, title); return grid;
     }

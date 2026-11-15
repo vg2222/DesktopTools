@@ -56,7 +56,7 @@ internal sealed partial class InstallerWindow
             railSurface.Children.Add(new Border { Background = RailBrush });
             railSurface.Children.Add(new Border
             {
-                Background = new RadialGradientBrush(Color("#59C2378F"), Color("#00C2378F")) { Center = new Point(.3, .18), GradientOrigin = new Point(.3, .18), RadiusX = .85, RadiusY = .42 },
+                Background = new RadialGradientBrush(Color("#26C2378F"), Color("#00C2378F")) { Center = new Point(.3, .18), GradientOrigin = new Point(.3, .18), RadiusX = .85, RadiusY = .42 },
                 IsHitTestVisible = false
             });
         }
@@ -72,7 +72,7 @@ internal sealed partial class InstallerWindow
         var identity = new StackPanel();
         var logo = new Image { Source = new BitmapImage(new Uri("pack://application:,,,/DesktopTools.Installer;component/Assets/Icons/AppIcon.png")), Width = 76, Height = 76, HorizontalAlignment = HorizontalAlignment.Left };
         RenderOptions.SetBitmapScalingMode(logo, BitmapScalingMode.HighQuality);
-        if (!contrast) logo.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 34, ShadowDepth = 0, Opacity = .55 };
+        if (!contrast) logo.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 34, ShadowDepth = 0, Opacity = .28 };
         identity.Children.Add(logo);
         identity.Children.Add(Text("DesktopTools", 22, FontWeights.SemiBold, TextBrush, new Thickness(0, 20, 0, 0)));
         var setupPill = new Border
