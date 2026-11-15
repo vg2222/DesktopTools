@@ -178,13 +178,13 @@ internal sealed partial class InstallerWindow
         }
         if (uninstall)
         {
-            keepData = new RadioButton { Content = L.T("Keep notes and settings"), IsChecked = true, Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 4, 0, 6) };
-            deleteData = new RadioButton { Content = L.T("Delete all DesktopTools data"), Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 14, 0, 6) };
+            keepData = new RadioButton { Content = L.T("Keep notes and settings"), IsChecked = true, Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 4, 0, 6), Style = ChoiceStyle(radio: true) };
+            deleteData = new RadioButton { Content = L.T("Delete all DesktopTools data"), Foreground = TextBrush, FontSize = 14, Margin = new Thickness(0, 14, 0, 6), Style = ChoiceStyle(radio: true) };
             var choices = new StackPanel { Margin = new Thickness(18, 14, 18, 16) };
             choices.Children.Add(keepData);
-            choices.Children.Add(Text("Recommended if you might reinstall later.", 12, FontWeights.Normal, MutedBrush, new Thickness(22, 0, 0, 0)));
+            choices.Children.Add(Text("Recommended if you might reinstall later.", 12, FontWeights.Normal, MutedBrush, new Thickness(30, 0, 0, 0)));
             choices.Children.Add(deleteData);
-            choices.Children.Add(Text("Removes app-managed notes, settings and cache. Screenshots and videos saved elsewhere stay untouched.", 12, FontWeights.Normal, MutedBrush, new Thickness(22, 0, 0, 0)));
+            choices.Children.Add(Text("Removes app-managed notes, settings and cache. Screenshots and videos saved elsewhere stay untouched.", 12, FontWeights.Normal, MutedBrush, new Thickness(30, 0, 0, 0)));
             content.Children.Add(Card(choices, new Thickness(0, 0, 0, 12)));
         }
         else
@@ -258,7 +258,7 @@ internal sealed partial class InstallerWindow
 
         var footer = new Grid { Margin = new Thickness(0, 18, 0, 0) }; animatedFooter = footer;
         footer.ColumnDefinitions.Add(new ColumnDefinition()); footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        launch = new CheckBox { Content = L.T("Open DesktopTools after setup"), IsChecked = true, Foreground = MutedBrush, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Visibility = !uninstall && setupMode is Program.SetupMode.Install or Program.SetupMode.Update ? Visibility.Visible : Visibility.Collapsed };
+        launch = new CheckBox { Content = L.T("Open DesktopTools after setup"), IsChecked = true, Foreground = MutedBrush, FontSize = 12, Style = ChoiceStyle(radio: false), VerticalAlignment = VerticalAlignment.Center, Visibility = !uninstall && setupMode is Program.SetupMode.Install or Program.SetupMode.Update ? Visibility.Visible : Visibility.Collapsed };
         if (setupMode == Program.SetupMode.Update && !uninstall)
         {
             footer.Children.Add(launch);
@@ -566,6 +566,46 @@ internal sealed partial class InstallerWindow
         if (!SystemParameters.ClientAreaAnimation || SystemParameters.HighContrast) { transform.Y = target; return; }
         transform.BeginAnimation(TranslateTransform.YProperty, new System.Windows.Media.Animation.DoubleAnimation(target, TimeSpan.FromMilliseconds(130))
         { EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut } });
+    }
+
+    // Brand-styled check box and radio button: rounded box or ring, purple gradient when chosen, soft glow, visible keyboard focus.
+    private static Style ChoiceStyle(bool radio)
+    {
+        var type = radio ? "RadioButton" : "CheckBox";
+        var mark = radio
+            ? """<Ellipse x:Name="Mark" Width="8" Height="8" Fill="White" Opacity="0"/>"""
+            : """<Path x:Name="Mark" Data="M 3.5,8.5 L 6.8,11.6 L 13,5" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="16" Height="16" Opacity="0"/>""";
+        var radius = radio ? "9" : "5";
+        return (Style)System.Windows.Markup.XamlReader.Parse($$"""
+            <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="{{type}}">
+              <Setter Property="Cursor" Value="Hand"/>
+              <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+              <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{{type}}">
+                <Grid Background="Transparent">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                  <Grid Width="18" Height="18" VerticalAlignment="Center">
+                    <Border x:Name="Box" CornerRadius="{{radius}}" Background="#1D1A2B" BorderBrush="#4A4463" BorderThickness="1.5"/>
+                    <Border x:Name="Focus" CornerRadius="{{radius}}" Margin="-4" BorderBrush="#B9A6FF" BorderThickness="1.5" Opacity="0"/>
+                    {{mark}}
+                  </Grid>
+                  <ContentPresenter Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#8566F6"/></Trigger>
+                  <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Focus" Property="Opacity" Value="1"/></Trigger>
+                  <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Box" Property="Background">
+                      <Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#8566F6" Offset="0"/><GradientStop Color="#5B36D6" Offset="1"/></LinearGradientBrush></Setter.Value>
+                    </Setter>
+                    <Setter TargetName="Box" Property="BorderBrush" Value="#9C82FF"/>
+                    <Setter TargetName="Box" Property="Effect"><Setter.Value><DropShadowEffect Color="#8566F6" BlurRadius="12" ShadowDepth="0" Opacity="0.55"/></Setter.Value></Setter>
+                    <Setter TargetName="Mark" Property="Opacity" Value="1"/>
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate></Setter.Value></Setter>
+            </Style>
+            """);
     }
 
     private static FrameworkElement FluentIcon(string name, Brush fill, double size)
