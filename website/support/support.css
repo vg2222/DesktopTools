@@ -30,7 +30,11 @@
 .address-field:focus-within { border-color: rgba(185, 166, 255, .6); }
 .address-field input { flex: 1; min-width: 0; padding: 10px 0; border: 0; background: transparent; color: var(--text); font: 14px/1.4 "Cascadia Mono", Consolas, monospace; text-overflow: ellipsis; outline: none; }
 .address-field .button { flex: none; min-height: 40px; padding: 0 18px; font-size: 14px; gap: 8px; }
-.donation-status { min-height: 1.6em; margin-top: 8px; padding-left: 16px; color: var(--accent-soft); font-size: 13.5px; }
+.donation-status { margin-top: 10px; padding-left: 16px; color: #f3d49b; font-size: 13.5px; }
+.donation-status:empty { display: none; }
+/* A successful copy is confirmed on the button; the status line stays for screen readers only. */
+.donation-status[data-i18n="addressCopied"] { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.address-field .button:has([data-i18n="addressCopied"]) { background: #1f9d63; box-shadow: 0 10px 30px -12px rgba(31, 157, 99, .8); }
 .donation-network-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; color: #f3d49b; font-size: 14.5px; }
 .donation-network-note::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: #f3c26b; box-shadow: 0 0 12px #f3c26b; }
 .donation-explorer { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; font-size: 14.5px; }

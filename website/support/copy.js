@@ -21,6 +21,17 @@ document.querySelectorAll('.donation-card').forEach(card => {
     status.textContent = copy[key];
     label.dataset.i18n = copied ? 'addressCopied' : 'copyAddress';
     label.textContent = copy[label.dataset.i18n];
+    // The button itself confirms the copy, then returns to its normal label.
+    if (copied && typeof setTimeout === 'function') {
+      clearTimeout(button.resetTimer);
+      button.resetTimer = setTimeout(() => {
+        const current = translations[document.documentElement.lang] || translations.en;
+        label.dataset.i18n = 'copyAddress';
+        label.textContent = current.copyAddress;
+        status.textContent = '';
+        delete status.dataset.i18n;
+      }, 2500);
+    }
   });
   button.hidden = false;
 });
