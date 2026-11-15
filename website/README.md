@@ -10,39 +10,37 @@ Both download buttons open the latest GitHub release, where visitors can choose 
 
 The home page has a centered hero with a screenshot of the app, followed by these sections:
 
-- `#features`: four alternating showcase panels for screenshots, recording, presenting and text tools, followed by six smaller tool cards.
+- `#features`: four chapters (screenshots, recording, presenting and text) beside a sticky demo video, followed by six smaller tool cards. On windows wider than 960px one wheel or trackpad scroll moves one chapter; narrower windows show each video under its chapter.
 - `#privacy`: local processing, free features, open source and account-free use, plus the limits of capture exclusion.
 - `#faq`: six native `details` disclosures.
 - `#download`: a final download button and links to checksums and source contributions.
 
-The header links to Features, Privacy, FAQ and the separate Support page. The responsive dark layout uses system fonts and a purple accent. Smooth scrolling, CSS scroll progress and IntersectionObserver reveals respect reduced motion; content stays visible without JavaScript or IntersectionObserver.
+The header links to Features, Privacy, FAQ and the separate Support page. The responsive dark layout uses system fonts and a magenta accent. Smooth scrolling, CSS scroll progress and IntersectionObserver reveals respect reduced motion; content stays visible without JavaScript or IntersectionObserver.
 
 Search and sharing metadata use `https://www.desktoptools.cc/` as the canonical URL. `index.html` contains Open Graph tags for Discord, Telegram, Reddit and other link previews, plus a large X card and truthful `SoftwareApplication` structured data. The social image is `images/social-preview.png`, a 1200 × 630 crop of the latest `assets/desktop-tools-social-preview-v4.png`; keep its dimensions and metadata in sync. `sitemap.xml` lists both canonical pages. If the site moves again, update every absolute URL in `index.html`, `sitemap.xml` and `tests/website-seo.test.cjs` before publishing.
 
 After publishing, verify the URL-prefix property in Google Search Console and submit `https://www.desktoptools.cc/sitemap.xml`. Google may take time to crawl and index the page, and neither metadata nor a submitted sitemap guarantees a search result. The five language choices currently render client-side from one HTML page; they are not separate localized pages for search indexing. Link-preview services may cache older images and metadata for a while.
 
-## Screenshots and a future demo video
+## Screenshots and demo videos
 
-The WebP images in `images/screens/` were converted from PNG renders produced by the `--github-gallery` integration harness. The source gallery is `docs/screenshots/gallery/`; these are real application windows with clean demo content, not mockups or personal desktop captures. From the repository root on Windows, regenerate the gallery with:
+`images/screens/home.webp` is the hero image. It was converted from `01-home-dark.png`, a render from the `--github-gallery` integration harness (`docs/screenshots/gallery/`); these are real application windows with clean demo content, not mockups or personal desktop captures. From the repository root on Windows, regenerate the gallery with:
 
 ```powershell
 dotnet run --project tests/DesktopTools.IntegrationTests/DesktopTools.IntegrationTests.csproj -c Release -p:NuGetAudit=false -- --github-gallery
 ```
 
-`scripts/capture-screenshots.ps1` runs that harness and packages the gallery index. The generated gallery directory is ignored by Git; a checkout may contain only some of these PNGs. Website conversion is a separate authoring step: resize the selected PNGs and export them as WebP with your image tool, then place the results under `images/screens/`. Do not change the original gallery PNGs as a side effect of exporting website copies.
+`scripts/capture-screenshots.ps1` runs that harness and packages the gallery index. The generated gallery directory is ignored by Git. Website conversion is a separate step: resize the PNG and export it as WebP (for example `ffmpeg -i 01-home-dark.png -vf scale=1800:-1 -c:v libwebp -quality 86 home.webp`), keep the HTML `width` and `height` in sync, and never change the original gallery PNGs.
 
-| Website file | Harness PNG output |
+The feature chapters use short screen recordings in `videos/`, recorded against local demo pages with made-up data:
+
+| Chapter | Video |
 | --- | --- |
-| `home.webp` | `01-home-dark.png` |
-| `presentation.webp` | `03-presentation-tools-dark.png` |
-| `editor.webp` | `05-screenshot-editor-dark.png` |
-| `recorder.webp` | `09-screen-recorder-dark.png` |
-| `teleprompter.webp` | `13-teleprompter-dark.png` |
-| `text.webp` | `18-text-from-screenshot-dark.png` |
+| Screenshots | `01-screenshot.mp4`, then `03-check-screenshot.mp4` |
+| Text | `02-extract-text.mp4` |
+| Recording | `04-recording.mp4` |
+| Presenting | `05-present.mp4` |
 
-`home.webp` is the hero image; the four panels use `editor.webp`, `recorder.webp`, `teleprompter.webp` and `text.webp`. `presentation.webp` is available as an alternate. When replacing an image, keep its HTML `width` and `height` in sync with the exported dimensions, and update alt text in the HTML and every dictionary if the content changes.
-
-To add a recorded demo later, put a reviewed recording with non-sensitive demo content in a local directory such as `media/`. Replace the hero image inside `.product-frame` with a native `video` element, local `source` files and `home.webp` as its `poster`. Use `controls`, `playsinline` and `preload="none"`, keep explicit dimensions, and add a translated accessible label and a fallback link to the recording. Provide captions or a transcript for spoken content. Leave playback user-initiated so reduced-motion visitors do not get an autoplaying demo. The existing `.product-frame video` and `.panel-media video` rules support video without a layout change or a third-party player. Update the relevant tests if a showcase screenshot is replaced by video.
+Each clip has a `.webp` poster made from its first frame. Encode new clips without audio as H.264 with `-crf 26 -pix_fmt yuv420p -movflags +faststart`, keep them under about 3 MB, and review every frame for personal content (file dialogs, folder names, notifications, account names) before committing. Videos are muted, play only while visible, and step through `data-sources` in order; with reduced motion they stay paused and show controls. Update the alt text keys `shotEditor`, `shotRecorder`, `shotTeleprompter` and `shotText` in every dictionary if a clip changes.
 
 ## Website checks
 
