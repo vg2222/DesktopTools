@@ -13,7 +13,11 @@ internal sealed partial class MainWindow
 {
     private const string AiModelsTab = "AI models";
     private const string ShortModelWarning = "These models are not part of DesktopTools. They were not created, trained, or owned by the DesktopTools project, and DesktopTools is not affiliated with or endorsed by their publishers.";
-    private sealed class ModelDownload { internal double Progress; internal readonly CancellationTokenSource Cancel = new(); }
+    private sealed class ModelDownload { internal double Progress; internal long Total; internal readonly CancellationTokenSource Cancel = new(); internal NotificationWindow? Notice; internal long LastNoticeTicks; }
+
+    /// <summary>"Downloading… 12.4 MB of 98 MB (13%)": the bytes come from the pack's known total, since downloads report a fraction.</summary>
+    private static string DownloadProgressText(ModelDownload download) =>
+        L.F($"Downloading… {ModelPacks.FormatSize((long)(download.Progress * download.Total))} of {ModelPacks.FormatSize(download.Total)} ({download.Progress * 100:0}%)");
     private readonly Dictionary<string, ModelDownload> modelDownloads = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (ProgressBar Bar, TextBlock Text)> modelProgressViews = new(StringComparer.Ordinal);
     private string? aiModelsStatus;
@@ -53,6 +57,7 @@ internal sealed partial class MainWindow
         var runOn = Ui.Choice(["Processor"], "Processor", _ => Change(x => x.AiDevice = "Processor"));
         runOn.Tag = "ai-run-on";
         intro.Children.Add(Ui.Row(L.T("Run on"), L.T("Where AI models run. This version uses the processor."), runOn));
+        intro.Children.Add(ModelsFolderRow());
         if (aiModelsStatus != null)
         {
             var status = Ui.Text(aiModelsStatus, 13, true); status.Tag = "ai-models-status"; status.Margin = new Thickness(0, 12, 0, 0);
@@ -79,6 +84,74 @@ internal sealed partial class MainWindow
         Group(L.T("Translation packs"), translationRows.ToArray());
     }
 
+    private bool movingModels;
+
+    /// <summary>Where model packs are kept, with a folder picker and a way back to the default folder. Translation packs keep their own folder.</summary>
+    private FrameworkElement ModelsFolderRow()
+    {
+        bool custom = !string.IsNullOrEmpty(controller.Settings.AiModelsFolder);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal };
+        var change = Ui.Button(L.T("Choose folder"), () =>
+        {
+            var dialog = new Microsoft.Win32.OpenFolderDialog { Title = L.T("Choose where to keep AI models") };
+            if (dialog.ShowDialog(this) == true) MoveModels(ModelPacks.TargetFor(dialog.FolderName));
+        });
+        change.Tag = "ai-models-folder-change";
+        buttons.Children.Add(change);
+        if (custom)
+        {
+            var reset = Ui.Button(L.T("Use default"), () => MoveModels(null)); reset.Tag = "ai-models-folder-default"; reset.Margin = new Thickness(8, 0, 0, 0);
+            buttons.Children.Add(reset);
+        }
+        foreach (Button button in buttons.Children) button.IsEnabled = !movingModels && modelDownloads.Count == 0;
+        var row = Ui.Row(L.T("AI models folder"), ModelPacks.Root, buttons, "Folder");
+        row.Tag = "ai-models-folder";
+        return row;
+    }
+
+    /// <summary>Moves the installed packs to <paramref name="target"/> (null: the default folder), then saves the setting. A notification shows the copy.</summary>
+    private async void MoveModels(string? target)
+    {
+        if (movingModels || modelDownloads.Count > 0) return;
+        string from = ModelPacks.Root, to = target ?? ModelPacks.DefaultRoot;
+        if (string.Equals(Path.GetFullPath(from).TrimEnd('\\'), Path.GetFullPath(to).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) return;
+        if (!ConfirmationDialog.Ask(this, L.T("Move AI models?"), L.F($"Installed AI models and their licence acceptances move to {to}. The old folder is removed after everything is copied."), L.T("Move"))) return;
+        movingModels = true; aiModelsStatus = L.T("Moving AI models…"); RefreshAiModels();
+        NotificationWindow? notice = null;
+        if (!controller.IsSmoke)
+        {
+            notice = new NotificationWindow(L.T("Moving AI models…"), NotificationKind.Info, this, controller.Settings.MessageNotificationStyle) { HoldOpen = true };
+            notice.UpdateMessage(L.T("Moving AI models…"), 0); notice.Show();
+        }
+        long last = 0;
+        var progress = new Progress<double>(value =>
+        {
+            long now = Environment.TickCount64; if (now - last < 250 && value < 1) return; last = now;
+            notice?.UpdateMessage(L.F($"Moving AI models… {value * 100:0}%"), value);
+        });
+        try
+        {
+            await ModelPacks.MoveAsync(from, to, progress, CancellationToken.None);
+            Change(x => x.AiModelsFolder = target ?? "");
+            aiModelsStatus = L.F($"AI models are now kept in {to}.");
+        }
+        catch (Exception e) when (e is ModelPackException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            aiModelsStatus = L.F($"Could not move the AI models: {e.Message}");
+        }
+        finally
+        {
+            movingModels = false;
+            if (notice != null)
+            {
+                notice.HoldOpen = false;
+                bool moved = aiModelsStatus == L.F($"AI models are now kept in {to}.");
+                notice.UpdateMessage(aiModelsStatus, moved ? 1 : null, moved ? NotificationKind.Info : NotificationKind.Error, controller.Settings.NotificationSeconds);
+            }
+            RefreshAiModels();
+        }
+    }
+
     private FrameworkElement ModelPackRow(ModelPack pack)
     {
         var state = ModelPacks.StateOf(pack);
@@ -89,7 +162,7 @@ internal sealed partial class MainWindow
         var details = new StackPanel();
         details.Children.Add(Ui.Text(L.T(pack.Name), 14, true));
         var purpose = Ui.Text(L.T(pack.Purpose), 12, muted: true); purpose.Margin = new Thickness(0, 3, 0, 0); details.Children.Add(purpose);
-        string stateText = download != null ? L.F($"Downloading… {download.Progress * 100:0}%") : state switch
+        string stateText = download != null ? DownloadProgressText(download) : state switch
         {
             ModelPackState.Installed => L.T("Installed"),
             ModelPackState.Damaged => L.T("Damaged. Download it again to use it."),
@@ -141,7 +214,7 @@ internal sealed partial class MainWindow
 
     private async void DownloadModelPack(ModelPack pack)
     {
-        if (modelDownloads.ContainsKey(pack.Id)) return;
+        if (modelDownloads.ContainsKey(pack.Id) || movingModels) return;
         var consents = ModelPacks.Consents();
         string name = L.T(pack.Name);
         try
@@ -153,8 +226,17 @@ internal sealed partial class MainWindow
         {
             aiModelsStatus = L.F($"Could not download {name}: {e.Message}"); RefreshAiModels(); return;
         }
-        var download = new ModelDownload();
+        var download = new ModelDownload { Total = pack.TotalBytes };
         modelDownloads[pack.Id] = download;
+        // A notification follows the download, so it stays visible after leaving the AI models page; it has its own Cancel.
+        if (!controller.IsSmoke)
+        {
+            download.Notice = new NotificationWindow(L.T(pack.Name) + "\n" + DownloadProgressText(download), NotificationKind.Info, this, controller.Settings.MessageNotificationStyle,
+                actions: [(L.T("Cancel"), () => download.Cancel.Cancel())]) { HoldOpen = true };
+            download.Notice.Closed += (_, _) => download.Notice = null;
+            download.Notice.UpdateMessage(L.T(pack.Name) + "\n" + DownloadProgressText(download), 0);
+            download.Notice.Show();
+        }
         if (!cancelDownloadsOnClose) { cancelDownloadsOnClose = true; Closed += (_, _) => { foreach (var item in modelDownloads.Values) item.Cancel.Cancel(); }; }
         aiModelsStatus = null; RefreshAiModels();
         var progress = new Progress<double>(value =>
@@ -163,7 +245,14 @@ internal sealed partial class MainWindow
             if (modelProgressViews.TryGetValue(pack.Id, out var view))
             {
                 view.Bar.Value = download.Progress;
-                view.Text.Text = L.F($"Licence: {ModelPacks.LicenseName(pack.LicenseId)}") + " · " + L.F($"Downloading… {download.Progress * 100:0}%");
+                view.Text.Text = L.F($"Licence: {ModelPacks.LicenseName(pack.LicenseId)}") + " · " + DownloadProgressText(download);
+            }
+            // The notification rebuilds its surface on each update, so it changes at most about four times a second.
+            long now = Environment.TickCount64;
+            if (download.Notice != null && now - download.LastNoticeTicks >= 250)
+            {
+                download.LastNoticeTicks = now;
+                download.Notice.UpdateMessage(L.T(pack.Name) + "\n" + DownloadProgressText(download), download.Progress);
             }
         });
         try
@@ -178,7 +267,15 @@ internal sealed partial class MainWindow
         }
         finally
         {
-            modelDownloads.Remove(pack.Id); download.Cancel.Dispose();
+            modelDownloads.Remove(pack.Id);
+            if (download.Notice is { } notice)
+            {
+                bool ready = aiModelsStatus == L.F($"{name} is ready.");
+                notice.HoldOpen = false;
+                notice.UpdateMessage(aiModelsStatus ?? "", ready ? 1 : null, ready ? NotificationKind.Info : aiModelsStatus == L.T("Download canceled.") ? NotificationKind.Info : NotificationKind.Error,
+                    controller.Settings.NotificationSeconds, actions: []);
+            }
+            download.Cancel.Dispose();
             RefreshAiModels();
         }
     }

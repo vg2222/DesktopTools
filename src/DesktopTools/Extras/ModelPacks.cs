@@ -40,7 +40,82 @@ internal static class ModelPacks
     private static HttpMessageHandler? handlerOverride;
     private static Func<string, long>? freeBytesOverride;
 
-    internal static string Root => rootOverride ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "Models");
+    /// <summary>The folder name created inside a folder the person chooses, so the app only ever moves or deletes its own folder.</summary>
+    internal const string CustomFolderName = "DesktopTools Models";
+    internal static string DefaultRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "Models");
+    private static string? configuredRoot;
+    internal static string Root => rootOverride ?? configuredRoot ?? DefaultRoot;
+    /// <summary>Follows <see cref="AppSettings.AiModelsFolder"/>; translation packs keep their own folder.</summary>
+    internal static void ApplySettings(AppSettings settings) => configuredRoot = string.IsNullOrWhiteSpace(settings.AiModelsFolder) ? null : settings.AiModelsFolder;
+    /// <summary>The models folder to use for a folder the person picked: the picked folder itself when it is already ours, otherwise our folder inside it.</summary>
+    internal static string TargetFor(string picked)
+    {
+        string full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(picked));
+        return string.Equals(Path.GetFileName(full), CustomFolderName, StringComparison.OrdinalIgnoreCase) ? full : Path.Combine(full, CustomFolderName);
+    }
+
+    /// <summary>
+    /// Moves installed packs and licence acceptances from <paramref name="from"/> to <paramref name="to"/>. Refuses a folder that already holds
+    /// files or that sits inside the other one, checks free space, copies (leaving unfinished downloads behind), and only then deletes the old folder.
+    /// When copying fails, the new folder is removed and the old one stays as it was.
+    /// </summary>
+    internal static async Task MoveAsync(string from, string to, IProgress<double>? progress, CancellationToken token)
+    {
+        from = Path.TrimEndingDirectorySeparator(Path.GetFullPath(from)); to = Path.TrimEndingDirectorySeparator(Path.GetFullPath(to));
+        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase)) return;
+        static bool Inside(string child, string parent) => child.StartsWith(parent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        if (Inside(to, from) || Inside(from, to)) throw new ModelPackException(L.T("Choose a folder outside the current AI models folder."));
+        if (Directory.Exists(to) && Directory.EnumerateFileSystemEntries(to).Any()) throw new ModelPackException(L.F($"{to} already contains files. Choose an empty folder."));
+        if (!InstallGate.Wait(0)) throw new ModelPackException(L.T("Wait for the current download to finish, then try again."));
+        bool created = false;
+        try
+        {
+            AiRuntime.ReleaseAll();
+            var files = Directory.Exists(from)
+                ? Directory.EnumerateFiles(from, "*", SearchOption.AllDirectories)
+                    .Where(file => !Path.GetRelativePath(from, file).Split(Path.DirectorySeparatorChar).Any(part => part.StartsWith(StagingPrefix, StringComparison.Ordinal)))
+                    .Select(file => new FileInfo(file)).ToArray()
+                : [];
+            long total = files.Sum(file => file.Length), done = 0;
+            if (!string.Equals(Path.GetPathRoot(from), Path.GetPathRoot(to), StringComparison.OrdinalIgnoreCase) && (freeBytesOverride ?? FreeBytes)(to) < total + 64L * 1024 * 1024)
+                throw new ModelPackException(L.F($"Not enough free disk space. Moving the AI models needs {FormatSize(total)} free on the drive that holds {to}."));
+            created = !Directory.Exists(to);
+            Directory.CreateDirectory(to);
+            await Task.Run(async () =>
+            {
+                var buffer = new byte[1 << 20];
+                foreach (var file in files)
+                {
+                    token.ThrowIfCancellationRequested();
+                    string target = Path.Combine(to, Path.GetRelativePath(from, file.FullName));
+                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                    await using var input = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 16, true);
+                    await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1 << 16, true);
+                    int read;
+                    while ((read = await input.ReadAsync(buffer, token)) > 0)
+                    {
+                        await output.WriteAsync(buffer.AsMemory(0, read), token);
+                        done += read; progress?.Report(total == 0 ? 1 : (double)done / total);
+                    }
+                }
+            }, token);
+            created = false;
+            // Everything is in the new place; the old folder is the app's own, so it is removed whole (with any unfinished download).
+            if (Directory.Exists(from))
+            {
+                try { Directory.Delete(from, true); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+            progress?.Report(1);
+        }
+        catch
+        {
+            if (created) { try { Directory.Delete(to, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            else if (Directory.Exists(to)) { try { foreach (var entry in Directory.EnumerateFileSystemEntries(to)) { if (Directory.Exists(entry)) Directory.Delete(entry, true); else File.Delete(entry); } } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            throw;
+        }
+        finally { InstallGate.Release(); }
+    }
     internal static IReadOnlyList<ModelPack> Catalog => catalogOverride ?? catalog.Value;
     internal static ModelConsentStore Consents(string? root = null) => new(root ?? Root);
 
@@ -149,12 +224,19 @@ internal static class ModelPacks
         ModelCatalog.Validate(pack);
         if (!consents.IsCurrent(pack, LicenseText(pack)))
             throw new InvalidOperationException("The licence for this model has not been accepted.");
+        bool followsSetting = root == null;
         root ??= Root;
         handler ??= handlerOverride;
         freeBytes ??= freeBytesOverride ?? FreeBytes;
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(token, StopToken);
         token = stop.Token;
         await InstallGate.WaitAsync(token);
+        // The models folder can move while a download waits for its turn; the licence acceptance was read from the old folder.
+        if (followsSetting && !string.Equals(root, Root, StringComparison.OrdinalIgnoreCase))
+        {
+            InstallGate.Release();
+            throw new ModelPackException(L.T("The AI models folder changed. Start the download again."));
+        }
         string stage = Path.Combine(root, StagingPrefix + Guid.NewGuid().ToString("N"));
         try
         {

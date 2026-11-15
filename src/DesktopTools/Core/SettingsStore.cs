@@ -136,6 +136,8 @@ public sealed class SettingsStore
         s.PrimaryColor = ValidColor(s.PrimaryColor, "#6A45E0"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
         s.Theme = Known(s.Theme, "System", "Light", "Dark");
         s.AiDevice = Known(s.AiDevice, "Processor");
+        s.AiModelsFolder = (s.AiModelsFolder ?? "").Trim();
+        if (s.AiModelsFolder.Length > 0 && (s.AiModelsFolder.Length > 240 || !Path.IsPathFullyQualified(s.AiModelsFolder) || s.AiModelsFolder.IndexOfAny(Path.GetInvalidPathChars()) >= 0)) s.AiModelsFolder = "";
         s.OcrEngine = Known(s.OcrEngine, "Windows", "Pack");
         s.OcrPackScript = Known(s.OcrPackScript, "", "latin", "cyrillic", "chinese-japanese");
         s.TranscriptModel = Known(s.TranscriptModel, "Fast", "Accurate");

@@ -43,13 +43,14 @@ public sealed partial class TextSelectionView : UserControl
         var languages = LocalOcr.Choices();
         languageChoice = new ComboBox { ItemsSource = languages, SelectedItem = LocalOcr.SelectChoice(languages, languageTag), MinWidth = 190, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
         System.Windows.Automation.AutomationProperties.SetName(languageChoice, L.T("OCR language"));
-        languageChoice.SelectionChanged += async (_, _) => { if (IsLoaded || scan != null || Model != null) await RecognizeAsync(); };
+        languageChoice.SelectionChanged += async (_, _) => { if (refreshingChoices) return; RefreshOcrOffer(); if (IsLoaded || scan != null || Model != null) await RecognizeAsync(); };
         toolbar.Children.Add(languageChoice);
         copyAll = Ui.Button(L.T("Copy all"), () => CopyText(AllText, TextCopyKind.All)); copyAll.Content = Ui.IconLabel("Copy", L.T("Copy all"));
         copySelection = Ui.Button(L.T("Copy selection"), () => CopyText(SelectedText, TextCopyKind.Selection)); copySelection.Content = Ui.IconLabel("Copy", L.T("Copy selection"));
         translateButton = Ui.Button(L.T("Translate"), () => TranslateText()); translateButton.Content = Ui.IconLabel("Translate", L.T("Translate"));
         translateButton.Visibility = translate == null ? Visibility.Collapsed : Visibility.Visible;
         toolbar.Children.Add(copyAll); toolbar.Children.Add(copySelection); toolbar.Children.Add(translateButton);
+        toolbar.Children.Add(CreateOcrOffer());
 
         overlayLayer.Children.Add(scanOverlay);
         var stage = new Grid { ClipToBounds = true };
@@ -70,7 +71,7 @@ public sealed partial class TextSelectionView : UserControl
         if (translate != null) surface.TranslateRequested += TranslateText;
         surface.SizeChanged += (_, _) => UpdateOverlay();
         surface.LayoutUpdated += (_, _) => UpdateOverlay();
-        Unloaded += (_, _) => Cancel();
+        Unloaded += (_, _) => { Cancel(); CancelOfferDownload(); };
         RefreshButtons();
     }
 
@@ -121,7 +122,7 @@ public sealed partial class TextSelectionView : UserControl
         catch (Exception ex) { if (scan == cts) status.Text = L.T("Text recognition unavailable: ") + ex.Message; }
         finally
         {
-            if (scan == cts) { scan = null; SetBusy(false); scanOverlay.Stop(); }
+            if (scan == cts) { scan = null; SetBusy(false); scanOverlay.Stop(); RefreshOcrOffer(); }
             cts.Dispose();
         }
     }

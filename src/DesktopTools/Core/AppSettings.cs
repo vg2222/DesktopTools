@@ -38,6 +38,8 @@ public sealed class AppSettings
     public string TranslationDirection { get; set; } = "en-ru";
     /// <summary>Where optional AI models run. This update supports only "Processor" (spec section 10).</summary>
     public string AiDevice { get; set; } = "Processor";
+    /// <summary>Where optional AI model packs are kept; empty means the default folder in local app data.</summary>
+    public string AiModelsFolder { get; set; } = "";
     public string ScreenTextLanguage { get; set; } = "en-US";
     /// <summary>Which engine reads screen text: "Windows" (Windows OCR, the default) or "Pack" (the optional OCR pack, spec section 8).</summary>
     public string OcrEngine { get; set; } = "Windows";

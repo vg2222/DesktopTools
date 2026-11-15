@@ -77,7 +77,7 @@ public sealed partial class ScreenshotEditorView : UserControl
         _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
         _surface.Children.Add(_originalLayer);
         _drawing = new EditCanvas(image, _document) { Width = image.PixelWidth, Height = image.PixelHeight, IsHitTestVisible = false }; _surface.Children.Add(_drawing);
-        var backdrop = new Border { Child = new Viewbox { Child = BuildStyleFrame(_surface, image.PixelWidth, image.PixelHeight), Stretch = Stretch.Uniform }, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
+        var backdrop = new Border { Child = CreateViewport(new Viewbox { Child = BuildStyleFrame(_surface, image.PixelWidth, image.PixelHeight), Stretch = Stretch.Uniform }), CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
         backdrop.SetResourceReference(Border.BackgroundProperty, "Card"); backdrop.SetResourceReference(Border.BorderBrushProperty, "Stroke"); work.Children.Add(backdrop);
         var properties = new StackPanel(); properties.Children.Add(Ui.Text(L.T("Properties"), 13, true));
         var colorLabel = Ui.Text(L.T("Color"), 12); colorLabel.Margin = new Thickness(0, 18, 0, 10); properties.Children.Add(colorLabel);
@@ -91,7 +91,7 @@ public sealed partial class ScreenshotEditorView : UserControl
         _colorButton = Ui.Button("", () => { CommitText(); new ColorPickerWindow(_color.ToString(), value => { _color = (Color)ColorConverter.ConvertFromString(value); Update(); return true; }) { Owner = Window.GetWindow(this) }.ShowDialog(); }); properties.Children.Add(_colorButton);
         System.Windows.Automation.AutomationProperties.SetName(_colorButton, L.T("Annotation color"));
         var widthChoice = new Slider { Minimum = 1, Maximum = 32, Value = _thickness, TickFrequency = 1, IsSnapToTickEnabled = true, SmallChange = 1, LargeChange = 4 };
-        widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value;
+        widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value; _widthChoice = widthChoice;
         var strokeField = Ui.SliderField(L.T("Stroke thickness"), widthChoice, v => $"{v:0} px"); strokeField.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(strokeField);
         var opacity = new Slider { Minimum = .1, Maximum = 1, Value = 1 }; opacity.ValueChanged += (_, _) => _opacity = opacity.Value;
         var opacityField = Ui.SliderField(L.T("Opacity"), opacity, v => $"{v * 100:0}%"); opacityField.Margin = new Thickness(0, 14, 0, 0); properties.Children.Add(opacityField);
@@ -348,6 +348,7 @@ public sealed partial class ScreenshotEditorView : UserControl
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.Z or Key.Y) e.Handled = true;
             return;
         }
+        if (_editor == null && HandleZoomKey(e)) { e.Handled = true; return; }
         if (e.Key == Key.Escape)
         {
             if (_editor != null) { _surface.Children.Remove(_editor); _editor = null; }

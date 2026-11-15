@@ -37,6 +37,9 @@ public static class LocalOcr
 
     internal static bool PackEngineChosen => Preference.Engine == "Pack";
 
+    /// <summary>Saves a new Text reader choice (engine, pack script key) through the controller; null where no settings are available (tests).</summary>
+    internal static Action<string, string>? ChooseEngine { get; set; }
+
     internal static string ScriptName(OcrPackScript script) => script switch
     {
         OcrPackScript.Cyrillic => L.T("Cyrillic"), OcrPackScript.ChineseJapanese => L.T("Chinese and Japanese"), _ => L.T("Latin alphabet")

@@ -176,6 +176,7 @@ internal sealed partial class AppController : IDisposable
     private readonly System.Drawing.Icon? trayIcon;
     private TrayMenuPopup? trayMenu;
     private readonly bool smoke;
+    internal bool IsSmoke => smoke;
     private MainWindow? main;
     private OverlayWindow? overlay;
     private Window? captureNotice;
@@ -212,7 +213,8 @@ internal sealed partial class AppController : IDisposable
         Transcripts = new TranscriptStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-transcripts") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "transcripts"));
         RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
-        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings);
+        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings);
+        LocalOcr.ChooseEngine = (engine, script) => UpdateSettings(s => { s.OcrEngine = engine; s.OcrPackScript = script; });
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)
         { IsAvailable = id => FeatureAvailability.IsAvailable(Settings, id) };
         Hud.Changed += UpdateEscape;
@@ -363,7 +365,7 @@ internal sealed partial class AppController : IDisposable
                 string mode = presentationMode; StopPresentation(); TogglePresentation(mode);
             }
             if (!Settings.FreezeEnabled && frozenFrame != null) { frozenFrame = null; overlay?.SetFrozen(null); }
-            LocalOcr.ApplySettings(Settings);
+            LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings);
             SettingsChanged?.Invoke();
             if (Palette != null) Palette.Refresh(); return true;
         }

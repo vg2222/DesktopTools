@@ -53,6 +53,21 @@ internal sealed class ModelConsentWindow : Window
             details.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var name = Ui.Text(label, 13, muted: true); name.Margin = new Thickness(0, 0, 16, 4); name.VerticalAlignment = VerticalAlignment.Top;
             var content = Ui.Text(value, 13); content.Margin = new Thickness(0, 0, 0, 4);
+            if (ReferenceEquals(value, pack.Upstream) && Uri.TryCreate(value, UriKind.Absolute, out var source) && source.Scheme == Uri.UriSchemeHttps)
+            {
+                // The catalog only accepts https sources, so the link opens the publisher's page in the default browser.
+                content.Text = string.Empty;
+                var link = new System.Windows.Documents.Hyperlink(new System.Windows.Documents.Run(value)) { NavigateUri = source, Cursor = Cursors.Hand, ToolTip = L.T("Open in browser") };
+                link.SetResourceReference(System.Windows.Documents.TextElement.ForegroundProperty, "Accent");
+                link.RequestNavigate += (_, e) =>
+                {
+                    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true })?.Dispose(); }
+                    catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+                    e.Handled = true;
+                };
+                AutomationProperties.SetName(link, L.F($"Source: {value}"));
+                content.Inlines.Add(link);
+            }
             Grid.SetRow(name, row); Grid.SetRow(content, row); Grid.SetColumn(content, 1);
             details.Children.Add(name); details.Children.Add(content);
         }

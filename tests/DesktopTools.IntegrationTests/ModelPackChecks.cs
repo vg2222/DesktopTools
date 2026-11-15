@@ -234,6 +234,31 @@ internal static class ModelPackChecks
             var newer = pack with { Revision = "rev2", Files = pack.Files.Select(f => f with { Url = f.Url.Replace("/rev1/", "/rev2/") }).ToArray() };
             var unconsented = await Fails(ModelPacks.InstallAsync(newer, store, null, CancellationToken.None, root, server, plenty));
             Check(unconsented is InvalidOperationException, "A new revision downloaded without new consent");
+
+            // Moving the models folder: installed packs and acceptances arrive, unfinished downloads stay behind, the old folder goes.
+            {
+                string picked = root + "-picked", moved = ModelPacks.TargetFor(picked);
+                Check(moved == Path.Combine(picked, ModelPacks.CustomFolderName) && ModelPacks.TargetFor(moved) == moved, "TargetFor did not add the app's folder exactly once");
+                Directory.CreateDirectory(Path.Combine(root, ModelPacks.StagingPrefix + "leftover"));
+                File.WriteAllText(Path.Combine(root, ModelPacks.StagingPrefix + "leftover", "part.bin"), "x");
+                try
+                {
+                    var nested = await Fails(ModelPacks.MoveAsync(root, Path.Combine(root, "inside"), null, CancellationToken.None));
+                    Check(nested is ModelPackException, "A move into the models folder itself was not refused");
+                    Directory.CreateDirectory(moved); File.WriteAllText(Path.Combine(moved, "someone-else.txt"), "keep");
+                    var occupied = await Fails(ModelPacks.MoveAsync(root, moved, null, CancellationToken.None));
+                    Check(occupied is ModelPackException && File.Exists(Path.Combine(moved, "someone-else.txt")) && Directory.Exists(root), "A move into a folder with files was not refused cleanly");
+                    File.Delete(Path.Combine(moved, "someone-else.txt"));
+                    await ModelPacks.MoveAsync(root, moved, null, CancellationToken.None);
+                    Check(!Directory.Exists(root), "The old models folder was not removed after the move");
+                    Check(ModelPacks.StateOf(pack, moved) == ModelPackState.Installed, "The moved pack is not installed in the new folder");
+                    Check(new ModelConsentStore(moved).IsCurrent(pack, licenseText), "The licence acceptance did not move");
+                    Check(Directory.GetDirectories(moved, ModelPacks.StagingPrefix + "*").Length == 0, "An unfinished download was copied");
+                    await ModelPacks.MoveAsync(moved, root, null, CancellationToken.None);
+                    Check(ModelPacks.StateOf(pack, root) == ModelPackState.Installed && !Directory.Exists(moved), "Moving back to the first folder failed");
+                }
+                finally { if (Directory.Exists(picked)) Directory.Delete(picked, recursive: true); }
+            }
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
