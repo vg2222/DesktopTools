@@ -59,5 +59,6 @@
   "Could not hide a control popup from capture.": "Не удалось скрыть всплывающее окно управления при захвате.",
   "Drawing monitor": "Монитор для рисования",
   "Switching starts a fresh annotation session.": "Переключение начнёт новый сеанс рисования.",
-  "PNG image|*.png": "Изображение PNG|*.png"
+  "PNG image|*.png": "Изображение PNG|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Все функции бесплатны. Если DesktopTools вам помогает, вы можете поддержать его разработку."
 }

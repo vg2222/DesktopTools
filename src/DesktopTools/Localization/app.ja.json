@@ -59,5 +59,6 @@
   "Could not hide a control popup from capture.": "コントロールのポップアップをキャプチャから隠せませんでした。",
   "Drawing monitor": "描画モニター",
   "Switching starts a fresh annotation session.": "切り替えると新しい注釈セッションが始まります。",
-  "PNG image|*.png": "PNG 画像|*.png"
+  "PNG image|*.png": "PNG 画像|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "すべての機能は無料です。DesktopTools が役に立ったら、開発を支援していただけます。"
 }

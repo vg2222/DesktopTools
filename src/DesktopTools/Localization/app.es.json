@@ -59,5 +59,6 @@
   "Could not hide a control popup from capture.": "No se pudo ocultar una ventana emergente de control en la captura.",
   "Drawing monitor": "Monitor de dibujo",
   "Switching starts a fresh annotation session.": "Cambiar inicia una nueva sesión de anotaciones.",
-  "PNG image|*.png": "Imagen PNG|*.png"
+  "PNG image|*.png": "Imagen PNG|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Todas las funciones son gratuitas. Si DesktopTools te ayuda, puedes apoyar su desarrollo."
 }

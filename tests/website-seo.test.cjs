@@ -54,3 +54,8 @@ assert.equal(app.offers?.price, 0, 'Free software must not be represented as pai
 assert.ok(!('aggregateRating' in app) && !('review' in app), 'Do not fabricate ratings or reviews');
 
 console.log('Website SEO and social preview checks passed.');
+
+const supportHtml = fs.readFileSync(path.join(website, 'support/index.html'), 'utf8');
+assert.ok(supportHtml.includes('property="og:url" content="' + baseUrl + 'support/"'));
+assert.ok(supportHtml.includes('property="og:image" content="' + imageUrl + '"'));
+assert.ok(supportHtml.includes('name="twitter:card" content="summary_large_image"'));

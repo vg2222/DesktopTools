@@ -59,5 +59,6 @@
   "Could not hide a control popup from capture.": "Bir denetim açılır penceresi yakalamadan gizlenemedi.",
   "Drawing monitor": "Çizim monitörü",
   "Switching starts a fresh annotation session.": "Geçiş yapmak yeni bir ek açıklama oturumu başlatır.",
-  "PNG image|*.png": "PNG görüntüsü|*.png"
+  "PNG image|*.png": "PNG görüntüsü|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Tüm özellikler ücretsizdir. DesktopTools size yardımcı oluyorsa geliştirilmesini destekleyebilirsiniz."
 }

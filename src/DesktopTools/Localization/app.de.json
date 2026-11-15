@@ -59,5 +59,6 @@
   "Could not hide a control popup from capture.": "Ein Steuerungs-Popup konnte nicht von der Aufnahme ausgeschlossen werden.",
   "Drawing monitor": "Zeichenmonitor",
   "Switching starts a fresh annotation session.": "Beim Wechsel beginnt eine neue Anmerkungssitzung.",
-  "PNG image|*.png": "PNG-Bild|*.png"
+  "PNG image|*.png": "PNG-Bild|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Alle Funktionen sind kostenlos. Wenn DesktopTools dir hilft, kannst du seine Entwicklung unterstützen."
 }

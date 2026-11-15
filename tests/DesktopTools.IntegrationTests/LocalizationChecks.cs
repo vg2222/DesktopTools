@@ -67,6 +67,9 @@ internal static class LocalizationChecks
                         }
                         if (page == "About")
                         {
+                            const string supportMessage = "Every feature is free. If DesktopTools helps you, you can support its development.";
+                            if (!text.Contains(L.T(supportMessage)) || (language != "en" && L.T(supportMessage) == supportMessage))
+                                throw new Exception("Untranslated support message: " + language);
                             var buttons = Descendants(main).OfType<Button>().ToArray();
                             foreach (var (tag, label) in new[] { ("sidebar-support", "Support"), ("about-support", "Support DesktopTools") })
                             {

@@ -9,6 +9,10 @@ const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(site, 'styles.css'), 'utf8');
 const script = fs.readFileSync(path.join(site, 'site.js'), 'utf8');
 
+assert.match(html, /<nav class="primary-nav"[\s\S]*?href="\.\/support\/"/, 'Support must be in the header navigation');
+assert.match(html, /class="feature-grid"/, 'Feature cards should form a clear responsive grid');
+assert.equal((html.match(/class="feature-card"/g) || []).length, 5);
+for (const [, icon] of css.matchAll(/url\(["'](\.\/icons\/[^"']+)["']\)/g)) assert.ok(fs.existsSync(path.join(site, icon)), `Missing icon ${icon}`);
 for (const id of ['features', 'workflow', 'privacy', 'download']) {
   assert.match(html, new RegExp(`id="${id}"`), `Missing ${id} section`);
 }

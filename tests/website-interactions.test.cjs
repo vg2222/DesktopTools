@@ -28,6 +28,7 @@ const meta = node();
 const navText = node({ i18n: 'navFeatures' });
 const navAria = node({ i18nAria: 'mainNav' });
 const reveal = node();
+const walletNote = node({ coin: 'USDT', network: 'Tron (TRC-20)' });
 
 document = {
   documentElement: { lang: '' },
@@ -41,6 +42,7 @@ document = {
     if (selectorText === '[data-i18n]') return [navText];
     if (selectorText === '[data-i18n-aria]') return [navAria];
     if (selectorText === '[data-reveal]') return [reveal];
+    if (selectorText === '[data-i18n-wallet]') return [walletNote];
     return [];
   }
 };
@@ -62,6 +64,7 @@ const context = {
 };
 vm.runInNewContext(script, context);
 
+assert.equal(walletNote.textContent, 'Send only USDT on the Tron (TRC-20) network.');
 assert.equal(navText.textContent, 'Features', 'Initial navigation is translated');
 assert.equal(navAria.getAttribute('aria-label'), 'Main navigation', 'Initial accessible label is translated');
 assert.equal(reveal.classList.contains('reveal-ready'), false, 'Reduced motion leaves content visible');
@@ -70,6 +73,7 @@ selector.value = 'ru';
 selector.listeners.get('change')({ target: selector });
 assert.equal(navText.textContent, 'Функции', 'Navigation text updates with language');
 assert.equal(navAria.getAttribute('aria-label'), 'Основная навигация', 'Accessible labels update with language');
+assert.equal(walletNote.textContent, 'Отправляйте только USDT через сеть Tron (TRC-20).', 'Wallet warnings change language without changing chain or coin');
 assert.equal(document.documentElement.lang, 'ru', 'Document language updates');
 assert.match(document.title, /Инструменты для рабочего стола Windows/, 'Page title updates');
 assert.match(meta.content, /локальная обработка/, 'Search description updates');
