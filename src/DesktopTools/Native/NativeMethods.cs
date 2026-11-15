@@ -16,6 +16,21 @@ internal static class NativeMethods
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string Device;
     }
     internal delegate bool MonitorCallback(IntPtr monitor, IntPtr dc, ref Rect bounds, IntPtr data);
+    [StructLayout(LayoutKind.Sequential)] private struct MemoryStatusEx
+    {
+        public uint Length, MemoryLoad;
+        public ulong TotalPhysical, AvailablePhysical, TotalPageFile, AvailablePageFile, TotalVirtual, AvailableVirtual, AvailableExtendedVirtual;
+    }
+    [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx status);
+    /// <summary>
+    /// Memory that can still be committed now (RAM plus page file), in bytes; ulong.MaxValue when Windows does not report it.
+    /// An allocation fails when this runs out; low physical memory alone only makes work slower.
+    /// </summary>
+    internal static ulong AvailableCommitMemory()
+    {
+        var status = new MemoryStatusEx { Length = (uint)Marshal.SizeOf<MemoryStatusEx>() };
+        return GlobalMemoryStatusEx(ref status) ? status.AvailablePageFile : ulong.MaxValue;
+    }
     [DllImport("user32.dll")] internal static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] internal static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
     [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] internal static extern bool GetWindowRect(IntPtr window, out Rect bounds);

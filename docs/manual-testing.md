@@ -271,6 +271,16 @@ Use a catalog with at least one entry (a developer build may point a test catalo
 - [ ] Damage a model file (change one byte): Transcribe reports the model as damaged and the AI models page shows **Damaged** with **Download again**.
 - [ ] Check the tab in English and one other language, light and dark, 100 % and 200 %: nothing is clipped; long labels wrap.
 
+### Background quality, face finder and translation (1.4.0)
+
+- [ ] Image tools → open a photo with hair or fur → Background → **Background model** → *High quality (optional download)* → **Remove background**: the consent window opens; decline: *Download canceled.*, the image and the choice are kept and nothing is downloaded. Accept: the download progress shows, then the removal runs and the result is visibly cleaner at the hair than *Built-in*. Check on a secondary monitor, English and one other language, light and dark, 100 % and 200 %.
+- [ ] With less than 6 GB of free memory (open large apps first), High quality is refused with the message suggesting Built-in; the image is unchanged. Damage the pack (change one byte): the status says it is damaged and offers the download again; the built-in model is not used silently.
+- [ ] After a removal, **Touch up**: **Restore** brings back a removed area, **Erase** removes a leftover; change **Brush size** from 4 to 200 px; each stroke is one Undo step, and undoing past the removal turns the brush off; rotate or crop: Touch up ends. Export a PNG: the touched-up mask is in the copy and the original file is unchanged.
+- [ ] Screenshot editor → **Check screenshot** on a capture containing a photo of a face: the face row under the findings offers the face finder with its size; **Download** opens the consent window; after accepting, *Face finder ready*; check again: the face is suggested with the other findings and nothing is hidden until chosen. A capture without faces suggests none.
+- [ ] Text tools → choose a language pair that needs a new translation pack → **Download**: the consent window opens for each new pack; decline any: *Download canceled.* and nothing is downloaded. Accept: the packs download with progress and translation works.
+- [ ] Translate a passage of about 10,000–20,000 characters: the progress bar advances, the window stays responsive, **Cancel** stops within a few seconds; text over 20,000 characters is refused with the length message. Translate again within a minute: it starts without reloading; memory drops back about a minute after the last translation.
+- [ ] Have someone who reads Russian (and each language of any downloaded pack) judge a few translations; subjective quality is **Not tested** by the automated checks.
+
 ## Smart file names and hidden file details (1.4.0)
 
 - [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.

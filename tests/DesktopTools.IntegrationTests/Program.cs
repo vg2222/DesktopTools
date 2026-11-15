@@ -131,11 +131,14 @@ internal static class Program
                 else if (args.Contains("--recorder-only")) await Test("Screen recording lifecycle and MP4 output", RecordingChecks.RunAsync);
                 else if (args.Contains("--text-tools-only")) await Test("Text tools animation, translation, OCR and cancellation", TextToolsChecks.RunAsync);
                 else if (args.Contains("--translation-only")) await Test("Local EN-RU translation", TranslationChecks.RunAsync);
+                else if (args.Contains("--translation-bench")) await Test("Translation greedy against beam decoding (chrF, time)", TranslationQualityBench.RunAsync);
+                else if (args.Contains("--translation-consent-only")) await Test("Translation pack downloads need licence consent", TranslationConsentChecks.RunAsync);
                 else if (args.Contains("--ai-models-page-only")) await Test("AI models settings page: list, consent before download, progress, remove, translation packs", AiModelsPageChecks.RunAsync);
                 else if (args.Contains("--model-consent-ui-only")) await Test("Model licence and consent window in every language and theme", ModelConsentUiChecks.RunAsync);
                 else if (args.Contains("--ai-runtime-only")) await Test("Shared model session runtime: checksum, reuse, idle release and serialization", AiRuntimeChecks.RunAsync);
                 else if (args.Contains("--model-packs-only")) await Test("Model pack download, verification, damage and removal", ModelPackChecks.RunAsync);
                 else if (args.Contains("--ocr-pack-preview")) await Test("OCR pack manual preview in Text tools", OcrPackChecks.PreviewAsync);
+                else if (args.Contains("--tool-improvements-preview")) await Test("Background quality, face finder and translation packs: manual preview", ToolImprovementsPreview.PreviewAsync);
                 else if (args.Contains("--transcript-recording")) await Test("Transcripts end to end: speech played aloud, recorded with system audio, transcribed from the recorder's Transcribe button", () => TranscriptChecks.RecordingAsync(Results.Add));
                 else if (args.Contains("--transcript-only")) await Test("Transcripts: audio decoding, store and caption files, editor panel, and real models when present", () => TranscriptChecks.RunAsync(Results.Add));
                 else if (args.Contains("--ocr-pack-only")) await Test("OCR pack: engine choice, fallback to Windows OCR, and reading with the real pack when its files are present", () => OcrPackChecks.RunAsync(Results.Add));
@@ -145,6 +148,8 @@ internal static class Program
                 else if (args.Contains("--blackout-only")) await Test("Sharing blackout capture, cancellation and settings", BlackoutChecks.RunAsync);
                 else if (args.Contains("--hidden-details-only")) await Test("Hidden file details: today's exports measured, then described and removed on request", () => HiddenDetailsChecks.RunAsync(Results.Add));
                 else if (args.Contains("--background-only")) await Test("Local background removal, alpha, undo and cancellation", BackgroundRemovalChecks.RunAsync);
+                else if (args.Contains("--background-quality-only")) await Test("Background quality pack, consent, damage and the bundled model unchanged", BackgroundQualityChecks.RunAsync);
+                else if (args.Contains("--faces-only")) await Test("Face suggestions: optional YuNet pack, analyzer hook, damage and the editor row", FaceSuggestionChecks.RunAsync);
                 else if (args.Contains("--video-seek-only")) await Test("Coalesced video seeks, playhead dragging and stale-request cleanup", VideoSeekChecks.RunAsync);
                 else if (args.Contains("--video-thumbnails-only")) await Test("Bounded portrait and wide video thumbnails", VideoThumbnailChecks.RunAsync);
                 else if (args.Contains("--video-crop-only")) await Test("Video crop apply/cancel and edited preview", () => VideoWindowChecks.RunAsync(focused: true));

@@ -10,7 +10,18 @@ public static class SensitiveDataAnalyzer
 {
     public static async Task<IReadOnlyList<SensitiveFinding>> AnalyzeAsync(BitmapSource image, string languageTag,
         IReadOnlyCollection<string> categories, CancellationToken cancellationToken,
-        Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize = null)
+        Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize = null,
+        Func<BitmapSource, CancellationToken, Task<IReadOnlyList<System.Windows.Int32Rect>>>? detectFaces = null)
+    {
+        var findings = await AnalyzeTextAsync(image, languageTag, categories, cancellationToken, recognize);
+        // Faces are suggested only while the optional face finder is installed; a missing or damaged pack adds nothing (damage is marked).
+        var faces = await (detectFaces ?? FaceDetector.DetectIfInstalledAsync)(image, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return faces.Count == 0 ? findings : [.. findings, .. faces.Select(face => new SensitiveFinding(Guid.NewGuid(), ["face"], face, ""))];
+    }
+
+    private static async Task<IReadOnlyList<SensitiveFinding>> AnalyzeTextAsync(BitmapSource image, string languageTag,
+        IReadOnlyCollection<string> categories, CancellationToken cancellationToken, Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var timing = PipelineMetrics.Measure("privacy.total");

@@ -72,10 +72,10 @@ internal static class ModelPackChecks
         Exception? Record(Action action) { try { action(); return null; } catch (Exception e) { return e; } }
         try
         {
-            // The shipped catalog lists exactly the OCR pack (spec section 8); every entry passes the catalog rules when it is parsed.
-            Check(ModelPacks.Catalog.Select(p => p.Id).Order().SequenceEqual(["ocr-chinese-japanese", "ocr-cyrillic", "ocr-latin", "ocr-text-detector"]), "Unexpected shipped catalog: " + string.Join(", ", ModelPacks.Catalog.Select(p => p.Id)));
+            // The shipped catalog lists exactly the OCR pack, the speech models, the background quality pack and the face finder; every entry passes the catalog rules when it is parsed.
+            Check(ModelPacks.Catalog.Select(p => p.Id).Order().SequenceEqual(["background-quality", "faces", "ocr-chinese-japanese", "ocr-cyrillic", "ocr-latin", "ocr-text-detector", "speech-accurate", "speech-fast"]), "Unexpected shipped catalog: " + string.Join(", ", ModelPacks.Catalog.Select(p => p.Id)));
             Check(ModelPacks.Root.EndsWith(Path.Combine("DesktopTools", "Models"), StringComparison.OrdinalIgnoreCase), "Unexpected pack root " + ModelPacks.Root);
-            foreach (string license in new[] { "MIT.txt", "Apache-2.0.txt", "BSD-2-Clause.txt", "BSD-3-Clause.txt", "CC-BY-4.0.txt" })
+            foreach (string license in new[] { "MIT.txt", "Apache-2.0.txt", "BSD-2-Clause.txt", "BSD-3-Clause.txt", "CC-BY-4.0.txt", "Whisper-MIT-Apache-2.0.txt", "BiRefNet-MIT.txt", "YuNet-MIT.txt" })
                 Check(File.Exists(Path.Combine(AppContext.BaseDirectory, "Assets", "Models", "Licenses", license)), "Licence text not shipped: " + license);
 
             var (pack, server) = Fixture();

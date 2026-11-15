@@ -22,6 +22,22 @@ internal sealed class ImageEditCanvas : Grid
     internal bool KeepRatio { get => Handles.KeepRatio; set => Handles.KeepRatio = value; }
     internal Int32Rect Selection => selection;
     internal bool IsComparing => comparison.Visibility == Visibility.Visible;
+    // Touch-up brush: while active, a left-button drag reports image-pixel points (begin, move, end) and a circle shows the brush size.
+    private readonly System.Windows.Shapes.Ellipse brushOutline = new() { Stroke = Brushes.White, StrokeThickness = 1.5, StrokeDashArray = [3, 2], HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
+    private bool brushActive, brushDown;
+    internal double BrushDiameter { get; set; } = 24;
+    internal event Action<Point>? BrushStarted, BrushMoved;
+    internal event Action? BrushEnded;
+    internal bool BrushActive
+    {
+        get => brushActive;
+        set
+        {
+            if (brushActive == value) return;
+            brushActive = value; Cursor = value ? System.Windows.Input.Cursors.Cross : null;
+            if (!value) { EndBrush(); brushOutline.Visibility = Visibility.Collapsed; }
+        }
+    }
     internal Rect ImageBounds
     {
         get
@@ -34,7 +50,7 @@ internal sealed class ImageEditCanvas : Grid
     internal ImageEditCanvas()
     {
         beforeLabel.HorizontalAlignment = HorizontalAlignment.Left; afterLabel.HorizontalAlignment = HorizontalAlignment.Right;
-        Children.Add(Image); Children.Add(comparison); Children.Add(dividerLine); Children.Add(divider); Children.Add(beforeLabel); Children.Add(afterLabel); Children.Add(Handles); ClipToBounds = false;
+        Children.Add(Image); Children.Add(comparison); Children.Add(dividerLine); Children.Add(divider); Children.Add(beforeLabel); Children.Add(afterLabel); Children.Add(Handles); Children.Add(brushOutline); ClipToBounds = false;
         SizeChanged += (_, _) => { UpdateHandles(); UpdateResizePreview(); UpdateComparison(); };
         divider.DragDelta += (_, e) =>
         {
@@ -58,6 +74,42 @@ internal sealed class ImageEditCanvas : Grid
             }
             SelectionChanged?.Invoke(selection, completed);
         };
+        Background = Brushes.Transparent;
+        MouseLeftButtonDown += (_, e) =>
+        {
+            if (!brushActive || ToPixel(e.GetPosition(this)) is not Point point) return;
+            brushDown = CaptureMouse(); e.Handled = true; BrushStarted?.Invoke(point);
+        };
+        MouseMove += (_, e) =>
+        {
+            if (!brushActive) return;
+            var position = e.GetPosition(this); ShowBrush(position);
+            if (brushDown && ToPixel(position, clamp: false) is Point point) BrushMoved?.Invoke(point);
+        };
+        MouseLeave += (_, _) => { if (!brushDown) brushOutline.Visibility = Visibility.Collapsed; };
+        MouseLeftButtonUp += (_, e) => { if (brushDown) { e.Handled = true; EndBrush(); } };
+        LostMouseCapture += (_, _) => EndBrush();
+    }
+    private void EndBrush()
+    {
+        if (!brushDown) return;
+        brushDown = false; if (IsMouseCaptured) ReleaseMouseCapture(); BrushEnded?.Invoke();
+    }
+    /// <summary>Canvas point → image pixel; null outside the picture when <paramref name="clamp"/> is off for the first press.</summary>
+    private Point? ToPixel(Point position, bool clamp = true)
+    {
+        var bounds = ImageBounds;
+        if (Image.Source is not BitmapSource bitmap || bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0) return null;
+        if (clamp && !bounds.Contains(position)) return null;
+        return new Point((position.X - bounds.Left) / bounds.Width * bitmap.PixelWidth, (position.Y - bounds.Top) / bounds.Height * bitmap.PixelHeight);
+    }
+    private void ShowBrush(Point position)
+    {
+        var bounds = ImageBounds;
+        if (Image.Source is not BitmapSource bitmap || bounds.IsEmpty) { brushOutline.Visibility = Visibility.Collapsed; return; }
+        double size = Math.Max(2, BrushDiameter * bounds.Width / bitmap.PixelWidth);
+        brushOutline.Width = brushOutline.Height = size; brushOutline.Margin = new Thickness(position.X - size / 2, position.Y - size / 2, 0, 0);
+        brushOutline.Visibility = bounds.Contains(position) || brushDown ? Visibility.Visible : Visibility.Collapsed;
     }
     internal void SetComparison(BitmapSource? original, double position, string? before = null, string? after = null)
     {

@@ -27,11 +27,18 @@ internal static class OfflineLanguageChecks
         string root = Path.GetFullPath("offline-language-fixture-" + Guid.NewGuid().ToString("N"));
         try
         {
+            // New downloads need the licence accepted first (spec 2.4); accept both packs in a test record.
+            var consents = new DesktopTools.Core.ModelConsentStore(Path.Combine(root, "consents"));
+            foreach (string direction in new[] { "en-de", "de-en" })
+            {
+                var consent = TranslationPacks.ConsentPack(TranslationPacks.Find(direction));
+                consents.Accept(consent, ModelPacks.LicenseText(consent), DateTimeOffset.Now, "test");
+            }
             using var canceled = new CancellationTokenSource(); canceled.Cancel();
-            try { await TranslationPacks.InstallAsync("en-de", null, canceled.Token, root); throw new Exception("Canceled download was started"); }
+            try { await TranslationPacks.InstallAsync("en-de", consents, null, canceled.Token, root); throw new Exception("Canceled download was started"); }
             catch (OperationCanceledException) { }
-            await TranslationPacks.InstallAsync("en-de", null, CancellationToken.None, root);
-            await TranslationPacks.InstallAsync("de-en", null, CancellationToken.None, root);
+            await TranslationPacks.InstallAsync("en-de", consents, null, CancellationToken.None, root);
+            await TranslationPacks.InstallAsync("de-en", consents, null, CancellationToken.None, root);
             string german = await LocalTranslation.TranslateAsync("Open the window.", "en-de", packRoot: root);
             string english = await LocalTranslation.TranslateAsync("Öffnen Sie das Fenster.", "de-en", packRoot: root);
             string russian = await LocalTranslation.TranslateAsync("Öffnen Sie das Fenster.", "de-ru", packRoot: root);

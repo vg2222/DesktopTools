@@ -131,7 +131,8 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact, translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null) { WindowState = WindowState.Maximized }); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact, translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null,
+            getBackgroundModel: () => Settings.BackgroundModel, setBackgroundModel: value => UpdateSettings(s => s.BackgroundModel = value)) { WindowState = WindowState.Maximized }); }
     public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report, () => Settings.AutoRedact)); }
     public void ToggleWindowPin()
     {

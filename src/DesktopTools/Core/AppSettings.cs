@@ -45,6 +45,8 @@ public sealed class AppSettings
     public string OcrPackScript { get; set; } = "";
     /// <summary>Which transcript model to use: "Fast" (Whisper base, the default) or "Accurate" (Whisper small).</summary>
     public string TranscriptModel { get; set; } = "Fast";
+    /// <summary>Which background-removal model Image tools uses: "Standard" (the bundled U2NetP, the default) or "Quality" (the optional BiRefNet-lite pack).</summary>
+    public string BackgroundModel { get; set; } = "Standard";
     /// <summary>The spoken language of recordings to transcribe: "auto" detects it, otherwise a Whisper language code.</summary>
     public string TranscriptLanguage { get; set; } = "auto";
     /// <summary>Set once the user has read the note about recording and transcribing other people.</summary>

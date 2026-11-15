@@ -23,7 +23,7 @@ public sealed class ProfileStore
         nameof(AppSettings.HideControlsFromCapture), nameof(AppSettings.BlackoutSharingOnly), nameof(AppSettings.DrawShortcut),
         nameof(AppSettings.FeatureShortcuts), nameof(AppSettings.ShortcutEnabled), nameof(AppSettings.HiddenCaptureTools),
         nameof(AppSettings.CaptureVisibilityOverrides),
-        nameof(AppSettings.TranslationShortcut), nameof(AppSettings.ScreenTextShortcut), nameof(AppSettings.TranslationDirection), nameof(AppSettings.ScreenTextLanguage), nameof(AppSettings.OcrEngine), nameof(AppSettings.OcrPackScript), nameof(AppSettings.TranscriptModel), nameof(AppSettings.TranscriptLanguage),
+        nameof(AppSettings.TranslationShortcut), nameof(AppSettings.ScreenTextShortcut), nameof(AppSettings.TranslationDirection), nameof(AppSettings.ScreenTextLanguage), nameof(AppSettings.OcrEngine), nameof(AppSettings.OcrPackScript), nameof(AppSettings.TranscriptModel), nameof(AppSettings.BackgroundModel), nameof(AppSettings.TranscriptLanguage),
         nameof(AppSettings.CaptureShortcut), nameof(AppSettings.HidePaletteShortcut),
         nameof(AppSettings.LaserEnabled), nameof(AppSettings.SpotlightEnabled), nameof(AppSettings.FreezeEnabled),
         nameof(AppSettings.LaserColor), nameof(AppSettings.LaserSize), nameof(AppSettings.LaserFadeSeconds),

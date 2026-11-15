@@ -44,13 +44,17 @@ internal static class AiRuntime
     /// As above; each file whose index has a step in <paramref name="prepare"/> is read once, its SHA-256 checked on those bytes, and its session
     /// is created from the bytes that step returns. Used to drop unneeded outputs of a model in memory; the file on disk is never changed.
     /// Other files are verified and loaded from disk as usual, so a large file is not held in memory twice.
+    /// <paramref name="lowMemory"/> turns off ONNX Runtime's memory arena and memory pattern for a newly loaded set, so a large model returns
+    /// its working memory after each run instead of keeping its peak. With <paramref name="wait"/>, a caller that cannot get its turn within
+    /// that time (another model is busy, for example a long translation) gets <see cref="AiRuntimeBusyException"/> instead of waiting.
     /// </summary>
     internal static async Task<T> RunAsync<T>(IReadOnlyList<(string Path, string Sha256)> models, Func<IReadOnlyList<InferenceSession>, T> use, CancellationToken token,
-        IReadOnlyDictionary<int, Func<byte[], byte[]>>? prepare)
+        IReadOnlyDictionary<int, Func<byte[], byte[]>>? prepare, bool lowMemory = false, TimeSpan? wait = null)
     {
         if (models.Count == 0) throw new ArgumentException("No model files given.", nameof(models));
         string[] paths = models.Select(model => Path.GetFullPath(model.Path)).ToArray();
-        await gate.WaitAsync(token);
+        if (wait is { } limit) { if (!await gate.WaitAsync(limit, token)) throw new AiRuntimeBusyException(); }
+        else await gate.WaitAsync(token);
         try
         {
             return await Task.Run(() =>
@@ -69,7 +73,7 @@ internal static class AiRuntime
                         for (int i = 0; i < paths.Length; i++)
                         {
                             string path = paths[i];
-                            using var options = Options();
+                            using var options = Options(lowMemory);
                             try
                             {
                                 if (prepare != null && prepare.TryGetValue(i, out var step))
@@ -165,10 +169,14 @@ internal static class AiRuntime
         return bytes;
     }
 
-    private static SessionOptions Options()
+    private static SessionOptions Options(bool lowMemory)
     {
         var options = new SessionOptions { IntraOpNumThreads = Math.Clamp(Environment.ProcessorCount / 2, 1, 4), InterOpNumThreads = 1, ExecutionMode = ExecutionMode.ORT_SEQUENTIAL };
+        if (lowMemory) { options.EnableCpuMemArena = false; options.EnableMemoryPattern = false; }
         options.AddSessionConfigEntry("session.intra_op.allow_spinning", "0");
         return options;
     }
 }
+
+/// <summary>Another model held the runtime longer than the caller was willing to wait.</summary>
+internal sealed class AiRuntimeBusyException() : InvalidOperationException("Another model is busy.");

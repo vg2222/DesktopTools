@@ -215,6 +215,15 @@ internal static class Program
         Test("Speech packs list exactly the reviewed Whisper files", SpeechPackCatalogTests.Run);
         Test("Transcript settings fall back to known values", SpeechPackCatalogTests.Settings);
         Test("ONNX model keeps only the named graph outputs", OnnxModelEditTests.Run);
+        Test("Translation beam search finds better whole sequences and matches argmax with one beam", TranslationBeamSearchTests.Run);
+        Test("Background quality pack lists exactly the reviewed BiRefNet-lite file", BackgroundQualityTests.Catalog);
+        Test("Background model setting falls back to the bundled model", BackgroundQualityTests.Settings);
+        Test("Background mask upsamples the model mask like ApplyMask", BackgroundMaskTests.FromModel);
+        Test("Background touch-up brush paints a soft round stroke and clips", BackgroundMaskTests.Paint);
+        Test("Background mask composes source colour with the painted alpha", BackgroundMaskTests.Compose);
+        Test("Background mask clone is independent", BackgroundMaskTests.Clone);
+        Test("YuNet outputs decode to face boxes with threshold and bad-value handling", YuNetDecoderTests.Decode);
+        Test("YuNet non-maximum suppression keeps the best of overlapping faces", YuNetDecoderTests.Nms);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 

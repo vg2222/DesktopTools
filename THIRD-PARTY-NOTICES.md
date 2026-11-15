@@ -71,10 +71,14 @@ Optional AI models are **not distributed with DesktopTools** and are not covered
 | PP-OCRv5 mobile Chinese/Japanese recognizer (`ocr-chinese-japanese`) | PaddlePaddle, [PP-OCRv5_mobile_rec_onnx](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx) | `ed152b8b495f84de93cda5709d768548a9127622` | Apache-2.0 | Text tools (DesktopTools OCR pack) |
 | Whisper base, ONNX export (`speech-fast`) | Xenova (Joshua Lochner), [Xenova/whisper-base](https://huggingface.co/Xenova/whisper-base); model by OpenAI, [openai/whisper](https://github.com/openai/whisper) | `64da57285918e20ea79ea5c88eed7197933abaa8` | MIT (OpenAI code and weights); export card Apache-2.0 | Video editor (Transcript) |
 | Whisper small, ONNX export (`speech-accurate`) | Xenova (Joshua Lochner), [Xenova/whisper-small](https://huggingface.co/Xenova/whisper-small); model by OpenAI, [openai/whisper](https://github.com/openai/whisper) | `2d67713f236afa48a18992566e7647f6ca848e13` | MIT (OpenAI code and weights); export card Apache-2.0 | Video editor (Transcript) |
+| BiRefNet-lite, general (`background-quality`) | Peng Zheng, [ZhengPeng7/BiRefNet](https://github.com/ZhengPeng7/BiRefNet), GitHub release asset | `v1` (`BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx`) | MIT | Image tools (Background, High quality) |
+| YuNet face detector (`faces`) | OpenCV, [opencv_zoo/face_detection_yunet](https://github.com/opencv/opencv_zoo/tree/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet); model by Shiqi Yu and co-authors | `48b10fa505aeb51fbd127fc60a5c660040e823b7` | MIT | Screenshot editor (Check screenshot, face suggestions) |
 
 The OCR pack repositories carry no licence file of their own; their model cards state Apache-2.0, as does PaddleOCR. The app shows and stores the bundled `Assets/Models/Licenses/Apache-2.0.txt` for them.
 
 The Whisper export repositories also carry no licence file; OpenAI's repository licenses the code and model weights under MIT, and the export model cards state Apache-2.0. The app shows and stores the bundled `Assets/Models/Licenses/Whisper-MIT-Apache-2.0.txt`, which contains both texts. Whisper was trained on 680,000 hours of audio collected from the web; OpenAI has not published that dataset.
+
+BiRefNet-lite and YuNet carry MIT licences in their publishers' repositories; the app shows and stores copies as `Assets/Models/Licenses/BiRefNet-MIT.txt` and `YuNet-MIT.txt`. BiRefNet was trained on DIS5K, HRSOD, UHRSD and other public segmentation datasets listed by its author; YuNet on WIDER FACE.
 
 # Microsoft Fluent System Icons
 

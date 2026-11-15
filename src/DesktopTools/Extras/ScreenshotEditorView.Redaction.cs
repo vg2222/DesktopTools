@@ -23,6 +23,9 @@ public sealed partial class ScreenshotEditorView
     private WrapPanel _selectionActions = null!;
     private TextBlock _scanStatus = null!;
     private Border _detectionNotice = null!;
+    private TextBlock _faceStatus = null!;
+    private Button _faceDownload = null!;
+    private CancellationTokenSource? _faceInstall;
     private Button _findButton = null!, _hideAllButton = null!, _acceptButton = null!, _ignoreButton = null!, _skipButton = null!, _cancelScan = null!;
     private readonly List<Button> _exportButtons = [];
     private Func<BitmapSource, ScreenshotExportAction, Task<bool>>? _exportAsync;
@@ -50,6 +53,12 @@ public sealed partial class ScreenshotEditorView
         pane.Children.Add(Ui.Text(L.T("Hide private data"), 16, true));
         pane.Children.Add(Ui.Text(L.T("Check the screenshot, then hide all or choose areas."), 12, muted: true));
         _scanStatus = Ui.Text(L.T("Nothing hidden yet."), 12, muted: true); _scanStatus.Margin = new Thickness(0, 10, 0, 10); pane.Children.Add(_scanStatus);
+        // Optional face finder (spec section 9): suggests faces like text findings once its pack is downloaded with licence consent.
+        var faceRow = new StackPanel { Margin = new Thickness(0, 0, 0, 10), Visibility = FaceDetector.Pack == null ? Visibility.Collapsed : Visibility.Visible };
+        _faceStatus = Ui.Text("", 11, muted: true); _faceStatus.TextWrapping = TextWrapping.Wrap; faceRow.Children.Add(_faceStatus);
+        _faceDownload = Ui.Button(L.T("Download"), async () => await DownloadFaceFinderAsync()); _faceDownload.Name = "DownloadFaceFinder";
+        _faceDownload.HorizontalAlignment = HorizontalAlignment.Left; _faceDownload.Margin = new Thickness(0, 6, 0, 0); faceRow.Children.Add(_faceDownload);
+        RefreshFaceRow();
         _hideAllButton = Ui.Button(L.T("Hide all found"), () => HideSensitiveData(_reviewState.Findings.ToArray()), true);
         _hideAllButton.Name = "HideAllSensitiveData"; _hideAllButton.Content = Ui.IconLabel("Redaction", L.T("Hide all found"), primary: true);
         _hideAllButton.Margin = new Thickness(0, 0, 0, 8); pane.Children.Add(_hideAllButton);
@@ -109,6 +118,7 @@ public sealed partial class ScreenshotEditorView
         _detectionNotice = new Border { Name = "DetectionNotice", Child = noticeRow, Padding = new Thickness(10, 8, 10, 8), CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 8), Visibility = Visibility.Collapsed };
         _detectionNotice.SetResourceReference(Border.BackgroundProperty, "Field"); _detectionNotice.SetResourceReference(Border.BorderBrushProperty, "Stroke");
         pane.Children.Add(_detectionNotice);
+        pane.Children.Add(faceRow);   // below the list: the findings must stay in the first viewport
         // Keep the result list directly below the primary action. Secondary
         // actions must not push all findings outside a short window's viewport.
         foreach (var action in new UIElement[] { choices, _skipButton, manual }) { pane.Children.Remove(action); pane.Children.Add(action); }
@@ -182,6 +192,7 @@ public sealed partial class ScreenshotEditorView
             var full = result.Select(f => f with { Bounds = new(f.Bounds.X + crop.X, f.Bounds.Y + crop.Y, f.Bounds.Width, f.Bounds.Height) }).ToArray();
             if (!_reviewState.CompleteScan(revision, full)) return;
             _scanStatus.Text = full.Length == 0 ? L.T("Nothing found. Check the image or add a cover manually.") : L.F($"Found areas: {full.Length}");
+            RefreshFaceRow(afterCheck: true);
             _detectionNotice.Visibility = Visibility.Visible; _report(L.T("Check finished. Detection can miss some data, so look through the picture yourself before you share it."));
         }
         catch (OperationCanceledException) { if (!_reviewClosed) _reviewState.FailScan(revision); }
@@ -206,8 +217,48 @@ public sealed partial class ScreenshotEditorView
     }
     private SensitiveFinding[] SelectedFindings() => _findings.SelectedItems.OfType<ListBoxItem>().Select(i => (SensitiveFinding)i.Tag).ToArray();
     private void IgnoreSensitiveData() { _reviewState.Resolve(SelectedFindings().Select(f => f.Id).ToArray()); RefreshFindings(); }
+    /// <summary>The face row under the check status: what the optional face finder adds, or how to get it.</summary>
+    private void RefreshFaceRow(bool afterCheck = false)
+    {
+        if (_faceInstall != null) return;
+        var state = FaceDetector.State;
+        _faceStatus.Text = state switch
+        {
+            ModelPackState.Installed => afterCheck && FaceDetector.LastCheckSkipped ? L.T("Faces were not checked this time. Check the screenshot again.") : L.T("Faces are suggested too."),
+            ModelPackState.Damaged => L.T("Faces were not checked: the face finder is damaged. Download it again."),
+            _ => L.F($"Also suggest faces with the optional face finder ({ModelPacks.FormatSize(FaceDetector.Pack?.TotalBytes ?? 0)}).")
+        };
+        string label = L.T(state == ModelPackState.Damaged ? "Download again" : "Download");
+        _faceDownload.Content = label; System.Windows.Automation.AutomationProperties.SetName(_faceDownload, label);
+        _faceDownload.Visibility = state == ModelPackState.Installed ? Visibility.Collapsed : Visibility.Visible;
+        _faceDownload.IsEnabled = true;
+    }
+
+    /// <summary>Licence window first; nothing downloads without consent. The next check then suggests faces too.</summary>
+    private async Task DownloadFaceFinderAsync()
+    {
+        var pack = FaceDetector.Pack; var owner = Window.GetWindow(this);
+        if (pack == null || owner == null || _faceInstall != null || _reviewClosed) return;
+        var consents = ModelPacks.Consents();
+        try { if (!consents.IsCurrent(pack, ModelPacks.LicenseText(pack)) && !ModelConsentWindow.Ask(owner, pack, consents)) { _faceStatus.Text = L.T("Download canceled."); return; } }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _faceStatus.Text = L.T("Could not download the face finder: ") + ex.Message; return; }
+        if (_reviewClosed) return;
+        var cancellation = new CancellationTokenSource(); _faceInstall = cancellation; _faceDownload.IsEnabled = false;
+        _faceStatus.Text = L.T("Downloading the face finder…");
+        try
+        {
+            var progress = new Progress<double>(value => { if (_faceInstall == cancellation) _faceStatus.Text = L.F($"Downloading the face finder… {value:P0}"); });
+            await ModelPacks.InstallAsync(pack, consents, progress, cancellation.Token);
+            _faceInstall = null; if (_reviewClosed) return;
+            RefreshFaceRow(); _faceStatus.Text = L.T("Face finder ready. Check the screenshot again to include faces.");
+        }
+        catch (OperationCanceledException) { _faceInstall = null; if (!_reviewClosed) RefreshFaceRow(); }
+        catch (Exception ex) { _faceInstall = null; if (!_reviewClosed) { RefreshFaceRow(); _faceStatus.Text = L.T("Could not download the face finder: ") + ex.Message; } }
+        finally { if (_faceInstall == cancellation) _faceInstall = null; cancellation.Dispose(); }
+    }
+
     internal static string CategoryLabel(string category) => category switch
-    { "email" => "Email addresses", "phone" => "Phone numbers", "ip" => "IP addresses", "path" => "Local file paths", "credential" => "Keys, tokens and passwords", "username" => "Usernames", "account" => "Account IDs", "serial" => "Serial numbers", _ => "Sensitive data" };
+    { "face" => "Faces", "email" => "Email addresses", "phone" => "Phone numbers", "ip" => "IP addresses", "path" => "Local file paths", "credential" => "Keys, tokens and passwords", "username" => "Usernames", "account" => "Account IDs", "serial" => "Serial numbers", _ => "Sensitive data" };
     private void RefreshFindings()
     {
         _findings.Items.Clear();
@@ -250,6 +301,7 @@ public sealed partial class ScreenshotEditorView
         _reviewClosed = true; _reviewState.Close();
         _exportCancellation.Cancel(); _exportCancellation.Dispose();
         _analysisCancellation?.Cancel(); _analysisCancellation?.Dispose(); _analysisCancellation = null;
+        _faceInstall?.Cancel();
     }
 
     private static Point[] RedactionHandles(Rect r) => [r.TopLeft, new(r.X + r.Width / 2, r.Y), r.TopRight, new(r.Right, r.Y + r.Height / 2), r.BottomRight, new(r.X + r.Width / 2, r.Bottom), r.BottomLeft, new(r.X, r.Y + r.Height / 2)];

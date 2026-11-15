@@ -28,6 +28,9 @@ internal sealed class TextToolsWindow : Window
     private readonly Button downloadPack, refreshLanguages;
     private readonly TextBlock packStatus = Ui.Text("", 12, muted: true);
     private readonly ProgressBar packProgress = new() { Minimum = 0, Maximum = 1, Height = 5, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 6, 0, 0) };
+    // Long passages translate sentence by sentence; this shows how far a translation has got (collapsed when idle).
+    private readonly ProgressBar translateProgress = new() { Minimum = 0, Maximum = 1, Height = 5, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 6, 0, 0) };
+    private static readonly TimeSpan TranslationTimeout = TimeSpan.FromMinutes(30);
     private Button scan = null!, copySource = null!;
     private CancellationTokenSource? operation;
     private bool closed, writingSource;
@@ -98,6 +101,7 @@ internal sealed class TextToolsWindow : Window
         DockPanel.SetDock(settings, Dock.Top); root.Children.Add(settings);
         var footer = new StackPanel(); activity.SetResourceReference(Border.BackgroundProperty, "Accent"); footer.Children.Add(activity);
         status.TextWrapping = TextWrapping.Wrap; footer.Children.Add(status);
+        System.Windows.Automation.AutomationProperties.SetName(translateProgress, L.T("Translation progress")); footer.Children.Add(translateProgress);
         runtimeWarning.TextWrapping = TextWrapping.Wrap; runtimeWarning.Margin = new Thickness(0, 8, 0, 0);
         footer.Children.Add(runtimeWarning);
         runtimeHelp = Ui.Button(L.T("Open Microsoft Visual C++ Runtime download page"), OpenRuntimeHelp);
@@ -274,6 +278,14 @@ internal sealed class TextToolsWindow : Window
         if (closed || IsProcessing) return;
         var packs = TranslationPacks.Missing(languagePair.Direction);
         if (packs.Count == 0) return;
+        // Each new pack's licence is accepted in the consent window first (spec 2.4); declining any of them downloads nothing.
+        var consents = ModelPacks.Consents();
+        try
+        {
+            foreach (var pack in packs)
+                if (!ModelConsentWindow.Ask(this, TranslationPacks.ConsentPack(pack), consents)) { status.Text = L.T("Download canceled."); return; }
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException) { status.Text = L.T("Could not download offline packs: ") + ex.Message; return; }
         var cancellation = Begin(L.T("Downloading offline packs…"), TimeSpan.FromMinutes(30));
         packProgress.Visibility = Visibility.Visible; packProgress.Value = 0;
         try
@@ -282,7 +294,7 @@ internal sealed class TextToolsWindow : Window
             {
                 int index = i;
                 var progress = new Progress<double>(value => { if (!closed && operation == cancellation) packProgress.Value = (index + value) / packs.Count; });
-                await TranslationPacks.InstallAsync(packs[i].Direction, progress, cancellation.Token);
+                await TranslationPacks.InstallAsync(packs[i].Direction, consents, progress, cancellation.Token);
             }
             if (!closed) status.Text = L.T("Offline packs ready. Your text stays on this PC.");
         }
@@ -308,15 +320,17 @@ internal sealed class TextToolsWindow : Window
         }
         if (TranslationPacks.Missing(languagePair.Direction).Count > 0) { status.Text = L.T("Download the offline language pack first."); return; }
         var input = source.Text; string language = languagePair.Direction;
-        var cancellation = Begin(L.T("Translating locally…"));
+        var cancellation = Begin(L.T("Translating locally…"), TranslationTimeout);
+        translateProgress.Value = 0; translateProgress.Visibility = Visibility.Visible;
+        var progress = new Progress<double>(value => { if (!closed && operation == cancellation) translateProgress.Value = value; });
         try
         {
-            var result = await LocalTranslation.TranslateAsync(input, language, cancellation.Token); cancellation.Token.ThrowIfCancellationRequested();
+            var result = await LocalTranslation.TranslateAsync(input, language, cancellation.Token, null, progress); cancellation.Token.ThrowIfCancellationRequested();
             if (!closed && operation == cancellation) { output.Text = result; status.Text = L.T("Translation ready. Review it before use."); }
         }
         catch (OperationCanceledException) { if (!closed && operation == cancellation) status.Text = L.T("Processing canceled. You can try again."); }
         catch (Exception ex) { if (!closed && operation == cancellation) status.Text = L.T("Translation failed: ") + ex.Message; }
-        finally { End(cancellation); }
+        finally { if (operation == cancellation) translateProgress.Visibility = Visibility.Collapsed; End(cancellation); }
     }
     internal async Task RecognizeScreenAsync(BitmapSource image)
     {
@@ -328,7 +342,7 @@ internal sealed class TextToolsWindow : Window
         try
         {
             var (recognized, notice) = await LocalOcr.ReadTextAsync(image, language.Tag, cancellation.Token); cancellation.Token.ThrowIfCancellationRequested();
-            if (recognized.Length > LocalTranslation.MaxCharacters) throw new InvalidOperationException(L.T("Select a smaller text area (up to 4,000 characters)."));
+            if (recognized.Length > LocalTranslation.MaxCharacters) throw new InvalidOperationException(L.T("Select a smaller text area (up to 20,000 characters)."));
             if (!closed && operation == cancellation)
             {
                 writingSource = true; try { source.Text = recognized; } finally { writingSource = false; }
@@ -343,7 +357,7 @@ internal sealed class TextToolsWindow : Window
     }
     private CancellationTokenSource Begin(string message, TimeSpan? timeout = null)
     {
-        operation?.Cancel(); output.Clear(); var next = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(2)); operation = next; status.Text = message; RefreshButtons(); UpdateAnimation(); return next;
+        operation?.Cancel(); output.Clear(); translateProgress.Visibility = Visibility.Collapsed; var next = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(2)); operation = next; status.Text = message; RefreshButtons(); UpdateAnimation(); return next;
     }
     private void End(CancellationTokenSource completed)
     {

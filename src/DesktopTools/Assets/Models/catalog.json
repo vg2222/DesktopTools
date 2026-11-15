@@ -216,5 +216,59 @@
         "bytes": 3837
       }
     ]
+  },
+  {
+    "id": "background-quality",
+    "name": "Background removal: high quality",
+    "purpose": "Separates the subject from the background with finer edges around hair, fur and see-through objects. About 8 seconds for a Full HD image on a typical processor.",
+    "feature": "Image tools (Remove background)",
+    "publisher": "ZhengPeng7 (Peng Zheng) on GitHub",
+    "authors": "Peng Zheng and co-authors (BiRefNet)",
+    "upstream": "https://github.com/ZhengPeng7/BiRefNet",
+    "revision": "v1",
+    "licenseId": "mit",
+    "licenseFile": "BiRefNet-MIT.txt",
+    "attribution": "BiRefNet-lite (Swin-T backbone) by Peng Zheng et al. (https://github.com/ZhengPeng7/BiRefNet), code and weights licensed under MIT. ONNX file from the author's GitHub release v1.",
+    "trainingData": "DIS5K, HRSOD, UHRSD and other public segmentation datasets listed by the author.",
+    "limitations": [
+      "Needs about 6 GB of free memory while it runs.",
+      "Can keep or drop objects next to the subject, such as items on a table.",
+      "Results can be wrong; check the edges before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+        "url": "https://github.com/ZhengPeng7/BiRefNet/releases/download/v1/BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+        "sha256": "5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333",
+        "bytes": 224005088
+      }
+    ]
+  },
+  {
+    "id": "faces",
+    "name": "Face finder",
+    "purpose": "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.",
+    "feature": "Screenshot editor (Check screenshot)",
+    "publisher": "OpenCV (opencv_zoo on GitHub)",
+    "authors": "Shiqi Yu and co-authors (YuNet)",
+    "upstream": "https://github.com/opencv/opencv_zoo/tree/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet",
+    "revision": "48b10fa505aeb51fbd127fc60a5c660040e823b7",
+    "licenseId": "mit",
+    "licenseFile": "YuNet-MIT.txt",
+    "attribution": "YuNet face detector by Shiqi Yu et al. (https://github.com/ShiqiYu/libfacedetection.train), distributed in OpenCV Zoo (https://github.com/opencv/opencv_zoo), licensed under MIT.",
+    "trainingData": "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.",
+    "limitations": [
+      "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.",
+      "Can mark things that only look like faces.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "face_detection_yunet_2026may.onnx",
+        "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0",
+        "bytes": 229738
+      }
+    ]
   }
 ]

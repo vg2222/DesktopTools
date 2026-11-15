@@ -139,6 +139,7 @@ public sealed class SettingsStore
         s.OcrEngine = Known(s.OcrEngine, "Windows", "Pack");
         s.OcrPackScript = Known(s.OcrPackScript, "", "latin", "cyrillic", "chinese-japanese");
         s.TranscriptModel = Known(s.TranscriptModel, "Fast", "Accurate");
+        s.BackgroundModel = Known(s.BackgroundModel, "Standard", "Quality");
         s.TranscriptLanguage = Known(s.TranscriptLanguage, ["auto", .. WhisperDecoding.KnownLanguages]);
         s.MonitorMode = Known(s.MonitorMode, "Cursor", "Primary");
         s.LaserMonitorMode = Known(s.LaserMonitorMode, "All", "Selected");

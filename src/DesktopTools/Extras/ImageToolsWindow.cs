@@ -33,7 +33,20 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private BitmapSource? savedImage;
     private BitmapSource? backgroundBefore;
     private BitmapSource? backgroundAfter;
-    private bool IsComparisonAvailable => bitmap != null && ReferenceEquals(bitmap, backgroundAfter) && backgroundBefore != null;
+    private bool IsComparisonAvailable => bitmap != null && touchMasks.ContainsKey(bitmap) && backgroundBefore != null;
+    // Touch-up brush (spec section 9): each removal result and each touch-up of it keeps its full-size mask, so a stroke recomposes
+    // the image the removal started from. Any other edit or a new image drops them; undoing past the removal turns the brush off.
+    private readonly Dictionary<BitmapSource, BackgroundMask> touchMasks = new(ReferenceEqualityComparer.Instance);
+    private byte[]? touchSource;
+    private readonly StackPanel touchUpPanel = new() { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 14, 0, 0) };
+    private readonly Slider brushSize = new() { Minimum = 4, Maximum = 200, Value = 24, TickFrequency = 1, IsSnapToTickEnabled = true, MinWidth = 40, Margin = new Thickness(0, 0, 12, 0) };
+    private readonly Button restoreBrush, eraseBrush;
+    private bool? brushRestores;
+    private BackgroundMask? strokeMask;
+    private byte[]? strokePixels;
+    private WriteableBitmap? strokeBitmap;
+    private Point strokeLast;
+    internal bool CanTouchUp => bitmap != null && removal == null && touchSource != null && touchMasks.ContainsKey(bitmap);
     public bool HasUnsavedChanges => removal != null || annotateView?.HasEdits == true || (bitmap != null && !ReferenceEquals(bitmap, savedImage ?? originalImage));
     public Task<bool> SaveCopyAsync(Window owner)
     {
@@ -62,6 +75,13 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     private readonly Button emptyImport;
     private readonly Button extractButton;
     private readonly Func<AutoRedactOptions>? getAutoRedact;
+    // Background model choice (spec section 9): the bundled model, or the optional high-quality pack downloaded after licence consent.
+    private const string BuiltInModel = "Built-in", QualityModel = "High quality (optional download)";
+    private readonly ComboBox backgroundModel;
+    private readonly TextBlock backgroundModelStatus = Ui.Text("", 11, muted: true);
+    private readonly Func<string>? getBackgroundModel;
+    private readonly Action<string>? setBackgroundModel;
+    private string unsavedBackgroundModel = "Standard";
     private readonly Action<string>? translate;
     private Grid rootGrid = null!, workspace = null!, viewer = null!;
     private WrapPanel modeStrip = null!;
@@ -78,8 +98,10 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     internal bool CanUndoImage => history?.CanUndo == true;
 
 
-    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null, Func<AutoRedactOptions>? getAutoRedact = null, Action<string>? translate = null)
+    public ImageToolsWindow(Action<string> report, Func<IReadOnlyList<string>>? readMissingRuntime = null, Func<AutoRedactOptions>? getAutoRedact = null, Action<string>? translate = null,
+        Func<string>? getBackgroundModel = null, Action<string>? setBackgroundModel = null)
     {
+        this.getBackgroundModel = getBackgroundModel; this.setBackgroundModel = setBackgroundModel;
         this.getAutoRedact = getAutoRedact; this.translate = translate; this.report = report; this.readMissingRuntime = readMissingRuntime ?? VisualCppRuntime.FindMissingFiles; preview = editCanvas.Image;
         Title = L.T("Image tools"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 560;
         ResizeMode = ResizeMode.CanResizeWithGrip; WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent;
@@ -195,9 +217,35 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         runtimeHelp.HorizontalAlignment = HorizontalAlignment.Left;
         runtimeHelp.Margin = new Thickness(0, 0, 0, 10);
         backgroundRow.Children.Add(runtimeHelp);
+        var modelRow = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
+        backgroundModel = Ui.Choice([BuiltInModel, QualityModel], (getBackgroundModel?.Invoke() ?? unsavedBackgroundModel) == "Quality" ? QualityModel : BuiltInModel, value =>
+        {
+            string chosen = value == QualityModel ? "Quality" : "Standard";
+            if (setBackgroundModel != null) setBackgroundModel(chosen); else unsavedBackgroundModel = chosen;
+            RefreshBackgroundModelStatus();
+        });
+        System.Windows.Automation.AutomationProperties.SetName(backgroundModel, L.T("Background model"));
+        // Label above the choice: long model names (Russian, German) would otherwise squeeze the label out of a side-by-side row.
+        var modelLabel = Ui.Text(L.T("Model"), 12); modelLabel.Margin = new Thickness(0, 0, 0, 6); DockPanel.SetDock(modelLabel, Dock.Top); modelRow.Children.Add(modelLabel);
+        backgroundModel.HorizontalAlignment = HorizontalAlignment.Stretch; modelRow.Children.Add(backgroundModel);
+        backgroundRow.Children.Add(modelRow);
+        backgroundModelStatus.TextWrapping = TextWrapping.Wrap; backgroundModelStatus.Margin = new Thickness(0, 0, 0, 10); backgroundRow.Children.Add(backgroundModelStatus);
+        RefreshBackgroundModelStatus();
         removeBackground = Ui.Button(L.T("Remove background"), async () => await RemoveBackgroundAsync());
         var removeLabel = new StackPanel { Orientation = Orientation.Horizontal }; removeLabel.Children.Add(Ui.Icon("Background", 17)); var removeText = Ui.Text(L.T("Remove background"), 12); removeText.Margin = new Thickness(8, 0, 0, 0); removeLabel.Children.Add(removeText); removeBackground.Content = removeLabel;
         backgroundRow.Children.Add(removeBackground);
+        touchUpPanel.Children.Add(Ui.Text(L.T("Touch up"), 12));
+        var touchHelp = Ui.Text(L.T("Paint over the image to bring back or remove parts. Each stroke is one undo step."), 11, muted: true); touchHelp.TextWrapping = TextWrapping.Wrap; touchHelp.Margin = new Thickness(0, 4, 0, 6); touchUpPanel.Children.Add(touchHelp);
+        var brushes = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2, Margin = new Thickness(-3, 0, -3, 10) };
+        restoreBrush = Labeled("Pen", "Restore", () => ChooseBrush(true)); eraseBrush = Labeled("Eraser", "Erase", () => ChooseBrush(false));
+        foreach (var button in new[] { restoreBrush, eraseBrush }) { button.Width = double.NaN; button.MinHeight = 34; button.Margin = new Thickness(3, 0, 3, 0); button.HorizontalContentAlignment = HorizontalAlignment.Center; brushes.Children.Add(button); }
+        touchUpPanel.Children.Add(brushes);
+        var brushRow = new DockPanel(); var brushCaption = Ui.Text(L.T("Brush size"), 12); brushCaption.Margin = new Thickness(0, 0, 0, 6); DockPanel.SetDock(brushCaption, Dock.Top); brushRow.Children.Add(brushCaption);
+        var brushValue = Ui.Text("24 px", 12); DockPanel.SetDock(brushValue, Dock.Right); brushRow.Children.Add(brushValue); brushRow.Children.Add(brushSize);
+        System.Windows.Automation.AutomationProperties.SetName(brushSize, L.T("Brush size"));
+        brushSize.ValueChanged += (_, _) => { brushValue.Text = $"{brushSize.Value:0} px"; editCanvas.BrushDiameter = brushSize.Value; };
+        touchUpPanel.Children.Add(brushRow); backgroundRow.Children.Add(touchUpPanel); ShowBrushChoice();
+        editCanvas.BrushStarted += BeginStroke; editCanvas.BrushMoved += ContinueStroke; editCanvas.BrushEnded += EndStroke;
         cancelRemoval = Icon("Close", "Cancel", () => removal?.Cancel()); cancelRemoval.Visibility = Visibility.Collapsed;
         var comparisonPosition = new Slider { Minimum = 0, Maximum = 1, Value = .5, Width = 160, Margin = new Thickness(12, 0, 0, 0) };
         compare = Ui.Toggle(false, v =>
@@ -206,6 +254,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             preview.Source = active ? bitmap : encodedPreview ?? bitmap;
             editCanvas.SetComparison(active ? backgroundBefore : null, comparisonPosition.Value, L.T("Before"), L.T("After"));
             editCanvas.ShowHandles(!active && activeMode == "Crop");
+            UpdateTouchUp();
         });
         compare.IsEnabled = false;
         comparisonPosition.ValueChanged += (_, _) => { if (compare.IsChecked == true && IsComparisonAvailable) editCanvas.SetComparison(backgroundBefore, comparisonPosition.Value, L.T("Before"), L.T("After")); };
@@ -244,6 +293,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             if (bitmap != null) editCanvas.SetSelection(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             if (mode == "Crop") { cropRatio.SelectedItem = "Free"; editCanvas.KeepRatio = false; }
             if (mode == "Annotate") EnterAnnotate();
+            UpdateTouchUp();
         }
         selectMode = Mode;
         var tabStrip = new WrapPanel();
@@ -310,7 +360,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         aspect.Checked += (_, _) => SyncRatio(true);
         Motion.WindowEntrance(this);
         removeBackground.IsEnabled = false;
-        Closed += (_, _) => { closed = true; removal?.Cancel(); revision++; preview.Source = null; bitmap = null; originalImage = null; savedImage = null; backgroundBefore = null; backgroundAfter = null; editCanvas.SetComparison(null, .5); encodedPreview = null; history = null; };
+        Closed += (_, _) => { closed = true; removal?.Cancel(); revision++; DropTouchUp(); preview.Source = null; bitmap = null; originalImage = null; savedImage = null; backgroundBefore = null; backgroundAfter = null; editCanvas.SetComparison(null, .5); encodedPreview = null; history = null; };
     }
     private void SyncRatio(bool fromWidth)
     {
@@ -331,22 +381,26 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
     /// <summary>Whether this image's next export leaves out hidden details. Set in the Hide private data panel or the export dialog; never saved.</summary>
     internal bool RemoveHiddenDetails { get; private set; }
     private HiddenDetails? sourceDetails;
-    internal void LoadImage(string path, BitmapSource loaded) { RemoveHiddenDetails = false; sourceDetails = ImageHiddenDetails.Describe(path); original = path; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; history = new ImageEditHistory(loaded); SetImage(loaded); }
+    internal void LoadImage(string path, BitmapSource loaded) { RemoveHiddenDetails = false; sourceDetails = ImageHiddenDetails.Describe(path); original = path; originalImage = savedImage = loaded; backgroundBefore = backgroundAfter = null; DropTouchUp(); history = new ImageEditHistory(loaded); SetImage(loaded); }
     private void SetImage(BitmapSource image)
     {
-        originalImage ??= image; history ??= new ImageEditHistory(image); previewZoom.Value = 1; imageScroll.ScrollToHome();
+        // A touch-up stroke (or its undo) on a same-size picture keeps the zoom and scroll the user set to work on edges.
+        bool keepView = bitmap != null && touchMasks.ContainsKey(image) && image.PixelWidth == bitmap.PixelWidth && image.PixelHeight == bitmap.PixelHeight;
+        originalImage ??= image; history ??= new ImageEditHistory(image);
+        if (!keepView) { previewZoom.Value = 1; imageScroll.ScrollToHome(); }
         undoButton.IsEnabled = history.CanUndo; redoButton.IsEnabled = history.CanRedo; ChangedOutput();
         bitmap = image; showingOriginal = false; originalButton.IsEnabled = originalImage != null; ShowOriginalState(false); modeStrip.IsEnabled = extractButton.IsEnabled = true;
-        if (compare != null) { compare.IsChecked = false; compare.IsEnabled = ReferenceEquals(image, backgroundAfter) && backgroundBefore != null; } preview.Source = image; emptyImport.Visibility = Visibility.Collapsed; edits.IsEnabled = true; updating = true;
+        if (compare != null) { compare.IsChecked = false; compare.IsEnabled = touchMasks.ContainsKey(image) && backgroundBefore != null; } preview.Source = image; emptyImport.Visibility = Visibility.Collapsed; edits.IsEnabled = true; updating = true;
         removeBackground.IsEnabled = removal == null;
         if (activeMode == "Crop") cropRatio.SelectedItem = "Free";
         width.Text = image.PixelWidth.ToString(); height.Text = image.PixelHeight.ToString(); cropX.Text = cropY.Text = "0"; cropWidth.Text = image.PixelWidth.ToString(); cropHeight.Text = image.PixelHeight.ToString(); reductionSlider.Value = 100; updating = false; editCanvas.ResetSelection();
         status.Text = L.F($"{Path.GetFileName(original)} · {image.PixelWidth} × {image.PixelHeight} px · Original preserved");
+        UpdateTouchUp();
     }
     private void Edit(Func<BitmapSource> transform)
     {
         if (bitmap == null) return;
-        try { var next = transform(); history!.Apply(next); SetImage(next); } catch (Exception ex) { Error(ex); }
+        try { var next = transform(); history!.Apply(next); DropTouchUp(); SetImage(next); } catch (Exception ex) { Error(ex); }
     }
     private void ResizeImage()
     {
@@ -383,7 +437,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         if (showingOriginal && compare?.IsChecked == true) compare.IsChecked = false;
         preview.Source = showingOriginal ? originalImage : encodedPreview ?? bitmap;
         editCanvas.ShowHandles(!showingOriginal && (activeMode is "Size" or "Crop"));
-        ShowOriginalState(showingOriginal);
+        ShowOriginalState(showingOriginal); UpdateTouchUp();
         status.Text = L.T(showingOriginal ? "Viewing original. Edits are still in your working copy." : "Viewing edited working copy. Export saves a separate file.");
     }
     /// <summary>The button shows what its next click does: the picture while editing, the pen while looking at the original (same as the screenshot editor).</summary>
@@ -470,16 +524,38 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             report(status.Text);
             return;
         }
+        var model = backgroundModel.SelectedItem as string == QualityModel ? BackgroundModel.Quality : BackgroundModel.Standard;
+        var pack = model == BackgroundModel.Quality && BackgroundRemovalService.QualityState != ModelPackState.Installed ? BackgroundRemovalService.QualityPack : null;
+        var consents = ModelPacks.Consents();
+        if (pack != null)
+        {
+            // Nothing downloads without the licence window; declining keeps the image and the choice.
+            try { if (!consents.IsCurrent(pack, ModelPacks.LicenseText(pack)) && !ModelConsentWindow.Ask(this, pack, consents)) { status.Text = L.T("Download canceled."); return; } }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { status.Text = L.T("Could not download the high-quality model: ") + ex.Message; return; }
+            if (closed || bitmap == null || removal != null) return;
+        }
         var input = bitmap; int version = ++revision;
         var cancellation = new CancellationTokenSource(); removal = cancellation;
-        edits.IsEnabled = false; openControls.IsEnabled = false; removeBackground.IsEnabled = false; cancelRemoval.Visibility = Visibility.Visible;
-        status.Text = L.T("Removing background locally…");
+        edits.IsEnabled = false; openControls.IsEnabled = false; removeBackground.IsEnabled = false; backgroundModel.IsEnabled = false; cancelRemoval.Visibility = Visibility.Visible; UpdateTouchUp();
         try
         {
-            var result = await BackgroundRemovalService.RemoveAsync(input, cancellation.Token);
+            if (pack != null)
+            {
+                status.Text = L.T("Downloading the high-quality model…");
+                var progress = new Progress<double>(value => { if (!closed && removal == cancellation) status.Text = L.F($"Downloading the high-quality model… {value:P0}"); });
+                try { await ModelPacks.InstallAsync(pack, consents, progress, cancellation.Token); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { if (!closed) status.Text = L.T("Could not download the high-quality model: ") + ex.Message; return; }
+                cancellation.Token.ThrowIfCancellationRequested();
+                if (!closed) RefreshBackgroundModelStatus();
+            }
+            status.Text = L.T("Removing background locally…");
+            var removed = await BackgroundRemovalService.RemoveWithMaskAsync(input, model, cancellation.Token);
+            var result = removed.Image;
             cancellation.Token.ThrowIfCancellationRequested();
             if (closed || revision != version) return;
-            backgroundBefore = input; backgroundAfter = result; history!.Apply(result); SetImage(result); outputChoice.SelectedItem = "PNG";
+            var mask = BackgroundMask.FromModel(removed.Mask, removed.MaskWidth, removed.MaskHeight, result.PixelWidth, result.PixelHeight);
+            backgroundBefore = input; backgroundAfter = result; history!.Apply(result);
+            DropTouchUp(); touchSource = Bgra(input); touchMasks[result] = mask; SetImage(result); outputChoice.SelectedItem = "PNG";
             status.Text = L.T("Background removed. Check fine edges; Undo restores the image. Export PNG keeps transparency.");
         }
         catch (OperationCanceledException) { if (!closed) status.Text = L.T("Background removal canceled. The image is unchanged."); }
@@ -487,8 +563,89 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
         finally
         {
             removal = null; cancellation.Dispose();
-            if (!closed) { edits.IsEnabled = bitmap != null; openControls.IsEnabled = true; removeBackground.IsEnabled = bitmap != null; cancelRemoval.Visibility = Visibility.Collapsed; }
+            if (!closed) { edits.IsEnabled = bitmap != null; openControls.IsEnabled = true; removeBackground.IsEnabled = bitmap != null; backgroundModel.IsEnabled = true; cancelRemoval.Visibility = Visibility.Collapsed; RefreshBackgroundModelStatus(); UpdateTouchUp(); }
         }
+    }
+
+    private static byte[] Bgra(BitmapSource image)
+    {
+        var pixels = new byte[checked(image.PixelWidth * image.PixelHeight * 4)];
+        new FormatConvertedBitmap(image, PixelFormats.Bgra32, null, 0).CopyPixels(pixels, image.PixelWidth * 4, 0); return pixels;
+    }
+    private void DropTouchUp() { EndStroke(); touchMasks.Clear(); touchSource = null; }
+    private void ChooseBrush(bool restore) { brushRestores = brushRestores == restore ? null : restore; ShowBrushChoice(); UpdateTouchUp(); }
+    private void ShowBrushChoice()
+    {
+        foreach (var (button, on) in new[] { (restoreBrush, brushRestores == true), (eraseBrush, brushRestores == false) })
+        {
+            button.SetResourceReference(Control.BackgroundProperty, on ? "Selected" : "Field"); button.SetResourceReference(Control.BorderBrushProperty, on ? "Accent" : "Stroke");
+            System.Windows.Automation.AutomationProperties.SetItemStatus(button, on ? L.T("Selected") : "");
+        }
+    }
+    /// <summary>Shows the Touch up controls while the shown image is a removal result or a touch-up of it; the canvas paints only in Background with a brush chosen.</summary>
+    private void UpdateTouchUp()
+    {
+        if (closed) return;
+        bool available = CanTouchUp;
+        touchUpPanel.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+        editCanvas.BrushDiameter = brushSize.Value;
+        editCanvas.BrushActive = available && brushRestores != null && activeMode == "Background" && compare?.IsChecked != true && !showingOriginal && annotateView == null && textView == null;
+    }
+    private void BeginStroke(Point point)
+    {
+        if (!CanTouchUp || brushRestores == null || strokeMask != null) return;
+        var image = bitmap!;
+        strokeMask = touchMasks[image].Clone(); strokePixels = Bgra(image);
+        strokeBitmap = new WriteableBitmap(image.PixelWidth, image.PixelHeight, image.DpiX, image.DpiY, PixelFormats.Bgra32, null);
+        strokeBitmap.WritePixels(new Int32Rect(0, 0, image.PixelWidth, image.PixelHeight), strokePixels, image.PixelWidth * 4, 0);
+        preview.Source = strokeBitmap; strokeLast = point; PaintAt(point);
+    }
+    private void ContinueStroke(Point point)
+    {
+        if (strokeMask == null) return;
+        double radius = brushSize.Value / 2, step = Math.Max(1, radius / 4), distance = (point - strokeLast).Length;
+        for (double travelled = step; travelled < distance; travelled += step) PaintAt(strokeLast + (point - strokeLast) * (travelled / distance));
+        PaintAt(point); strokeLast = point;
+    }
+    private void PaintAt(Point point)
+    {
+        if (strokeMask == null || strokePixels == null || strokeBitmap == null || touchSource == null) return;
+        var touched = strokeMask.Paint(point.X, point.Y, brushSize.Value / 2, brushRestores == true);
+        if (touched.Width == 0 || touched.Height == 0) return;
+        strokeMask.Compose(touchSource, strokePixels, touched);
+        strokeBitmap.WritePixels(touched, strokePixels, strokeMask.Width * 4, touched.X, touched.Y);
+    }
+    /// <summary>A finished stroke becomes one step of the picture's history; the original stays untouched.</summary>
+    private void EndStroke()
+    {
+        var mask = strokeMask; var pixels = strokePixels; var image = bitmap;
+        strokeMask = null; strokePixels = null; strokeBitmap = null;
+        if (mask == null || pixels == null || image == null || closed) return;
+        var result = BitmapSource.Create(mask.Width, mask.Height, image.DpiX, image.DpiY, PixelFormats.Bgra32, null, pixels, mask.Width * 4); result.Freeze();
+        history!.Apply(result); touchMasks[result] = mask; SetImage(result);
+    }
+    /// <summary>Paints one stroke through the same path as the mouse (used by the checks).</summary>
+    internal void PaintStroke(bool restore, params Point[] points)
+    {
+        var chosen = brushRestores; brushRestores = restore;
+        try { BeginStroke(points[0]); foreach (var point in points.Skip(1)) ContinueStroke(point); EndStroke(); }
+        finally { brushRestores = chosen; UpdateTouchUp(); }
+    }
+
+    /// <summary>Shown under the model choice while High quality is chosen: its download size, damage, or that it is ready.</summary>
+    private void RefreshBackgroundModelStatus()
+    {
+        if (closed) return;
+        bool quality = backgroundModel.SelectedItem as string == QualityModel;
+        backgroundModelStatus.Visibility = quality ? Visibility.Visible : Visibility.Collapsed;
+        if (!quality) return;
+        var pack = BackgroundRemovalService.QualityPack;
+        backgroundModelStatus.Text = BackgroundRemovalService.QualityState switch
+        {
+            ModelPackState.Installed => L.T("High-quality model ready."),
+            ModelPackState.Damaged => L.T("The high-quality model is damaged. Download it again."),
+            _ => L.F($"Not downloaded yet ({ModelPacks.FormatSize(pack?.TotalBytes ?? 0)}).")
+        };
     }
     private static Brush Checkerboard()
     {

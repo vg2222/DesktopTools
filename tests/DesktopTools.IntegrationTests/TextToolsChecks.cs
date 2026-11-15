@@ -28,11 +28,15 @@ internal static class TextToolsChecks
         uint clipboard = GetClipboardSequenceNumber();
         Check(await SelectedTextService.ReadAsync(0) == null, "Invalid selection did not fall back");
         var text = controller.OpenTextTools()!; text.SetSource("Open the window.");
+        var translateProgress = Field<ProgressBar>(text, "translateProgress");
+        Check(translateProgress.Visibility == Visibility.Collapsed, "Translation progress shown while idle");
         var processing = text.TranslateAsync(); await Task.Delay(60);
         Check(text.IsProcessing && Field<Button>(text, "cancel").IsVisible, "Busy state absent");
+        Check(translateProgress.Visibility == Visibility.Visible && !translateProgress.IsIndeterminate, "Translation progress bar absent while translating");
         var activity = Field<Border>(text, "activity"); if (Motion.Enabled) Check(activity.HasAnimatedProperties, "Busy animation absent");
         text.Hide(); Check(!activity.HasAnimatedProperties, "Hidden animation retained"); text.Show();
         await processing; Check(Field<TextBox>(text, "output").Text.Contains("окно"), "Translation UI did not receive result: " + Field<TextBlock>(text, "status").Text);
+        Check(translateProgress.Visibility == Visibility.Collapsed, "Translation progress stayed after the result");
         var stale = text.TranslateAsync(); Field<TextBox>(text, "source").Text = "Changed source"; await stale;
         Check(Field<TextBox>(text, "output").Text == "" && !text.IsProcessing, "Stale translation replaced edited text");
         controller.UpdateSettings(s => s.TranslationDirection = "de-fr");

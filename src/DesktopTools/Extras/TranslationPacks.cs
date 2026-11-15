@@ -83,28 +83,59 @@ internal static class TranslationPacks
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return 0; }
     }
     /// <summary>Deletes a downloaded pack. Waits for any pack download to finish first.</summary>
-    internal static void Remove(string direction, string? root = null)
+    internal static void Remove(string direction, string? root = null, DesktopTools.Core.ModelConsentStore? consents = null)
     {
         root ??= Root;
         string directory = Path.Combine(root, Find(direction).Direction);
         if (!ModelPacks.InstallGate.Wait(0)) throw new ModelPackException(DesktopTools.Localization.L.T("Wait for the current download to finish, then try again."));
         try
         {
-            if (!Directory.Exists(directory)) return;
-            // Rename first so a half-deleted folder is never used; a translation in progress keeps its files open and the rename fails cleanly.
-            string trash = Path.Combine(root, ".download-remove-" + Guid.NewGuid().ToString("N"));
-            Directory.Move(directory, trash);
-            damagedDirectories.TryRemove(directory, out _);
-            Directory.Delete(trash, recursive: true);
+            if (Directory.Exists(directory))
+            {
+                // A loaded translation keeps its model files open; release it so the rename below can succeed.
+                if (AiRuntime.LoadedModelPaths.Any(loaded => loaded.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))) AiRuntime.ReleaseAll();
+                // Rename first so a half-deleted folder is never used; a translation in progress keeps its files open and the rename fails cleanly.
+                string trash = Path.Combine(root, ".download-remove-" + Guid.NewGuid().ToString("N"));
+                Directory.Move(directory, trash);
+                damagedDirectories.TryRemove(directory, out _);
+                Directory.Delete(trash, recursive: true);
+            }
+            // Removing a pack removes its licence acceptance too (spec 2.4), as for model packs.
+            (consents ?? ModelPacks.Consents()).Remove(ConsentPack(Find(direction)).Id);
         }
         finally { ModelPacks.InstallGate.Release(); }
     }
+    /// <summary>
+    /// The pack as the licence consent window and the record of consent see it (spec 2.4). The licence text is the one already written into
+    /// each translation pack folder; the id is "translation-" plus the direction so it never collides with a model pack.
+    /// </summary>
+    internal static DesktopTools.Core.ModelPack ConsentPack(TranslationPack pack)
+    {
+        var codes = pack.Direction.Split('-');
+        var names = Languages.ToDictionary(language => language.Code, language => language.Name);
+        string Name(string code) => names.TryGetValue(code, out var name) ? name : code;
+        return new DesktopTools.Core.ModelPack("translation-" + pack.Direction,
+            DesktopTools.Localization.L.F($"Translation pack: {Name(codes[0])} → {Name(codes[1])}"),
+            "Translates text between these two languages on this PC.", "Text tools (Translate)",
+            "Xenova (Joshua Lochner) on Hugging Face", "Language Technology Research Group, University of Helsinki (OPUS-MT)",
+            "https://huggingface.co/" + pack.Repository, pack.Revision, pack.License, pack.License == "apache-2.0" ? "Apache-2.0.txt" : "CC-BY-4.0.txt",
+            $"OPUS-MT model {pack.Upstream} by the University of Helsinki Language Technology Research Group. Quantized ONNX conversion published by Xenova on Hugging Face.",
+            "OPUS parallel corpora (opus.nlpl.eu), collected from public translated texts with their own terms.",
+            ["Translates one sentence at a time, so context across sentences can be lost.", "Names, numbers and technical terms can be translated wrongly.", "Results can be wrong; check them before you rely on them."],
+            pack.Files.Select(file => new DesktopTools.Core.ModelPackFile(file.File, file.Url, file.Sha256, file.Bytes)).ToArray());
+    }
+
     internal static IReadOnlyList<TranslationPack> Missing(string direction) => Route(direction)
         .Where(pair => DirectoryFor(pair) == null).Select(Find).ToArray();
 
-    internal static async Task InstallAsync(string direction, IProgress<double>? progress, CancellationToken token, string? root = null)
+    /// <summary>Downloads a pack whose licence was accepted in the consent window (spec 2.4); refuses before any request otherwise.</summary>
+    internal static async Task InstallAsync(string direction, DesktopTools.Core.ModelConsentStore consents, IProgress<double>? progress, CancellationToken token,
+        string? root = null, HttpMessageHandler? handler = null)
     {
         var pack = Find(direction);
+        var consent = ConsentPack(pack);
+        if (!consents.IsCurrent(consent, ModelPacks.LicenseText(consent)))
+            throw new InvalidOperationException("The licence for this translation pack has not been accepted.");
         root ??= Root;
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(token, ModelPacks.StopToken);
         token = stop.Token;
@@ -115,8 +146,8 @@ internal static class TranslationPacks
             ModelPacks.CleanStaging(root);
             if (DirectoryFor(direction, root) != null) { progress?.Report(1); return; }
             Directory.CreateDirectory(stage);
-            await ModelPacks.DownloadFilesAsync(pack.Files.Select(file => new DesktopTools.Core.ModelPackFile(file.File, file.Url, file.Sha256, file.Bytes)).ToArray(),
-                stage, progress, token, client);
+            using var testClient = handler == null ? null : new HttpClient(handler, disposeHandler: false) { Timeout = Timeout.InfiniteTimeSpan };
+            await ModelPacks.DownloadFilesAsync(consent.Files, stage, progress, token, testClient ?? client);
             await File.WriteAllTextAsync(Path.Combine(stage, "ATTRIBUTION.txt"),
                 $"OPUS-MT by the University of Helsinki Language Technology Research Group.\nhttps://huggingface.co/{pack.Upstream}\nONNX conversion: https://huggingface.co/{pack.Repository}/tree/{pack.Revision}\nLicense: {pack.License}\nQuantized ONNX weights. Input text is processed locally.\n", token);
             string license = pack.License == "apache-2.0" ? "EN-RU-APACHE-2.0.txt" : "CC-BY-4.0.txt";
