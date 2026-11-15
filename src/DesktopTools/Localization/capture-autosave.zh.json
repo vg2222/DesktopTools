@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "剪贴板和文件夹",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "“剪贴板和文件夹”会复制截图，并直接将 PNG 保存到保存位置，不再询问。",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "在您选择文件夹之前，保存到“图片\\DesktopTools”。",
+  "Show in folder": "在文件夹中显示",
+  "Screenshot copied and saved": "截图已复制并保存",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "截图已保存到 {0}，但剪贴板正忙。 ",
+  "Screenshot copied, but it could not be saved: ": "截图已复制，但无法保存：",
+  "Screenshot could not be copied or saved: ": "无法复制或保存截图：",
+  "The saved screenshot is no longer there.": "已保存的截图已不在那里。",
+  "Could not open the folder: ": "无法打开文件夹："
+}

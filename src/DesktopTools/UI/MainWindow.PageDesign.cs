@@ -21,7 +21,8 @@ internal sealed partial class MainWindow
             ("Profiles", "Profiles"), ("Save as a new profile", "Save"), ("Drawing defaults", "Pen"),
             ("Drawing controls", "Pen"), ("Capture behavior", "Capture"), ("Latest screenshot", "Image"),
             ("Capture again", "Capture"), ("Recent screenshots", "Image"), ("Laser pointer", "Laser"),
-            ("Cursor spotlight", "Spotlight"), ("Freeze frame", "Freeze"), ("Using the stopwatch", "Timer") })
+            ("Cursor spotlight", "Spotlight"), ("Freeze frame", "Freeze"), ("Using the stopwatch", "Timer"),
+            ("Optional models", "Star"), ("Translation packs", "Translate") })
             if (title.Equals(L.T(label), StringComparison.CurrentCultureIgnoreCase)) return icon;
         if (title.Contains(L.T("Shortcut"), StringComparison.CurrentCultureIgnoreCase)) return "Shortcuts";
         if (title.Contains(L.T("Theme"), StringComparison.CurrentCultureIgnoreCase)) return "Image";
@@ -36,6 +37,7 @@ internal sealed partial class MainWindow
         copy.Children.Add(Ui.Text(L.T(title), 28, true)); var detail = Ui.Text(L.T(description), 13, muted: true); detail.Margin = new Thickness(0, 9, 0, 0); copy.Children.Add(detail); panel.Children.Add(copy);
         var art = title == "News" ? NewsCheckAction() :
             DashboardGroups.Contains(title) ? DashboardArt(NavigationIcon(title), 60) : ToolArtwork(title, icon);
+        art.HorizontalAlignment = HorizontalAlignment.Right; // line up with the right edge of the rows below
         Grid.SetColumn(art, 1); panel.Children.Add(art); page.Children.Add(panel);
     }
     private static FrameworkElement ToolArtwork(string id, string icon, double size = 56, bool plain = false)

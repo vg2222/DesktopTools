@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "Gizli ayrıntıları kaldır (konum, cihaz, tarih, yazar)",
+  "This file contains hidden details: {0}.": "Bu dosya gizli ayrıntılar içeriyor: {0}.",
+  "This file has no hidden details.": "Bu dosyada gizli ayrıntı yok.",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "Gizli ayrıntılar okunamadı. Hiçbiri olmadan bir kopya kaydetmek için kutuyu işaretleyin.",
+  "location": "konum",
+  "device": "cihaz",
+  "date": "tarih",
+  "author": "yazar",
+  "other": "diğer"
+}

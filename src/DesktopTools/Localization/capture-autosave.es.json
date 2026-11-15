@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Portapapeles y carpeta",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "«Portapapeles y carpeta» copia la captura y guarda un PNG en la ubicación de guardado sin preguntar.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Se guarda en Imágenes\\DesktopTools hasta que elija una carpeta.",
+  "Show in folder": "Mostrar en la carpeta",
+  "Screenshot copied and saved": "Captura copiada y guardada",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Captura guardada en {0}, pero el portapapeles está ocupado. ",
+  "Screenshot copied, but it could not be saved: ": "Captura copiada, pero no se pudo guardar: ",
+  "Screenshot could not be copied or saved: ": "No se pudo copiar ni guardar la captura: ",
+  "The saved screenshot is no longer there.": "La captura guardada ya no está ahí.",
+  "Could not open the folder: ": "No se pudo abrir la carpeta: "
+}

@@ -95,7 +95,6 @@ public sealed class SettingsStore
     public static void Validate(AppSettings s)
     {
         s.AutoRedact ??= new(); s.AutoRedact.Normalize();
-        if (s.ScreenshotLibraryLimit is not (100 or 300 or 1000)) s.ScreenshotLibraryLimit = 300;
         // Tool availability is no longer a preference. Retain the old fields for
         // reading existing settings and profiles, but migrate every tool to ready.
         // ShortcutEnabled remains independent and is never changed here.
@@ -133,13 +132,22 @@ public sealed class SettingsStore
         s.TeleprompterText ??= ""; if (s.TeleprompterText.Length > 50000) s.TeleprompterText = s.TeleprompterText[..50000];
         s.TeleprompterShortcut = Shortcut(s.TeleprompterShortcut, "Ctrl+Alt+M");
         s.ThemePreset = Known(s.ThemePreset, "Classic", "Ocean", "Forest", "Violet", "Custom");
-        s.PrimaryColor = ValidColor(s.PrimaryColor, "#2563EB"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
+        s.PrimaryColor = ValidColor(s.PrimaryColor, "#C2378F"); s.BackgroundColor = ValidColor(s.BackgroundColor, "#F3F5FA");
         s.Theme = Known(s.Theme, "System", "Light", "Dark");
+        s.AiDevice = Known(s.AiDevice, "Processor", "GraphicsCard");
+        s.AiModelsFolder = (s.AiModelsFolder ?? "").Trim();
+        if (s.AiModelsFolder.Length > 0 && (s.AiModelsFolder.Length > 240 || !Path.IsPathFullyQualified(s.AiModelsFolder) || s.AiModelsFolder.IndexOfAny(Path.GetInvalidPathChars()) >= 0)) s.AiModelsFolder = "";
+        s.OcrEngine = Known(s.OcrEngine, "Auto", "Windows", "Pack");
+        s.OcrPackScript = Known(s.OcrPackScript, "", "latin", "cyrillic", "chinese-japanese");
+        s.TranscriptModel = Known(s.TranscriptModel, "Fast", "Accurate");
+        s.BackgroundModel = Known(s.BackgroundModel, "Standard", "Quality");
+        s.TranscriptLanguage = Known(s.TranscriptLanguage, ["auto", .. WhisperDecoding.KnownLanguages]);
         s.MonitorMode = Known(s.MonitorMode, "Cursor", "Primary");
         s.LaserMonitorMode = Known(s.LaserMonitorMode, "All", "Selected");
         s.SpotlightMonitorMode = Known(s.SpotlightMonitorMode, "All", "Selected");
         s.DefaultTool = Known(s.DefaultTool, "Pen", "Highlighter", "Arrow", "Line", "Rectangle", "Ellipse", "Text", "Number", "Select", "Eraser", "Redaction");
-        s.CaptureOutput = Known(s.CaptureOutput, "Clipboard", "Save");
+        s.CaptureOutput = Known(s.CaptureOutput, "Clipboard", "Save", CaptureAutoSave.Mode);
+        s.CaptureFileNames = Known(s.CaptureFileNames, "Date and time", "Smart");
         s.CaptureMonitorMode = Known(s.CaptureMonitorMode, "All", "Selected");
         s.CaptureDelaySeconds = new[] { 0, 3, 5, 10 }.Contains(s.CaptureDelaySeconds) ? s.CaptureDelaySeconds : 0;
         s.Color = ValidColor(s.Color, "#FF2870FF"); s.LaserColor = ValidColor(s.LaserColor, "#FFFF4545");

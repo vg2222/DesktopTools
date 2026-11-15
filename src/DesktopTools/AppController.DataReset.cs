@@ -13,7 +13,7 @@ internal sealed partial class AppController
     internal async void RequestDataReset(Window owner)
     {
         if (!ConfirmationDialog.Ask(owner, L.T("Reset all app data"),
-                L.T("Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain."),
+                L.T("Delete all local DesktopTools settings, profiles and notes and restart the app? This cannot be undone. Files you exported elsewhere will remain.") + " " + L.T("Downloaded AI models and translation packs are deleted too."),
                 L.T("Delete app data"))) return;
         try { await PrepareForShutdownAsync(); }
         catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }

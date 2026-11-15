@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "Вікно закріплено поверх інших вікон.",
+  "Window unpinned.": "Вікно відкріплено.",
+  "Annotation opacity": "Непрозорість позначок",
+  "Clear": "Очистити",
+  "Apply": "Застосувати",
+  "Availability": "Доступність",
+  "Invalid shortcut": "Неприпустиме сполучення клавіш",
+  "Another DesktopTools action uses this shortcut.": "Це сполучення вже використовує інша дія DesktopTools.",
+  "Windows has no available hotkey IDs.": "У Windows не залишилося вільних ідентифікаторів гарячих клавіш."
+}

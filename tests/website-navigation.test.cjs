@@ -1,53 +1,50 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
 
-const script = fs.readFileSync(path.join(__dirname, '..', 'website', 'effects.js'), 'utf8');
-const links = ['features', 'privacy', 'download'].map(id => {
-  const attributes = new Map([['href', `#${id}`]]);
-  return {
-    getAttribute: name => attributes.get(name),
-    setAttribute: (name, value) => attributes.set(name, value),
-    removeAttribute: name => attributes.delete(name)
-  };
-});
-const sections = ['', 'features', 'workflow', 'privacy', 'download'].map(id => ({ id }));
-const observers = [];
-const events = new Map();
-const context = {
-  document: {
-    querySelector: () => null,
-    querySelectorAll: selector => selector === '.primary-nav a[href^="#"]' ? links : selector === 'main > section' ? sections : []
-  },
-  window: {
-    innerHeight: 900,
-    matchMedia: () => ({ matches: true, addEventListener() {} }),
-    addEventListener: (event, listener) => events.set(event, listener)
-  },
-  IntersectionObserver: class {
-    constructor(callback, options) { this.callback = callback; this.options = options; this.targets = []; observers.push(this); }
-    observe(target) { this.targets.push(target); }
-    disconnect() { this.disconnected = true; }
+const website = path.resolve(__dirname, '../website');
+const home = fs.readFileSync(path.join(website, 'index.html'), 'utf8');
+const support = fs.readFileSync(path.join(website, 'support/index.html'), 'utf8');
+function headerNav(html) {
+  const header = html.match(/<header\b[^>]*>([\s\S]*?)<\/header>/)?.[1];
+  const nav = header?.match(/<nav\b[^>]*class="primary-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.ok(nav, 'Header needs primary navigation');
+  return [...nav.matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
+}
+function href(tag) { return tag.match(/\bhref="([^"]+)"/)?.[1]; }
+
+function supportPill(html) {
+  const header = html.match(/<header\b[^>]*>([\s\S]*?)<\/header>/)?.[1];
+  const pill = header?.match(/<a\b[^>]*class="header-support"[^>]*>/)?.[0];
+  assert.ok(pill, 'Header needs the highlighted Support button');
+  assert.match(pill, /\bdata-language-link\b/,'Support link must retain the selected language');
+  return pill;
+}
+const homeLinks = headerNav(home);
+assert.deepEqual(homeLinks.map(href), ['#features', '#privacy', '#faq']);
+assert.equal(href(supportPill(home)), './support/');
+const supportLinks = headerNav(support);
+assert.deepEqual(supportLinks.map(href), ['../#features', '../#privacy', '../#faq']);
+const currentSupport = supportPill(support);
+assert.equal(href(currentSupport), './');
+assert.match(currentSupport, /aria-current="page"/, 'Support navigation must identify the current page');
+for (const link of supportLinks) assert.match(link, /\bdata-language-link\b/);
+
+for (const [file, html] of [['index.html', home], ['support/index.html', support]]) {
+  for (const [, reference] of html.matchAll(/\bhref="([^"]*#[^"]+)"/g)) {
+    if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(reference)) continue;
+    const [relative, fragment] = reference.split('#');
+    const target = relative ? path.resolve(website, path.dirname(file), relative) : path.join(website, file);
+    const targetFile = fs.statSync(target).isDirectory() ? path.join(target, 'index.html') : target;
+    assert.ok(fs.readFileSync(targetFile, 'utf8').includes('id="' + fragment + '"'), file + ': missing anchor ' + reference);
   }
-};
-vm.runInNewContext(script, context);
-assert.equal(observers.length, 1, 'Navigation must track the section in view even with reduced motion');
-assert.equal(observers[0].targets.length, sections.length, 'Unlinked sections must also clear the highlight');
-const current = () => links.filter(link => link.getAttribute('aria-current') === 'location').map(link => link.getAttribute('href'));
-observers[0].callback([{ target: sections[1], isIntersecting: true }]);
-assert.deepEqual(current(), ['#features'], 'Features becomes the current location');
-observers[0].callback([{ target: sections[1], isIntersecting: false }, { target: sections[3], isIntersecting: true }]);
-assert.deepEqual(current(), ['#privacy'], 'Scrolling changes the current link without duplicates');
-observers[0].callback([{ target: sections[3], isIntersecting: false }, { target: sections[2], isIntersecting: true }]);
-assert.deepEqual(current(), [], 'The workflow section does not leave a misleading nav highlight');
-observers[0].callback([{ target: sections[4], isIntersecting: true }]);
-assert.deepEqual(current(), ['#download']);
-observers[0].callback([{ target: sections[4], isIntersecting: false }]);
-assert.deepEqual(current(), [], 'Leaving a section clears the current location');
-context.window.innerHeight = 600;
-events.get('resize')();
-assert.equal(observers[0].disconnected, true, 'Resizing disconnects the old observer');
-assert.notEqual(observers[1].options.rootMargin, observers[0].options.rootMargin, 'The reading position adapts to viewport height');
-vm.runInNewContext(script, { ...context, IntersectionObserver: undefined });
-console.log('Website navigation checks passed.');
+}
+
+const downloads = [...home.matchAll(/<a\b[^>]*class="button button-primary"[^>]*>([\s\S]*?)<\/a>/g)];
+assert.equal(downloads.length, 2, 'Hero and final call to action each need a download link');
+for (const [tag, content] of downloads) {
+  assert.equal(href(tag), 'https://github.com/vg2222/DesktopTools/releases/latest');
+  assert.match(content, /data-i18n="downloadWindows"/, 'Download label must be translated');
+}
+assert.equal((home.match(/<a\b[^>]*href="https:\/\/github\.com\/vg2222\/DesktopTools\/releases\/latest"/g) || []).length, 2);
+console.log('Website navigation and download checks passed.');

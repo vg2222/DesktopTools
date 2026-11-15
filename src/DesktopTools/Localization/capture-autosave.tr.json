@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Pano ve klasör",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "“Pano ve klasör”, ekran görüntüsünü kopyalar ve sormadan kaydetme konumuna bir PNG kaydeder.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Bir klasör seçene kadar Resimler\\DesktopTools içine kaydedilir.",
+  "Show in folder": "Klasörde göster",
+  "Screenshot copied and saved": "Ekran görüntüsü kopyalandı ve kaydedildi",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Ekran görüntüsü {0} konumuna kaydedildi, ancak pano meşgul. ",
+  "Screenshot copied, but it could not be saved: ": "Ekran görüntüsü kopyalandı, ancak kaydedilemedi: ",
+  "Screenshot could not be copied or saved: ": "Ekran görüntüsü kopyalanamadı veya kaydedilemedi: ",
+  "The saved screenshot is no longer there.": "Kaydedilen ekran görüntüsü artık orada değil.",
+  "Could not open the folder: ": "Klasör açılamadı: "
+}

@@ -1,4 +1,6 @@
 {
+  "Support": "Поддержать",
+  "Support DesktopTools": "Поддержать DesktopTools",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "Для {0} и {1} используется одно сочетание клавиш.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: сочетание клавиш недоступно. {1} Предыдущие сочетания клавиш сохранены.",
@@ -57,5 +59,6 @@
   "Could not hide a control popup from capture.": "Не удалось скрыть всплывающее окно управления при захвате.",
   "Drawing monitor": "Монитор для рисования",
   "Switching starts a fresh annotation session.": "Переключение начнёт новый сеанс рисования.",
-  "PNG image|*.png": "Изображение PNG|*.png"
+  "PNG image|*.png": "Изображение PNG|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Все функции бесплатны. Если DesktopTools вам помогает, вы можете поддержать его разработку."
 }

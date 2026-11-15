@@ -1,0 +1,7 @@
+{
+  "Graphics card": "グラフィックス カード",
+  "The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it.": "グラフィックス カードで AI モデルを実行できなかったため、DesktopTools は再起動するまでプロセッサを使用します。",
+  "Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.": "AI モデルを実行する場所です。グラフィックス カードには DirectML 1.15 以降が必要で、最新の Windows 11 更新プログラムに含まれています。",
+  "The graphics card could not run a model, so the processor is used until DesktopTools restarts.": "グラフィックス カードでモデルを実行できなかったため、DesktopTools を再起動するまでプロセッサを使用します。",
+  "The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.": "プロセッサはどの PC でも動作します。グラフィックス カードではテキスト検出と音声認識が大幅に速くなりますが、ビデオ メモリを含むメモリを多く使用します。その他のモデルはプロセッサで実行されます。"
+}

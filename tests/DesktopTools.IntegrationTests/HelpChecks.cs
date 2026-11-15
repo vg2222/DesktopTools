@@ -25,6 +25,23 @@ internal static class HelpChecks
         controller.UpdateSettings(s => { s.ScreenRecorderEnabled = true; s.Animations = false; s.FeatureSetup["recorder"] = new OnboardingProgress { Status = SetupStatus.Completed }; });
         controller.OpenMain();
         var main = (MainWindow)typeof(AppController).GetField("main", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(controller)!;
+        L.Use("en");
+        main.Width = 860;
+        main.Height = 560;
+        main.Navigate("About");
+        main.UpdateLayout();
+        var supportUri = new Uri("https://www.desktoptools.cc/support/");
+        var openedLinks = new List<Uri>();
+        controller.UpdateLinkLauncher = openedLinks.Add;
+        foreach (var tag in new[] { "sidebar-support", "about-support" })
+        {
+            var button = FindButton(main, tag);
+            if (!button.IsVisible || !button.Focusable || button.ActualHeight < 30)
+                throw new Exception("Support action is unavailable at minimum window size: " + tag);
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+        if (!openedLinks.SequenceEqual(new[] { supportUri, supportUri }))
+            throw new Exception("Both support actions must open the official support page");
         foreach (var language in L.Languages)
         foreach (var theme in new[] { "Light", "Dark" })
         {

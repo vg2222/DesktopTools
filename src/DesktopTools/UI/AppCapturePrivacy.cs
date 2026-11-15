@@ -27,7 +27,7 @@ internal static class AppCapturePrivacy
         // Shared dialogs belong to the tool that opened them. A separately named tool
         // (for example OCR opened from an image editor) keeps its own privacy setting.
         while (!(window.Tag is string tag && (FeatureGroups.Contains(tag) || IndividualTools.Contains(tag))) &&
-            (window is ConfirmationDialog or SaveBeforeDisableDialog or FeatureSetupWindow or ColorPickerWindow || window.GetType() == typeof(Window)) &&
+            (window is ConfirmationDialog or SaveBeforeDisableDialog or FeatureSetupWindow or ColorPickerWindow or ModelConsentWindow || window.GetType() == typeof(Window)) &&
             window.Owner is { } owner)
             window = owner;
         return window;
@@ -72,8 +72,15 @@ internal static class AppCapturePrivacy
         }));
         EventManager.RegisterClassHandler(typeof(ContextMenu), ContextMenu.OpenedEvent, new RoutedEventHandler((sender, _) =>
         {
-            if (sender is ContextMenu menu) menu.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
+            if (sender is not ContextMenu menu) return;
+            if (System.Windows.Media.VisualTreeHelper.GetChildrenCount(menu) > 0) Motion.PopupEntrance(System.Windows.Media.VisualTreeHelper.GetChild(menu, 0) as FrameworkElement);
+            menu.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
                 new Action(() => { if (menu.IsOpen) Ui.ExcludePopup(menu); }));
+        }));
+        // Menu entries written as plain text get an icon from their wording, the same way buttons and settings rows do.
+        EventManager.RegisterClassHandler(typeof(MenuItem), FrameworkElement.LoadedEvent, new RoutedEventHandler((sender, _) =>
+        {
+            if (sender is MenuItem { Icon: null, IsCheckable: false, Header: string header } item && IconHints.For(header) is { } hint) item.Icon = Ui.Icon(hint, 16);
         }));
         EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.OpenedEvent, new RoutedEventHandler((sender, _) =>
         {
@@ -101,7 +108,10 @@ internal static class AppCapturePrivacy
         combo.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
         {
             if (combo.IsDropDownOpen && combo.Template?.FindName("PART_Popup", combo) is System.Windows.Controls.Primitives.Popup { IsOpen: true } popup && popup.Child is System.Windows.Media.Visual visual)
+            {
                 Ui.ExcludePopup(visual, Ui.PopupOwner(combo));
+                Motion.PopupEntrance(visual as FrameworkElement);
+            }
         }));
     }
     public static void Apply(Window window, DesktopTools.Core.AppSettings settings)

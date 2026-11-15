@@ -5,7 +5,7 @@
  <SolidColorBrush x:Key="Card" Color="#EEFFFFFF"/><SolidColorBrush x:Key="Field" Color="#FAFBFE"/>
  <SolidColorBrush x:Key="Text" Color="#19202D"/><SolidColorBrush x:Key="Muted" Color="#626D7E"/>
  <SolidColorBrush x:Key="Stroke" Color="#1C293A55"/><SolidColorBrush x:Key="Divider" Color="#D2D9E5"/><SolidColorBrush x:Key="Hover" Color="#E8EDF6"/>
- <SolidColorBrush x:Key="Selected" Color="#DFE9FC"/><SolidColorBrush x:Key="Accent" Color="#2563EB"/>
+ <SolidColorBrush x:Key="Selected" Color="#F8E1EF"/><SolidColorBrush x:Key="Accent" Color="#C2378F"/>
  <SolidColorBrush x:Key="AccentText" Color="White"/>
  <SolidColorBrush x:Key="Danger" Color="#DC2626"/><SolidColorBrush x:Key="Warning" Color="#D97706"/>
  <SolidColorBrush x:Key="GlassSurface" Color="#F3F5FA"/>
@@ -41,8 +41,13 @@
   <Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Grid RenderTransformOrigin=".5,.5"><Grid.RenderTransform><ScaleTransform x:Name="PressScale" ScaleX="1" ScaleY="1"/></Grid.RenderTransform>
    <Border x:Name="Body" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}"/>
-   <Border x:Name="Feedback" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}" IsHitTestVisible="False"/>
-   <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+<Border x:Name="Feedback" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}" IsHitTestVisible="False"/>
+   <DockPanel Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center">
+    <Path DockPanel.Dock="Left" Data="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:Ui.Glyph)}" Fill="{TemplateBinding Foreground}" Width="15" Height="15" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" IsHitTestVisible="False">
+     <Path.Visibility><MultiBinding Converter="{x:Static ui:Ui.GlyphVisibility}"><Binding RelativeSource="{RelativeSource TemplatedParent}" Path="(ui:Ui.Glyph)"/><Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Content"/></MultiBinding></Path.Visibility>
+    </Path>
+    <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+   </DockPanel>
    <Border x:Name="FocusRing" BorderBrush="{DynamicResource Accent}" BorderThickness="2" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:DesignTokens.ButtonRadius)}" Opacity="0" IsHitTestVisible="False"/>
   </Grid><ControlTemplate.Triggers>
    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Opacity" Value="1"/></Trigger>

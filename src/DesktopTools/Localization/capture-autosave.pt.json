@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Área de transferência e pasta",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "“Área de transferência e pasta” copia a captura e salva um PNG no local de salvamento sem perguntar.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Salvo em Imagens\\DesktopTools até você escolher uma pasta.",
+  "Show in folder": "Mostrar na pasta",
+  "Screenshot copied and saved": "Captura copiada e salva",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Captura salva em {0}, mas a área de transferência está ocupada. ",
+  "Screenshot copied, but it could not be saved: ": "Captura copiada, mas não foi possível salvá-la: ",
+  "Screenshot could not be copied or saved: ": "Não foi possível copiar nem salvar a captura: ",
+  "The saved screenshot is no longer there.": "A captura salva não está mais lá.",
+  "Could not open the folder: ": "Não foi possível abrir a pasta: "
+}

@@ -9,6 +9,9 @@ using Microsoft.Win32;
 
 namespace DesktopTools.Native;
 
+/// <summary>The app name and window title under a captured area, used for smart file names.</summary>
+public sealed record WindowDescription(string App, string Title);
+
 public static class NativeWindowService
 {
     private static readonly DependencyProperty RestoreMaximizedProperty = DependencyProperty.RegisterAttached(
@@ -156,5 +159,60 @@ public static class NativeWindowService
     {
         int result = NativeMethods.DwmFlush();
         if (result < 0) Marshal.ThrowExceptionForHR(result);
+    }
+    /// <summary>
+    /// The app and title of the topmost ordinary window that contains a point in physical virtual-desktop pixels, skipping hidden,
+    /// minimized, cloaked and click-through windows, untitled tool windows, the desktop itself and windows of <paramref name="excludeProcessId"/>.
+    /// Null when the point is outside every monitor or no such window is there. Never throws for windows of other or elevated processes.
+    /// </summary>
+    public static WindowDescription? DescribeTopWindowAt(int physicalX, int physicalY, int excludeProcessId)
+    {
+        if (NativeMethods.MonitorFromPoint(new NativeMethods.Point { X = physicalX, Y = physicalY }, 0) == IntPtr.Zero) return null;
+        IntPtr found = IntPtr.Zero; uint foundProcess = 0;
+        var text = new char[512];
+        NativeMethods.EnumWindows((hwnd, _) =>
+        {
+            if (!NativeMethods.IsWindowVisible(hwnd) || NativeMethods.IsIconic(hwnd)) return true;
+            NativeMethods.GetWindowThreadProcessId(hwnd, out uint process);
+            if (excludeProcessId != 0 && process == (uint)excludeProcessId) return true;
+            if (NativeMethods.DwmGetWindowAttribute(hwnd, 14, out int cloaked, sizeof(int)) == 0 && cloaked != 0) return true; // DWMWA_CLOAKED
+            long exStyle = NativeMethods.GetWindowLongPtr(hwnd, -20).ToInt64(); // GWL_EXSTYLE
+            if ((exStyle & 0x20) != 0) return true; // WS_EX_TRANSPARENT: click-through overlays are not what the user captured
+            if ((exStyle & 0x80) != 0 && NativeMethods.GetWindowText(hwnd, text, text.Length) == 0) return true; // untitled WS_EX_TOOLWINDOW
+            if (!NativeMethods.GetWindowRect(hwnd, out var r) || physicalX < r.Left || physicalX >= r.Right || physicalY < r.Top || physicalY >= r.Bottom) return true;
+            found = hwnd; foundProcess = process; return false;
+        }, IntPtr.Zero);
+        if (found == IntPtr.Zero) return null;
+        int classLength = NativeMethods.GetClassName(found, text, text.Length);
+        string className = new(text, 0, Math.Max(0, classLength));
+        if (className is "Progman" or "WorkerW") return null; // the bare desktop
+        int titleLength = NativeMethods.GetWindowText(found, text, text.Length);
+        string title = new(text, 0, Math.Max(0, titleLength));
+        string app = DescribeProcess(foundProcess, out string exeName);
+        // Store apps are hosted by ApplicationFrameHost; their window title is the app's own name.
+        if (exeName.Equals("ApplicationFrameHost", StringComparison.OrdinalIgnoreCase) && title.Length > 0) app = title;
+        return new WindowDescription(app, title);
+    }
+
+    private static string DescribeProcess(uint processId, out string exeName)
+    {
+        exeName = "";
+        IntPtr process = NativeMethods.OpenProcess(0x1000, false, processId); // PROCESS_QUERY_LIMITED_INFORMATION works for elevated processes too
+        if (process == IntPtr.Zero) return "";
+        try
+        {
+            var buffer = new char[1024]; uint size = (uint)buffer.Length;
+            if (!NativeMethods.QueryFullProcessImageName(process, 0, buffer, ref size)) return "";
+            string path = new(buffer, 0, (int)size);
+            exeName = Path.GetFileNameWithoutExtension(path);
+            try
+            {
+                string? description = FileVersionInfo.GetVersionInfo(path).FileDescription?.Trim();
+                if (!string.IsNullOrEmpty(description)) return description;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
+            return exeName;
+        }
+        finally { NativeMethods.CloseHandle(process); }
     }
 }

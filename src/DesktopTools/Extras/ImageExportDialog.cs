@@ -32,15 +32,19 @@ internal sealed class ImageExportDialog : Window
     internal string? SavedPath { get; private set; }
     internal string SelectedFormat => format;
     internal int SelectedQuality => (int)quality.Value;
+    private readonly HiddenDetailsOption hiddenDetails = new();
+    /// <summary>Whether the copy is written without hidden details. Unticked unless the Hide private data panel was ticked for this image.</summary>
+    internal bool RemoveHiddenDetails => hiddenDetails.Remove;
 
-    internal ImageExportDialog(BitmapSource source, string original, string initialFormat = "PNG", int initialQuality = 92, Func<ImageExportRequest, string?>? choosePath = null)
+    internal ImageExportDialog(BitmapSource source, string original, string initialFormat = "PNG", int initialQuality = 92, Func<ImageExportRequest, string?>? choosePath = null,
+        bool removeHiddenDetails = false, HiddenDetails? sourceDetails = null)
     {
         this.source = source; this.original = original; this.choosePath = choosePath; format = initialFormat;
-        Title = L.T("Export image"); Width = 850; Height = 500; MinWidth = 780; MinHeight = 470;
+        Title = L.T("Export image"); Width = 850; Height = 560; MinWidth = 780; MinHeight = 530;
         WindowStyle = WindowStyle.None; UtilityWindowChrome.EnableBackdrop(this); Background = Brushes.Transparent; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var root = new DockPanel(); var header = UtilityWindowChrome.Header(this, "DesktopTools — " + Title, Close, L.T("Close"), 13); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
         var bottom = new DockPanel { LastChildFill = false, Margin = new Thickness(0, 14, 0, 0) };
-        save = Ui.Button(L.T("Save copy"), async () => await SaveAsync(), true); save.MinWidth = 150; DockPanel.SetDock(save, Dock.Right); bottom.Children.Add(save);
+        save = Ui.Button(L.T("Save copy"), async () => await SaveAsync(), true); save.Name = "SaveCopy"; save.MinWidth = 150; DockPanel.SetDock(save, Dock.Right); bottom.Children.Add(save);
         var cancel = Ui.Button(L.T("Cancel"), Close); cancel.MinWidth = 110; DockPanel.SetDock(cancel, Dock.Right); bottom.Children.Add(cancel); DockPanel.SetDock(bottom, Dock.Bottom); root.Children.Add(bottom);
         var columns = new Grid(); columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(370) }); columns.ColumnDefinitions.Add(new ColumnDefinition()); root.Children.Add(columns);
         controls.Margin = new Thickness(0, 0, 22, 0); columns.Children.Add(controls); controls.Children.Add(Ui.Text(Title, 22, true)); controls.Children.Add(Ui.Text(L.T("Review the copy before saving."), 12, muted: true));
@@ -51,6 +55,9 @@ internal sealed class ImageExportDialog : Window
         quality.Value = initialQuality; quality.Width = 154; var qualityContent = new StackPanel { Orientation = Orientation.Horizontal }; qualityContent.Children.Add(quality); var qualityValue = Ui.Text(initialQuality + "%", 12); qualityValue.Margin = new Thickness(10, 0, 0, 0); qualityContent.Children.Add(qualityValue); qualityRow = Label("Quality", qualityContent); controls.Children.Add(qualityRow);
         dimensions.Margin = new Thickness(0, 10, 0, 0); controls.Children.Add(dimensions); status.Margin = new Thickness(0, 6, 0, 0); controls.Children.Add(status);
         var originalHint = Ui.Text(L.T("The original image is preserved."), 12, muted: true); originalHint.Margin = new Thickness(0, 10, 0, 0); controls.Children.Add(originalHint);
+        // What the source file carries; removal applies to the saved copy only, never to the original.
+        hiddenDetails.Show(sourceDetails ?? (File.Exists(original) ? ImageHiddenDetails.Describe(original) : null), removeHiddenDetails, null);
+        hiddenDetails.View.Margin = new Thickness(0, 12, 0, 0); controls.Children.Add(hiddenDetails.View);
         var stage = new Border { Child = preview, CornerRadius = new CornerRadius(12), Padding = new Thickness(12) }; stage.SetResourceReference(Border.BackgroundProperty, "Card"); Grid.SetColumn(stage, 1); columns.Children.Add(stage);
         var card = Ui.Card(root, 18); card.Margin = new Thickness(0); card.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); card.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = card;
         quality.ValueChanged += (_, _) => { qualityValue.Text = ((int)quality.Value) + "%"; RefreshPreview(); };
@@ -103,7 +110,9 @@ internal sealed class ImageExportDialog : Window
             string actualExtension = Path.GetExtension(path); if (!string.Equals(actualExtension, request.Extension, StringComparison.OrdinalIgnoreCase) && !(format == "JPEG" && actualExtension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))) throw new ArgumentException(L.T("The filename extension must match the selected format."));
             busy = true; controls.IsEnabled = save.IsEnabled = false; status.Text = L.T("Saving copy…");
             var prepared = output.Width == source.PixelWidth && output.Height == source.PixelHeight ? source : ImageTransforms.Resize(source, output.Width, output.Height);
-            await Task.Run(() => ImageTransforms.Export(prepared, path, original, request.Quality)); SavedPath = path;
+            // Prepared on this thread: a decoded file's metadata can only be read on the thread that displayed it.
+            var ready = hiddenDetails.Remove ? ImageHiddenDetails.Strip(prepared) : ImageTransforms.ForEncoding(prepared);
+            await Task.Run(() => ImageTransforms.Export(ready, path, original, request.Quality)); SavedPath = path;
         }
         catch (Exception ex) { status.Text = ex.Message; }
         finally { busy = false; controls.IsEnabled = true; save.IsEnabled = true; if (SavedPath != null) Close(); }

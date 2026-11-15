@@ -8,7 +8,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $revision = '646383234187efd3854e6b1069612b80c3ab9981'
-$patch = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../patches/ScreenRecorderLib-7.0.1-bounded-frames.patch'))
+# Applied in this order; they touch different files.
+$patches = 'ScreenRecorderLib-7.0.1-bounded-frames.patch', 'ScreenRecorderLib-7.0.1-still-screen-timing.patch' |
+    ForEach-Object { [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../patches/$_")) }
 $NativeRepositoryPath = [IO.Path]::GetFullPath($NativeRepositoryPath)
 if (-not (Test-Path -LiteralPath $NativeRepositoryPath)) {
     & git clone --depth 1 --branch v7.0.1 https://github.com/sskodje/ScreenRecorderLib.git $NativeRepositoryPath
@@ -16,13 +18,15 @@ if (-not (Test-Path -LiteralPath $NativeRepositoryPath)) {
 }
 $actual = & git -C $NativeRepositoryPath rev-parse HEAD
 if ($LASTEXITCODE -ne 0 -or $actual -ne $revision) { throw "Expected ScreenRecorderLib v7.0.1 ($revision), found $actual. No source was reset." }
-& git -C $NativeRepositoryPath apply --check $patch 2>$null
-if ($LASTEXITCODE -eq 0) {
-    & git -C $NativeRepositoryPath apply $patch
-    if ($LASTEXITCODE -ne 0) { throw 'Applying the recorder patch failed.' }
-} else {
-    & git -C $NativeRepositoryPath apply --reverse --check $patch 2>$null
-    if ($LASTEXITCODE -ne 0) { throw 'The recorder patch conflicts with this checkout; no files were reset.' }
+foreach ($patch in $patches) {
+    & git -C $NativeRepositoryPath apply --check $patch 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        & git -C $NativeRepositoryPath apply $patch
+        if ($LASTEXITCODE -ne 0) { throw "Applying $(Split-Path $patch -Leaf) failed." }
+    } else {
+        & git -C $NativeRepositoryPath apply --reverse --check $patch 2>$null
+        if ($LASTEXITCODE -ne 0) { throw "$(Split-Path $patch -Leaf) conflicts with this checkout; no files were reset." }
+    }
 }
 if (-not $MSBuildPath) {
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'

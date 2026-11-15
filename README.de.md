@@ -43,19 +43,28 @@ Hefte deine meistgenutzten Werkzeuge an und finde alle anderen an einem Ort.
 
 ### ✏️ Erkläre es mit einem Screenshot
 
-Füge Pfeile, Formen und Text hinzu und exportiere anschließend eine Kopie, während das Original erhalten bleibt.
+Füge Pfeile, Formen und Text hinzu, hole den Text mit **Text extrahieren** aus dem Bild und exportiere anschließend eine Kopie, während das Original erhalten bleibt. Lieber ohne Dialoge? Mit **Zwischenablage und Ordner** wird jeder Screenshot in einem Schritt kopiert und gespeichert.
 
 ![Screenshot-Editor mit Anmerkungen](assets/readme/editor.png)
 
 ### 🎬 Nimm genau den richtigen Ausschnitt auf
 
-Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualität vor der Aufnahme ein.
+Wähle einen Monitor, ein Fenster oder einen Bereich und stelle Ton und Qualität vor der Aufnahme ein. Ein unbewegter Bildschirm wird ohne Hänger und ohne abgeschnittenes Ende aufgenommen.
 
 ![Bildschirmrekorder mit ausgewählter Quelle](assets/readme/recorder.png)
 
+## Optionale lokale KI-Werkzeuge
+
+- **Text lesen:** Nutze Windows OCR oder lade das OCR-Paket für lateinische, ostslawische kyrillische oder chinesische/japanische Schrift herunter. Bildschirmtext, Textextraktion und Screenshot-Bibliothek verwenden deine Auswahl.
+- **Aufnahmen transkribieren:** Der Reiter Transkript im Videoeditor erstellt durchsuchbare, bearbeitbare Zeilen mit Zeitangaben, wahlweise mit einem schnellen oder genaueren Sprachmodell. Speichere SRT, VTT oder Text; beim MP4-Export kann eine separate, an die Schnitte angepasste Untertiteldatei gespeichert werden.
+- **Bilder verbessern:** Das optionale Paket für höhere Hintergrundqualität liefert feinere Masken, die du mit Wiederherstellen/Löschen nachbearbeiten kannst. Die optionale Gesichtssuche schlägt bei der Screenshot-Prüfung Gesichter zum Abdecken vor; du entscheidest, was verborgen wird.
+- **Namen und verborgene Details:** Aktiviere intelligente Screenshot-Dateinamen aus App und Fenstertitel oder entferne beim Export einer Bildkopie verborgene Dateidetails. Das Original bleibt unverändert; dafür ist kein Modell-Download nötig.
+
+KI läuft nur auf dem Prozessor. Die Übersetzung verarbeitet jetzt bis zu 20.000 Zeichen mit Fortschrittsanzeige und verbesserter Satzübersetzung. Siehe [Modelle, Messungen und Grenzen](docs/ai-models.md) und [Versionshinweise zu 1.3.0](docs/releases/1.3.0.md).
+
 ## 🔒 Von Grund auf lokal
 
-Kein Konto. Keine Telemetrie. Keine Verarbeitung deiner Inhalte in der Cloud. Deine Screenshots, Notizen, Texterkennung, Übersetzungen und Hintergrundentfernungen werden auf deinem PC verarbeitet. Zusätzliche Übersetzungspakete werden einmal heruntergeladen; dein Text wird nie an den Modellserver gesendet.
+Kein Konto. Keine Telemetrie. Keine Verarbeitung deiner Inhalte in der Cloud. Bilder, Aufnahmen, Notizen und Texte bleiben auf deinem PC. Optionale Modelle werden nur auf deine Anforderung und nach Annahme der Lizenz des Herausgebers heruntergeladen. Downloads verwenden die URL des Herausgebers mit festgelegter Revision und werden anhand von Größe und SHA-256 geprüft; der Downloadserver kann deine IP-Adresse sehen. Das enthaltene Hintergrundmodell und die Übersetzung Englisch–Russisch bleiben ohne optionalen Download verfügbar.
 
 Du entscheidest, wo Bilder und Aufnahmen gespeichert werden. Automatische Updateprüfungen rufen Versionsinformationen von GitHub ab; deine Medien oder Notizen werden dabei nicht hochgeladen. Unter **Einstellungen → Updates** kannst du das Prüfintervall ändern oder automatische Prüfungen deaktivieren. Die Seite **Neuigkeiten** kann stündlich Ankündigungen aus diesem Repository abrufen; dafür gibt es einen eigenen Schalter. Sicherheitshinweise installieren Updates niemals ohne deine Bestätigung.
 
@@ -86,7 +95,7 @@ Unter **Diagnose** kannst du Systemkomponenten, Windows-OCR-Sprachen und Konflik
 
 Für Bildschirmaufnahmen, Offline-Übersetzung und Hintergrundentfernung wird Microsoft Visual C++ x64 Redistributable benötigt. Aufnahme und Videoschnitt verwenden Windows Media Foundation. Aufnahmeraten bis 144 FPS sind Zielwerte; die tatsächliche Leistung hängt von Quelle, Encoder und Hardware ab. Unter [Kompatibilität](docs/compatibility.md) findest du Einschränkungen bei der Aufnahme und den aktuellen Testumfang. Das Setup prüft die Visual-C++-Laufzeit und bietet bei Bedarf die Downloadseite von Microsoft an.
 
-Die App unterstützt **Englisch, Russisch, Deutsch, Französisch und Spanisch** sowie helle, dunkle und systemabhängige Darstellung. Text tools bietet [20 Offline-Übersetzungssprachen](docs/offline-languages.md); Englisch–Russisch ist enthalten. Kompatible Windows-Sprachen stehen zuerst. OCR verwendet die in Windows installierten Erkennungsprogramme.
+Die App spricht **12 Sprachen** (Englisch, Russisch, Deutsch, Französisch, Spanisch, Ukrainisch, vereinfachtes Chinesisch, Portugiesisch, Japanisch, Polnisch, Türkisch und Italienisch) und bietet helle, dunkle und systemabhängige Darstellung. Text tools bietet [20 Offline-Übersetzungssprachen](docs/offline-languages.md); Englisch–Russisch ist enthalten. Kompatible Windows-Sprachen stehen zuerst. Windows OCR verwendet installierte Erkennungsprogramme; das optionale OCR-Paket bringt eigene Schriftsysteme mit.
 
 <details>
 <summary><strong>🛠️ Bauen und mitwirken</strong></summary>
@@ -105,5 +114,7 @@ Unter [Mitwirken](CONTRIBUTING.md) erfährst du, wie du Prüfungen ausführst un
 ## ⭐ Hilf mit, DesktopTools besser zu machen
 
 Wenn DesktopTools einen Platz auf deinem Desktop verdient hat, [gib dem Projekt einen Stern](https://github.com/vg2222/DesktopTools). Etwas gefunden, das Aufmerksamkeit braucht? [Melde einen Fehler](https://github.com/vg2222/DesktopTools/issues/new?template=bug_report.yml) oder [schlage eine Funktion vor](https://github.com/vg2222/DesktopTools/issues/new?template=feature_request.yml).
+
+Alle App-Funktionen sind kostenlos. Wenn du freiwillig spenden möchtest, kannst du [DesktopTools unterstützen](https://www.desktoptools.cc/support/).
 
 [MIT-Lizenz](LICENSE) · [Hinweise zu Drittanbieterkomponenten](THIRD-PARTY-NOTICES.md) · [Sicherheitsrichtlinie](SECURITY.md)

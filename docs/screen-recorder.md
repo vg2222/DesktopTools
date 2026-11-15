@@ -17,12 +17,32 @@ Quality presets are Economy, Balanced and High. Target FPS choices are 24, 30, 6
 The video bitrate is derived from resolution and frame rate (Economy 0.04, Balanced 0.07 and High 0.12 bits per pixel per frame, with frame rates above 60 counted at half weight, limited to 4–80 Mbit/s) and uses variable bitrate, so detailed text and fast motion are not starved the way the backend's own quality mode starves them. Region coordinates are physical desktop pixels, with even output dimensions.
 Output is first written to a unique `.partial.mp4` beside the chosen destination. Success moves it without overwriting any existing file. Failure retains the partial file and shows its path; recovery is **not guaranteed**, because a normal MP4 may be incomplete without successful finalization. Forced process termination or power loss can lose the current recording. Save to a local writable folder with sufficient disk space.
 
+After a recording is saved, **Transcribe** opens it in the video editor's **Transcript** tab (shown when the video editor is enabled). Transcripts are made on this PC with an optional speech model and only when you press Transcribe; nothing is transcribed automatically. Recording and transcribing other people can require their consent, depending on where you live; DesktopTools shows this notice once before the first transcript. See [the video editor](video-editor.md#transcript).
+
 ## Backend and prerequisites
 
 [ScreenRecorderLib 7.0.1](https://github.com/sskodje/ScreenRecorderLib), MIT, uses the Windows Desktop Duplication API for displays and regions, Windows Graphics Capture for single windows, and Windows Media Foundation for encoding. If Desktop Duplication cannot start (for example on some remote or virtual displays) DesktopTools falls back once to Windows Graphics Capture. Backend throttling is switched off when hardware encoding is used, because it caused periodic stalls and lost frames on busy machines. Its full license is included in `docs/licenses/ScreenRecorderLib-LICENSE.txt`. Windows 11 x64 is the primary platform. A native ARM64 build can be produced with `./scripts/publish.ps1 -Runtime win-arm64`; it uses the ARM64 build of the same backend and has **not been run on ARM hardware**. The .NET runtime is bundled in the portable package, but the native recorder also needs **Microsoft Visual C++ x64 Redistributable**. N/KN editions can require **Media Feature Pack**. DesktopTools does not install either dependency automatically. The backend is accessed only when the recording feature is used.
 
 The microphone and loopback sources use the current default Windows input/output devices. Windows microphone permission and device availability affect recording. Device changes during a recording, protected video, HDR, GPU-driver behavior and screen-sharing capture exclusion can affect output. Recorder controls and the recording HUD are hidden from supported captures by default. Initial setup and **Settings → Privacy** let you change that choice independently; capture methods that ignore Windows exclusion may still show them.
 
+## Still screens (patched backend, 1.3.0)
+
+On a screen that is not changing, the stock backend wrote one frame a second and, every hundredth unchanged frame, flushed the sink writer, which discards the samples still queued for the encoder. Stopping also dropped whatever followed the last written frame. In a recording of ordinary desktop work this showed as freezes, a low reported frame rate and a missing ending.
+
+`patches/ScreenRecorderLib-7.0.1-still-screen-timing.patch` repeats the last frame every 100 ms once the first frame has been written (never faster than the target frame interval) and removes that flush; the bounded sample pool from the earlier patch already limits what the encoder can hold. `scripts/build-recorder-backend.ps1` applies both patches. A release must be built with this backend (`-p:RecorderBackendPath=<DLL>`); the stock NuGet package has neither fix.
+
+Measured on the development PC (Windows 11 build 26300, RTX 3060 Ti, 1920×1080 display, 144 FPS target, High, hardware encoding, no audio, 15 s, `--record-probe` with `PROBE_SOURCE_EVERY_MS`):
+
+| Source | Backend | Longest gap between frames | File length | Frames lost from encoder queue |
+| --- | --- | --- | --- | --- |
+| Repaints every 4 s | 1.2.9 | 2353 ms | 12.8 s | n/a |
+| Repaints every 4 s | patched | 111 ms | 14.5 s | 0 |
+| Repaints every 250 ms | 1.2.9 | 288 ms | 14.5 s | n/a |
+| Repaints every 250 ms | patched | 107 ms | 14.7 s | 0 |
+| Continuous motion | 1.2.9 | 16 ms (≈137 FPS) | 14.6 s | 0 |
+| Continuous motion | patched | 16 ms (≈117 FPS, source painted 114) | 14.6 s | 0 |
+
+A still screen therefore averages about 10 FPS in the file by design, so the recorder no longer quotes the file's frame rate after saving. `PROBE_TIMER=0` runs the probe without raising the system timer resolution; results matched the raised-timer runs, so the app does not raise it. **Not tested:** games and full-screen exclusive content, window (Windows Graphics Capture) sources beyond the automated lifecycle checks, recordings longer than 15 s with this patch, memory plateau runs (`--record-memory-only`) with this patch, other GPUs, ARM64.
 ## Verification on the development machine
 
 The recording probe (`--record-probe`, see `tests/DesktopTools.IntegrationTests/RecordingProbe.cs`) records a full display while a fixture window paints frame-ID cells, a moving bar, scrolling text and a deterministic noise texture. `scripts/analyze-recording-probe.py` decodes **every** frame of the MP4 and reports unreadable frames, lost and repeated frame IDs, timestamp gaps, text sharpness and compression error against the exact expected pixels. Because the fixture is an ordinary WPF window it paints at roughly 96–122 FPS on the development PC, so these runs show what the recorder keeps of what is painted, not that 144 unique frames per second were rendered.

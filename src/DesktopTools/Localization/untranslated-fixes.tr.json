@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "Pencere diğer pencerelerin üstüne sabitlendi.",
+  "Window unpinned.": "Pencerenin sabitlemesi kaldırıldı.",
+  "Annotation opacity": "Açıklama opaklığı",
+  "Clear": "Temizle",
+  "Apply": "Uygula",
+  "Availability": "Kullanılabilirlik",
+  "Invalid shortcut": "Geçersiz kısayol",
+  "Another DesktopTools action uses this shortcut.": "Başka bir DesktopTools eylemi bu kısayolu kullanıyor.",
+  "Windows has no available hotkey IDs.": "Windows'ta kullanılabilir kısayol kimliği kalmadı."
+}

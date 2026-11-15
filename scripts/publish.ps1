@@ -59,7 +59,7 @@ try {
     }
     $publicDocs = Join-Path $output 'docs'
     New-Item -ItemType Directory -Force -Path $publicDocs | Out-Null
-    foreach ($document in @('architecture.md','audio-controls.md','background-removal.md','compatibility.md','localization.md','manual-testing.md','maintenance-2026-10-05.md','news-and-security-updates.md','offline-languages.md','optimization.md','roadmap.md','screen-recorder.md','sharing-blackout.md','text-tools.md','updates.md','verification.md','video-editor.md','security-checks.md','release-preparation.md')) {
+    foreach ($document in @('ai-models.md','architecture.md','audio-controls.md','background-removal.md','compatibility.md','localization.md','localization-review-1.3.0.md','manual-testing.md','maintenance-2026-10-05.md','news-and-security-updates.md','offline-languages.md','optimization.md','roadmap.md','screen-recorder.md','sharing-blackout.md','text-tools.md','updates.md','verification.md','video-editor.md','security-checks.md','release-preparation.md')) {
         Copy-Item -LiteralPath (Join-Path $repo ('docs/' + $document)) -Destination $publicDocs
     }
     Copy-Item -LiteralPath (Join-Path $repo 'docs/licenses') -Destination $publicDocs -Recurse

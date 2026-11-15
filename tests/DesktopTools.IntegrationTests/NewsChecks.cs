@@ -78,8 +78,8 @@ internal static class NewsChecks
             }
             using var controller = new AppController(true);
             controller.UpdateSettings(s => { s.Language = "en"; s.Theme = "Dark"; s.Animations = false; s.ReadNewsIds = []; s.NotifiedNewsIds = []; });
-            Check(Application.Current.Resources["Surface"] is SolidColorBrush darkSurface && darkSurface.Color == Color.FromRgb(6, 6, 6),
-                "Default dark app surface is not #060606");
+            Check(Application.Current.Resources["Surface"] is SolidColorBrush darkSurface && darkSurface.Color == Color.FromRgb(12, 13, 15),
+                "Default dark app surface is not #0C0D0F");
             DesktopTools.Localization.L.Use("en");
             controller.OpenMain(); var main = Application.Current.Windows.OfType<MainWindow>().Single();
             controller.NewsClient.Dispose(); controller.NewsClient = new AnnouncementClient(new HttpClient(new FixtureHandler(ordinary)));

@@ -1,0 +1,274 @@
+[
+  {
+    "id": "ocr-text-detector",
+    "name": "OCR pack: text finder",
+    "purpose": "Finds the lines of text in a picture. Every OCR pack language needs it.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx",
+    "revision": "e6f4fa85f00e168c862bc462aebca69eef9b3d3d",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Finds horizontal lines of text. Very small, faint or decorative text can be missed.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx/resolve/e6f4fa85f00e168c862bc462aebca69eef9b3d3d/inference.onnx",
+        "sha256": "a431985659dc921974177a95adcfbb90fd9e51989a5e04d70d0b75f597b6e61d",
+        "bytes": 4826518
+      }
+    ]
+  },
+  {
+    "id": "ocr-latin",
+    "name": "OCR pack: Latin alphabet",
+    "purpose": "Reads English and other languages written in the Latin alphabet.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx",
+    "revision": "89d3a50e2c27e2e7cceeab0e944c25c807d5db4f",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx/resolve/89d3a50e2c27e2e7cceeab0e944c25c807d5db4f/inference.onnx",
+        "sha256": "7888113072263cb471b93f66dd5e2ad70548dc526fa1ace760d0d973dd121498",
+        "bytes": 8042023
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/latin_PP-OCRv5_mobile_rec_onnx/resolve/89d3a50e2c27e2e7cceeab0e944c25c807d5db4f/inference.yml",
+        "sha256": "0bbe984570f597af3638e50bdf2e8276f3ab26a61966096538b3b0d1849f5c84",
+        "bytes": 6817
+      }
+    ]
+  },
+  {
+    "id": "ocr-cyrillic",
+    "name": "OCR pack: Cyrillic",
+    "purpose": "Reads Russian, Ukrainian and Belarusian text.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx",
+    "revision": "9a32171fc5718746875e1a261818884517975013",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx/resolve/9a32171fc5718746875e1a261818884517975013/inference.onnx",
+        "sha256": "b3018ef2b09a0250b6e0c8e871c927098363e5fd4df890cc68e8358eb0aaf1bd",
+        "bytes": 7887627
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/eslav_PP-OCRv5_mobile_rec_onnx/resolve/9a32171fc5718746875e1a261818884517975013/inference.yml",
+        "sha256": "025039bac23eb4a308efcefa4d58eab3af440767815c6ba6938468bf6353ee5a",
+        "bytes": 4538
+      }
+    ]
+  },
+  {
+    "id": "ocr-chinese-japanese",
+    "name": "OCR pack: Chinese and Japanese",
+    "purpose": "Reads Chinese and Japanese text, with Latin letters and digits mixed in.",
+    "feature": "Text tools (DesktopTools OCR pack)",
+    "publisher": "PaddlePaddle",
+    "authors": "PaddleOCR authors (PP-OCRv5)",
+    "upstream": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx",
+    "revision": "ed152b8b495f84de93cda5709d768548a9127622",
+    "licenseId": "apache-2.0",
+    "licenseFile": "Apache-2.0.txt",
+    "attribution": "PP-OCRv5 mobile model from PaddleOCR (https://github.com/PaddlePaddle/PaddleOCR), licensed under Apache-2.0. ONNX file published by PaddlePaddle on Hugging Face.",
+    "trainingData": "PaddleOCR internal and public data; the publisher does not itemise it.",
+    "limitations": [
+      "Reads horizontal text. Vertical and strongly rotated text is not supported.",
+      "Text in another alphabet on the same picture can be misread.",
+      "DesktopTools has not measured its accuracy on Chinese or Japanese text.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "inference.onnx",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx/resolve/ed152b8b495f84de93cda5709d768548a9127622/inference.onnx",
+        "sha256": "da72dc72ca4dc220df0dfde68c1dedc31c58d3e76a25871122e5056227d50092",
+        "bytes": 16534782
+      },
+      {
+        "file": "inference.yml",
+        "url": "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx/resolve/ed152b8b495f84de93cda5709d768548a9127622/inference.yml",
+        "sha256": "5dfeb2777f6d0db8177d8128a8acfcf6e6276dc4ac73ea3bf0dc06d6a5e85d8e",
+        "bytes": 148345
+      }
+    ]
+  },
+  {
+    "id": "speech-fast",
+    "name": "Transcripts: fast model",
+    "purpose": "Turns speech in recordings into text. Smaller and quicker; about 3 to 4 seconds per minute of audio on a typical processor.",
+    "feature": "Video editor (Transcript)",
+    "publisher": "Xenova (Joshua Lochner) on Hugging Face",
+    "authors": "OpenAI (Whisper)",
+    "upstream": "https://huggingface.co/Xenova/whisper-base",
+    "revision": "64da57285918e20ea79ea5c88eed7197933abaa8",
+    "licenseId": "mit",
+    "licenseFile": "Whisper-MIT-Apache-2.0.txt",
+    "attribution": "Whisper model by OpenAI (https://github.com/openai/whisper), code and weights licensed under MIT. ONNX export published by Xenova on Hugging Face, whose model card states Apache-2.0.",
+    "trainingData": "680,000 hours of audio collected from the web; OpenAI has not published the dataset.",
+    "limitations": [
+      "Can mishear words, names and numbers, especially with background noise or several people talking.",
+      "Can invent text during silence, music or noise. DesktopTools skips quiet stretches, but check the result.",
+      "DesktopTools measured accuracy only in English and Russian.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "encoder_model.onnx",
+        "url": "https://huggingface.co/Xenova/whisper-base/resolve/64da57285918e20ea79ea5c88eed7197933abaa8/onnx/encoder_model.onnx",
+        "sha256": "f0bd7927234639c6e1f293cef18a210cee4e4aea93e200ebbe48e1d7acf6fdb1",
+        "bytes": 82474863
+      },
+      {
+        "file": "decoder_model_merged.onnx",
+        "url": "https://huggingface.co/Xenova/whisper-base/resolve/64da57285918e20ea79ea5c88eed7197933abaa8/onnx/decoder_model_merged.onnx",
+        "sha256": "3fed66b2b8dfa1ae213f768527dff1ef7e3857b8d45a36381850ce4dff8db936",
+        "bytes": 208560983
+      },
+      {
+        "file": "vocab.json",
+        "url": "https://huggingface.co/Xenova/whisper-base/resolve/64da57285918e20ea79ea5c88eed7197933abaa8/vocab.json",
+        "sha256": "50d6a919f0a0601d56a04eb583c780d18553aa388254ba3158eb6a00f13e2c1a",
+        "bytes": 1036584
+      },
+      {
+        "file": "generation_config.json",
+        "url": "https://huggingface.co/Xenova/whisper-base/resolve/64da57285918e20ea79ea5c88eed7197933abaa8/generation_config.json",
+        "sha256": "3bba359e33fdd6dc1c10f71846a477d339b0242f462f70ea1dd73274caa38d05",
+        "bytes": 3776
+      }
+    ]
+  },
+  {
+    "id": "speech-accurate",
+    "name": "Transcripts: accurate model",
+    "purpose": "Turns speech in recordings into text. Larger and slower than the fast model, with fewer mistakes.",
+    "feature": "Video editor (Transcript)",
+    "publisher": "Xenova (Joshua Lochner) on Hugging Face",
+    "authors": "OpenAI (Whisper)",
+    "upstream": "https://huggingface.co/Xenova/whisper-small",
+    "revision": "2d67713f236afa48a18992566e7647f6ca848e13",
+    "licenseId": "mit",
+    "licenseFile": "Whisper-MIT-Apache-2.0.txt",
+    "attribution": "Whisper model by OpenAI (https://github.com/openai/whisper), code and weights licensed under MIT. ONNX export published by Xenova on Hugging Face, whose model card states Apache-2.0.",
+    "trainingData": "680,000 hours of audio collected from the web; OpenAI has not published the dataset.",
+    "limitations": [
+      "Can mishear words, names and numbers, especially with background noise or several people talking.",
+      "Can invent text during silence, music or noise. DesktopTools skips quiet stretches, but check the result.",
+      "DesktopTools measured accuracy only in English and Russian.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "encoder_model.onnx",
+        "url": "https://huggingface.co/Xenova/whisper-small/resolve/2d67713f236afa48a18992566e7647f6ca848e13/onnx/encoder_model.onnx",
+        "sha256": "31a05a14d514440e43746fdaaa8d4e8102c9543e53c5ae1111910af142041406",
+        "bytes": 352839389
+      },
+      {
+        "file": "decoder_model_merged.onnx",
+        "url": "https://huggingface.co/Xenova/whisper-small/resolve/2d67713f236afa48a18992566e7647f6ca848e13/onnx/decoder_model_merged.onnx",
+        "sha256": "16c197b4c4702c51c767d1931a5673a10fa528bd1e79963891c97d69e0258584",
+        "bytes": 615405212
+      },
+      {
+        "file": "vocab.json",
+        "url": "https://huggingface.co/Xenova/whisper-small/resolve/2d67713f236afa48a18992566e7647f6ca848e13/vocab.json",
+        "sha256": "50d6a919f0a0601d56a04eb583c780d18553aa388254ba3158eb6a00f13e2c1a",
+        "bytes": 1036584
+      },
+      {
+        "file": "generation_config.json",
+        "url": "https://huggingface.co/Xenova/whisper-small/resolve/2d67713f236afa48a18992566e7647f6ca848e13/generation_config.json",
+        "sha256": "0b7407a4e53a677f826e03c75d409e6f830663932bf43dda3b08c5efa2223279",
+        "bytes": 3837
+      }
+    ]
+  },
+  {
+    "id": "background-quality",
+    "name": "Background removal: high quality",
+    "purpose": "Separates the subject from the background with finer edges around hair, fur and see-through objects. About 8 seconds for a Full HD image on a typical processor.",
+    "feature": "Image tools (Remove background)",
+    "publisher": "ZhengPeng7 (Peng Zheng) on GitHub",
+    "authors": "Peng Zheng and co-authors (BiRefNet)",
+    "upstream": "https://github.com/ZhengPeng7/BiRefNet",
+    "revision": "v1",
+    "licenseId": "mit",
+    "licenseFile": "BiRefNet-MIT.txt",
+    "attribution": "BiRefNet-lite (Swin-T backbone) by Peng Zheng et al. (https://github.com/ZhengPeng7/BiRefNet), code and weights licensed under MIT. ONNX file from the author's GitHub release v1.",
+    "trainingData": "DIS5K, HRSOD, UHRSD and other public segmentation datasets listed by the author.",
+    "limitations": [
+      "Needs about 6 GB of free memory while it runs.",
+      "Can keep or drop objects next to the subject, such as items on a table.",
+      "Results can be wrong; check the edges before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+        "url": "https://github.com/ZhengPeng7/BiRefNet/releases/download/v1/BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+        "sha256": "5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333",
+        "bytes": 224005088
+      }
+    ]
+  },
+  {
+    "id": "faces",
+    "name": "Face finder",
+    "purpose": "Finds where faces are in a screenshot so Check screenshot can suggest covering them. It does not recognise who anyone is and stores nothing about faces.",
+    "feature": "Screenshot editor (Check screenshot)",
+    "publisher": "OpenCV (opencv_zoo on GitHub)",
+    "authors": "Shiqi Yu and co-authors (YuNet)",
+    "upstream": "https://github.com/opencv/opencv_zoo/tree/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet",
+    "revision": "48b10fa505aeb51fbd127fc60a5c660040e823b7",
+    "licenseId": "mit",
+    "licenseFile": "YuNet-MIT.txt",
+    "attribution": "YuNet face detector by Shiqi Yu et al. (https://github.com/ShiqiYu/libfacedetection.train), distributed in OpenCV Zoo (https://github.com/opencv/opencv_zoo), licensed under MIT.",
+    "trainingData": "WIDER FACE, a public face-detection dataset, as described in the publisher's training repository.",
+    "limitations": [
+      "Finds faces from about 10 to 300 pixels across; very small, very large, turned or covered faces can be missed.",
+      "Can mark things that only look like faces.",
+      "Results can be wrong; check them before you rely on them."
+    ],
+    "files": [
+      {
+        "file": "face_detection_yunet_2026may.onnx",
+        "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0",
+        "bytes": 229738
+      }
+    ]
+  }
+]

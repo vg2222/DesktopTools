@@ -140,7 +140,13 @@ internal static class RecordingProbe
         }
         var renderTimes = new System.Collections.Generic.List<double>();
         var clock = new Stopwatch();
-        EventHandler onRender = (_, _) => { fixture.Frame++; fixture.InvalidateVisual(); if (clock.IsRunning) renderTimes.Add(clock.Elapsed.TotalMilliseconds); };
+        // PROBE_SOURCE_EVERY_MS repaints the fixture only that often: a mostly still desktop, the usual case for tutorials and documents.
+        double paintEvery = double.Parse(E("PROBE_SOURCE_EVERY_MS", "0"), CultureInfo.InvariantCulture); var sincePaint = Stopwatch.StartNew();
+        EventHandler onRender = (_, _) =>
+        {
+            if (paintEvery > 0 && sincePaint.Elapsed.TotalMilliseconds < paintEvery) return;
+            sincePaint.Restart(); fixture.Frame++; fixture.InvalidateVisual(); if (clock.IsRunning) renderTimes.Add(clock.Elapsed.TotalMilliseconds);
+        };
         System.Windows.Media.CompositionTarget.Rendering += onRender;
         await Task.Delay(800);
 
@@ -154,7 +160,8 @@ internal static class RecordingProbe
         await using var service = new ScreenRecordingService();
         var states = new System.Collections.Generic.List<string>();
         service.StatusChanged += state => states.Add($"{DateTime.UtcNow:O} {state}");
-        bool resolution = timeBeginPeriod(1) == 0;
+        // PROBE_TIMER=0 leaves the system timer alone, so the run shows what the recorder does for itself (the way the app starts it).
+        bool resolution = E("PROBE_TIMER", "1") == "1" && timeBeginPeriod(1) == 0;
         string audio = E("PROBE_AUDIO", "");
         var result = service.Start(monitor, null, path, audio is "1" or "mic", audio is "1" or "sys", fps, quality, hardware);
         clock.Start();

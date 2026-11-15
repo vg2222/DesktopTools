@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "Fenêtre épinglée au-dessus des autres fenêtres.",
+  "Window unpinned.": "Fenêtre détachée.",
+  "Annotation opacity": "Opacité de l’annotation",
+  "Clear": "Effacer",
+  "Apply": "Appliquer",
+  "Availability": "Disponibilité",
+  "Invalid shortcut": "Raccourci non valide",
+  "Another DesktopTools action uses this shortcut.": "Une autre action de DesktopTools utilise ce raccourci.",
+  "Windows has no available hotkey IDs.": "Windows n’a plus d’identifiant de raccourci disponible."
+}

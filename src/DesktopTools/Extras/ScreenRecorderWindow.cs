@@ -297,13 +297,8 @@ internal sealed class ScreenRecorderWindow : Window
             Hide(); hud.Show();
             timer.Start(); status.Text = L.T(service.Status); Refresh(); UpdateRecordingUi();
             var output = await result; acceptingStatus = false; UpdateRecordingUi();
-            string rateInfo = "";
-            try
-            {
-                double? encodedRate = await VideoEditorService.ProbeEncodedFrameRateAsync(output);
-                if (encodedRate > 0) rateInfo = "\n" + L.F($"File reports {encodedRate.Value:0.#} FPS. Repeated frames may reduce visible smoothness.");
-            }
-            catch (Exception ex) { Debug.WriteLine(ex); }
+            // Frames keep their capture times, so the file's average rate falls while the screen is still; quoting it read as a fault.
+            const string rateInfo = "";
             if (test)
             {
                 DeleteTestClip(); testClipPath = output; playTest.Visibility = Visibility.Visible;
@@ -347,6 +342,13 @@ internal sealed class ScreenRecorderWindow : Window
     private void ShowSavedMarkers(string videoPath)
     {
         markerList.Children.Clear();
+        if (controller.Settings.VideoEditorEnabled)
+        {
+            var transcribe = Ui.ActionButton("Text", L.T("Transcribe"), () => controller.OpenVideoEditorForTranscript(videoPath));
+            transcribe.Tag = "recording-transcribe"; transcribe.HorizontalAlignment = HorizontalAlignment.Left; transcribe.Margin = new Thickness(0, 10, 0, 2);
+            Ui.Tip(transcribe, L.T("Open the recording in the video editor to make a transcript on this PC."));
+            markerList.Children.Add(transcribe);
+        }
         if (markerTimeline.Markers.Count == 0) return;
         var heading = Ui.Text(L.T("Recording markers"), 12, true);
         heading.Margin = new Thickness(0, 10, 0, 4); markerList.Children.Add(heading);
@@ -405,6 +407,13 @@ internal sealed class ScreenRecorderWindow : Window
     private void UpdateMeters()
     {
         double mic = 0, output = 0;
+        // Nothing to measure: skip the device lookups, which otherwise run five times a second for the whole recording.
+        if (microphone.IsChecked != true && systemAudio.IsChecked != true)
+        {
+            if (microphoneMeter.Value != 0) microphoneMeter.Value = 0;
+            if (systemMeter.Value != 0) systemMeter.Value = 0;
+            hud?.UpdateMeters(null, null); return;
+        }
         try
         {
             using var audio = new AudioSessionService();

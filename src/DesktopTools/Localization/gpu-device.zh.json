@@ -1,0 +1,7 @@
+{
+  "Graphics card": "显卡",
+  "The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it.": "显卡无法运行 AI 模型，DesktopTools 将在重启前使用处理器。",
+  "Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.": "AI 模型的运行位置。使用显卡需要 DirectML 1.15 或更高版本，最新的 Windows 11 更新已包含它。",
+  "The graphics card could not run a model, so the processor is used until DesktopTools restarts.": "显卡无法运行模型，在 DesktopTools 重启前将使用处理器。",
+  "The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.": "处理器在任何电脑上都能运行。显卡能大幅加快文字检测和语音识别，但会占用更多内存，包括显存。其他模型仍在处理器上运行。"
+}

@@ -76,10 +76,13 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
     private Int32Rect appliedCrop;
     private readonly StackPanel cropActions = new();
     private readonly Button editCropButton;
+    private readonly TranscriptStore? transcripts;
+    private readonly TranscriptPanel? transcriptPanel;
+    private readonly Action<string> showInspector;
 
-    public VideoEditorWindow(Action<string> report, Func<string, IReadOnlyList<RecordingMarker>>? loadMarkers = null)
+    public VideoEditorWindow(Action<string> report, Func<string, IReadOnlyList<RecordingMarker>>? loadMarkers = null, TranscriptStore? transcripts = null, AppController? controller = null)
     {
-        this.report = report; this.loadMarkers = loadMarkers ?? (_ => []);
+        this.report = report; this.loadMarkers = loadMarkers ?? (_ => []); this.transcripts = transcripts;
         Title = L.T("Video editor"); Width = 1120; Height = 740; MinWidth = 900; MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.CanResize; Background = Brushes.Transparent;
@@ -178,7 +181,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         AddRow(root, caption, 0);
         var workspace = new Grid(); workspace.ColumnDefinitions.Add(new ColumnDefinition { MinWidth = 350 });
         workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
-        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350), MinWidth = 280, MaxWidth = 580 }); AddRow(root, workspace, 1);
+        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(transcripts != null ? 400 : 350), MinWidth = 280, MaxWidth = 580 }); AddRow(root, workspace, 1);
         var viewer = new DockPanel { Margin = new Thickness(0, 0, 8, 0) }; DockPanel.SetDock(mediaHeader, Dock.Top); viewer.Children.Add(mediaHeader); DockPanel.SetDock(playback, Dock.Bottom); viewer.Children.Add(playback); viewer.Children.Add(stageFrame); workspace.Children.Add(viewer);
         var splitter = new GridSplitter { Width = 10, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
             ResizeDirection = GridResizeDirection.Columns, ResizeBehavior = GridResizeBehavior.PreviousAndNext, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.SizeWE };
@@ -255,8 +258,22 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         editPanel.Children.Add(timingSection); editPanel.Children.Add(frameSection); editPanel.Children.Add(outputSection);
         var tabButtons = new Dictionary<string, Button>();
         var inspectorTabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
+        var exportActions = new StackPanel();
+        if (transcripts != null)
+        {
+            transcriptPanel = new TranscriptPanel(controller, transcripts, () => media.Position, position =>
+            {
+                if (source == null) return;
+                if (showingEdited) ShowOriginal();
+                QueueSeek(position.TotalSeconds);
+            }, report) { Visibility = Visibility.Collapsed };
+        }
         void InspectorMode(string mode)
         {
+            if (mode == "Transcript" && transcriptPanel == null) mode = "Timing";
+            bool transcript = mode == "Transcript";
+            editorScroll.Visibility = exportActions.Visibility = transcript ? Visibility.Collapsed : Visibility.Visible;
+            if (transcriptPanel != null) transcriptPanel.Visibility = transcript ? Visibility.Visible : Visibility.Collapsed;
             frameInspectorActive = mode == "Frame";
             timingSection.Visibility = mode == "Timing" ? Visibility.Visible : Visibility.Collapsed;
             frameSection.Visibility = mode == "Frame" ? Visibility.Visible : Visibility.Collapsed;
@@ -265,7 +282,9 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             if (mode != "Frame") cropHandles.Visibility = Visibility.Collapsed;
             else if (cropExpander.IsExpanded) BeginCrop();
         }
-        foreach (var (key, icon, label) in new[] { ("Timing", "Timer", "Timing"), ("Frame", "Crop", "Frame"), ("Output", "File", "Output") })
+        var tabs = new List<(string, string, string)> { ("Timing", "Timer", "Timing"), ("Frame", "Crop", "Frame"), ("Output", "File", "Output") };
+        if (transcriptPanel != null) tabs.Add(("Transcript", "Text", "Transcript"));
+        foreach (var (key, icon, label) in tabs)
         {
             string selected = key; var button = MediaWorkspaceLayout.Tab(icon, label, () => InspectorMode(selected));
             tabButtons[key] = button; inspectorTabs.Children.Add(button);
@@ -273,12 +292,13 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         editorScroll.Content = editPanel; editorScroll.MaxHeight = double.PositiveInfinity;
         var inspector = new DockPanel(); Grid.SetColumn(inspector, 2); workspace.Children.Add(inspector);
         actions.Children.Clear();
-        var exportActions = new StackPanel(); exportActions.Children.Add(cropActions); exportButton.Content = Ui.IconLabel("Save", L.T("Export MP4"), primary: true); exportButton.Height = 40; exportButton.Margin = new Thickness(0, 12, 0, 0); exportActions.Children.Add(exportButton);
+        exportActions.Children.Add(cropActions); exportButton.Content = Ui.IconLabel("Save", L.T("Export MP4"), primary: true); exportButton.Height = 40; exportButton.Margin = new Thickness(0, 12, 0, 0); exportActions.Children.Add(exportButton);
         previewButton.Content = Ui.IconLabel("Refresh", L.T("Refresh preview")); previewButton.Margin = new Thickness(0, 8, 0, 0); exportActions.Children.Add(previewButton);
         var utilityActions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) }; foreach (var button in new[] { saveFrameButton, resetButton, originalButton, cancelButton }) { button.Margin = new Thickness(0, 0, 6, 0); utilityActions.Children.Add(button); } exportActions.Children.Add(utilityActions);
-        DockPanel.SetDock(exportActions, Dock.Bottom); inspector.Children.Add(exportActions); DockPanel.SetDock(inspectorTabs, Dock.Top); inspector.Children.Add(inspectorTabs); inspector.Children.Add(editorScroll);
+        DockPanel.SetDock(exportActions, Dock.Bottom); inspector.Children.Add(exportActions); DockPanel.SetDock(inspectorTabs, Dock.Top); inspector.Children.Add(inspectorTabs);
+        var inspectorBody = new Grid(); inspectorBody.Children.Add(editorScroll); if (transcriptPanel != null) inspectorBody.Children.Add(transcriptPanel); inspector.Children.Add(inspectorBody);
         var feedbackSurface = MediaWorkspaceLayout.Status(feedback); feedbackSurface.Margin = new Thickness(0, 10, 0, 0); AddRow(root, feedbackSurface, 2);
-        InspectorMode("Timing");
+        InspectorMode("Timing"); showInspector = InspectorMode;
         var card = Ui.Card(root, 20); card.Margin = new Thickness(0); card.CornerRadius = new CornerRadius(20); card.SetResourceReference(Border.BackgroundProperty, "GlassSurface"); card.SetResourceReference(Border.BorderBrushProperty, "GlassRim"); Content = card;
 
         feedback.Children.Insert(0, timeline); AutomationProperties.SetName(timeline, L.T("Keep range"));
@@ -330,7 +350,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         StateChanged += (_, _) => { if (WindowState == WindowState.Minimized) { CancelPendingSeek(); PausePlayback(); PausePreview(); } else SchedulePreview(); };
         Closed += (_, _) =>
         {
-            closed = true; previewTimer.Stop(); operation?.Cancel(); thumbnailLoading?.Cancel(); ReleaseMedia(); playbackTimer.Tick -= OnPlaybackTick; seekTimer.Tick -= OnSeekTick;
+            closed = true; previewTimer.Stop(); operation?.Cancel(); transcriptPanel?.Flush(); transcriptPanel?.Cancel(); transcriptPanel?.Detach(); thumbnailLoading?.Cancel(); ReleaseMedia(); playbackTimer.Tick -= OnPlaybackTick; seekTimer.Tick -= OnSeekTick;
             timeline.Thumbnails = Array.Empty<System.Windows.Media.Imaging.BitmapSource>();
             foreach (string path in scratchFiles) _ = DeleteScratchAsync(path);
         };
@@ -408,6 +428,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             new VideoEdit(0, loaded.Duration).Validate(loaded);
             source = loaded; fileLabel.Text = Path.GetFileName(loaded.Path);
             ShowRecordingMarkers(loaded.Path);
+            if (transcriptPanel != null) _ = transcriptPanel.LoadVideoAsync(loaded);
             fileLabel.ToolTip = L.F($"{loaded.Width} × {loaded.Height} px · {loaded.Duration:0.###} seconds");
             empty.Visibility = Visibility.Collapsed; Reset(); savedEdit = ReadEdit();
             if ((Application.Current as App)?.Controller?.Settings.VideoMuteOnOpen == true) mute.IsChecked = true;
@@ -419,6 +440,10 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
         catch (Exception ex) { ShowError(ex); }
         finally { EndOperation(cancellation); }
     }
+    /// <summary>Shows the Transcript tab, when the editor has one.</summary>
+    internal void ShowTranscriptTab() => showInspector("Transcript");
+    internal TranscriptPanel? Transcript => transcriptPanel;
+
     internal async Task LoadAndSeekAsync(string path, TimeSpan position)
     {
         if (source?.Path != path) await LoadAsync(path);
@@ -716,6 +741,7 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             else
             {
                 savedEdit = edit; status.Text = L.F($"Saved video copy: {output}"); report(L.T("Video copy saved."));
+                if (ReadAnimationOptions() == null) OfferRetimedCaptions(originalSource, edit, output);
             }
         }
         catch (OperationCanceledException) { if (!closed) status.Text = L.T("Operation canceled."); }
@@ -725,6 +751,25 @@ internal sealed class VideoEditorWindow : Window, IUnsavedWork
             if (previewOnly && !keepPreview) _ = DeleteScratchAsync(output);
             EndOperation(cancellation);
         }
+    }
+
+    /// <summary>After an MP4 export of a transcribed video, offers captions retimed to the copy and saves them next to it.</summary>
+    private void OfferRetimedCaptions(VideoInfo original, VideoEdit edit, string output)
+    {
+        if (transcripts == null || closed) return;
+        transcriptPanel?.Flush();
+        var lines = transcriptPanel?.LinesFor(original.Path) ?? transcripts.Load(original.Path)?.Lines;
+        if (lines == null || lines.Count == 0) return;
+        var retimed = CaptionFiles.Retime(lines, edit, original);
+        if (retimed.Count == 0) return;
+        if (!TranscriptPanel.Confirm(this, L.T("Save captions for the copy?"), L.T("Captions are matched to the edited video and saved next to it."), L.T("Save captions"))) return;
+        try
+        {
+            string? written = transcripts.WriteCaptionFile(output, retimed, path => TranscriptPanel.Confirm(this, L.T("Replace the caption file?"),
+                L.F($"{Path.GetFileName(path)} is already next to the video and was not written by DesktopTools. Replace it with the new transcript?"), L.T("Replace")));
+            if (written != null) status.Text += "\n" + L.F($"Captions saved: {written}");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { status.Text += "\n" + L.F($"Captions could not be saved: {ex.Message}"); }
     }
 
     private CancellationTokenSource BeginOperation(string message, bool indeterminate = false)

@@ -3,7 +3,7 @@
 ## Source and documentation
 
 - Keep build output, local release bundles, private notes, credentials and test captures out of Git. Ignore rules do not remove already tracked files; inspect the staged inventory before committing.
-- Keep all five READMEs aligned. Each uses the shared rounded hero and three screenshots from `assets/readme`. `scripts/prepare-readme-media.py` regenerates them using Python and Pillow; source media remain unchanged.
+- Keep all five READMEs aligned. Each uses the shared rounded hero and three screenshots from `assets/readme`. Regenerate the gallery with the integration harness (`--github-gallery`), then run `scripts/prepare-readme-media.py` for the three screenshots and `scripts/make-readme-hero.py` for the animated hero (Python with Pillow and numpy, plus ffmpeg); every picture is a render of the app, never a desktop capture.
 - Confirm the project version, `v<version>` tag and `docs/releases/<version>.md` agree. Record compatibility boundaries rather than presenting unperformed hardware checks as passed.
 - After making the repository public, enable private vulnerability reporting in GitHub settings. Review branch protection and Actions permissions before accepting contributions.
 
@@ -12,7 +12,8 @@
 1. Build the patched recorder backend with `./scripts/build-recorder-backend.ps1` (see `docs/recording-memory-1.2.8.md` in the repository) and set the `RecorderBackendPath` environment variable to the DLL it prints before every build, test and publish step. The **Build release** workflow uses the unpatched NuGet recorder, so a release built only by that workflow lacks the memory fix. Check that the shipped `ScreenRecorderLib.dll` has the SHA-256 the script printed and contains no local paths. Then build a test candidate from the current source with `./scripts/build-release.ps1`. It writes to ignored `App releases/<version>-preview`, preserving older bundles; move an existing preview folder before rebuilding the same version. Give the installer and portable archive to testers before publication.
 2. Run `./scripts/verify-release.ps1` to check versioned filenames, metadata and SHA-256 hashes. This is an integrity check, not a claim that the app has passed hardware acceptance.
 3. Verify installation, repair, update and uninstall in a disposable account or VM, including preservation of external media and the keep/delete data choices.
-4. Compare the final downloadable files with `SHA256SUMS.txt`, and keep the release notes aligned with the published assets. See [security checks](security-checks.md).
+4. Review every entry in `src/DesktopTools/Assets/Models/catalog.json` that is new or changed since the last release: a person opens the publisher's page at the pinned revision and checks the licence, the revision, each file's URL, size and SHA-256, and that the bundled licence text in `Assets/Models/Licenses/` matches the publisher's. Entries for models marked Unclear or Rejected in `docs/ai-models.md` must not be in the catalog. Keep the "Optional models" table in `THIRD-PARTY-NOTICES.md` in line with the catalog.
+5. Compare the final downloadable files with `SHA256SUMS.txt`, and keep the release notes aligned with the published assets. See [security checks](security-checks.md).
 
 ## GitHub publication
 

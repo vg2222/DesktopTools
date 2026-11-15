@@ -36,10 +36,27 @@ public sealed class AppSettings
     public string TranslationShortcut { get; set; } = "Ctrl+Alt+R";
     public string ScreenTextShortcut { get; set; } = "Ctrl+Alt+E";
     public string TranslationDirection { get; set; } = "en-ru";
+    /// <summary>Where optional AI models run. This update supports only "Processor" (spec section 10).</summary>
+    public string AiDevice { get; set; } = "Processor";
+    /// <summary>Where optional AI model packs are kept; empty means the default folder in local app data.</summary>
+    public string AiModelsFolder { get; set; } = "";
     public string ScreenTextLanguage { get; set; } = "en-US";
+    /// <summary>Which engine reads screen text: "Windows" (Windows OCR, the default) or "Pack" (the optional OCR pack, spec section 8).</summary>
+    /// <summary>"Auto" reads with the OCR pack once it is downloaded, else Windows OCR; "Windows" and "Pack" are explicit choices.
+    /// Stored as TextReader: the earlier OcrEngine key only existed in 1.3.0 previews, where "Windows" was the untouched default.</summary>
+    [System.Text.Json.Serialization.JsonPropertyName("TextReader")]
+    public string OcrEngine { get; set; } = "Auto";
+    /// <summary>The OCR pack script group last chosen: "latin", "cyrillic" or "chinese-japanese"; empty follows the screen text language.</summary>
+    public string OcrPackScript { get; set; } = "";
+    /// <summary>Which transcript model to use: "Fast" (Whisper base, the default) or "Accurate" (Whisper small).</summary>
+    public string TranscriptModel { get; set; } = "Fast";
+    /// <summary>Which background-removal model Image tools uses: "Standard" (the bundled U2NetP, the default) or "Quality" (the optional BiRefNet-lite pack).</summary>
+    public string BackgroundModel { get; set; } = "Standard";
+    /// <summary>The spoken language of recordings to transcribe: "auto" detects it, otherwise a Whisper language code.</summary>
+    public string TranscriptLanguage { get; set; } = "auto";
+    /// <summary>Set once the user has read the note about recording and transcribing other people.</summary>
+    public bool TranscriptNoticeAccepted { get; set; }
     /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
-    public bool ScreenshotLibraryEnabled { get; set; }
-    public int ScreenshotLibraryLimit { get; set; } = 300;
     public bool QuickWheelEnabled { get; set; } = true;
     public string QuickWheelShortcut { get; set; } = "Ctrl+Alt+Q";
     public string[] QuickWheelItems { get; set; } = QuickWheelActions.Defaults;
@@ -66,7 +83,7 @@ public sealed class AppSettings
     public bool DrawingEnabled { get; set; } = true;
     public bool CaptureEnabled { get; set; } = true;
     public string ThemePreset { get; set; } = "Classic";
-    public string PrimaryColor { get; set; } = "#2563EB";
+    public string PrimaryColor { get; set; } = "#C2378F";
     public string BackgroundColor { get; set; } = "#F3F5FA";
     public bool UseCustomBackground { get; set; }
     public bool Animations { get; set; } = true;
@@ -94,6 +111,8 @@ public sealed class AppSettings
     public bool IncludeAnnotations { get; set; } = true;
     public string CaptureOutput { get; set; } = "Clipboard";
     public string SaveDirectory { get; set; } = "";
+    /// <summary>"Date and time" (default) or "Smart": app, window title and date, see <see cref="SmartFileNames"/>.</summary>
+    public string CaptureFileNames { get; set; } = "Date and time";
     public bool? HideMainWindowFromCapture { get; set; } = false;
     public string[] VisibleCaptureFeatures { get; set; } = [];
     public bool HideControlsFromCapture { get; set; }

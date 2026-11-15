@@ -90,7 +90,7 @@ internal static class AutomationUiChecks
     {
         foreach(string theme in new[]{"Light","Dark"})foreach(bool custom in new[]{false,true})foreach(bool transparent in new[]{false,true}){
             controller.UpdateSettings(s=>{s.Theme=theme;s.UseCustomBackground=custom;s.BackgroundColor="#101827";s.Transparency=transparent;s.Animations=false;});
-            Color expected=(Color)ColorConverter.ConvertFromString(custom?"#101827":theme=="Dark"?"#060606":"#F3F5FA");
+            Color expected=(Color)ColorConverter.ConvertFromString(custom?"#101827":theme=="Dark"?"#0C0D0F":"#F3F5FA");
             Color expectedShell=custom?expected:(Color)ColorConverter.ConvertFromString(theme=="Dark"?"#D0121316":"#B3F3F5FA");
             if(Application.Current.Resources["Shell"] is not SolidColorBrush shell||shell.Color!=expectedShell)throw new Exception("Original shell palette changed");
             var window=new AutomationWindow(service);window.Show();await Task.Delay(40);window.UpdateLayout();

@@ -1,4 +1,6 @@
 {
+  "Support": "Soutenir",
+  "Support DesktopTools": "Soutenir DesktopTools",
   "{0}: {1}": "{0} : {1}",
   "{0} and {1} use the same shortcut.": "{0} et {1} utilisent le même raccourci.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0} : raccourci indisponible. {1} Vos anciens raccourcis restent inchangés.",
@@ -57,5 +59,6 @@
   "Could not hide a control popup from capture.": "Impossible de masquer une fenêtre de contrôle dans la capture.",
   "Drawing monitor": "Moniteur de dessin",
   "Switching starts a fresh annotation session.": "Le changement démarre une nouvelle session d’annotation.",
-  "PNG image|*.png": "Image PNG|*.png"
+  "PNG image|*.png": "Image PNG|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Toutes les fonctions sont gratuites. Si DesktopTools vous est utile, vous pouvez soutenir son développement."
 }

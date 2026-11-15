@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Буфер обмена и папка",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "«Буфер обмена и папка» копирует снимок и без вопросов сохраняет PNG в папку сохранения.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Сохраняется в «Изображения\\DesktopTools», пока вы не выберете папку.",
+  "Show in folder": "Показать в папке",
+  "Screenshot copied and saved": "Снимок скопирован и сохранён",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Снимок сохранён в {0}, но буфер обмена занят. ",
+  "Screenshot copied, but it could not be saved: ": "Снимок скопирован, но сохранить его не удалось: ",
+  "Screenshot could not be copied or saved: ": "Не удалось скопировать или сохранить снимок: ",
+  "The saved screenshot is no longer there.": "Сохранённого снимка там больше нет.",
+  "Could not open the folder: ": "Не удалось открыть папку: "
+}

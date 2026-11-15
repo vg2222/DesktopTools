@@ -1,4 +1,6 @@
 {
+  "Support": "Unterstützen",
+  "Support DesktopTools": "DesktopTools unterstützen",
   "{0}: {1}": "{0}: {1}",
   "{0} and {1} use the same shortcut.": "{0} und {1} verwenden dasselbe Tastenkürzel.",
   "{0}: shortcut is unavailable. {1} Your previous shortcuts are unchanged.": "{0}: Tastenkürzel nicht verfügbar. {1} Ihre bisherigen Tastenkürzel bleiben unverändert.",
@@ -57,5 +59,6 @@
   "Could not hide a control popup from capture.": "Ein Steuerungs-Popup konnte nicht von der Aufnahme ausgeschlossen werden.",
   "Drawing monitor": "Zeichenmonitor",
   "Switching starts a fresh annotation session.": "Beim Wechsel beginnt eine neue Anmerkungssitzung.",
-  "PNG image|*.png": "PNG-Bild|*.png"
+  "PNG image|*.png": "PNG-Bild|*.png",
+  "Every feature is free. If DesktopTools helps you, you can support its development.": "Alle Funktionen sind kostenlos. Wenn DesktopTools dir hilft, kannst du seine Entwicklung unterstützen."
 }

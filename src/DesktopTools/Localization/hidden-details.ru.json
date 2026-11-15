@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "Удалить скрытые сведения (место, устройство, дата, автор)",
+  "This file contains hidden details: {0}.": "Этот файл содержит скрытые сведения: {0}.",
+  "This file has no hidden details.": "В этом файле нет скрытых сведений.",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "Не удалось прочитать скрытые сведения. Отметьте флажок, чтобы сохранить копию без них.",
+  "location": "место",
+  "device": "устройство",
+  "date": "дата",
+  "author": "автор",
+  "other": "другое"
+}

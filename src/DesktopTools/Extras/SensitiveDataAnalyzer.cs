@@ -10,7 +10,18 @@ public static class SensitiveDataAnalyzer
 {
     public static async Task<IReadOnlyList<SensitiveFinding>> AnalyzeAsync(BitmapSource image, string languageTag,
         IReadOnlyCollection<string> categories, CancellationToken cancellationToken,
-        Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize = null)
+        Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize = null,
+        Func<BitmapSource, CancellationToken, Task<IReadOnlyList<System.Windows.Int32Rect>>>? detectFaces = null)
+    {
+        var findings = await AnalyzeTextAsync(image, languageTag, categories, cancellationToken, recognize);
+        // Faces are suggested only while the optional face finder is installed; a missing or damaged pack adds nothing (damage is marked).
+        var faces = await (detectFaces ?? FaceDetector.DetectIfInstalledAsync)(image, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return faces.Count == 0 ? findings : [.. findings, .. faces.Select(face => new SensitiveFinding(Guid.NewGuid(), ["face"], face, ""))];
+    }
+
+    private static async Task<IReadOnlyList<SensitiveFinding>> AnalyzeTextAsync(BitmapSource image, string languageTag,
+        IReadOnlyCollection<string> categories, CancellationToken cancellationToken, Func<BitmapSource, string, CancellationToken, Task<OcrLayout>>? recognize)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var timing = PipelineMetrics.Measure("privacy.total");
@@ -39,6 +50,19 @@ public static class SensitiveDataAnalyzer
                 cancellationToken.ThrowIfCancellationRequested();
                 layouts.Add(extra);
                 findings = SensitiveDataDetector.Merge(findings.Concat(SensitiveDataDetector.Detect(extra, categories)));
+            }
+            // With the OCR pack in use (chosen, or downloaded under the default Auto reader), its reading is added: it reads small UI text more reliably.
+            if (recognize == null && LocalOcr.PackEngineChosen)
+            {
+                try
+                {
+                    OcrLayout pack;
+                    using (PipelineMetrics.Measure("privacy.ocr-pack")) pack = await OcrPackEngine.RecognizeWordsAsync(image, LocalOcr.PreferredScript, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    layouts.Add(pack);
+                    findings = SensitiveDataDetector.Merge(findings.Concat(SensitiveDataDetector.Detect(pack, categories)));
+                }
+                catch (OcrPackUnavailableException) { }
             }
             if (layouts.Count > 1 && categories.Any(c => c is "credential" or "username" or "account" or "serial"))
             {

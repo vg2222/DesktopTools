@@ -28,6 +28,17 @@ internal sealed partial class MainWindow : Window
     private readonly StackPanel page = new();
 
     private readonly Dictionary<string, Button> navigation = [];
+    private sealed class NavMark(Border fill, Border bar) { public readonly Border Fill = fill, Bar = bar; public bool On; }
+    private readonly Dictionary<string, NavMark> navMarks = [];
+    private void MarkNavigation(string selected)
+    {
+        foreach (var (name, mark) in navMarks)
+        {
+            bool on = name == selected;
+            if (mark.On == on) continue;
+            mark.On = on; Motion.Select(mark.Fill, mark.Bar, on, IsLoaded);
+        }
+    }
 
     private readonly ScrollViewer scroller;
 
@@ -70,19 +81,31 @@ internal sealed partial class MainWindow : Window
 
         var navItems = new StackPanel(); var navScroll = new ScrollViewer { Content = navItems, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }; SmoothScroll.Enable(navScroll); sidebar.Children.Add(navScroll);
 
-        foreach (var item in new[] { "Home", "News", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Diagnostics", "Help", "About" })
+        foreach (var item in new[] { "Home", "News", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "About" })
 
         {
 
             var content = new Grid(); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.Children.Add(Ui.Icon(NavigationIcon(item), 18)); var label = Ui.Text(L.T(item), 13, true); label.FontWeight = FontWeights.Medium; label.Margin = new Thickness(12, 0, 0, 0); Grid.SetColumn(label, 1); content.Children.Add(label);
             if (item == "News") { content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); var badge = new Border { Width = 7, Height = 7, CornerRadius = new CornerRadius(4), VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed }; badge.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumn(badge, 2); content.Children.Add(badge); newsBadge = badge; }
 
-            var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
+            // Selection is drawn by the item itself so it can animate: a fill behind the row and an accent bar on its left edge.
+            var fill = new Border { CornerRadius = new CornerRadius(10), Margin = new Thickness(-14, -7, -14, -7), IsHitTestVisible = false, Opacity = 0 }; fill.SetResourceReference(Border.BackgroundProperty, "Selected"); Grid.SetColumnSpan(fill, 3); content.Children.Insert(0, fill);
+            var bar = new Border { Width = 3, Height = 18, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(-12, 0, 0, 0), IsHitTestVisible = false, RenderTransform = new ScaleTransform(1, 0) }; bar.SetResourceReference(Border.BackgroundProperty, "Accent"); Grid.SetColumnSpan(bar, 3); content.Children.Add(bar);
+            navMarks[item] = new NavMark(fill, bar);
+            var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.Background = Brushes.Transparent; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
 
-            navigation[item] = b; (item is "Shortcuts" or "Settings" or "Diagnostics" or "Help" or "About" ? footer : navItems).Children.Add(b);
+            navigation[item] = b; (item is "Shortcuts" or "Settings" or "About" ? footer : navItems).Children.Add(b);
 
         }
 
+        var support = CreateSupportButton("Support", ButtonKind.Ghost);
+        support.Tag = "sidebar-support";
+        support.HorizontalContentAlignment = HorizontalAlignment.Left;
+        support.MinHeight = 38;
+        support.Padding = new Thickness(14, 7, 14, 7);
+        support.Margin = new Thickness(0, 0, 0, 4);
+        Ui.Tip(support, L.T("Support DesktopTools"));
+        footer.Children.Add(support);
         AddUpdateIndicator(footer);
         controller.NewsChanged += OnNewsChanged;
         RefreshNewsUi();
@@ -133,6 +156,7 @@ internal sealed partial class MainWindow : Window
     {
 
         if (destination == "Present") destination = "Presentation tools";
+        if (destination == "Diagnostics") { settingsTab = "Diagnostics"; destination = "Settings"; }
 
         double previousOffset = scroller.VerticalOffset;
 
@@ -147,13 +171,14 @@ internal sealed partial class MainWindow : Window
 
             currentPage = destination; stateRefreshers.Clear(); page.Children.Clear(); if (pageChanged) SmoothScroll.ScrollToOffset(scroller, 0);
 
-            foreach (var (name, button) in navigation) { if (button.Content is Grid navGrid && navGrid.Children.OfType<TextBlock>().FirstOrDefault() is { } navLabel) navLabel.Text = L.T(name); if (name == destination) button.SetResourceReference(BackgroundProperty, "Selected"); else button.Background = Brushes.Transparent; }
+            foreach (var (name, button) in navigation) { if (button.Content is Grid navGrid && navGrid.Children.OfType<TextBlock>().FirstOrDefault() is { } navLabel) navLabel.Text = L.T(name); }
+            MarkNavigation(AidNames.Contains(destination) || destination is "Laser pointer" or "Cursor spotlight" or "Freeze frame" ? "Presentation tools" : destination);
 
             if (AidNames.Contains(destination))
 
             {
 
-                navigation["Presentation tools"].SetResourceReference(BackgroundProperty, "Selected");
+                
 
                 var back = Ui.Button(L.T("‹  Presentation tools"), () => Navigate("Presentation tools")); back.HorizontalAlignment = HorizontalAlignment.Left; back.Margin = new Thickness(0, 0, 0, 18); page.Children.Add(back);
 
@@ -165,7 +190,7 @@ internal sealed partial class MainWindow : Window
 
             {
 
-                navigation["Presentation tools"].SetResourceReference(BackgroundProperty, "Selected");
+                
 
                 var back = Ui.Button(L.T("‹  Presentation tools"), () => Navigate("Presentation tools")); back.HorizontalAlignment = HorizontalAlignment.Left; back.Margin = new Thickness(0, 0, 0, 18); page.Children.Add(back);
 
@@ -439,9 +464,11 @@ internal sealed partial class MainWindow : Window
 
             Ui.Row(L.T("Include annotations"),L.T("Composite your current drawing into the screenshot."), Ui.Toggle(s.IncludeAnnotations, v => Change(x => x.IncludeAnnotations = v))),
 
-            Ui.Row(L.T("After capture"), null, Ui.Choice(new[] { "Clipboard", "Save" }, s.CaptureOutput, v => Change(x => x.CaptureOutput = v))),
+            Ui.Row(L.T("After capture"), L.T("Clipboard and folder copies the screenshot and saves a PNG to the save location without asking."), Ui.Choice(new[] { "Clipboard", "Save", CaptureAutoSave.Mode }, s.CaptureOutput, v => { Change(x => x.CaptureOutput = v); Navigate(currentPage); })),
 
-            Ui.Row(L.T("Save location"),L.T(string.IsNullOrEmpty(s.SaveDirectory) ? "Chosen when you save your first screenshot." : s.SaveDirectory), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })));
+            Ui.Row(L.T("Save location"), !string.IsNullOrEmpty(s.SaveDirectory) ? s.SaveDirectory : L.T(s.CaptureOutput == CaptureAutoSave.Mode ? "Saved to Pictures\\DesktopTools until you choose a folder." : "Chosen when you save your first screenshot."), Ui.Button(L.T("Choose folder"), () => { var dialog = new Microsoft.Win32.OpenFolderDialog(); if (dialog.ShowDialog(this) == true) Change(x => x.SaveDirectory = dialog.FolderName); Navigate(currentPage); })),
+
+            Ui.Row(L.T("File names"), L.T("Smart names use the app and window title of what you captured, for example \"Chrome – Invoice 1042 – 2026-11-11 09-05-07\". Window titles can contain document names or message subjects."), Ui.Choice(new[] { "Date and time", AppController.SmartFileNamesChoice }, s.CaptureFileNames, v => Change(x => x.CaptureFileNames = v))));
 
         AutoRedactSettings();
         Group(L.T("Latest screenshot"), Ui.Row(L.T("Pin above applications"),L.T("Resize it or adjust its opacity."), Ui.Button(L.T("Pin screenshot"), controller.PinLast)), Ui.Row(L.T("Edit screenshot"),L.T("Annotate, crop, or cover private details before sharing."), Ui.Button(L.T("Open editor"), controller.RedactLast)), Ui.Row(L.T("Save a copy"), null, Ui.Button(L.T("Save PNG"), controller.SaveLast)));
@@ -458,9 +485,9 @@ internal sealed partial class MainWindow : Window
 
             var button = Ui.Button(L.T("Open screenshot"), () => controller.OpenRecentCapture(entry.Image));
 
-            var preview = new Image { Source = entry.Image, Width = 72, Height = 44, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 12, 0) };
+            var preview = new Image { Source = entry.Thumbnail, Width = 72, Height = 44, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 12, 0) };
 
-            var row = Ui.Row(L.T(entry.CreatedAt.ToLocalTime().ToString("HH:mm:ss")),L.F($"{entry.Image.PixelWidth} × {entry.Image.PixelHeight}"), button);
+            var row = Ui.Row(L.T(entry.CreatedAt.ToLocalTime().ToString("HH:mm:ss")),L.F($"{entry.PixelWidth} × {entry.PixelHeight}"), button);
 
             var layout = new DockPanel(); DockPanel.SetDock(preview, Dock.Left); layout.Children.Add(preview); layout.Children.Add(row); recent.Children.Add(layout);
 
@@ -471,23 +498,7 @@ internal sealed partial class MainWindow : Window
         else recent.Children.Add(Ui.Button(L.T("Clear recent screenshots"), () => { controller.CaptureHistory.Clear(); Navigate("Capture"); }));
 
         Group(L.T("Recent screenshots"), recent);
-        LibrarySettingsGroup();
 
-    }
-
-    /// <summary>The opt-in screenshot library switch, size limit and the Search / Clear buttons; shown on the Capture page and on the library tool's own page.</summary>
-    private void LibrarySettingsGroup()
-    {
-        var s = controller.Settings;
-        var libraryLimit = Ui.Choice(new[] { "100", "300", "1000" }, s.ScreenshotLibraryLimit.ToString(), v => Change(x => x.ScreenshotLibraryLimit = int.Parse(v)), translate: false);
-        libraryLimit.MinWidth = 100;
-        var openLibrary = Ui.ActionButton("Search", L.T("Search screenshots"), controller.OpenScreenshotLibrary);
-        var clearLibrary = Ui.Button(L.T("Clear library"), () => { if (ConfirmationDialog.Ask(this, L.T("Clear library"), L.T("Delete every screenshot and its searchable text from the library? Files you saved elsewhere are not touched."), L.T("Clear library"))) controller.Library.Clear(); }, ButtonKind.Danger);
-        var libraryActions = new WrapPanel(); libraryActions.Children.Add(openLibrary); libraryActions.Children.Add(clearLibrary);
-        Group(L.T("Screenshot library"),
-            Ui.Row(L.T("Keep a searchable library"), L.T("Stores finished screenshots and the text found in them on this PC only, so you can search for something you saw last week. Off by default."), Ui.Toggle(s.ScreenshotLibraryEnabled, v => Change(x => x.ScreenshotLibraryEnabled = v))),
-            Ui.Row(L.T("Screenshots to keep"), L.T("The oldest are removed when the library is full."), libraryLimit),
-            libraryActions);
     }
 
     private void Present()
@@ -655,15 +666,16 @@ internal sealed partial class MainWindow : Window
         FeatureSettingsSearch();
 
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 18) };
-        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates" })
+        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates", AiModelsTab, "Diagnostics" })
         {
             var tab = Ui.Button(L.T(name), () => { if (settingsTab == name) return; settingsTab = name; Navigate("Settings"); SmoothScroll.ScrollToOffset(scroller, 0); Motion.Transition(page); });
-            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
+            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", AiModelsTab => "Star", "Diagnostics" => "Check", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
             tab.Margin = new Thickness(0, 0, 7, 7);
             if (name == settingsTab) { tab.SetResourceReference(BackgroundProperty, "Selected"); tab.SetResourceReference(BorderBrushProperty, "Accent"); tab.BorderThickness = new Thickness(1); }
             tabs.Children.Add(tab);
         }
         page.Children.Add(tabs);
+        if (settingsTab != AiModelsTab) aiModelsStatus = null;
         if (settingsTab == "Behavior") Group(L.T("Language"), Ui.Row(L.T("Interface language"), L.T("DesktopTools restarts automatically to apply the new language."),
             Ui.Choice(L.LanguageNames, L.LanguageNames[Array.IndexOf(L.Languages, s.Language)], async name =>
             {
@@ -679,6 +691,14 @@ internal sealed partial class MainWindow : Window
                 Ui.Row(L.T("Use custom background"), null, Ui.Toggle(s.UseCustomBackground, v => Change(x => x.UseCustomBackground = v))));
             Group(L.T("Effects"), Ui.Row(L.T("Transparency"),L.T("Use opaque surfaces when disabled."), Ui.Toggle(s.Transparency, v => Change(x => x.Transparency = v))),
                 Ui.Row(L.T("Animations"),L.T("Also respects the Windows animation preference."), Ui.Toggle(s.Animations, v => Change(x => x.Animations = v))));
+        }
+        else if (settingsTab == "Diagnostics")
+        {
+            Diagnostics();
+        }
+        else if (settingsTab == AiModelsTab)
+        {
+            AiModelsSettings();
         }
         else if (settingsTab == "Updates")
         {
@@ -722,10 +742,10 @@ internal sealed partial class MainWindow : Window
         {
             Group(L.T("App behavior"), Ui.Row(L.T("Start at login"),L.T("Launch quietly in the system tray."), Ui.Toggle(s.StartAtLogin, v => Change(x => x.StartAtLogin = v))), Ui.Row(L.T("Active monitor"),L.T("Changing this ends the current drawing session."), Ui.Choice(new[] { "Cursor", "Primary" }, s.MonitorMode, v => Change(x => x.MonitorMode = v))), Ui.Row(L.T("Close to system tray"),L.T("Use Quit in the tray menu to exit completely."), Ui.Text(L.T("Always"), 13, muted: true)));
             Group(L.T("Preferences"),
-                Ui.Row(L.T("Restore defaults"), L.T("Resets app settings and shortcuts."), Ui.Button(L.T("Reset preferences"), () => { if (!ConfirmationDialog.Ask(this, L.T("Reset preferences"), L.T("Reset all preferences? Your current drawing will be cleared."), L.T("Reset preferences"))) return; Change(x => { var defaults = new AppSettings(); foreach (var p in typeof(AppSettings).GetProperties().Where(p => p.CanWrite)) p.SetValue(x, p.GetValue(defaults)); }); Navigate("Settings"); })),
+                Ui.Row(L.T("Restore defaults"), L.T("Resets app settings and shortcuts."), Ui.Button(L.T("Reset preferences"), () => { if (!ConfirmationDialog.Ask(this, L.T("Reset preferences"), L.T("Reset all preferences? Your current drawing will be cleared."), L.T("Reset preferences"))) return; Change(x => { var defaults = new AppSettings(); foreach (var p in typeof(AppSettings).GetProperties().Where(p => p.CanWrite && p.Name != nameof(AppSettings.AiModelsFolder))) p.SetValue(x, p.GetValue(defaults)); }); Navigate("Settings"); })),
                 Ui.Row(L.T("Export settings"), L.T("Saves settings, shortcuts, profiles, workflows and notes to one zip file you can open on another PC. Nothing is uploaded."), Ui.Button(L.T("Export…"), () => controller.RequestSettingsExport(this))),
                 Ui.Row(L.T("Import settings"), L.T("Replaces your settings, profiles, workflows and notes with a file made by Export settings, then restarts."), Ui.Button(L.T("Import…"), () => controller.RequestSettingsImport(this))),
-                Ui.Row(L.T("Reset all app data"), L.T("Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them."), Ui.Button(L.T("Delete app data"), () => controller.RequestDataReset(this))));
+                Ui.Row(L.T("Reset all app data"), L.T("Deletes local settings, profiles and notes, then restarts DesktopTools with first-run setup. Exported files stay where you saved them.") + " " + L.T("Downloaded AI models and translation packs are deleted too."), Ui.Button(L.T("Delete app data"), () => controller.RequestDataReset(this))));
         }
     }
     private void PickAppearance(bool background)

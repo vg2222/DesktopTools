@@ -118,6 +118,14 @@ internal static class Program
             restored.TranslationDirection = "invalid"; restored.TranslationShortcut = ""; restored.ScreenTextShortcut = ""; SettingsStore.Validate(restored);
             Check(restored.TranslationDirection == "en-ru" && restored.TranslationShortcut == "Ctrl+Alt+R" && restored.ScreenTextShortcut == "Ctrl+Alt+E");
         }));
+        Test("AI device defaults to the processor and recovers unknown values", () => InStore((store, path) =>
+        {
+            var settings = store.Load(); Check(settings.AiDevice == "Processor", "Default AI device");
+            store.Save(settings); Check(new SettingsStore(path).Load().AiDevice == "Processor", "AI device did not persist");
+            settings.AiDevice = "GPU 0"; SettingsStore.Validate(settings); Check(settings.AiDevice == "Processor", "Unsupported device kept");
+            settings.AiDevice = null!; SettingsStore.Validate(settings); Check(settings.AiDevice == "Processor", "Null device kept");
+            settings.AiDevice = "GraphicsCard"; SettingsStore.Validate(settings); Check(settings.AiDevice == "GraphicsCard", "Graphics card choice lost");
+        }));
         Test("Sharing blackout is opt-in and persists", () => InStore((store, path) =>
         {
             var settings = store.Load(); Check(!settings.BlackoutSharingOnly);
@@ -154,7 +162,7 @@ internal static class Program
         Test("Diagnostic report hides personal details", DiagnosticReportTests.Run);
         Test("Portable data export, validation and import", PortableDataTests.Run);
         Test("Screenshot beautifier adds background, corners and shadow", BeautifierTests.Run);
-        Test("Screenshot library searches, prunes, recovers and clears", ScreenshotLibraryTests.Run);
+        Test("Capture auto-save chooses a folder, never reuses a name and persists", CaptureAutoSaveTests.Run);
         Test("Animated GIF encoder writes valid, compact animations", GifEncoderTests.Run);
         Test("Animated WebP container wraps lossy frames", AnimatedWebpTests.Run);
         Test("History restores erased objects and undoable clear", () =>
@@ -198,6 +206,24 @@ internal static class Program
         DrawingBindingTests.Run(Test, Check);
         RenderingTests.Run(Test, Check);
         Test("Smart region chooses useful regions under the pointer", SmartRegionDetectorTests.Run);
+        Test("Model catalog parses and rejects unsafe entries", ModelCatalogTests.Run);
+        Test("Model consent records persist, expire on change and recover", ModelConsentTests.Run);
+        Test("Smart file names stay valid, drop sensitive parts and never overwrite", SmartFileNamesTests.Run);
+        Test("OCR pack pipeline, catalog entries and engine settings", OcrPackPipelineTests.Run);
+        Test("Caption files format, parse and follow trims and cuts", CaptionFilesTests.Run);
+        Test("Whisper decoding rules, features, segments and vocabulary", WhisperDecodingTests.Run);
+        Test("Speech packs list exactly the reviewed Whisper files", SpeechPackCatalogTests.Run);
+        Test("Transcript settings fall back to known values", SpeechPackCatalogTests.Settings);
+        Test("ONNX model keeps only the named graph outputs", OnnxModelEditTests.Run);
+        Test("Translation beam search finds better whole sequences and matches argmax with one beam", TranslationBeamSearchTests.Run);
+        Test("Background quality pack lists exactly the reviewed BiRefNet-lite file", BackgroundQualityTests.Catalog);
+        Test("Background model setting falls back to the bundled model", BackgroundQualityTests.Settings);
+        Test("Background mask upsamples the model mask like ApplyMask", BackgroundMaskTests.FromModel);
+        Test("Background touch-up brush paints a soft round stroke and clips", BackgroundMaskTests.Paint);
+        Test("Background mask composes source colour with the painted alpha", BackgroundMaskTests.Compose);
+        Test("Background mask clone is independent", BackgroundMaskTests.Clone);
+        Test("YuNet outputs decode to face boxes with threshold and bad-value handling", YuNetDecoderTests.Decode);
+        Test("YuNet non-maximum suppression keeps the best of overlapping faces", YuNetDecoderTests.Nms);
         Console.WriteLine($"{total - failures}/{total} tests passed");
         return failures == 0 ? 0 : 1;
 

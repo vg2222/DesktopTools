@@ -1,0 +1,12 @@
+{
+  "Clipboard and folder": "Zwischenablage und Ordner",
+  "Clipboard and folder copies the screenshot and saves a PNG to the save location without asking.": "„Zwischenablage und Ordner“ kopiert den Screenshot und speichert ohne Nachfrage eine PNG-Datei am Speicherort.",
+  "Saved to Pictures\\DesktopTools until you choose a folder.": "Wird in Bilder\\DesktopTools gespeichert, bis Sie einen Ordner wählen.",
+  "Show in folder": "Im Ordner anzeigen",
+  "Screenshot copied and saved": "Screenshot kopiert und gespeichert",
+  "Screenshot saved to {0}, but the clipboard is busy. ": "Screenshot in {0} gespeichert, aber die Zwischenablage ist belegt. ",
+  "Screenshot copied, but it could not be saved: ": "Screenshot kopiert, konnte aber nicht gespeichert werden: ",
+  "Screenshot could not be copied or saved: ": "Screenshot konnte weder kopiert noch gespeichert werden: ",
+  "The saved screenshot is no longer there.": "Der gespeicherte Screenshot ist nicht mehr vorhanden.",
+  "Could not open the folder: ": "Ordner konnte nicht geöffnet werden: "
+}

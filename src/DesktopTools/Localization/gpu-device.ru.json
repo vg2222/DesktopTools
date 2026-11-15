@@ -1,0 +1,7 @@
+{
+  "Graphics card": "Видеокарта",
+  "The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it.": "Видеокарта не смогла запустить модель ИИ, поэтому DesktopTools использует процессор до перезапуска.",
+  "Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.": "Где работают модели ИИ. Для видеокарты нужен DirectML 1.15 или новее, он входит в актуальные обновления Windows 11.",
+  "The graphics card could not run a model, so the processor is used until DesktopTools restarts.": "Видеокарта не смогла запустить модель, поэтому до перезапуска DesktopTools используется процессор.",
+  "The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.": "Процессор работает везде. Видеокарта намного ускоряет поиск текста и распознавание речи, но использует больше памяти, включая видеопамять. Остальные модели работают на процессоре."
+}

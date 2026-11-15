@@ -41,7 +41,7 @@ assert.equal(image.readUInt32BE(20), 630, 'PNG height must match metadata');
 assert.ok(image.length < 5_000_000, 'Preview should be compact enough for link crawlers');
 
 const sitemap = fs.readFileSync(path.join(website, 'sitemap.xml'), 'utf8');
-assert.deepEqual([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]), [canonical], 'Sitemap should list only the canonical page');
+assert.deepEqual([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]), [canonical, canonical + 'support/'], 'Sitemap should list both canonical pages');
 
 const jsonLd = html.match(/<script\s+type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)?.[1];
 assert.ok(jsonLd, 'SoftwareApplication structured data is missing');
@@ -54,3 +54,8 @@ assert.equal(app.offers?.price, 0, 'Free software must not be represented as pai
 assert.ok(!('aggregateRating' in app) && !('review' in app), 'Do not fabricate ratings or reviews');
 
 console.log('Website SEO and social preview checks passed.');
+
+const supportHtml = fs.readFileSync(path.join(website, 'support/index.html'), 'utf8');
+assert.ok(supportHtml.includes('property="og:url" content="' + baseUrl + 'support/"'));
+assert.ok(supportHtml.includes('property="og:image" content="' + imageUrl + '"'));
+assert.ok(supportHtml.includes('name="twitter:card" content="summary_large_image"'));

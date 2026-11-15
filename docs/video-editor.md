@@ -6,6 +6,19 @@ The crop expander shows handles over the original frame; numeric fields remain a
 
 This is one source clip with at most one removed section, not a multitrack timeline. No recording, transitions, background removal or audio mixing is included. The original is protected even when another path is a hard link to it. Existing destinations are replaced only after successful encoding. Cancel and window close request cancellation; media and temporary preview files are released. The UI never starts playback automatically. Feature disable checks unsaved edits before closing the editor.
 
+## Transcript
+
+The **Transcript** tab turns speech in the open video into timed lines on this PC. It uses an optional speech model that you download once from Settings → AI models or from the tab itself (see [Optional AI models](ai-models.md)): **Fast** (Whisper base, about 292 MB) or **Accurate** (Whisper small, about 969 MB, slower, fewer mistakes). Choose the model and the **Spoken language**, or leave **Automatic** to detect it, then press **Transcribe**. The first time, a notice says that recording and transcribing other people can require their consent; DesktopTools never transcribes on its own.
+
+- Audio is decoded from the file with Windows Media Foundation and processed in 30-second windows; progress shows how much of the recording is done, and **Cancel** stops it. Quiet stretches are skipped to reduce invented text. A video without an audio track is reported as such. Nothing is sent anywhere.
+- Each line shows its start time; choose the time to move the playhead there. The search box shows only matching lines. Edit a line's text to correct it; edits change only the transcript, never the video. Transcribing again asks first, because it replaces the transcript and your corrections.
+- When transcription finishes, `<video name>.srt` is written next to the video so players pick it up. An `.srt` that DesktopTools did not write is replaced only after you confirm; if you decline, the transcript stays in DesktopTools only. **Save captions** writes SubRip (`.srt`), WebVTT (`.vtt`) or plain text (`.txt`) wherever you choose.
+- The working transcript and your corrections are kept in `%LOCALAPPDATA%\DesktopTools\transcripts`, keyed to the video file. If the video changes, the old transcript is no longer shown. **Reset all app data** removes this folder.
+- After **Export MP4** of a transcribed video, the editor offers captions for the copy, retimed to the trim and removed section, and saves them next to the exported file.
+- Speech models mishear words, names and numbers and can invent text during silence, music or noise. Check the transcript before you rely on it. Accuracy was measured only in English and Russian.
+
+The screen recorder's saved-recording notice has a **Transcribe** button that opens the recording here with this tab selected.
+
 ## Windows backend and limits
 
 The editor uses the shared native glass frame with a solid fallback when transparency is disabled or unavailable. The video stage stays opaque so glass does not alter the displayed frame.
@@ -30,6 +43,6 @@ Setup and a guide are offered on first entry and can be repeated from Help or Se
 
 Run the integration harness with `--video-only` on Windows. It generates its own color/pattern videos and PCM tone; it does not play audio. Checks cover source metadata, precise cut duration, kept segment colors, cropped clockwise pixel orientation, output dimensions, audio preservation/removal, original hash/hard-link protection, cancellation before/during encoding, destination replacement, invalid input and scratch cleanup.
 
-`--video-ui` constructs the editor in all five languages and both themes, creates an edited preview, checks its duration, changes an edit to invalidate it, and checks disable/close cleanup. Renders are under `artifacts/integration/video-ui-*.png`. Test results do not establish universal codec support. Long clips, HDR/color metadata, phone rotation metadata, variable frame rate and subjective audio synchronization need broader real-world compatibility testing before a public release.
+`--video-ui` constructs the editor in the languages enumerated by that check and both themes, creates an edited preview, checks its duration, changes an edit to invalidate it, and checks disable/close cleanup. Renders are under `artifacts/integration/video-ui-*.png`. Test results do not establish universal codec support. Long clips, HDR/color metadata, phone rotation metadata, variable frame rate and subjective audio synchronization need broader real-world compatibility testing before a public release.
 
 References: [Microsoft media composition guide](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/media-compositions-and-editing), [video transform API](https://learn.microsoft.com/en-us/uwp/api/windows.media.effects.videotransformeffectdefinition?view=winrt-26100).

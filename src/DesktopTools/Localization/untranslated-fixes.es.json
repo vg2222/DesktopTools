@@ -1,0 +1,11 @@
+{
+  "Window pinned above other windows.": "Ventana fijada sobre las demás ventanas.",
+  "Window unpinned.": "Ventana desfijada.",
+  "Annotation opacity": "Opacidad de la anotación",
+  "Clear": "Borrar",
+  "Apply": "Aplicar",
+  "Availability": "Disponibilidad",
+  "Invalid shortcut": "Atajo no válido",
+  "Another DesktopTools action uses this shortcut.": "Otra acción de DesktopTools usa este atajo.",
+  "Windows has no available hotkey IDs.": "Windows no tiene identificadores de atajo disponibles."
+}

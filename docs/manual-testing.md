@@ -23,6 +23,7 @@ Record Windows build, DesktopTools build, monitor resolutions/scales and the obs
 4. Disconnect/change resolution of the active monitor while drawing and selecting. Expect safe dismissal and no invisible input blocker. Next activation must use current geometry.
 5. Open tooltips/popovers while requesting capture exclusion. Test both enabled and disabled exclusion and manual hide-palette fallback.
 6. Enable Smart Region Capture and hover over a window or dialog with screen freeze on; the suggested border must follow the saved frame even if the live window moves. Turn freeze off and hover over a panel, image and browser video to check inner-region suggestions. One click must capture the highlighted pixels and leave no selector overlay in the output. Drag a custom rectangle when a suggestion is wrong; turn Smart Region Capture off and confirm the original drag selection. Repeat at mixed DPI and negative monitor origins, and cancel with Escape. When selecting from an older drawing-session freeze, confirm the selector uses manual drag rather than stale window positions.
+7. Memory over repeated screenshots: turn animations off in Settings, note DesktopTools' memory in Task Manager (Details tab, Memory (private working set)), then take 50 region screenshots by hand, about one every two seconds, letting some notices expire, replacing others with the next capture, and taking a few full-screen captures back to back by shortcut so a notice can close before it appears. Note memory right after the last capture and again after 5 idle minutes. Repeat with animations on. Expect growth to level off near the capture history (8 screenshots or 64 MB), not to rise with every screenshot; record the monitor resolution and scale.
 
 ## Presentation, redaction and profiles
 
@@ -183,7 +184,6 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 
 - Recording: record a display for one minute at 144 FPS with hardware acceleration on and again off. The first file should play smoothly at the screen's rate with no missing or garbled frames (decode it with `scripts/analyze-recording-probe.py` for an objective check); the second is limited to 30 FPS by design. Record a single window: about 48 FPS is expected. Stop, pause and resume while a game or video plays. **Not tested** by the automated runs: hour-long recordings, other GPUs, mixed-DPI displays, remote-viewer output.
 - GIF and animated WebP: open a short clip in the video editor, choose Save as → GIF animation and Animated WebP, change frame rate and width and watch the size estimate. Export, open the result in a browser and an image viewer and check duration, loop and colors. Existing files must not be overwritten and the source video must not change. Very long or large clips should show the size warning instead of exhausting memory.
-- Screenshot library: enable it in Capture settings, take screenshots containing known words, search for them, open and copy a result, then use Clear library and confirm every entry and its text are gone while saved screenshot files stay. With the library off nothing must be indexed.
 - Screenshot style: in the editor open the Style tab, turn the presentation background on, change background, padding, corners, shadow and window bar and check that Copy and Save include them while the original image is unchanged.
 - Settings archive: use Export… on the Settings page, change something, then Import… the archive and confirm settings, shortcuts, profiles, workflows and notes return after the restart and that a backup of the replaced data exists. A damaged or foreign zip must be rejected without changing data.
 - Diagnostics: Copy report and paste it somewhere private; the user name, computer name, paths, e-mail and IP addresses must be replaced.
@@ -193,7 +193,6 @@ Capture the whole browser with navigation rows whose vertical positions fall bet
 ## Editor polish, library entry and OCR (1.2.8)
 
 - Screenshot editor: in both themes the Draw, Style and Hide data tabs show an icon above a readable label. Turn on the presentation background in Style: the canvas itself shows the gradient, rounded corners, shadow and window bar while you draw. Draw a long pen stroke on a 4K screenshot; it must follow the pointer without lag. Press Check screenshot: a rainbow rim runs around the picture and a light bar sweeps over it until the check is done (a still rim with animations off). The view-original button switches between a picture icon and a pen icon.
-- Screenshot library: a Screenshot library card sits under Capture tools on Home and opens the search even before the library is enabled; its settings page has the switch, limit and Clear library.
 - OCR: scan or extract text from a dark-theme window with small text, from a page that mixes two alphabets, and from a plain light page; compare with the previous release. Check Check screenshot on a dark-theme screenshot that contains an e-mail address and a key.
 
 ## Text view and Image tools editing (1.2.8)
@@ -204,7 +203,7 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 2. Put a web address, an e-mail address and a phone number in the region. They should be underlined; Ctrl+click opens them (use a harmless address), the context menu copies the link. Press F2 on a misread word, correct it, copy again: the correction is used. Close and reopen: the picture is unchanged.
 3. Select a region with no text and a very large region: expect "No text found" and the existing crop guidance, no frozen window. Close the window while it is still reading.
 4. With translation enabled, select words and press Translate: Text tools opens with exactly that text. Disable translation: the button disappears.
-5. Screenshot editor: draw something, More menu ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
+5. Screenshot editor: draw something, toolbar ▸ **Extract text**. The text view should include the drawing in the picture; **Back to editing** must bring back the tools, the drawing and Undo history. Repeat with layout A and B.
 6. Image tools: open a PNG. The tabs Resize, Crop, Output, Background and **Annotate** sit in a row under the title. In Annotate draw, then **Check screenshot** and **Hide all found**; switch to Crop: the drawing is baked in as one step, Undo removes it. While in Annotate, the title-bar Undo/Redo are disabled; closing the window with unbaked drawings asks to save.
 7. The title-bar picture button changes to a pen while the original is shown and back again; hover text and screen-reader name say "Show original" / "Show edited". Press it while in Annotate: the drawing is baked and the original is shown on the normal canvas.
 8. Image tools **Extract text** (the text icon next to it): the workspace is replaced by the text view, title-bar Undo/Redo/Original are disabled, **Back to editing** returns to the same tab.
@@ -218,3 +217,84 @@ On the MSI monitor (and once on a monitor with a different scale, e.g. 150 %), i
 3. Screenshot real pages with small text (a web shop button such as "Claim offer", a settings dialog, a spreadsheet, a code editor, a dark and a light theme, 100% and 150% scale). Compare the text view with what you see. Note misreadings of 9-10 pixel text separately; it is the known weak spot.
 4. With Russian as the OCR language, scan a page that mixes Russian and English; install another Windows language with a dictionary (for example German) and repeat. The second alphabet should be read only when the first result has many unknown words.
 
+## Auto-save, selection overlay, editor shortcuts and still-screen recording
+
+- [ ] Settings → Capture → After capture → **Clipboard and folder**: a capture is on the clipboard and a new `DesktopTools-<date>-<time>.png` is in the save location, with no dialog. Before a folder is chosen it goes to `Pictures\DesktopTools`. Two captures within one second give two files. The notice offers **Show in folder**.
+- [ ] With the save location on a removed drive or a read-only folder, the capture is still copied and the notice says it could not be saved.
+- [ ] With Auto Redact review on, the review window still opens first and nothing is saved until Copy or Save there.
+- [ ] Region selection with Freeze screen on: the loupe follows the pointer and shows exact pixels, the size badge matches the saved PNG's dimensions, and both stay on screen at every edge and corner, on each monitor and scale. With Freeze off (live screen) a smart suggestion can still be clicked.
+- [ ] Screenshot editor: V P H A R O T B E C choose tools, Delete removes the selected annotation, Ctrl+C copies, Ctrl+S saves, Ctrl+Shift+Z redoes; none of these fire while typing text or in a text field.
+- [ ] Record a mostly still desktop for a minute with a few clicks at the end, using the patched backend: playback has no freezes and includes the ending. Repeat with a window source and with a game.
+
+## Interface refresh (1.3.0)
+
+- [ ] Screenshot editor: **Extract text** is a labelled toolbar button beside **Check screenshot**; it opens the text view and Back to editing returns. It is not in the More menu, and Image tools still shows only its own Extract text button.
+- [ ] Settings pages, tool settings and utility windows: every row has an icon that fits its title, in English and in at least one other language; the icon lights up under the pointer. Long titles and descriptions still wrap without overlapping the control at the minimum window width.
+- [ ] Plain text buttons (Cancel, Save copy, Choose folder, Check for updates and similar) show a matching icon; buttons that already had their own icon show only one.
+- [ ] Context menus, the tray menu and drop-down lists unfold when opened; with Animations off, or Windows animations off, they appear at once and nothing is left half-transparent.
+- [ ] Opening any tool window: the content rises into place once and ends fully opaque and in its final position.
+- [ ] In a non-English language, pin and unpin a window, trigger a shortcut conflict, and open the translation picker: the notices and language names are translated.
+
+## Optional AI models (1.3.0)
+
+Use the shipped catalog with disposable test media and an isolated test data folder. These are cases to run, not a record of passing tests; record the date, Windows build, hardware, display scaling and result. Any case not run is **Not tested**.
+
+- [ ] Settings → AI models: each entry shows name, purpose, licence, state and download size; **Run on** offers only Processor; the short warning is under the list. Check English and one other language, light and dark.
+- [ ] Download with the network off: the consent window opens, and after accepting, a clear message names the host; nothing appears installed and no `.download-*` folder stays in `%LOCALAPPDATA%\DesktopTools\Models`.
+- [ ] Start a download, quit DesktopTools from the tray part-way, restart: the pack is **Not downloaded**, the next download starts cleanly and leftovers are removed.
+- [ ] Download, then **Remove**: the confirmation appears, the folder and its entry in `consents.json` are gone, and the row offers Download again.
+- [ ] Consent window on a 100 % and a 200 % display: the licence text scrolls, nothing is clipped, Download is disabled until the checkbox is ticked, Escape closes without downloading.
+- [ ] Damage a downloaded file (change one byte): the feature reports the damage and the page shows **Damaged** with **Download again**.
+- [ ] A downloaded translation pack appears under **Translation packs**; Remove deletes it and Text tools offers it again.
+- [ ] Update or repair the app with packs installed: they stay installed. Export settings: the zip has no `Models` entries. Reset all app data: the `Models` folder is gone.
+
+### OCR pack (1.3.0)
+
+- [ ] Text tools → Text from screenshot → **Text reader** shows Windows OCR (default) and DesktopTools OCR pack. Choosing the pack lists Latin alphabet, Cyrillic, Chinese and Japanese; the one for the Windows display language is preselected; the status line says what is missing and **Download** is shown. Check English and one other language, light and dark, 100 % and 200 %.
+- [ ] **Download** with the network off: the consent window opens for the text finder, then for the alphabet; after accepting, a clear error names the host and nothing is installed. Decline the second window: nothing is downloaded. With the network on: both packs download with the progress bar, the status reads *OCR pack ready*, and Settings → AI models lists both as installed.
+- [ ] With the pack chosen and installed, Scan screen text over small (9–11 px) UI text on a secondary monitor, select words and copy: the text matches the screen; repeat in Extract text (screenshot editor, Image tools).
+- [ ] Choose the pack but leave an alphabet not downloaded: scanning works with Windows OCR and says the pack for that alphabet is not downloaded. Damage the chosen recognizer (change one byte of `inference.onnx` or `inference.yml`): the scan falls back with the damaged notice, and the AI models page shows **Damaged** with **Download again**.
+- [ ] Remove a pack on the AI models page while a scan with it is running: the scan finishes or reports a clear error, nothing crashes, and the next scan falls back to Windows OCR with the not-downloaded notice.
+- [ ] Switch the reader back to Windows OCR: the Windows language list returns, the saved Windows language is kept, and scans no longer load the pack (memory drops back within about a minute after the last pack scan).
+- [ ] Chinese and Japanese: scan a real Chinese and a real Japanese page and have someone who reads them judge the result (accuracy is **Not tested** by the automated checks).
+
+### Transcripts (1.3.0)
+
+- [ ] Record a short clip with system audio (play speech, for example Windows text-to-speech) on a secondary monitor. The saved-recording notice shows **Transcribe**; it opens the video editor with the **Transcript** tab. With the video editor disabled, the button is not shown.
+- [ ] First Transcribe: the consent notice appears once; **Cancel** transcribes nothing, **Continue** does not ask again. Then, with the network off and no model: the licence window opens, and after accepting a clear error names the host and nothing is installed. Decline the licence: *Download canceled.* and nothing is downloaded. With the network on: the model downloads, the status says it is ready, and transcription starts.
+- [ ] Transcribe the clip with Fast and with Accurate, once with **Automatic** and once with the language chosen: lines appear with times; choosing a time moves the playhead; search filters lines; edit a line, close and reopen the video: the edit is kept. `<video>.srt` is next to the video and plays in the Windows Media Player as captions.
+- [ ] Put your own `<video>.srt` next to a video, then transcribe: DesktopTools asks before replacing it; declining keeps your file unchanged and says the transcript is kept in DesktopTools.
+- [ ] **Save captions** as `.vtt` and `.txt`; open both and check times and text. Export a trimmed MP4 with a removed middle section, accept **Save captions for the copy?**: the captions next to the copy line up with its speech.
+- [ ] Transcribe a recording of 30 minutes or more: progress advances, the window stays responsive, **Cancel** stops within a few seconds, and memory returns to normal afterwards. Transcribe a video without audio: *This video has no audio track to transcribe.* Transcribe silence or music only: few or no invented lines.
+- [ ] Damage a model file (change one byte): Transcribe reports the model as damaged and the AI models page shows **Damaged** with **Download again**.
+- [ ] Check the tab in English and one other language, light and dark, 100 % and 200 %: nothing is clipped; long labels wrap.
+
+### Background quality, face finder and translation (1.3.0)
+
+- [ ] Image tools → open a photo with hair or fur → Background → **Background model** → *High quality (optional download)* → **Remove background**: the consent window opens; decline: *Download canceled.*, the image and the choice are kept and nothing is downloaded. Accept: the download progress shows, then the removal runs and compare the hair against *Built-in* and record any improvement or regression (the quality model can remove wanted content). Check on a secondary monitor, English and one other language, light and dark, 100 % and 200 %.
+- [ ] On a test PC with less than 6 GiB of available commit memory, High quality is refused with the message suggesting Built-in; the image is unchanged. Damage the pack (change one byte): the status says it is damaged and offers the download again; the built-in model is not used silently.
+- [ ] After a removal, **Touch up**: **Restore** brings back a removed area, **Erase** removes a leftover; change **Brush size** from 4 to 200 px; each stroke is one Undo step, and undoing past the removal turns the brush off; rotate or crop: Touch up ends. Export a PNG: the touched-up mask is in the copy and the original file is unchanged.
+- [ ] Screenshot editor → **Check screenshot** on a capture containing a photo of a face: the face row under the findings offers the face finder with its size; **Download** opens the consent window; after accepting, *Face finder ready*; check again: the face is suggested with the other findings and nothing is hidden until chosen. A capture without faces suggests none.
+- [ ] Text tools → choose a language pair that needs a new translation pack → **Download**: the consent window opens for each new pack; decline any: *Download canceled.* and nothing is downloaded. Accept: the packs download with progress and translation works.
+- [ ] Translate a passage of about 10,000–20,000 characters: the progress bar advances, the window stays responsive, **Cancel** stops within a few seconds; text over 20,000 characters is refused with the length message. Translate again within a minute: it starts without reloading; memory drops back about a minute after the last translation.
+- [ ] Have someone who reads Russian (and each language of any downloaded pack) judge a few translations; subjective quality is **Not tested** by the automated checks.
+
+## Smart file names and hidden file details (1.3.0)
+
+- [ ] Settings → Capture → **File names** shows "Date and time" and "Smart" with the privacy note; check English and one other language, light and dark. With "Date and time", Clipboard and folder still saves `DesktopTools-<date>-<time>.png`.
+- [ ] With "Smart", capture a region over a browser tab on a secondary monitor: the saved name starts with the browser name and contains the page title; capture the bare desktop: the name is the date-and-time one; capture an Outlook or Mail window whose title shows an e-mail address: the address is not in the name. Two captures in one second give `-2`. The Save PNG dialog suggests the same smart name.
+- [ ] With "Smart", capture a Notepad window with an untitled document: the name is "Notepad – Untitled – <date>" (a real title is used as it is; OCR is not tried). Capture a region of the bare desktop with a large line of text on it (for example a sticky note or wallpaper text): that headline appears in the name, or the name is the date-and-time one if OCR took longer than 800 ms.
+- [ ] With "Smart", capture windows whose titles hold a phone number, an IBAN, a card number or an API key: none of it appears in the name.
+- [ ] Image tools: open a phone photo with location (JPEG) and a PNG that has text chunks. Annotate → Hide data shows "This file contains hidden details: …"; Export shows the same line and the checkbox. Export unticked and ticked, then check each copy in File Explorer → Properties → Details: ticked has no GPS, camera, date taken, author or comments; the original file's Properties and modified time are unchanged.
+- [ ] A tick in the Hide data panel is ticked in the export dialog for the same image; opening another image starts unticked. A screenshot in the editor says it has no hidden details and the checkbox is unavailable.
+- [ ] A wide-gamut photo with an embedded Display P3 profile, exported as PNG ticked and unticked, looks the same in the Photos app as the original next to it (colours far outside sRGB may be slightly less saturated: exports are sRGB).
+
+
+## Additional local AI release checks (1.3.0)
+
+- [ ] Before consent, observe network activity: opening the pack list or consent window sends no model request. Cancel leaves files untouched. Accept a pack: only catalog publisher/download hosts are contacted, files match catalog size/SHA-256, and no test content is uploaded. Check the same flow for a translation route needing two packs; decline the second and verify neither is downloaded.
+- [ ] Inspect a completed model folder for licence, attribution and source revision; a translation folder has its README, attribution and licence. Export/import settings excludes model files and acceptance records. With disposable app data, test update, repair and both uninstall data choices. Retain captions beside user videos unless the user deletes them.
+- [ ] Retry a cancelled, truncated or checksum-mismatched download in a developer fixture; it starts cleanly and never offers a partial pack as installed. Change the fixture revision or licence text: the next download asks for fresh consent, while an already installed pack continues to work.
+- [ ] Start a translation, then Check screenshot with the face pack installed: text findings remain usable and the face row says faces were not checked if the runtime is busy. Repeat after the translation finishes. Check harmless faceless pages for false positives and a range of consenting subjects for missed faces.
+- [ ] Run repeated OCR, background removal, transcription and translation; switch between them and close each window mid-work. After idle, removal and Quit, check session/handle release. Separately run and record the design's 200-screenshot / 50-editor memory plateau scenario; idle model release alone does not prove that scenario.
+- [ ] Review every new consent, OCR, transcript, filename, metadata and background/face dialog in all 12 UI languages at minimum size, both themes, 100% and 200% scale. Use the exact-string review list in [the language review](localization-review-1.3.0.md). Verify recording/sharing privacy from an actual receiving viewer; API success alone is insufficient.

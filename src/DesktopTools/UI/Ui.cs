@@ -20,6 +20,18 @@ internal static class Ui
         new PropertyMetadata(false, (element, args) => { if (element is ComboBox combo) AppCapturePrivacy.TrackCombo(combo, (bool)args.NewValue); }));
     public static bool GetTrackPopup(DependencyObject element) => (bool)element.GetValue(TrackPopupProperty);
     public static void SetTrackPopup(DependencyObject element, bool value) => element.SetValue(TrackPopupProperty, value);
+    /// <summary>Leading icon drawn by the button template beside plain text content; ignored once the content is replaced by something richer.</summary>
+    public static readonly DependencyProperty GlyphProperty = DependencyProperty.RegisterAttached("Glyph", typeof(Geometry), typeof(Ui), new PropertyMetadata(null));
+    public static Geometry? GetGlyph(DependencyObject element) => (Geometry?)element.GetValue(GlyphProperty);
+    public static void SetGlyph(DependencyObject element, Geometry? value) => element.SetValue(GlyphProperty, value);
+    public static readonly IMultiValueConverter GlyphVisibility = new GlyphVisibilityConverter();
+    private sealed class GlyphVisibilityConverter : IMultiValueConverter
+    {
+        // Values: the glyph, then the button content. Shown only beside a non-empty text label.
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
+            values.Length == 2 && values[0] is Geometry && values[1] is string { Length: > 0 } ? Visibility.Visible : Visibility.Collapsed;
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
+    }
     public static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
     public static TextBlock Text(string text, double size = 14, bool bold = false, bool muted = false)
     {
@@ -45,6 +57,8 @@ internal static class Ui
         var b = new Button { Content = label, BorderThickness = new Thickness(primary ? 0 : 1), Margin = new Thickness(0, 0, 6, 0) };
         System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(b, true);
         if (primary) { b.SetResourceReference(Control.BackgroundProperty, "Accent"); b.SetResourceReference(Control.ForegroundProperty, "AccentText"); }
+        // Plain text buttons get a matching icon from their wording; the content stays the string.
+        if (IconHints.For(label) is { } hint) SetGlyph(b, ToolIcons.GeometryFor(hint));
         Motion.ButtonFeedback(b); AutomationProperties.SetName(b, label); b.Click += (_, _) => action(); return b;
     }
     public static Button Button(string label, Action action, ButtonKind kind)
@@ -183,24 +197,42 @@ internal static class Ui
         content.Children.Add(Text(L.T("Choose color"), 13, true));
         var button = Button(L.T("Choose color"), action); button.Content = content; AutomationProperties.SetName(button, L.F($"Choose color, current {color}")); return button;
     }
-    public static Grid Row(string title, string? description, FrameworkElement control)
+    /// <summary>A setting: icon badge, title, optional help, and its control on the right. The icon follows the title unless one is named.</summary>
+    public static Grid Row(string title, string? description, FrameworkElement control, string? icon = null)
     {
+        var badge = new Border { Width = 32, Height = 32, CornerRadius = new CornerRadius(10), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+        badge.SetResourceReference(Border.BackgroundProperty, "Hover");
+        var symbol = Icon(icon ?? IconHints.For(title) ?? "Settings", 16); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.VerticalAlignment = VerticalAlignment.Center;
+        badge.Child = symbol;
+        // The badge lights up while the pointer is on its row, so it is clear which control a click will change.
+        void Light(bool on)
+        {
+            badge.SetResourceReference(Border.BackgroundProperty, on ? "Selected" : "Hover");
+            symbol.SetResourceReference(Shape.FillProperty, on ? "Accent" : "Text");
+        }
         var grid = new Grid { Margin = new Thickness(0, 10, 0, 10) };
         grid.ColumnDefinitions.Add(new ColumnDefinition()); grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var labels = new StackPanel { Margin = new Thickness(0, 0, 24, 0), VerticalAlignment = VerticalAlignment.Center };
+        var labels = new StackPanel { Margin = new Thickness(44, 0, 24, 0), VerticalAlignment = VerticalAlignment.Center };
         labels.Children.Add(Text(title, 14, true));
         if (description != null) { var t = Text(description, 12, muted: true); t.Margin = new Thickness(0, 5, 0, 0); labels.Children.Add(t); }
-        grid.Children.Add(labels); Grid.SetColumn(control, 1); grid.Children.Add(control); AutomationProperties.SetName(control, title); return grid;
+        // Labels and control keep their positions in Children; the badge is appended so existing lookups are unaffected.
+        // A control keeps its own height when the description wraps to several lines.
+        if (control.VerticalAlignment == VerticalAlignment.Stretch) control.VerticalAlignment = VerticalAlignment.Center;
+        grid.Children.Add(labels); Grid.SetColumn(control, 1); grid.Children.Add(control); grid.Children.Add(badge);
+        grid.Background = Brushes.Transparent; grid.MouseEnter += (_, _) => Light(true); grid.MouseLeave += (_, _) => Light(false); AutomationProperties.SetName(control, title); return grid;
     }
     public static CheckBox Toggle(bool value, Action<bool> changed)
     {
         var c = new CheckBox { IsChecked = value }; Motion.ToggleFeedback(c); c.Checked += (_, _) => changed(true); c.Unchecked += (_, _) => changed(false); return c;
     }
-    public static ComboBox Choice(IEnumerable<string> choices, string selected, Action<string> changed, bool translate = true)
+    /// <summary>The mark in front of a choice that runs an optional AI model, so people can see where the models are used.</summary>
+    public const string AiMark = "★ ";
+    /// <param name="aiChoices">Values that use an optional AI model; they are shown with <see cref="AiMark"/>.</param>
+    public static ComboBox Choice(IEnumerable<string> choices, string selected, Action<string> changed, bool translate = true, IEnumerable<string>? aiChoices = null)
     {
         var c = new ComboBox { ItemsSource = choices.ToArray(), SelectedItem = selected, MinWidth = 150 };
         var label = new FrameworkElementFactory(typeof(TextBlock));
-        label.SetBinding(TextBlock.TextProperty, new Binding { Converter = new ChoiceLabelConverter() });
+        label.SetBinding(TextBlock.TextProperty, new Binding { Converter = new ChoiceLabelConverter(aiChoices?.ToHashSet(StringComparer.Ordinal)) });
         if (translate) c.ItemTemplate = new DataTemplate { VisualTree = label };
         c.SelectionChanged += (_, _) => { if (c.SelectedItem is string v) changed(v); }; return c;
     }
@@ -232,9 +264,10 @@ internal static class Ui
     {
         element.ToolTip = new ToolTip { Content = label };
     }
-    private sealed class ChoiceLabelConverter : IValueConverter
+    private sealed class ChoiceLabelConverter(HashSet<string>? ai = null) : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => L.T(value as string);
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+            (value is string text && ai?.Contains(text) == true ? AiMark : "") + L.T(value as string);
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
     }
 }

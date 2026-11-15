@@ -72,8 +72,18 @@ internal static class RenderingTests
         {
             var editor = new AnnotationTextEditor(new Point(990, 590), new Size(1000, 600), Colors.White, 24);
             editor.Measure(new Size(1000, 600)); editor.Arrange(new Rect(0, 0, editor.DesiredSize.Width, editor.DesiredSize.Height)); editor.ApplyTemplate();
-            check(editor.Width == 400 && editor.ExportWidth == 374, "Editor width or text inset differs from export");
-            check(editor.ExportOrigin.X == 613 && editor.ExportOrigin.Y < 590, "Editor did not clamp within screen edge");
+            check(editor.Width == 86 && editor.ExportWidth == 60, "Editor width or text inset differs from export");
+            check(editor.ExportOrigin.X == 927 && editor.ExportOrigin.Y < 590, "Editor did not clamp within screen edge");
+            // The box fits what is typed instead of wrapping early, at any font size, and stops at the canvas edge.
+            var typing = new AnnotationTextEditor(new Point(40, 100), new Size(1000, 600), Colors.White, 24) { Text = "A fairly long single line of text" };
+            double small = typing.Width;
+            check(small > 300 && small < 1000 - 27, $"Editor did not grow to fit a single line ({small})");
+            typing.FontSize = 64;
+            check(typing.Width > small && typing.Width <= 1000 - System.Windows.Controls.Canvas.GetLeft(typing), "Editor did not regrow for a larger font");
+            typing.Text = string.Join(" ", Enumerable.Repeat("overflowing", 40));
+            check(Math.Abs(typing.Width - (1000 - System.Windows.Controls.Canvas.GetLeft(typing))) < 0.01, "Editor grew past the canvas edge");
+            typing.Text = "two\nlines"; typing.FontSize = 24;
+            check(typing.Width < 200, "Editor did not shrink back for short text");
             check(editor.FontFamily.Source == AnnotationTypography.DefaultFamily && ((SolidColorBrush)editor.Foreground).Color == Colors.White, "Preview font/color differs from committed text");
         });
         test("Text annotations retain selected font through history and renderer layout", () =>

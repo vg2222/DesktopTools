@@ -79,10 +79,31 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(ex.Message, NotificationKind.Error); return; }
         Application.Current.Shutdown();
     }
-    private Task PrepareForShutdownAsync()
-        => utilityWindows.TryGetValue("Recorder", out var window) ? ((ScreenRecorderWindow)window).StopAsync() : Task.CompletedTask;
+    private async Task PrepareForShutdownAsync()
+    {
+        if (utilityWindows.TryGetValue("Recorder", out var window)) await ((ScreenRecorderWindow)window).StopAsync();
+        // A reset or import deletes or replaces app data; a model or translation download must have closed its files first.
+        if (!await ModelPacks.StopDownloadsAsync(TimeSpan.FromSeconds(10)))
+            throw new InvalidOperationException(L.T("Wait for the current download to finish, then try again."));
+    }
     internal RecordingMarkerStore RecordingMarkers { get; }
-    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load) { WindowState = WindowState.Maximized }); }
+    internal TranscriptStore Transcripts { get; }
+    public void OpenVideoEditor() { if (Settings.VideoEditorEnabled) OpenUtility("Video", () => new VideoEditorWindow(Report, RecordingMarkers.Load, Transcripts, this) { WindowState = WindowState.Maximized }); }
+    /// <summary>Opens the video editor on a recording with its Transcript tab showing. Nothing is transcribed until the user asks.</summary>
+    internal async void OpenVideoEditorForTranscript(string path)
+    {
+        if (!Settings.VideoEditorEnabled) return;
+        try
+        {
+            OpenVideoEditor();
+            if (utilityWindows.TryGetValue("Video", out var window) && window is VideoEditorWindow editor)
+            {
+                editor.ShowTranscriptTab();
+                await editor.LoadAndSeekAsync(path, TimeSpan.Zero);
+            }
+        }
+        catch (Exception ex) { Report(L.T("Could not open the recording for a transcript: ") + ex.Message); }
+    }
     internal async void OpenVideoEditorAt(string path, TimeSpan position)
     {
         if (!Settings.VideoEditorEnabled) return;
@@ -110,12 +131,13 @@ internal sealed partial class AppController : IDisposable
         string? text = await SelectedTextService.ReadAsync(foreground);
         if (!disposed && !IsBusy && version == textRequestVersion && Settings.TranslationEnabled) OpenTextTools()?.SetSource(text ?? "");
     }
-    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact, translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null) { WindowState = WindowState.Maximized }); }
+    public void OpenImageTools() { if (Settings.ImageToolsEnabled) OpenUtility("Images", () => new ImageToolsWindow(Report, getAutoRedact: () => Settings.AutoRedact, translate: Settings.TranslationEnabled ? OpenTextToolsForTranslation : null,
+            getBackgroundModel: () => Settings.BackgroundModel, setBackgroundModel: value => UpdateSettings(s => s.BackgroundModel = value)) { WindowState = WindowState.Maximized }); }
     public void OpenStepGuide() { if (Settings.CaptureEnabled) OpenUtility("StepGuide", () => new StepGuideWindow(() => LastCapture, () => CaptureHistory.Entries, Settings.SaveDirectory, Report, () => Settings.AutoRedact)); }
     public void ToggleWindowPin()
     {
         if (!Settings.WindowPinEnabled) return;
-        try { Report(windowPins.ToggleForeground() ? "Window pinned above other windows." : "Window unpinned."); }
+        try { Report(L.T(windowPins.ToggleForeground() ? "Window pinned above other windows." : "Window unpinned.")); }
         catch (Exception ex) { Report(L.T("Could not pin window: ") + ex.Message); }
     }
     public async Task PickScreenColorAsync()
@@ -154,6 +176,7 @@ internal sealed partial class AppController : IDisposable
     private readonly System.Drawing.Icon? trayIcon;
     private TrayMenuPopup? trayMenu;
     private readonly bool smoke;
+    internal bool IsSmoke => smoke;
     private MainWindow? main;
     private OverlayWindow? overlay;
     private Window? captureNotice;
@@ -184,18 +207,31 @@ internal sealed partial class AppController : IDisposable
     public string Status { get; private set; } = "";
     public bool Dark => Settings.Theme == "Dark" || (Settings.Theme == "System" && !SystemUsesLight());
     public ProfileStore Profiles { get; } = new();
+    private static bool trimHandlerRegistered;
+    private static void RegisterTrimOnClose()
+    {
+        if (trimHandlerRegistered) return; trimHandlerRegistered = true;
+        EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.UnloadedEvent, new RoutedEventHandler((sender, e) => { if (ReferenceEquals(sender, e.OriginalSource)) MemoryTrimmer.Request(); }));
+    }
     public AppController(bool smoke)
     {
         this.smoke = smoke; AppCapturePrivacy.Initialize();
+        Transcripts = new TranscriptStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-transcripts") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "transcripts"));
         RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
-        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool;
+        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings); AiRuntime.PreferredDevice = Settings.AiDevice;
+        AiRuntime.GraphicsCardFallback = _ => Application.Current?.Dispatcher.BeginInvoke(() =>
+            Report(L.T("The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it."), NotificationKind.Warning));
+        LocalOcr.ChooseEngine = (engine, script) => UpdateSettings(s => { s.OcrEngine = engine; s.OcrPackScript = script; });
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)
         { IsAvailable = id => FeatureAvailability.IsAvailable(Settings, id) };
         Hud.Changed += UpdateEscape;
         ApplyHudSettings();
         escape.Pressed += CancelActiveTool;
         ApplyTheme();
+        // Every closed window (editor, text tools, notices) is a good moment to give its memory back.
+        RegisterTrimOnClose();
+        MemoryTrimmer.Request();
         hotkeys.Pressed += HandleHotkey;
         if (!smoke)
         {
@@ -340,6 +376,7 @@ internal sealed partial class AppController : IDisposable
                 string mode = presentationMode; StopPresentation(); TogglePresentation(mode);
             }
             if (!Settings.FreezeEnabled && frozenFrame != null) { frozenFrame = null; overlay?.SetFrozen(null); }
+            LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings); AiRuntime.PreferredDevice = Settings.AiDevice;
             SettingsChanged?.Invoke();
             if (Palette != null) Palette.Refresh(); return true;
         }
@@ -416,7 +453,7 @@ internal sealed partial class AppController : IDisposable
     }
     private MainWindow EnsureMainWindow()
     {
-        if (main == null) { main = new MainWindow(this); main.Closed += (_, _) => main = null; }
+        if (main == null) { main = new MainWindow(this); main.Closed += (_, _) => main = null; main.IsVisibleChanged += (_, e) => { if (e.NewValue is false) MemoryTrimmer.Request(); }; }
         return main;
     }
     public void RecordDrawingShortcut(string action) => RecordShortcut(Settings.DrawingShortcuts[action], (s, value) => s.DrawingShortcuts[action] = value, true);
@@ -617,6 +654,7 @@ internal sealed partial class AppController : IDisposable
             var offset = inkMonitor == null ? new Vector() : inkMonitor.Bounds.TopLeft - monitor.Bounds.TopLeft;
             var capturedImage = CaptureComposition.Composite(desktop, includeInk ? Document.Items : [], inkMonitor?.ScaleX ?? 1, inkMonitor?.ScaleY ?? 1, offset, new Int32Rect(x, y, right - x, bottom - y));
             lastRegion = (monitor, r); autoReviewOpened = Settings.AutoRedact.Enabled;
+            pendingCaptureWindow = DescribeCapturedWindow(monitor, pixels, desktop.PixelWidth, desktop.PixelHeight);
             statusNotice?.Close();
             await HandleCapturedImageAsync(capturedImage);
         }
@@ -624,7 +662,7 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(L.T("Capture failed: ") + ex.Message); }
         finally
         {
-            selector?.Close(); selector = null; captureCancellation = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
+            selector?.Close(); selector = null; captureCancellation = null; pendingCaptureWindow = null; machine.EndCapture(); IsBusy = false; UpdateEscape();
             if (overlay != null) { if (State == OverlayState.Hidden) overlay.Hide(); else { overlay.Show(); overlay.Mode(State == OverlayState.Draw); } }
             if (State == OverlayState.Draw) Palette?.Show();
             else if (!disposed && !autoReviewOpened) NativeWindowService.RestoreForeground(captureForeground);
@@ -694,14 +732,14 @@ internal sealed partial class AppController : IDisposable
     {
         var image = LastCapture;
         if (image == null) { Report(L.T("Capture a screenshot first.")); return; }
-        TrySaveImage(image, EnsureMainWindow(), showDialog);
+        TrySaveImage(image, EnsureMainWindow(), showDialog, window: WindowFor(image));
     }
     internal bool TrySaveImage(BitmapSource image, Window owner, Func<SaveFileDialog, Window, bool?> showDialog,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, WindowDescription? window = null)
     {
         if (cancellationToken.IsCancellationRequested) return false;
         bool wasBusy = IsBusy; IsBusy = true;
-        var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = $"DesktopTools-{DateTime.Now:yyyyMMdd-HHmmss}.png", DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
+        var dialog = new SaveFileDialog { Filter = L.T("PNG image|*.png"), FileName = SuggestedSaveName(image, window, DateTime.Now), DefaultExt = ".png", InitialDirectory = Directory.Exists(Settings.SaveDirectory) ? Settings.SaveDirectory : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) };
         try
         {
             // A notification can expire inside the native dialog's nested message loop.
@@ -715,15 +753,28 @@ internal sealed partial class AppController : IDisposable
         catch (Exception ex) { Report(L.T("Could not save PNG: ") + ex.Message); return false; }
         finally { IsBusy = wasBusy; if (!IsBusy && State == OverlayState.Draw) overlay?.Activate(); }
     }
-    private void ShowCaptureNotice()
+    private void ShowCaptureNotice(string? title = null, string? savedPath = null)
     {
         captureNotice?.Close();
-        var notice = new NotificationWindow(L.T("Screenshot ready"), NotificationKind.Info, main,
+        // A screenshot that is already on disk offers its folder instead of a second save.
+        (string, Action) fileAction = savedPath == null ? ("Save PNG", SaveLast) : ("Show in folder", () => RevealInFolder(savedPath));
+        var notice = new NotificationWindow(title ?? L.T("Screenshot ready"), NotificationKind.Info, main,
             Settings.ScreenshotNotificationStyle, LastCapture,
-            [("Edit", RedactLast), ("Save PNG", SaveLast), ("Pin", PinLast)], Settings.NotificationSeconds);
+            [("Edit", RedactLast), fileAction, ("Pin", PinLast)], Settings.NotificationSeconds);
         captureNotice = notice;
         notice.Closed += (_, _) => { if (captureNotice == notice) captureNotice = null; };
         notice.Show();
+    }
+    private void RevealInFolder(string path)
+    {
+        try
+        {
+            // The path is passed as one quoted argument; a missing file opens its folder instead.
+            if (File.Exists(path)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe") { ArgumentList = { "/select," + path } })?.Dispose();
+            else if (Path.GetDirectoryName(path) is { } folder && Directory.Exists(folder)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder) { UseShellExecute = true })?.Dispose();
+            else Report(L.T("The saved screenshot is no longer there."));
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or IOException) { Report(L.T("Could not open the folder: ") + ex.Message); }
     }
     private readonly List<PinnedImageWindow> pinnedImages = [];
     internal bool HasLockedPins => pinnedImages.Any(pin => pin.IsLocked);
@@ -819,12 +870,12 @@ internal sealed partial class AppController : IDisposable
     public void ApplyTheme()
     {
         bool dark = Dark; Motion.AppEnabled = Settings.Animations;
-        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#2563EB" };
+        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#C2378F" };
         if (Settings.ThemePreset != "Custom") Settings.PrimaryColor = accentHex;
         Color accent = (Color)ColorConverter.ConvertFromString(accentHex); accent.A = 255;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         Application.Current.Resources["AccentText"] = new SolidColorBrush(.2126 * accent.R + .7152 * accent.G + .0722 * accent.B > 160 ? Colors.Black : Colors.White);
-        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#DFE9FC", "#FF303949"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
+        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#0C0D0F"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#F8E1EF", "#FF4A2540"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
         if (Settings.UseCustomBackground)
         {
             Color background = (Color)ColorConverter.ConvertFromString(Settings.BackgroundColor); background.A = 255;
@@ -875,6 +926,7 @@ internal sealed partial class AppController : IDisposable
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         automation?.Dispose();
+        AiRuntime.ReleaseAll(); MemoryTrimmer.Shutdown();
         StopUpdateChecks();
         trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
     }

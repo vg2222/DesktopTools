@@ -1,0 +1,11 @@
+{
+  "Remove hidden details (location, device, date, author)": "Вилучити приховані відомості (місце, пристрій, дата, автор)",
+  "This file contains hidden details: {0}.": "Цей файл містить приховані відомості: {0}.",
+  "This file has no hidden details.": "У цьому файлі немає прихованих відомостей.",
+  "Hidden details could not be read. Tick the box to save a copy without any.": "Не вдалося прочитати приховані відомості. Позначте прапорець, щоб зберегти копію без них.",
+  "location": "місце",
+  "device": "пристрій",
+  "date": "дата",
+  "author": "автор",
+  "other": "інше"
+}

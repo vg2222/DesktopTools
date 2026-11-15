@@ -27,6 +27,15 @@ public sealed partial class ScreenshotEditorView : UserControl
     private readonly TextBlock _status;
     private readonly List<Point> _points = [];
     private string _tool = "Pen";
+    private Action<string> _selectTool = _ => { };
+    private bool _applyToImage;
+    private readonly List<(Color Color, Button Button)> _swatches = [];
+    /// <summary>Single keys that pick a tool while no text is being typed.</summary>
+    internal static readonly IReadOnlyDictionary<Key, string> ToolKeys = new Dictionary<Key, string>
+    {
+        [Key.V] = "Select", [Key.P] = "Pen", [Key.H] = "Highlighter", [Key.A] = "Arrow", [Key.R] = "Rectangle",
+        [Key.O] = "Ellipse", [Key.T] = "Text", [Key.B] = "Redaction", [Key.E] = "Eraser", [Key.C] = "Crop"
+    };
     private Action<bool>? _showPrivacyTab;
     private Color _color = Colors.Red;
     private double _thickness = 4, _opacity = 1;
@@ -57,6 +66,8 @@ public sealed partial class ScreenshotEditorView : UserControl
         editorLayout ??= "A"; // tools above the image, actions below: the order people read an editor in
         _image = image; _document = new(image); _onExport = onExport; _report = report;
         SetResourceReference(ForegroundProperty, "Text"); _hosted = hosted;
+        // Editor buttons say what they do as soon as the pointer is on them, without the usual Windows wait.
+        ToolTipService.SetInitialShowDelay(this, 0); ToolTipService.SetBetweenShowDelay(this, 0);
         var layout = new Grid();
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         layout.RowDefinitions.Add(new RowDefinition());
@@ -68,21 +79,21 @@ public sealed partial class ScreenshotEditorView : UserControl
         _originalLayer = new Image { Source = image, Width = image.PixelWidth, Height = image.PixelHeight, Stretch = Stretch.Fill, Visibility = Visibility.Collapsed, IsHitTestVisible = false };
         _surface.Children.Add(_originalLayer);
         _drawing = new EditCanvas(image, _document) { Width = image.PixelWidth, Height = image.PixelHeight, IsHitTestVisible = false }; _surface.Children.Add(_drawing);
-        var backdrop = new Border { Child = new Viewbox { Child = BuildStyleFrame(_surface, image.PixelWidth, image.PixelHeight), Stretch = Stretch.Uniform }, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
+        var backdrop = new Border { Child = CreateViewport(new Viewbox { Child = BuildStyleFrame(_surface, image.PixelWidth, image.PixelHeight), Stretch = Stretch.Uniform }), CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 12, 0) };
         backdrop.SetResourceReference(Border.BackgroundProperty, "Card"); backdrop.SetResourceReference(Border.BorderBrushProperty, "Stroke"); work.Children.Add(backdrop);
         var properties = new StackPanel(); properties.Children.Add(Ui.Text(L.T("Properties"), 13, true));
         var colorLabel = Ui.Text(L.T("Color"), 12); colorLabel.Margin = new Thickness(0, 18, 0, 10); properties.Children.Add(colorLabel);
         var colors = new WrapPanel();
-        foreach (var color in new[] { Colors.DodgerBlue, Colors.Crimson, Colors.Coral, Colors.Gold, Colors.LightGreen, Colors.MediumOrchid })
+        foreach (var color in new[] { Colors.Red, Colors.DodgerBlue, Colors.Coral, Colors.Gold, Colors.LimeGreen, Colors.MediumOrchid, Colors.White, Colors.Black })
         {
             var swatch = Ui.Button("", () => { CommitText(); _color = color; Update(); }); swatch.Width = swatch.Height = swatch.MinHeight = 25; swatch.Padding = new Thickness(3); swatch.Margin = new Thickness(0, 0, 5, 6); swatch.Background = new SolidColorBrush(color); DesignTokens.SetButtonRadius(swatch, new CornerRadius(13));
-            Ui.Tip(swatch, color.ToString()); System.Windows.Automation.AutomationProperties.SetName(swatch, color.ToString()); colors.Children.Add(swatch);
+            Ui.Tip(swatch, color.ToString()); System.Windows.Automation.AutomationProperties.SetName(swatch, color.ToString()); colors.Children.Add(swatch); _swatches.Add((color, swatch));
         }
         properties.Children.Add(colors);
         _colorButton = Ui.Button("", () => { CommitText(); new ColorPickerWindow(_color.ToString(), value => { _color = (Color)ColorConverter.ConvertFromString(value); Update(); return true; }) { Owner = Window.GetWindow(this) }.ShowDialog(); }); properties.Children.Add(_colorButton);
         System.Windows.Automation.AutomationProperties.SetName(_colorButton, L.T("Annotation color"));
         var widthChoice = new Slider { Minimum = 1, Maximum = 32, Value = _thickness, TickFrequency = 1, IsSnapToTickEnabled = true, SmallChange = 1, LargeChange = 4 };
-        widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value;
+        widthChoice.ValueChanged += (_, _) => _thickness = widthChoice.Value; _widthChoice = widthChoice;
         var strokeField = Ui.SliderField(L.T("Stroke thickness"), widthChoice, v => $"{v:0} px"); strokeField.Margin = new Thickness(0, 18, 0, 0); properties.Children.Add(strokeField);
         var opacity = new Slider { Minimum = .1, Maximum = 1, Value = 1 }; opacity.ValueChanged += (_, _) => _opacity = opacity.Value;
         var opacityField = Ui.SliderField(L.T("Opacity"), opacity, v => $"{v * 100:0}%"); opacityField.Margin = new Thickness(0, 14, 0, 0); properties.Children.Add(opacityField);
@@ -91,9 +102,12 @@ public sealed partial class ScreenshotEditorView : UserControl
         var propertyCard = Ui.Card(new ScrollViewer { Content = properties, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }, 14); propertyCard.Margin = new Thickness(0); Grid.SetColumn(propertyCard, 2); work.Children.Add(propertyCard); PropertyCard = propertyCard; Backdrop = backdrop;
         var tools = new WrapPanel();
         void SelectTool(string tool) { if (_showingOriginal) ToggleOriginal(); CommitText(); CancelGesture(); _tool = tool; _showPrivacyTab?.Invoke(tool == "Redaction"); Update(); }
+        _selectTool = SelectTool; _applyToImage = applyToImage;
         foreach (var tool in new[] { "Select", "Pen", "Highlighter", "Arrow", "Rectangle", "Ellipse", "Text", "Redaction", "Eraser", "Crop" })
         {
             var button = Ui.IconButton(tool, L.T(tool == "Redaction" ? "Cover" : tool), () => SelectTool(tool)); button.Width = button.Height = button.MinHeight = 32; button.Padding = new Thickness(7); button.Margin = new Thickness(1); _tools.Add(tool, button); tools.Children.Add(button);
+            // The tooltip names the key; the accessible name stays the plain tool name.
+            if (ToolKeys.FirstOrDefault(pair => pair.Value == tool) is { Value: not null } shortcut) Ui.Tip(button, $"{L.T(tool == "Redaction" ? "Cover" : tool)} ({shortcut.Key})");
         }
         var more = Ui.IconButton("More", L.T("More tools"), () => { }); more.Width = more.Height = more.MinHeight = 32;
         var menu = new ContextMenu();
@@ -101,10 +115,9 @@ public sealed partial class ScreenshotEditorView : UserControl
         menu.Items.Add(new Separator());
         var clear = new MenuItem { Header = L.T("Clear"), Icon = Ui.Icon("Clear", 16) }; clear.Click += (_, _) => { CommitText(); CancelGesture(); _document.Clear(); Update(); }; menu.Items.Add(clear);
         var resetCrop = new MenuItem { Header = L.T("Reset crop"), Icon = Ui.Icon("Crop", 16) }; resetCrop.Click += (_, _) => { CommitText(); CancelGesture(); _document.SetCrop(new(0, 0, image.PixelWidth, image.PixelHeight)); Update(); }; menu.Items.Add(resetCrop);
-        var ocr = new MenuItem { Header = L.T("Extract text"), Icon = Ui.Icon("ScanText", 16) }; ocr.Click += (_, _) => ExtractText(); menu.Items.Add(ocr);
         more.ContextMenu = menu; more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; tools.Children.Add(more); Unloaded += (_, _) => menu.IsOpen = false;
         tools.Children.Add(ToolbarDivider());
-        _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); foreach (var b in new[] { _undo, _redo }) { b.Width = b.Height = b.MinHeight = 32; b.Padding = new Thickness(7); b.Margin = new Thickness(1); } tools.Children.Add(_undo); tools.Children.Add(_redo);
+        _undo = Ui.IconButton("Undo", L.T("Undo"), Undo); _redo = Ui.IconButton("Redo", L.T("Redo"), Redo); Ui.Tip(_undo, L.T("Undo") + " (Ctrl+Z)"); Ui.Tip(_redo, L.T("Redo") + " (Ctrl+Y)"); foreach (var b in new[] { _undo, _redo }) { b.Width = b.Height = b.MinHeight = 32; b.Padding = new Thickness(7); b.Margin = new Thickness(1); } tools.Children.Add(_undo); tools.Children.Add(_redo);
         tools.Children.Add(ToolbarDivider());
         _originalButton = Ui.IconButton("Image", L.T("Show original"), ToggleOriginal); _originalButton.Width = _originalButton.Height = _originalButton.MinHeight = 32; _originalButton.Padding = new Thickness(7); _originalButton.Margin = new Thickness(1); tools.Children.Add(_originalButton);
         var toolCard = Ui.Card(tools, 6); toolCard.Margin = new Thickness(0, 0, 12, 0); toolCard.VerticalAlignment = VerticalAlignment.Center;
@@ -133,6 +146,14 @@ public sealed partial class ScreenshotEditorView : UserControl
         if (_hosted) { footer.Visibility = Visibility.Collapsed; _originalButton.Visibility = Visibility.Collapsed; }
         Content = layout;
         InitializeRedaction(properties, tools, actions, autoRedact, reviewBeforeOutput, exportAsync);
+        // Extract text sits in the toolbar with its name, beside Check screenshot, instead of inside the More menu.
+        // Image tools hosts this view and has its own Extract text button, so the hosted copy stays out.
+        if (!_hosted)
+        {
+            var extract = Ui.Button(L.T("Extract text"), ExtractText);
+            extract.Name = "ExtractText"; extract.Content = Ui.IconLabel("Text", L.T("Extract text")); extract.Margin = new Thickness(6, 0, 0, 0);
+            Ui.Tip(extract, L.T("Extract text")); tools.Children.Add(extract);
+        }
         Loaded += (_, _) => Motion.Reveal(layout);
         _surface.MouseLeftButtonDown += Begin; _surface.MouseMove += Move; _surface.MouseLeftButtonUp += Finish;
         _surface.LostMouseCapture += LostCapture; PreviewKeyDown += OnKey;
@@ -257,6 +278,13 @@ public sealed partial class ScreenshotEditorView : UserControl
         colorContent.Children.Add(new Border { Width = 18, Height = 18, CornerRadius = new CornerRadius(5), Background = new SolidColorBrush(_color), BorderBrush = Ui.Brush("Stroke"), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 8, 0) });
         colorContent.Children.Add(Ui.Text(_color.A == 255 ? $"#{_color.R:X2}{_color.G:X2}{_color.B:X2}" : _color.ToString(), 12)); _colorButton.Content = colorContent;
         foreach (var (tool, button) in _tools) button.SetResourceReference(BackgroundProperty, tool == _tool ? "Selected" : "Field");
+        // The swatch in use carries a ring, so the current colour is readable without the hex field.
+        foreach (var (color, swatch) in _swatches)
+        {
+            bool current = color == _color;
+            swatch.BorderThickness = new Thickness(current ? 2 : 1);
+            swatch.SetResourceReference(Control.BorderBrushProperty, current ? "Text" : "Stroke");
+        }
         var hint = _tool switch { "Crop" => L.T("Drag an area to keep. The crop applies on release; Undo restores it."), "Text" => L.T("Click to add text. Ctrl+Enter to finish."), "Number" => L.T("Click to add the next numbered step."), "Eyedropper" => L.T("Click inside the crop to choose its pixel color."), "Redaction" => L.T("Drag an opaque cover over private details."), _ => L.T("Drag on the image to annotate.") };
         _status.Text = _showingOriginal ? L.T("Viewing original. Edits are still in your working copy.")
             : L.F($"{_document.Crop.Width} × {_document.Crop.Height} pixels   •   {hint}");
@@ -322,13 +350,22 @@ public sealed partial class ScreenshotEditorView : UserControl
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.Z or Key.Y) e.Handled = true;
             return;
         }
+        if (_editor == null && HandleZoomKey(e)) { e.Handled = true; return; }
         if (e.Key == Key.Escape)
         {
             if (_editor != null) { _surface.Children.Remove(_editor); _editor = null; }
             else if (_gesture) CancelGesture(); else CloseRequested?.Invoke(); e.Handled = true;
         }
         else if (_editor != null) { if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Control) { CommitText(); e.Handled = true; } }
+        else if (e.OriginalSource is System.Windows.Controls.Primitives.TextBoxBase) { } // typing in a field (search, colour value) is never a shortcut
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.Z or Key.Y) { if (e.Key == Key.Z) Undo(); else Redo(); e.Handled = true; }
+        else if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.Z) { Redo(); e.Handled = true; }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.C or Key.S && !_applyToImage && !_hosted) { Export(e.Key == Key.C ? "Copy" : "Save"); e.Handled = true; }
+        else if (e.Key is Key.Delete or Key.Back && Keyboard.Modifiers == ModifierKeys.None && _drawing.SelectedId is Guid selected && !_gesture)
+        {
+            _document.Remove(new[] { selected }); _drawing.SelectedId = null; Update(); e.Handled = true;
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.None && !_gesture && ToolKeys.TryGetValue(e.Key, out var tool) && _tools.ContainsKey(tool)) { _selectTool(tool); e.Handled = true; }
     }
     /// <summary>Releases timers, tokens and handlers; the hosting window calls it when it closes.</summary>
     internal void Dispose()

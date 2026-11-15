@@ -41,10 +41,17 @@ internal static class NativeRuntimeFeatureChecks
         }
         finally { text.Close(); }
 
-        var imageConstructor = typeof(ImageToolsWindow).GetConstructor([typeof(Action<string>), typeof(Func<IReadOnlyList<string>>)]);
+        // The window has gained optional parameters since this check was written; match on the two it needs and default the rest.
+        var imageConstructor = typeof(ImageToolsWindow).GetConstructors().FirstOrDefault(candidate =>
+        {
+            var parameters = candidate.GetParameters();
+            return parameters.Length >= 2 && parameters[0].ParameterType == typeof(Action<string>) &&
+                parameters[1].ParameterType == typeof(Func<IReadOnlyList<string>>) && parameters.Skip(2).All(p => p.HasDefaultValue);
+        });
         Check(imageConstructor != null, "Image tools cannot be tested with a missing Visual C++ runtime");
         var reports = new List<string>();
-        var image = (ImageToolsWindow)imageConstructor!.Invoke([new Action<string>(reports.Add), reader]);
+        var image = (ImageToolsWindow)imageConstructor!.Invoke(
+            [new Action<string>(reports.Add), reader, .. imageConstructor.GetParameters().Skip(2).Select(p => p.DefaultValue)]);
         try
         {
             image.Show();

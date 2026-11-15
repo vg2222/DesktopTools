@@ -1,4 +1,4 @@
-# Rasterize the unchanged Microsoft Fluent application-grid color SVG. See Assets/Icons/LICENSE.txt.
+# Rasterize the DesktopTools app icon (Assets/Icons/AppIcon.svg, plain paths with linear gradients) into the ICO and AppIcon.png.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName PresentationCore, WindowsBase
 $repo = Split-Path $PSScriptRoot -Parent
@@ -12,6 +12,7 @@ foreach ($gradient in $svg.svg.defs.linearGradient) {
     foreach ($stop in $gradient.stop) {
         $offset = if ($stop.offset) { [double]$stop.offset } else { 0 }
         $color = [Windows.Media.ColorConverter]::ConvertFromString($stop.'stop-color')
+        if ($stop.'stop-opacity') { $color.A = [byte][Math]::Round(255 * [double]$stop.'stop-opacity') }
         $brush.GradientStops.Add([Windows.Media.GradientStop]::new($color, $offset))
     }
     $brushes[$gradient.id] = $brush
@@ -24,7 +25,9 @@ foreach ($size in @(16,24,32,48,64,128,256)) {
     foreach ($path in $svg.svg.path) {
         $fill = [string]$path.fill
         $brush = if ($fill.StartsWith('url(#')) { $brushes[$fill.Substring(5, $fill.Length - 6)] } else { [Windows.Media.BrushConverter]::new().ConvertFromString($fill) }
+        if ($path.'fill-opacity') { $dc.PushOpacity([double]$path.'fill-opacity') }
         $dc.DrawGeometry($brush, $null, [Windows.Media.Geometry]::Parse('F1 ' + $path.d))
+        if ($path.'fill-opacity') { $dc.Pop() }
     }
     $dc.Pop(); $dc.Close()
     $bitmap = [Windows.Media.Imaging.RenderTargetBitmap]::new($size,$size,96,96,[Windows.Media.PixelFormats]::Pbgra32)
@@ -48,4 +51,4 @@ try {
     foreach ($picture in $pictures) { $writer.Write([byte[]]$picture[1]) }
 } finally { $writer.Dispose(); $stream.Dispose() }
 [IO.File]::WriteAllBytes((Join-Path $repo 'src/DesktopTools/Assets/Icons/AppIcon.png'), $pictures[-1][1])
-Write-Host 'Generated multi-resolution ICO from Microsoft Fluent application-grid SVG.'
+Write-Host 'Generated multi-resolution ICO and AppIcon.png from AppIcon.svg.'

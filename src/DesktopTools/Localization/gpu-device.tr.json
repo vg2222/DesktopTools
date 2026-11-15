@@ -1,0 +1,7 @@
+{
+  "Graphics card": "Ekran kartı",
+  "The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it.": "Ekran kartı bir yapay zekâ modelini çalıştıramadı; DesktopTools yeniden başlatılana kadar işlemciyi kullanıyor.",
+  "Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.": "Yapay zekâ modellerinin çalıştığı yer. Ekran kartı için güncel Windows 11 güncellemeleriyle gelen DirectML 1.15 veya üstü gerekir.",
+  "The graphics card could not run a model, so the processor is used until DesktopTools restarts.": "Ekran kartı bir modeli çalıştıramadı; DesktopTools yeniden başlatılana kadar işlemci kullanılıyor.",
+  "The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.": "İşlemci her yerde çalışır. Ekran kartı metin algılamayı ve konuşma tanımayı çok hızlandırır ancak video belleği dahil daha fazla bellek kullanır. Diğer modeller işlemcide kalır."
+}

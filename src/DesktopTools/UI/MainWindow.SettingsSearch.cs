@@ -43,7 +43,8 @@ internal sealed partial class MainWindow
             if (query.Length == 0) { previousState = 0; return; }
             matches = DashboardTools().Where(tool => FeatureSearchText(tool).Contains(query,
                 StringComparison.CurrentCultureIgnoreCase)).ToArray();
-            if (matches.Length == 0)
+            bool aiModels = MatchesAiModelsSearch(query);
+            if (matches.Length == 0 && !aiModels)
             {
                 var empty = Ui.SearchEmptyState(L.T("No feature settings found."), L.T("Try a different search."));
                 empty.Tag = "search-empty-settings"; results.Children.Add(empty);
@@ -51,6 +52,7 @@ internal sealed partial class MainWindow
                 previousState = 2;
                 return;
             }
+            if (aiModels) results.Children.Add(AiModelsSearchResult());
             foreach (var tool in matches)
             {
                 var item = tool;
@@ -81,6 +83,10 @@ internal sealed partial class MainWindow
             else if (e.Key == Key.Enter && matches.Length > 0)
             {
                 Navigate(matches[0].Settings); e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && MatchesAiModelsSearch(search.Text.Trim()) && search.Text.Trim().Length > 0)
+            {
+                settingsTab = AiModelsTab; featureSettingsQuery = ""; Navigate("Settings"); e.Handled = true;
             }
         };
         Render();

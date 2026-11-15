@@ -25,21 +25,66 @@ public static class Motion
     }
     public static bool AppEnabled { get; set; } = true;
     public static bool Enabled => AppEnabled && SystemParameters.ClientAreaAnimation && !SystemParameters.HighContrast;
+    /// <summary>The house easing: fast start, long soft landing. Quartic ease-out reads as smoother than the default cubic.</summary>
+    internal static readonly IEasingFunction Out = Frozen(new PowerEase { Power = 4, EasingMode = EasingMode.EaseOut });
+    /// <summary>Settles with a very small overshoot, for things that should feel like they land (toggles, selection marks, dialogs).</summary>
+    internal static readonly IEasingFunction Spring = Frozen(new BackEase { Amplitude = .45, EasingMode = EasingMode.EaseOut });
+    /// <summary>Accelerates away, for things leaving the screen.</summary>
+    internal static readonly IEasingFunction In = Frozen(new PowerEase { Power = 3, EasingMode = EasingMode.EaseIn });
+    private static T Frozen<T>(T easing) where T : Freezable { easing.Freeze(); return easing; }
     public static void ModalEntrance(FrameworkElement element)
     {
         if (!Enabled) return;
         element.RenderTransformOrigin = new Point(.5, .5);
         var scale = new ScaleTransform(1, 1); element.RenderTransform = scale;
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)) { FillBehavior = FillBehavior.Stop });
+        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = Out, FillBehavior = FillBehavior.Stop });
         foreach (var property in new[] { ScaleTransform.ScaleXProperty, ScaleTransform.ScaleYProperty })
-            scale.BeginAnimation(property, new DoubleAnimation(.97, 1, TimeSpan.FromMilliseconds(230)) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+            scale.BeginAnimation(property, new DoubleAnimation(.94, 1, TimeSpan.FromMilliseconds(320)) { EasingFunction = Spring, FillBehavior = FillBehavior.Stop });
+    }
+    /// <summary>
+    /// A selection mark that moves with the selection instead of jumping: the fill fades, the accent bar grows from its middle
+    /// with a small overshoot (and shrinks quickly when deselected).
+    /// </summary>
+    internal static void Select(UIElement fill, FrameworkElement bar, bool on, bool animate)
+    {
+        var scale = bar.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 0);
+        bar.RenderTransformOrigin = new Point(.5, .5); bar.RenderTransform = scale;
+        double fromFill = fill.Opacity, fromBar = scale.ScaleY, toFill = on ? 1 : 0, toBar = on ? 1 : 0;
+        fill.BeginAnimation(UIElement.OpacityProperty, null); scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        fill.Opacity = toFill; scale.ScaleY = toBar;
+        if (!animate || !Enabled) return;
+        fill.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(fromFill, toFill, TimeSpan.FromMilliseconds(on ? 240 : 170)) { EasingFunction = Out, FillBehavior = FillBehavior.Stop });
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(fromBar, toBar, TimeSpan.FromMilliseconds(on ? 360 : 150)) { EasingFunction = on ? Spring : In, FillBehavior = FillBehavior.Stop });
     }
     public static void Reveal(FrameworkElement element)
     {
         element.BeginAnimation(UIElement.OpacityProperty, null);
         if (!Enabled || !element.IsLoaded) return;
-        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(.86, 1, TimeSpan.FromMilliseconds(130)) { FillBehavior = FillBehavior.Stop });
+        // A window settles into place: it fades up while rising a few pixels. Nothing is ever fully transparent, so a
+        // window captured mid-entrance still shows its content.
+        var ease = Out;
+        var duration = TimeSpan.FromMilliseconds(320);
+        element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(.6, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        if (element.RenderTransform is null or MatrixTransform { Matrix.IsIdentity: true } or TranslateTransform)
+        {
+            var rise = element.RenderTransform as TranslateTransform ?? new TranslateTransform();
+            element.RenderTransform = rise; rise.BeginAnimation(TranslateTransform.YProperty, null); rise.Y = 0;
+            rise.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(14, 0, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        }
+    }
+    /// <summary>Menus and drop-down lists unfold from their anchor instead of appearing at once.</summary>
+    public static void PopupEntrance(FrameworkElement? surface)
+    {
+        if (surface == null || !Enabled) return;
+        var ease = Out;
+        var duration = TimeSpan.FromMilliseconds(190);
+        surface.RenderTransformOrigin = new Point(.5, 0);
+        var group = new TransformGroup(); var scale = new ScaleTransform(1, 1); var slide = new TranslateTransform();
+        group.Children.Add(scale); group.Children.Add(slide); surface.RenderTransform = group;
+        surface.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(.98, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(.94, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
+        slide.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(-6, 0, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
     }
     public static void Transition(FrameworkElement element)
     {
@@ -53,8 +98,8 @@ public static class Motion
         element.RenderTransform = translation; translation.BeginAnimation(TranslateTransform.YProperty, null);
         translation.Y = 0;
         if (!Enabled) return;
-        var duration = TimeSpan.FromMilliseconds(185);
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = TimeSpan.FromMilliseconds(240);
+        var ease = Out;
         element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(opacity, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
         translation.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(startY, 0, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
     }
@@ -72,8 +117,8 @@ public static class Motion
         element.Opacity = 1;
         translation.Y = 0;
         if (!Enabled) return;
-        var duration = TimeSpan.FromMilliseconds(210);
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = TimeSpan.FromMilliseconds(300);
+        var ease = Out;
         element.BeginAnimation(UIElement.OpacityProperty,
             new DoubleAnimation(0, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
         translation.BeginAnimation(TranslateTransform.YProperty,
@@ -86,8 +131,8 @@ public static class Motion
         var translation = element.RenderTransform as TranslateTransform ?? new TranslateTransform();
         // Completed WPF clocks can still report animated properties. Every new page
         // must start from a fresh entrance, including after the first transition.
-        const double startOpacity = .62;
-        const double startX = 14;
+        const double startOpacity = .5;
+        const double startX = 22;
         element.BeginAnimation(UIElement.OpacityProperty, null);
         translation.BeginAnimation(TranslateTransform.XProperty, null);
         translation.BeginAnimation(TranslateTransform.YProperty, null);
@@ -97,8 +142,8 @@ public static class Motion
         translation.Y = 0;
         if (!animate) return;
 
-        var duration = TimeSpan.FromMilliseconds(165);
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = TimeSpan.FromMilliseconds(280);
+        var ease = Out;
         element.BeginAnimation(UIElement.OpacityProperty,
             new DoubleAnimation(startOpacity, 1, duration) { EasingFunction = ease, FillBehavior = FillBehavior.Stop });
         translation.BeginAnimation(TranslateTransform.XProperty,
@@ -128,8 +173,8 @@ public static class Motion
         {
             double from = offset.Y;
             offset.BeginAnimation(TranslateTransform.YProperty, null); offset.Y = y;
-            if (Enabled) offset.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(from, y, TimeSpan.FromMilliseconds(140))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+            if (Enabled) offset.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(from, y, TimeSpan.FromMilliseconds(200))
+                { EasingFunction = Out, FillBehavior = FillBehavior.Stop });
         }
         element.MouseEnter += (_, _) => { if (element.IsEnabled) MoveTo(-lift); };
         element.MouseLeave += (_, _) => MoveTo(0);
@@ -139,12 +184,12 @@ public static class Motion
     {
         if (!Enabled) return;
         int index = 0;
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var ease = Out;
         foreach (var item in items)
         {
             var offset = Offset(item);
             var delay = TimeSpan.FromMilliseconds(Math.Min(index++, 12) * stepMilliseconds);
-            var duration = TimeSpan.FromMilliseconds(260);
+            var duration = TimeSpan.FromMilliseconds(380);
             item.Opacity = 0; offset.Y = distance;
             var fade = new DoubleAnimation(0, 1, duration) { BeginTime = delay, EasingFunction = ease, FillBehavior = FillBehavior.HoldEnd };
             fade.Completed += (_, _) => { item.BeginAnimation(UIElement.OpacityProperty, null); item.Opacity = 1; };
@@ -171,7 +216,7 @@ public static class Motion
                 press.BeginAnimation(ScaleTransform.ScaleXProperty, null); press.BeginAnimation(ScaleTransform.ScaleYProperty, null);
                 double from = press.ScaleX; press.ScaleX = press.ScaleY = scale;
                 if (Enabled) foreach (var property in new[] { ScaleTransform.ScaleXProperty, ScaleTransform.ScaleYProperty })
-                    press.BeginAnimation(property, new DoubleAnimation(from, scale, TimeSpan.FromMilliseconds(button.IsPressed ? 70 : 160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+                    press.BeginAnimation(property, new DoubleAnimation(from, scale, TimeSpan.FromMilliseconds(button.IsPressed ? 70 : 160)) { EasingFunction = Out, FillBehavior = FillBehavior.Stop });
             }
         }
         button.MouseEnter += (_, _) => Respond(); button.MouseLeave += (_, _) => Respond();
@@ -204,7 +249,9 @@ public static class Motion
             timer.Stop();
             window.Close();
         };
-        window.ContentRendered += (_, _) => { if (appeared) return; appeared = true; if (window.Content is FrameworkElement content) CompleteNoticeEntrance(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
+        // WPF can raise ContentRendered after Closed for a window closed before its first frame; a timer
+        // started then never stops and keeps the closed window and its screenshot alive.
+        window.ContentRendered += (_, _) => { if (appeared || closed) return; appeared = true; if (window.Content is FrameworkElement content) CompleteNoticeEntrance(content); lastTick = clock.Elapsed; lifetime.Reset(dismissDuration, activitySource()); timer.Start(); };
         window.Closed += (_, _) => { closed = true; timer.Stop(); };
         return extended =>
         {
@@ -230,8 +277,8 @@ public static class Motion
             toggle.BeginAnimation(TogglePositionProperty, null);
             SetTogglePosition(toggle, destination);
             if (animate && Enabled) toggle.BeginAnimation(TogglePositionProperty,
-                new DoubleAnimation(current, destination, TimeSpan.FromMilliseconds(180))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+                new DoubleAnimation(current, destination, TimeSpan.FromMilliseconds(300))
+                { EasingFunction = Spring, FillBehavior = FillBehavior.Stop });
         }
         Move(false);
         toggle.Loaded += (_, _) => Move(false);

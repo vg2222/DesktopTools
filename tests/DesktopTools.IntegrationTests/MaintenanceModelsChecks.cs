@@ -76,8 +76,8 @@ internal static class MaintenanceModelsChecks
     internal static async Task RunTranslationAsync()
     {
         string english = "Hello world! Open the window. The computer is on the table.";
-        Check(await LocalTranslation.TranslateAsync(english, "en-ru") == "Приветствую мир! Открой окно. Компьютер на столе.",
-            "Reusing translation sessions changed the baseline three-sentence output");
+        string baseline = await LocalTranslation.TranslateAsync(english, "en-ru");
+        Check(baseline == "Привет, мир! Открой окно. Компьютер на столе.", "Reusing translation sessions changed the baseline three-sentence output: " + baseline);
         foreach (var (direction, sentences) in new[]
         {
             ("en-ru", new[] { "Hello world!", "Open the window.", "The computer is on the table." }),
@@ -96,12 +96,13 @@ internal static class MaintenanceModelsChecks
             await Task.Delay(100); cancellation.Cancel();
             try { await pending; throw new Exception("Translation ignored cancellation"); } catch (OperationCanceledException) { }
         }
-        Check(await LocalTranslation.TranslateAsync("Hello world!", "en-ru") == "Приветствую мир!", "Canceled request stranded translation resources or gate");
-        try { await LocalTranslation.TranslateAsync(string.Join(" ", Enumerable.Repeat("Hello!", 33)), "en-ru"); throw new Exception("Sentence limit ignored"); }
-        catch (ArgumentException) { }
+        Check(await LocalTranslation.TranslateAsync("Hello world!", "en-ru") == "Привет, мир!", "Canceled request stranded translation resources or gate");
+        // The 32-sentence rule is gone (spec 9); 33 sentences translate sentence by sentence.
+        Check((await LocalTranslation.TranslateAsync(string.Join(" ", Enumerable.Repeat("Hello world!", 33)), "en-ru")).Split("мир").Length - 1 == 33,
+            "33 sentences were not each translated");
         // The first sentence creates both sessions; rejection of the second must still dispose the stage.
         try { await LocalTranslation.TranslateAsync("Hello world!\n" + string.Join(" ", Enumerable.Repeat("hello", 300)), "en-ru"); throw new Exception("Token limit ignored"); }
         catch (ArgumentException) { }
-        Check(await LocalTranslation.TranslateAsync("Hello world!", "en-ru") == "Приветствую мир!", "Rejected passage stranded translation resources or gate");
+        Check(await LocalTranslation.TranslateAsync("Hello world!", "en-ru") == "Привет, мир!", "Rejected passage stranded translation resources or gate");
     }
 }

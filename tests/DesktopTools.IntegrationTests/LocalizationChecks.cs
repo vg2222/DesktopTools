@@ -65,7 +65,29 @@ internal static class LocalizationChecks
                             freeze.IsChecked = true;
                             main.UpdateLayout();
                         }
-                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture") Render(main, language + "-" + theme + "-" + page);
+                        if (page == "About")
+                        {
+                            const string supportMessage = "Every feature is free. If DesktopTools helps you, you can support its development.";
+                            if (!text.Contains(L.T(supportMessage)) || (language != "en" && L.T(supportMessage) == supportMessage))
+                                throw new Exception("Untranslated support message: " + language);
+                            var buttons = Descendants(main).OfType<Button>().ToArray();
+                            foreach (var (tag, label) in new[] { ("sidebar-support", "Support"), ("about-support", "Support DesktopTools") })
+                            {
+                                var button = buttons.Single(b => b.Tag as string == tag);
+                                if (button.Content is not StackPanel content ||
+                                    content.Children.OfType<TextBlock>().Single().Text != L.T(label) ||
+                                    (language != "en" && L.T(label) == label))
+                                    throw new Exception("Untranslated support action: " + language + "/" + tag);
+                            }
+                        }
+                        if (page is "Home" or "Settings" or "Utilities" or "Shortcuts" or "Capture" or "About") Render(main, language + "-" + theme + "-" + page);
+                        if (page == "Capture")
+                        {
+                            var fileNames = Descendants(main).OfType<TextBlock>().FirstOrDefault(t => t.Text == L.T("File names"))
+                                ?? throw new Exception("File names setting is missing: " + language);
+                            fileNames.BringIntoView(new Rect(0, 0, Math.Max(1, fileNames.ActualWidth), 200)); await Task.Delay(20); main.UpdateLayout();
+                            Render(main, language + "-" + theme + "-Capture-FileNames");
+                        }
                     }
                     var combo = Ui.Choice(new[] { "Pen", "Arrow" }, "Pen", _ => { });
                     if (!Equals(combo.SelectedItem, "Pen")) throw new Exception("Translated stored choice");
