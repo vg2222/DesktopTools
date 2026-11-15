@@ -63,3 +63,5 @@
   .donation-network-note { color: CanvasText; border-color: CanvasText; }
   .donation-qr > img { forced-color-adjust: none; }
 }
+
+.support-main { width: min(100% - 32px, 920px); padding-top: 72px; }
