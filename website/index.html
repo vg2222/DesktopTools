@@ -42,8 +42,8 @@
       }
     </script>
     <link rel="icon" href="./images/app-icon.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=studio-1" />
-    <script defer src="./site.js?v=studio-1"></script>
+    <link rel="stylesheet" href="./styles.css?v=studio-2" />
+    <script defer src="./site.js?v=studio-2"></script>
   </head>
     <body id="top">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -54,13 +54,13 @@
           <a href="#features" data-i18n="navFeatures">Features</a>
           <a href="#privacy" data-i18n="navPrivacy">Privacy</a>
           <a href="#faq" data-i18n="navFaq">FAQ</a>
-          <a href="./support/" data-language-link data-i18n="navSupport">Support</a>
         </nav>
         <div class="header-end">
           <label class="sr-only" for="language" data-i18n="languageLabel">Language</label>
           <select id="language" aria-label="Language" data-i18n-aria="languageLabel">
             <option value="en" lang="en">English</option><option value="ru" lang="ru">Русский</option><option value="de" lang="de">Deutsch</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option>
           </select>
+          <a class="header-support" href="./support/" data-language-link><span class="support-heart" aria-hidden="true"></span><span data-i18n="navSupport">Support</span></a>
           <a class="header-github" href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
               <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943" />
@@ -69,12 +69,10 @@
           </a>
         </div>
       </div>
-      <span class="scroll-progress" aria-hidden="true"></span>
     </header>
 
     <main id="main" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
-        <p class="hero-badge"><img src="./images/app-icon.png" width="20" height="20" alt="" /><span data-i18n="heroBadge">Free and open source for Windows 11</span></p>
         <h1 id="hero-title"><span data-i18n="heroTitle">Your screen,</span> <span class="accent" data-i18n="heroTitleAccent">explained.</span></h1>
         <p class="hero-lead" data-i18n="heroBody">Screenshots that point at the right thing, recordings of a walkthrough, drawing and a spotlight while you present. One app, and everything stays on your PC.</p>
         <div class="hero-actions">
@@ -82,92 +80,96 @@
           <a class="button button-secondary" href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer" data-i18n="viewSource">View the source</a>
         </div>
         <p class="hero-meta"><span data-i18n="metaWindows">Windows 11 x64</span><span data-i18n="metaAccount">No account</span><span data-i18n="metaLicense">MIT license</span></p>
-        <figure class="product-frame" data-reveal>
+        <figure class="product-frame" data-tilt>
           <img src="./images/screens/home.webp" width="1800" height="1446" alt="The DesktopTools home screen with pinned tools and tool collections" data-i18n-alt="shotHome" fetchpriority="high" />
         </figure>
       </section>
 
-      <section class="section shell" id="features" aria-labelledby="features-title">
-        <div class="section-head" data-reveal>
-          <p class="eyebrow" data-i18n="featuresEyebrow">What it does</p>
+      <section class="story" id="features" aria-labelledby="features-title">
+        <div class="shell story-head">
           <h2 id="features-title" data-i18n="featuresTitle">Make your point. Keep moving.</h2>
           <p data-i18n="featuresIntro">The tools live in your notification area, one shortcut away, so you can show what you mean without breaking your flow.</p>
         </div>
-        <div class="showcase">
-          <article class="panel" data-reveal>
-            <div class="panel-media"><img src="./images/screens/editor.webp" width="1400" height="752" alt="The screenshot editor with a rectangle, an arrow and a text label on a slide" data-i18n-alt="shotEditor" loading="lazy" /></div>
-            <div class="panel-copy">
+        <div class="shell story-body">
+          <div class="story-stage" aria-hidden="true">
+            <div class="stage-screen">
+              <img class="is-active" src="./images/screens/editor.webp" width="1400" height="752" alt="" data-stage="capture" />
+              <img src="./images/screens/recorder.webp" width="1400" height="1000" alt="" data-stage="record" loading="lazy" />
+              <img src="./images/screens/teleprompter.webp" width="1400" height="929" alt="" data-stage="present" loading="lazy" />
+              <img src="./images/screens/text.webp" width="1400" height="974" alt="" data-stage="text" loading="lazy" />
+            </div>
+          </div>
+          <div class="story-chapters">
+            <article class="chapter is-active" data-chapter="capture">
+              <span class="chapter-icon"><span class="icon icon-screenshot" aria-hidden="true"></span></span>
               <h3 data-i18n="captureTitle">A screenshot that explains itself</h3>
               <p data-i18n="captureBody">Select a region, add arrows, shapes, text or a blur, then copy or save. Your original image stays untouched.</p>
               <ul><li data-i18n="captureList1">Pixel loupe and exact sizes while you select</li><li data-i18n="captureList2">Copy and save a PNG in one step</li><li data-i18n="captureList3">Check a screenshot for private details before you share it</li></ul>
-            </div>
-          </article>
-          <article class="panel" data-reveal>
-            <div class="panel-media"><img src="./images/screens/recorder.webp" width="1400" height="1000" alt="The screen recorder with a window selected as the source" data-i18n-alt="shotRecorder" loading="lazy" /></div>
-            <div class="panel-copy">
+              <img class="chapter-media" src="./images/screens/editor.webp" width="1400" height="752" alt="The screenshot editor with a rectangle, an arrow and a text label on a slide" data-i18n-alt="shotEditor" loading="lazy" />
+            </article>
+            <article class="chapter" data-chapter="record">
+              <span class="chapter-icon"><span class="icon icon-record" aria-hidden="true"></span></span>
               <h3 data-i18n="recordTitle">Record a walkthrough</h3>
               <p data-i18n="recordBody">Record a window, a monitor or a region with your microphone and system audio. Pick the source and quality before you start.</p>
               <ul><li data-i18n="recordList1">Smooth playback, even of a screen that barely changes</li><li data-i18n="recordList2">Trim, edit and transcribe the video afterwards</li><li data-i18n="recordList3">Recorder controls stay out of supported captures</li></ul>
-            </div>
-          </article>
-          <article class="panel" data-reveal>
-            <div class="panel-media"><img src="./images/screens/teleprompter.webp" width="1400" height="929" alt="The teleprompter studio with a script and reading settings" data-i18n-alt="shotTeleprompter" loading="lazy" /></div>
-            <div class="panel-copy">
+              <img class="chapter-media" src="./images/screens/recorder.webp" width="1400" height="1000" alt="The screen recorder with a window selected as the source" data-i18n-alt="shotRecorder" loading="lazy" />
+            </article>
+            <article class="chapter" data-chapter="present">
+              <span class="chapter-icon"><span class="icon icon-pen" aria-hidden="true"></span></span>
               <h3 data-i18n="presentTitle">Present with confidence</h3>
               <p data-i18n="presentBody">Draw over any app, point with a laser, dim everything around a spotlight and keep your script in a teleprompter hidden from supported captures.</p>
               <ul><li data-i18n="presentList1">Drawing and spotlight on any monitor</li><li data-i18n="presentList2">Teleprompter hidden from screen sharing where Windows allows it</li><li data-i18n="presentList3">Floating notes for a quick checklist</li></ul>
-            </div>
-          </article>
-          <article class="panel" data-reveal>
-            <div class="panel-media"><img src="./images/screens/text.webp" width="1400" height="974" alt="Text recognised from a screenshot, ready to copy" data-i18n-alt="shotText" loading="lazy" /></div>
-            <div class="panel-copy">
+              <img class="chapter-media" src="./images/screens/teleprompter.webp" width="1400" height="929" alt="The teleprompter studio with a script and reading settings" data-i18n-alt="shotTeleprompter" loading="lazy" />
+            </article>
+            <article class="chapter" data-chapter="text">
+              <span class="chapter-icon"><span class="icon icon-search" aria-hidden="true"></span></span>
               <h3 data-i18n="textTitle">Grab the text from anything</h3>
               <p data-i18n="textBody">Pull text out of a screenshot and translate it offline. English and Russian are built in; about twenty more languages are optional downloads.</p>
               <ul><li data-i18n="textList1">Windows text recognition, or an optional OCR pack</li><li data-i18n="textList2">Translation that runs on your PC</li><li data-i18n="textList3">No uploads, no account</li></ul>
-            </div>
-          </article>
+              <img class="chapter-media" src="./images/screens/text.webp" width="1400" height="974" alt="Text recognised from a screenshot, ready to copy" data-i18n-alt="shotText" loading="lazy" />
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="statement" id="privacy" aria-labelledby="privacy-title">
+        <div class="shell">
+          <h2 id="privacy-title" class="statement-kicker" data-i18n="whyTitle">Useful tools. No strings attached.</h2>
+          <p class="statement-text" data-i18n="privacyIntro" data-words>DesktopTools doesn’t send your screen anywhere. You decide where every image and recording is saved.</p>
+          <div class="promises">
+            <div><h3 data-i18n="whyLocal">Local and private</h3><p data-i18n="whyLocalBody">Captures, notes and processing stay on your PC. No telemetry.</p></div>
+            <div><h3 data-i18n="whyFree">Every feature is free</h3><p data-i18n="whyFreeBody">No paid tier and no features held back for donors.</p></div>
+            <div><h3 data-i18n="whySource">Open by design</h3><p data-i18n="whySourceBody">Read the code, suggest a change or make it your own under the MIT license.</p></div>
+            <div><h3 data-i18n="whyAccount">No account needed</h3><p data-i18n="whyAccountBody">Install, open a tool and get on with your work.</p></div>
+          </div>
+          <p class="privacy-note"><a class="text-link" href="https://github.com/vg2222/DesktopTools/blob/main/README.md#-local-first-by-design" data-i18n="privacyLink">Read the privacy details</a> <span data-i18n="privacyAside">Hiding tool windows from a capture depends on the app you record or share with. Check what the viewer sees before relying on it.</span></p>
         </div>
       </section>
 
       <section class="section shell" aria-labelledby="tools-title">
-        <div class="section-head" data-reveal>
-          <h2 id="tools-title" data-i18n="toolsTitle">And the small jobs, too.</h2>
-          <p data-i18n="toolsIntro">Everything else you reach for during the day, in the same app.</p>
-        </div>
-        <div class="tool-grid" data-reveal>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-image" aria-hidden="true"></span></span><h3 data-i18n="toolImage">Image editor</h3><p data-i18n="toolImageBody">Crop, resize, adjust and export images, and remove a background on your PC.</p></article>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-record" aria-hidden="true"></span></span><h3 data-i18n="toolVideo">Video editor</h3><p data-i18n="toolVideoBody">Trim a recording and export a copy without touching the original.</p></article>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-color" aria-hidden="true"></span></span><h3 data-i18n="toolColor">Color picker</h3><p data-i18n="toolColorBody">Sample any pixel on screen and copy its value in the format you need.</p></article>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-note" aria-hidden="true"></span></span><h3 data-i18n="toolNotes">Notes</h3><p data-i18n="toolNotesBody">Searchable notes and small floating notes that stay where you put them.</p></article>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-keyboard" aria-hidden="true"></span></span><h3 data-i18n="toolShortcuts">Your shortcuts</h3><p data-i18n="toolShortcutsBody">Set the key combinations you want and turn on only the tools you use.</p></article>
-          <article class="tool-card"><span class="tool-icon"><span class="icon icon-star" aria-hidden="true"></span></span><h3 data-i18n="toolFavorites">Favorites</h3><p data-i18n="toolFavoritesBody">Pin the tools you use most to the home screen, in light or dark mode.</p></article>
-        </div>
-      </section>
-
-      <section class="section shell" id="privacy" aria-labelledby="privacy-title">
-        <div class="privacy-band" data-reveal>
-          <div>
-            <p class="eyebrow" data-i18n="privacyEyebrow">Private by design</p>
-            <h2 id="privacy-title" data-i18n="whyTitle">Useful tools. No strings attached.</h2>
-            <p data-i18n="privacyIntro">DesktopTools doesn’t send your screen anywhere. You decide where every image and recording is saved.</p>
+        <div class="tools-layout">
+          <div class="tools-head">
+            <h2 id="tools-title" data-i18n="toolsTitle">And the small jobs, too.</h2>
+            <p data-i18n="toolsIntro">Everything else you reach for during the day, in the same app.</p>
           </div>
-          <div class="privacy-points">
-            <article><h3 data-i18n="whyLocal">Local and private</h3><p data-i18n="whyLocalBody">Captures, notes and processing stay on your PC. No telemetry.</p></article>
-            <article><h3 data-i18n="whyFree">Every feature is free</h3><p data-i18n="whyFreeBody">No paid tier and no features held back for donors.</p></article>
-            <article><h3 data-i18n="whySource">Open by design</h3><p data-i18n="whySourceBody">Read the code, suggest a change or make it your own under the MIT license.</p></article>
-            <article><h3 data-i18n="whyAccount">No account needed</h3><p data-i18n="whyAccountBody">Install, open a tool and get on with your work.</p></article>
-            <p class="privacy-note"><a class="text-link" href="https://github.com/vg2222/DesktopTools/blob/main/README.md#-local-first-by-design" data-i18n="privacyLink">Read the privacy details</a> <span data-i18n="privacyAside">Hiding tool windows from a capture depends on the app you record or share with. Check what the viewer sees before relying on it.</span></p>
-          </div>
+          <ul class="tool-list">
+            <li><span class="icon icon-image" aria-hidden="true"></span><div><h3 data-i18n="toolImage">Image editor</h3><p data-i18n="toolImageBody">Crop, resize, adjust and export images, and remove a background on your PC.</p></div></li>
+            <li><span class="icon icon-record" aria-hidden="true"></span><div><h3 data-i18n="toolVideo">Video editor</h3><p data-i18n="toolVideoBody">Trim a recording and export a copy without touching the original.</p></div></li>
+            <li><span class="icon icon-color" aria-hidden="true"></span><div><h3 data-i18n="toolColor">Color picker</h3><p data-i18n="toolColorBody">Sample any pixel on screen and copy its value in the format you need.</p></div></li>
+            <li><span class="icon icon-note" aria-hidden="true"></span><div><h3 data-i18n="toolNotes">Notes</h3><p data-i18n="toolNotesBody">Searchable notes and small floating notes that stay where you put them.</p></div></li>
+            <li><span class="icon icon-keyboard" aria-hidden="true"></span><div><h3 data-i18n="toolShortcuts">Your shortcuts</h3><p data-i18n="toolShortcutsBody">Set the key combinations you want and turn on only the tools you use.</p></div></li>
+            <li><span class="icon icon-star" aria-hidden="true"></span><div><h3 data-i18n="toolFavorites">Favorites</h3><p data-i18n="toolFavoritesBody">Pin the tools you use most to the home screen, in light or dark mode.</p></div></li>
+          </ul>
         </div>
       </section>
 
       <section class="section shell" id="faq" aria-labelledby="faq-title">
         <div class="faq">
-          <div class="faq-intro" data-reveal>
+          <div class="faq-intro">
             <h2 id="faq-title"><span data-i18n="faqTitle">Questions?</span> <span data-i18n="faqTitleMuted">Answered.</span></h2>
             <p><span data-i18n="faqMore">Something else?</span> <a class="text-link" href="https://github.com/vg2222/DesktopTools/issues" target="_blank" rel="noopener noreferrer" data-i18n="faqIssue">Open an issue on GitHub</a></p>
           </div>
-          <div class="faq-list" data-reveal>
+          <div class="faq-list">
             <details><summary data-i18n="faqFreeQ">Is DesktopTools really free?</summary><p data-i18n="faqFreeA">Yes. Every feature is free, with no trial, no paid tier and no account. The project is supported only by voluntary donations.</p></details>
             <details><summary data-i18n="faqWorkQ">Can I use it at work?</summary><p data-i18n="faqWorkA">Yes. DesktopTools is open source under the MIT license, which allows personal and commercial use.</p></details>
             <details><summary data-i18n="faqSystemQ">Which systems does it run on?</summary><p data-i18n="faqSystemA">Windows 11 on x64 PCs. The installer brings everything else it needs, except the Microsoft Visual C++ runtime, which some features require.</p></details>
@@ -180,7 +182,7 @@
       </section>
 
       <section class="shell" id="download" aria-labelledby="download-title">
-        <div class="cta" data-reveal>
+        <div class="cta" data-rise>
           <img src="./images/app-icon.png" width="72" height="72" alt="" />
           <h2 id="download-title" data-i18n="downloadTitle">Put it to work.</h2>
           <p data-i18n="downloadBody">Get the installer for a regular setup, or the portable ZIP if you’d rather not install anything. Both come from the latest GitHub release.</p>

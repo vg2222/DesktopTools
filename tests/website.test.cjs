@@ -15,8 +15,8 @@ function attribute(tag, name) {
 for (const id of ['features', 'privacy', 'faq', 'download']) {
   assert.match(html, new RegExp('<section\\b[^>]*\\bid="' + id + '"'), 'Missing ' + id + ' section');
 }
-const panels = [...html.matchAll(/<article\b[^>]*class="panel"[^>]*>([\s\S]*?)<\/article>/g)];
-assert.equal(panels.length, 4, 'Four showcase articles explain the main tools');
+const panels = [...html.matchAll(/<article\b[^>]*class="chapter[^"]*"[^>]*>([\s\S]*?)<\/article>/g)];
+assert.equal(panels.length, 4, 'Four story chapters explain the main tools');
 for (const [, panel] of panels) {
   const images = [...panel.matchAll(/<img\b[^>]*>/g)];
   assert.equal(images.length, 1, 'Each showcase article needs one app screenshot');
@@ -30,7 +30,12 @@ for (const [, panel] of panels) {
   assert.ok(attribute(tag, 'alt')?.trim(), 'Screenshot needs descriptive alt text: ' + src);
   assert.ok(attribute(tag, 'data-i18n-alt'), 'Screenshot needs translated alt text: ' + src);
 }
-assert.equal((html.match(/<article\b[^>]*class="tool-card"/g) || []).length, 6, 'Six tool cards cover the smaller jobs');
+const toolList = html.match(/<ul class="tool-list">([\s\S]*?)<\/ul>/)?.[1] ?? '';
+assert.equal((toolList.match(/<li>/g) || []).length, 6, 'Six entries cover the smaller jobs');
+const stages = [...html.matchAll(/<img\b[^>]*\bdata-stage="([^"]+)"/g)].map(match => match[1]);
+const chapterNames = [...html.matchAll(/\bdata-chapter="([^"]+)"/g)].map(match => match[1]);
+assert.deepEqual(stages, chapterNames, 'Each story chapter needs its own screen on the sticky stage');
+assert.doesNotMatch(html, /hero-badge|scroll-progress/, 'Removed hero badge and scroll progress must stay removed');
 const faq = html.match(/<section\b[^>]*\bid="faq"[^>]*>([\s\S]*?)<\/section>/)?.[1];
 const questions = [...faq.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)];
 assert.equal(questions.length, 7, 'FAQ should have seven native disclosure elements');
@@ -99,7 +104,8 @@ checkAssets(site);
 assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?animation:\s*none\s*!important/, 'Reduced motion must disable animations');
 assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.reveal-ready\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*none;/, 'Reduced motion must leave reveal content visible');
 assert.match(css, /html\s*\{\s*scroll-behavior:\s*smooth;/, 'Smooth scrolling is missing');
-assert.match(css, /animation-timeline:\s*scroll\(root block\)/, 'Scroll progress effect is missing');
+assert.match(css, /\.product-frame\s*\{[^}]*--p:/, 'Scroll-linked product frame is missing');
+assert.match(script, /\[data-words\]/, 'Word-by-word statement is missing');
 assert.match(script, /new IntersectionObserver/, 'Section reveal behavior is missing');
 
 const accentHex = css.match(/--accent:\s*(#[0-9a-f]{6})\s*;/i)?.[1];

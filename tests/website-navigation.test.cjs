@@ -13,12 +13,21 @@ function headerNav(html) {
 }
 function href(tag) { return tag.match(/\bhref="([^"]+)"/)?.[1]; }
 
+function supportPill(html) {
+  const header = html.match(/<header\b[^>]*>([\s\S]*?)<\/header>/)?.[1];
+  const pill = header?.match(/<a\b[^>]*class="header-support"[^>]*>/)?.[0];
+  assert.ok(pill, 'Header needs the highlighted Support button');
+  assert.match(pill, /\bdata-language-link\b/,'Support link must retain the selected language');
+  return pill;
+}
 const homeLinks = headerNav(home);
-assert.deepEqual(homeLinks.map(href), ['#features', '#privacy', '#faq', './support/']);
-assert.match(homeLinks[3], /\bdata-language-link\b/, 'Support link must retain the selected language');
+assert.deepEqual(homeLinks.map(href), ['#features', '#privacy', '#faq']);
+assert.equal(href(supportPill(home)), './support/');
 const supportLinks = headerNav(support);
-assert.deepEqual(supportLinks.map(href), ['../#features', '../#privacy', '../#faq', './']);
-assert.match(supportLinks[3], /aria-current="page"/, 'Support navigation must identify the current page');
+assert.deepEqual(supportLinks.map(href), ['../#features', '../#privacy', '../#faq']);
+const currentSupport = supportPill(support);
+assert.equal(href(currentSupport), './');
+assert.match(currentSupport, /aria-current="page"/, 'Support navigation must identify the current page');
 for (const link of supportLinks) assert.match(link, /\bdata-language-link\b/);
 
 for (const [file, html] of [['index.html', home], ['support/index.html', support]]) {

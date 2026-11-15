@@ -64,11 +64,13 @@ let lastUrl;
 const window = {
   location: { search: '?lang=en', href: 'http://localhost:8765/?lang=en' },
   scrollY: 0,
+  listeners: [],
   addEventListener(name, listener, options) {
-    assert.equal(name, 'scroll');
-    assert.equal(options.passive, true, 'Header scroll handler must be passive');
-    this.onScroll = listener;
+    assert.ok(name === 'scroll' || name === 'resize', 'Unexpected window listener ' + name);
+    if (name === 'scroll') assert.equal(options?.passive, true, 'Scroll handlers must be passive');
+    this.listeners.push([name, listener]);
   },
+  onScroll() { for (const [name, listener] of this.listeners) if (name === 'scroll') listener(); },
   matchMedia() { return { matches: true }; }
 };
 const context = {
@@ -77,6 +79,7 @@ const context = {
   URL,
   URLSearchParams,
   navigator: { language: 'en-US' },
+  requestAnimationFrame(callback) { callback(); },
   IntersectionObserver: class {
     constructor() { assert.fail('Reduced motion must not initialize reveal observers'); }
   },

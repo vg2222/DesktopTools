@@ -683,6 +683,7 @@ function setLanguage(language, updateUrl = false) {
   document.querySelectorAll('[data-i18n-wallet]').forEach(element => {
     element.textContent = copy.sendOnly.replace('{coin}', element.dataset.coin).replace('{network}', element.dataset.network);
   });
+  splitWords();
   selector.value = chosen;
   try { localStorage.setItem("desktoptools-site-language", chosen); } catch { /* Storage can be unavailable. */ }
   if (updateUrl) {
@@ -701,9 +702,71 @@ if (header) {
 }
 
 selector.addEventListener("change", event => setLanguage(event.target.value, true));
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Split the statement into words so they can light up one by one. Re-run after a language change.
+function splitWords() {
+  document.querySelectorAll("[data-words]").forEach(element => {
+    const text = element.textContent.trim();
+    element.setAttribute("aria-label", text);
+    element.replaceChildren(...text.split(/\s+/).flatMap((word, index) => {
+      const span = document.createElement("span");
+      span.className = "word";
+      span.setAttribute("aria-hidden", "true");
+      span.textContent = word;
+      return index ? [document.createTextNode(" "), span] : [span];
+    }));
+  });
+  requestScroll();
+}
+
+// One scroll loop drives every scroll-linked effect.
+const tilt = document.querySelector("[data-tilt]");
+const rise = document.querySelector("[data-rise]");
+const clamp = value => Math.min(1, Math.max(0, value));
+let scheduled = false;
+function updateScroll() {
+  scheduled = false;
+  if (reduceMotion) return;
+  const vh = window.innerHeight;
+  if (tilt) {
+    const top = tilt.getBoundingClientRect().top;
+    tilt.style.setProperty("--p", clamp(1 - (top - vh * .18) / (vh * .55)).toFixed(3));
+  }
+  if (rise) {
+    const top = rise.getBoundingClientRect().top;
+    rise.style.setProperty("--p", clamp(1 - (top - vh * .25) / (vh * .6)).toFixed(3));
+  }
+  document.querySelectorAll("[data-words]").forEach(element => {
+    const box = element.getBoundingClientRect();
+    const progress = clamp((vh * .85 - box.top) / (box.height + vh * .35));
+    const words = element.querySelectorAll(".word");
+    const lit = Math.round(progress * words.length);
+    words.forEach((word, index) => word.classList.toggle("is-lit", index < lit));
+  });
+}
+const requestScroll = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(updateScroll); } };
+window.addEventListener("scroll", requestScroll, { passive: true });
+window.addEventListener("resize", requestScroll);
 setLanguage(initialLanguage);
 
-if (typeof IntersectionObserver !== "undefined" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+// The sticky screen follows whichever chapter is in the middle of the viewport.
+const chapters = document.querySelectorAll("[data-chapter]");
+if (chapters.length && typeof IntersectionObserver !== "undefined") {
+  const stages = document.querySelectorAll("[data-stage]");
+  const chapterObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const name = entry.target.dataset.chapter;
+      chapters.forEach(chapter => chapter.classList.toggle("is-active", chapter === entry.target));
+      stages.forEach(stage => stage.classList.toggle("is-active", stage.dataset.stage === name));
+    }
+  }, { rootMargin: "-45% 0px -45% 0px" });
+  chapters.forEach(chapter => chapterObserver.observe(chapter));
+}
+
+if (typeof IntersectionObserver !== "undefined" && !reduceMotion) {
   const revealObserver = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
