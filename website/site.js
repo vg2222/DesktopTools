@@ -825,3 +825,39 @@ if (typeof IntersectionObserver !== "undefined" && !reduceMotion) {
     revealObserver.observe(element);
   });
 }
+
+// On wide screens, one wheel step moves the feature story one chapter forward or back.
+if (chapters.length && !reduceMotion) {
+  let stepLockedUntil = 0;
+  let lastWheel = 0;
+  const chapterCenters = () => Array.from(chapters, chapter => {
+    const box = chapter.getBoundingClientRect();
+    return window.scrollY + box.top + box.height / 2;
+  });
+  window.addEventListener("wheel", event => {
+    if (event.ctrlKey || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
+    if (!window.matchMedia("(min-width: 961px)").matches) return;
+    const now = Date.now();
+    const sinceLast = now - lastWheel;
+    lastWheel = now;
+    const half = window.innerHeight / 2;
+    const middle = window.scrollY + half;
+    const centers = chapterCenters();
+    const first = centers[0];
+    const last = centers[centers.length - 1];
+    const down = event.deltaY > 0;
+    const inside = down ? middle >= first - window.innerHeight && middle < last - 4 : middle <= last + half && middle > first + 4;
+    if (!inside) return;
+    event.preventDefault();
+    // Wait out the rest of a trackpad or wheel flick before the next step.
+    if (now < stepLockedUntil || sinceLast < 120 && now < stepLockedUntil + 250) {
+      stepLockedUntil = Math.max(stepLockedUntil, now + 120);
+      return;
+    }
+    if (Math.abs(event.deltaY) < 4) return;
+    const target = down ? centers.find(center => center > middle + 4) : [...centers].reverse().find(center => center < middle - 4);
+    if (target === undefined) return;
+    stepLockedUntil = now + 750;
+    window.scrollTo({ top: Math.max(0, target - half), behavior: "smooth" });
+  }, { passive: false });
+}
