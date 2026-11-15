@@ -521,6 +521,7 @@ static void RenderInstallerModes(Assembly installer, Type program)
                     var selector = VisualDescendants((DependencyObject)window.Content).OfType<Button>().Single(b => Equals(b.Tag, "installer-language"));
                     selector.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     var menu = (System.Windows.Controls.Primitives.Popup)Field("languageMenu")!;
+                    menu.Child.Measure(new Size(220, 230)); menu.Child.Arrange(new Rect(0, 0, 220, menu.Child.DesiredSize.Height)); menu.Child.UpdateLayout();
                     Check(menu.IsOpen && VisualDescendants(menu.Child).OfType<Button>().Count(b => (b.Tag as string)?.StartsWith("installer-language-") == true) == DesktopTools.Localization.L.Languages.Length,
                         "Installer language menu does not show all supported languages");
                     Check(VisualDescendants(menu.Child).OfType<Button>().Where(b => (b.Tag as string)?.StartsWith("installer-language-") == true)

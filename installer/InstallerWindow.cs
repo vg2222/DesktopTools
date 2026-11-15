@@ -19,14 +19,17 @@ namespace DesktopTools.Installer;
 
 internal sealed partial class InstallerWindow : Window
 {
-    private static readonly Brush BackgroundBrush = Brush("#F2181D25");
-    private static readonly Brush RailBrush = new LinearGradientBrush(Color("#F3242D3B"), Color("#EF171D28"), 90);
-    private static readonly Brush CardBrush = Brush("#D82A3341");
-    private static readonly Brush StrokeBrush = Brush("#657C92AC");
-    private static readonly Brush TextBrush = Brush("#F2F4F7");
-    private static readonly Brush MutedBrush = Brush("#A8B0BC");
-    private static readonly Brush AccentBrush = Brush("#3478F6");
-    private static readonly Brush AccentHoverBrush = Brush("#4A8AFF");
+    private static readonly Brush BackgroundBrush = Brush("#0C0B12");
+    private static readonly Brush RailBrush = new LinearGradientBrush(Color("#161226"), Color("#0E0C16"), 90);
+    private static readonly Brush CardBrush = Brush("#15131F");
+    private static readonly Brush StrokeBrush = Brush("#17FFFFFF");
+    private static readonly Brush TextBrush = Brush("#F4F3FB");
+    private static readonly Brush MutedBrush = Brush("#A3A0B8");
+    private static readonly Brush AccentBrush = Brush("#6A45E0");
+    private static readonly Brush AccentHoverBrush = Brush("#7C5AF2");
+    private static readonly Brush AccentSoftBrush = Brush("#B9A6FF");
+    private static readonly Brush FaintBrush = Brush("#6F6C84");
+    private static readonly Brush AccentGradientBrush = new LinearGradientBrush(Color("#8566F6"), Color("#5B36D6"), new Point(0, 0), new Point(1, 1));
     private readonly bool uninstall;
     private readonly bool automaticUpdate;
     private readonly Program.SetupMode setupMode;
@@ -324,7 +327,7 @@ internal sealed partial class InstallerWindow : Window
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
         row.ColumnDefinitions.Add(new ColumnDefinition());
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.Children.Add(FluentIcon("settings", Brush("#C8DCFF"), 16));
+        row.Children.Add(FluentIcon("settings", Brush("#D6CCFF"), 16));
         var label = Text("Advanced options", 12, FontWeights.SemiBold, TextBrush);
         Grid.SetColumn(label, 1); row.Children.Add(label);
         var arrow = FluentIcon("chevron_right", MutedBrush, 14);
@@ -352,6 +355,7 @@ internal sealed partial class InstallerWindow : Window
         if (runtimeDownload is not null) runtimeDownload.IsEnabled = false;
         if (runtimeRecheck is not null) runtimeRecheck.IsEnabled = false;
         progressTrack.Visibility = Visibility.Visible;
+        UpdateSteps();
     }
 
     private void RestoreActionState()
@@ -369,6 +373,7 @@ internal sealed partial class InstallerWindow : Window
         if (githubUpdate is not null) githubUpdate.IsEnabled = !finished && !checkingLatest;
         if (runtimeDownload is not null) runtimeDownload.IsEnabled = true;
         if (runtimeRecheck is not null) runtimeRecheck.IsEnabled = true;
+        UpdateSteps();
     }
 
     private void ChooseFolder(TextBlock path)
@@ -464,18 +469,20 @@ internal sealed partial class InstallerWindow : Window
         {
             Content = L.T(label), Width = width, Height = 40, FontSize = 13, FontWeight = FontWeights.SemiBold,
             Foreground = accent ? Brushes.White : TextBrush,
-            Background = accent ? AccentBrush : CardBrush,
+            Background = accent ? AccentGradientBrush : CardBrush,
+            BorderBrush = accent ? Brushes.Transparent : StrokeBrush,
             BorderThickness = new Thickness(0), Cursor = Cursors.Hand
         };
         var border = new FrameworkElementFactory(typeof(Border));
         border.Name = "ButtonSurface";
-        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
         border.SetValue(Border.BorderThicknessProperty, new Thickness(1));
-        border.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
+        border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding(nameof(System.Windows.Controls.Button.BorderBrush)) { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
         border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(System.Windows.Controls.Button.Background)) { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
         var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
         presenter.SetBinding(ContentPresenter.HorizontalAlignmentProperty, new System.Windows.Data.Binding(nameof(System.Windows.Controls.Button.HorizontalContentAlignment)) { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
         presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        presenter.SetBinding(FrameworkElement.MarginProperty, new System.Windows.Data.Binding(nameof(System.Windows.Controls.Button.Padding)) { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
         border.AppendChild(presenter);
         var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
         var focus = new Trigger { Property = IsKeyboardFocusWithinProperty, Value = true };
@@ -496,8 +503,24 @@ internal sealed partial class InstallerWindow : Window
             if (!SystemParameters.ClientAreaAnimation) animated.Color = color;
             else animated.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation(color, TimeSpan.FromMilliseconds(140)));
         }
-        button.MouseEnter += (_, _) => { if (button.IsEnabled) Transition(accent ? AccentHoverBrush : Brush("#303845")); };
-        button.MouseLeave += (_, _) => Transition(accent ? AccentBrush : CardBrush);
+        if (accent)
+        {
+            var glow = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#6A45E0"), BlurRadius = 24, ShadowDepth = 0, Opacity = .45 };
+            if (!SystemParameters.HighContrast) button.Effect = glow;
+            void Glow(double target)
+            {
+                if (!SystemParameters.ClientAreaAnimation) glow.Opacity = target;
+                else glow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, new DoubleAnimation(target, TimeSpan.FromMilliseconds(160)));
+            }
+            button.MouseEnter += (_, _) => { if (button.IsEnabled) Glow(.8); };
+            button.MouseLeave += (_, _) => Glow(.45);
+            button.IsEnabledChanged += (_, _) => glow.Opacity = button.IsEnabled ? .45 : 0;
+        }
+        else
+        {
+            button.MouseEnter += (_, _) => { if (button.IsEnabled && button.Background is SolidColorBrush) Transition(Brush("#221F2E")); };
+            button.MouseLeave += (_, _) => { if (button.Background is SolidColorBrush current && current.Color.A > 0) Transition(CardBrush); };
+        }
         return button;
     }
     private static Brush Brush(string value) => new SolidColorBrush(Color(value));
@@ -535,8 +558,8 @@ internal sealed class BackgroundUpdateWindow : Window
         };
         var surface = new Border
         {
-            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1D222A")),
-            BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#343B46")),
+            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0F0E17")),
+            BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2638")),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(14),
             Padding = new Thickness(18, 14, 18, 14)
@@ -552,10 +575,10 @@ internal sealed class BackgroundUpdateWindow : Window
         });
         title.Children.Add(new TextBlock { Text = "Updating DesktopTools", Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
         stack.Children.Add(title);
-        status = new TextBlock { Text = "Preparing installation…", Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A8B0BC")), FontSize = 11, Margin = new Thickness(0, 5, 0, 10) };
+        status = new TextBlock { Text = "Preparing installation…", Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A3A0B8")), FontSize = 11, Margin = new Thickness(0, 5, 0, 10) };
         stack.Children.Add(status);
-        track = new Border { Height = 5, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#303640")), CornerRadius = new CornerRadius(3), ClipToBounds = true };
-        fill = new Border { Width = 0, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3478F6")), CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left };
+        track = new Border { Height = 5, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#26232F")), CornerRadius = new CornerRadius(3), ClipToBounds = true };
+        fill = new Border { Width = 0, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6A45E0")), CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left };
         track.Child = fill;
         stack.Children.Add(track);
         surface.Child = stack;
