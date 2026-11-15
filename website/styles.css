@@ -173,8 +173,9 @@ button, select { font: inherit; }
 @keyframes open { from { opacity: 0; transform: translateY(-6px); } }
 
 /* Final call to action: the icon grows into place as it scrolls in. --p runs 0 → 1. */
-.cta { --p: 1; position: relative; margin-top: 160px; padding: 96px 32px; text-align: center; overflow: hidden; }
-.cta::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(48% 70% at 50% 40%, rgba(106, 69, 224, calc(.15 + var(--p) * .3)), transparent 70%); }
+.cta { --p: 1; position: relative; isolation: isolate; margin-top: 160px; padding: 96px 32px; text-align: center; }
+/* The glow is larger than the section and fades out fully before its own edge, so nothing clips it. */
+.cta::before { content: ""; position: absolute; left: 50%; top: 42%; width: min(1100px, 140vw); aspect-ratio: 1.5; translate: -50% -50%; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(106, 69, 224, calc(.15 + var(--p) * .3)), rgba(106, 69, 224, calc(.05 + var(--p) * .1)) 55%, transparent); }
 .cta img { width: 112px; height: 112px; margin: 0 auto 32px; transform: scale(calc(.6 + var(--p) * .4)) rotate(calc((1 - var(--p)) * -12deg)); opacity: calc(.3 + var(--p) * .7); filter: drop-shadow(0 24px 50px rgba(106, 69, 224, .55)); }
 .cta h2 { font-size: clamp(40px, 6vw, 76px); }
 .cta p { margin: 18px auto 0; max-width: 560px; color: var(--muted); font-size: 17px; }

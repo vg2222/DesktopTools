@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#03040a" />
+    <meta name="theme-color" content="#050507" />
     <meta name="description" content="Support DesktopTools with a voluntary donation. Every app feature is free." />
     <title>Support DesktopTools</title>
     <meta property="og:type" content="website" />
@@ -23,10 +23,10 @@
     <link rel="canonical" href="https://www.desktoptools.cc/support/" />
     <link rel="icon" href="../images/app-icon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css?v=studio-2" />
-    <link rel="stylesheet" href="./support.css" />
+    <link rel="stylesheet" href="./support.css?v=studio-2" />
     <script defer src="./wallets.js"></script>
     <script defer src="./render-wallets.js"></script>
-    <script defer src="../site.js?v=studio-1"></script>
+    <script defer src="../site.js?v=studio-2"></script>
     <script defer src="./copy.js"></script>
   </head>
   <body class="support-page">
@@ -41,53 +41,75 @@
             <option value="en" lang="en">English</option><option value="ru" lang="ru">Русский</option><option value="de" lang="de">Deutsch</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option>
           </select>
           <a class="header-support" href="./" aria-current="page" data-language-link><span class="support-heart" aria-hidden="true"></span><span data-i18n="navSupport">Support</span></a>
+          <a class="header-github" href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+              <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943" />
+            </svg>
+            <span>GitHub</span>
+          </a>
         </div>
       </div>
     </header>
-    <main id="main" class="shell support-main" tabindex="-1">
-      <div class="support-intro">
+    <main id="main" tabindex="-1">
+      <section class="support-hero shell" aria-labelledby="support-title">
         <span class="support-emblem" aria-hidden="true"><span class="support-heart"></span></span>
-        <p class="eyebrow" data-i18n="supportEyebrow">Built with care. Kept going together.</p>
-        <h1 data-i18n="supportTitle">Support DesktopTools</h1>
-        <p data-i18n="supportDescription">Every app feature is free. Donations are optional.</p>
+        <h1 id="support-title" data-i18n="supportTitle">Support DesktopTools</h1>
+        <p class="support-lead" data-i18n="supportDescription">Every app feature is free. Donations are optional.</p>
         <p class="support-purpose" data-i18n="supportPurpose">Support helps with ongoing development, bug fixes and keeping the tools useful. Thank you for being part of it.</p>
-      </div>
-
-      <section class="contribution-section" aria-labelledby="wallets-title"><div class="contribution-heading"><h2 id="wallets-title" data-i18n="supportWallets">Make a contribution</h2><p data-i18n="supportWalletsBody">Choose the exact coin and network below.</p></div>
-      <div id="wallet-list">
-      <article class="donation-card" aria-labelledby="donation-token">
-        <div class="donation-heading">
-          <img data-wallet-coin-icon src="../icons/usdt.svg" width="46" height="46" alt="" />
-          <h3 id="donation-token" data-wallet-coin>USDT</h3>
-          <span class="donation-network"><img data-wallet-network-icon src="../icons/tron.svg" width="19" height="19" alt="" /><span data-wallet-network>Tron (TRC-20)</span></span>
-        </div>
-        <div class="donation-details">
-          <div>
-            <label for="donation-address" data-i18n="donationAddress">Public wallet address</label>
-            <input id="donation-address" type="text" aria-describedby="network-note" readonly spellcheck="false" dir="ltr" value="TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5" />
-            <div class="donation-actions">
-              <button id="copy-address" class="button button-primary" type="button" hidden>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M15 4H6a2 2 0 0 0-2 2v9" /></svg>
-                <span data-i18n="copyAddress">Copy address</span>
-              </button>
-              <a class="donation-explorer" href="https://tronscan.org/address/TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5/transactions" target="_blank" rel="noopener noreferrer">
-                <span data-i18n="viewExplorer">View in explorer</span>
-                <img src="../icons/arrow_up_right_24_regular.svg" width="14" height="14" alt="" />
-              </a>
-            </div>
-            <p id="copy-status" role="status" class="donation-status"></p>
-          </div>
-          <figure class="donation-qr" aria-label="Wallet address QR code" data-i18n-aria="qrLabel">
-            <img data-wallet-qr src="./usdt-tron-qr.png" width="148" height="148" alt="" />
-            <figcaption data-i18n="scanAddress">Scan in your wallet</figcaption>
-          </figure>
-        </div>
-        <p id="network-note" class="donation-network-note" data-i18n-wallet data-coin="USDT" data-network="Tron (TRC-20)">Send only USDT on the Tron (TRC-20) network.</p>
-      </article></div></section>
-      <section class="help-section" aria-labelledby="help-title"><div class="help-heading"><h2 id="help-title" data-i18n="helpTitle">There’s more than one way to help.</h2><p data-i18n="helpIntro">Your time and feedback matter, too.</p></div>
-        <div class="help-grid"><a class="help-card" href="https://github.com/vg2222/DesktopTools"><span class="icon icon-star" aria-hidden="true"></span><h3 data-i18n="helpStar">Star the project</h3><p data-i18n="helpStarBody">Help others discover DesktopTools on GitHub.</p><span class="help-arrow" aria-hidden="true">↗</span></a><a class="help-card" href="https://github.com/vg2222/DesktopTools/issues"><span class="icon icon-note" aria-hidden="true"></span><h3 data-i18n="helpIssues">Report an issue</h3><p data-i18n="helpIssuesBody">Tell us what happened and help make the tools better.</p><span class="help-arrow" aria-hidden="true">↗</span></a><a class="help-card" href="https://github.com/vg2222/DesktopTools/blob/main/docs/localization.md"><span class="icon icon-keyboard" aria-hidden="true"></span><h3 data-i18n="helpTranslate">Help translate</h3><p data-i18n="helpTranslateBody">Improve the words that make DesktopTools feel at home.</p><span class="help-arrow" aria-hidden="true">↗</span></a><a class="help-card" href="https://github.com/vg2222/DesktopTools"><span class="icon icon-image" aria-hidden="true"></span><h3 data-i18n="helpShare">Share DesktopTools</h3><p data-i18n="helpShareBody">Pass the project along to someone who could use it.</p><span class="help-arrow" aria-hidden="true">↗</span></a></div>
       </section>
-      <a class="text-link back-home" href="../" data-language-link data-i18n="backHome">Back to home</a>
+
+      <section class="support-split shell" aria-labelledby="wallets-title">
+        <div class="split-head">
+          <h2 id="wallets-title" data-i18n="supportWallets">Make a contribution</h2>
+          <p data-i18n="supportWalletsBody">Choose the exact coin and network below.</p>
+        </div>
+        <div id="wallet-list">
+          <article class="donation-card" aria-labelledby="donation-token">
+            <div class="donation-heading">
+              <img data-wallet-coin-icon src="../icons/usdt.svg" width="44" height="44" alt="" />
+              <h3 id="donation-token" data-wallet-coin>USDT</h3>
+              <span class="donation-network"><img data-wallet-network-icon src="../icons/tron.svg" width="18" height="18" alt="" /><span data-wallet-network>Tron (TRC-20)</span></span>
+            </div>
+            <div class="donation-details">
+              <div class="donation-main">
+                <label for="donation-address" data-i18n="donationAddress">Public wallet address</label>
+                <div class="address-field">
+                  <input id="donation-address" type="text" aria-describedby="network-note" readonly spellcheck="false" dir="ltr" value="TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5" />
+                  <button id="copy-address" class="button button-primary" type="button" hidden>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M15 4H6a2 2 0 0 0-2 2v9" /></svg>
+                    <span data-i18n="copyAddress">Copy address</span>
+                  </button>
+                </div>
+                <p id="copy-status" role="status" class="donation-status"></p>
+                <p id="network-note" class="donation-network-note" data-i18n-wallet data-coin="USDT" data-network="Tron (TRC-20)">Send only USDT on the Tron (TRC-20) network.</p>
+                <a class="donation-explorer text-link" href="https://tronscan.org/address/TNuCpZCkeCppELxHfVS2hwMhdeYx9vbrv5/transactions" target="_blank" rel="noopener noreferrer">
+                  <span data-i18n="viewExplorer">View in explorer</span>
+                  <span class="icon icon-arrow" aria-hidden="true"></span>
+                </a>
+              </div>
+              <figure class="donation-qr" aria-label="Wallet address QR code" data-i18n-aria="qrLabel">
+                <img data-wallet-qr src="./usdt-tron-qr.png" width="160" height="160" alt="" />
+                <figcaption data-i18n="scanAddress">Scan in your wallet</figcaption>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="support-split shell" aria-labelledby="help-title">
+        <div class="split-head">
+          <h2 id="help-title" data-i18n="helpTitle">There’s more than one way to help.</h2>
+          <p data-i18n="helpIntro">Your time and feedback matter, too.</p>
+        </div>
+        <ul class="help-list">
+          <li><a href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer"><span class="icon icon-star" aria-hidden="true"></span><div class="help-copy"><h3 data-i18n="helpStar">Star the project</h3><p data-i18n="helpStarBody">Help others discover DesktopTools on GitHub.</p></div><span class="icon icon-arrow help-arrow" aria-hidden="true"></span></a></li>
+          <li><a href="https://github.com/vg2222/DesktopTools/issues" target="_blank" rel="noopener noreferrer"><span class="icon icon-note" aria-hidden="true"></span><div class="help-copy"><h3 data-i18n="helpIssues">Report an issue</h3><p data-i18n="helpIssuesBody">Tell us what happened and help make the tools better.</p></div><span class="icon icon-arrow help-arrow" aria-hidden="true"></span></a></li>
+          <li><a href="https://github.com/vg2222/DesktopTools/blob/main/docs/localization.md" target="_blank" rel="noopener noreferrer"><span class="icon icon-keyboard" aria-hidden="true"></span><div class="help-copy"><h3 data-i18n="helpTranslate">Help translate</h3><p data-i18n="helpTranslateBody">Improve the words that make DesktopTools feel at home.</p></div><span class="icon icon-arrow help-arrow" aria-hidden="true"></span></a></li>
+          <li><a href="https://github.com/vg2222/DesktopTools" target="_blank" rel="noopener noreferrer"><span class="icon icon-image" aria-hidden="true"></span><div class="help-copy"><h3 data-i18n="helpShare">Share DesktopTools</h3><p data-i18n="helpShareBody">Pass the project along to someone who could use it.</p></div><span class="icon icon-arrow help-arrow" aria-hidden="true"></span></a></li>
+        </ul>
+      </section>
+
+      <div class="shell support-back"><a class="text-link" href="../" data-language-link data-i18n="backHome">Back to home</a></div>
     </main>
     <footer class="site-footer">
       <div class="shell footer-inner">
