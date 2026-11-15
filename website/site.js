@@ -121,10 +121,10 @@ const translations = {
     "checksums": "View checksums",
     "contribute": "Contribute",
     "shotHome": "The DesktopTools home screen with pinned tools and tool collections",
-    "shotEditor": "The screenshot editor with a rectangle, an arrow and a text label on a slide",
-    "shotRecorder": "The screen recorder with a window selected as the source",
-    "shotTeleprompter": "The teleprompter studio with a script and reading settings",
-    "shotText": "Text recognised from a screenshot, ready to copy",
+    "shotEditor": "Marking up a screenshot, then checking it for private details before sharing",
+    "shotRecorder": "Recording a browser window with the screen recorder",
+    "shotTeleprompter": "Drawing an arrow and a text label over a slide",
+    "shotText": "Text pulled out of a screenshot and pasted into notes",
     "addressCopied": "Address copied",
     "copyAddressManually": "Select and copy the address manually."
   },
@@ -250,10 +250,10 @@ const translations = {
     "checksums": "Контрольные суммы",
     "contribute": "Участвовать",
     "shotHome": "Главный экран DesktopTools с закреплёнными инструментами и подборками",
-    "shotEditor": "Редактор снимков с прямоугольником, стрелкой и текстовой подписью на слайде",
-    "shotRecorder": "Панель записи экрана с окном, выбранным в качестве источника",
-    "shotTeleprompter": "Студия телесуфлёра с текстом и настройками чтения",
-    "shotText": "Текст, распознанный на снимке и готовый к копированию",
+    "shotEditor": "Пометки на снимке, затем проверка на личные данные перед отправкой",
+    "shotRecorder": "Запись окна браузера с помощью записи экрана",
+    "shotTeleprompter": "Стрелка и текстовая подпись поверх слайда",
+    "shotText": "Текст, извлечённый из снимка и вставленный в заметки",
     "addressCopied": "Адрес скопирован",
     "copyAddressManually": "Выделите и скопируйте адрес вручную."
   },
@@ -379,10 +379,10 @@ const translations = {
     "checksums": "Prüfsummen ansehen",
     "contribute": "Mitmachen",
     "shotHome": "Die DesktopTools-Startseite mit angehefteten Werkzeugen und Werkzeugsammlungen",
-    "shotEditor": "Der Screenshot-Editor mit einem Rechteck, einem Pfeil und einer Textbeschriftung auf einer Folie",
-    "shotRecorder": "Die Bildschirmaufnahme mit einem Fenster als ausgewählter Quelle",
-    "shotTeleprompter": "Das Teleprompter-Studio mit einem Skript und Leseeinstellungen",
-    "shotText": "Aus einem Screenshot erkannter Text, bereit zum Kopieren",
+    "shotEditor": "Einen Screenshot markieren und vor dem Teilen auf private Daten prüfen",
+    "shotRecorder": "Ein Browserfenster mit der Bildschirmaufnahme aufnehmen",
+    "shotTeleprompter": "Einen Pfeil und eine Textbeschriftung über eine Folie zeichnen",
+    "shotText": "Text aus einem Screenshot, eingefügt in Notizen",
     "addressCopied": "Adresse kopiert",
     "copyAddressManually": "Wähle die Adresse aus und kopiere sie manuell."
   },
@@ -508,10 +508,10 @@ const translations = {
     "checksums": "Voir les sommes de contrôle",
     "contribute": "Contribuer",
     "shotHome": "L’écran d’accueil de DesktopTools avec des outils épinglés et des collections d’outils",
-    "shotEditor": "L’éditeur de captures avec un rectangle, une flèche et une annotation sur une diapositive",
-    "shotRecorder": "L’enregistreur d’écran avec une fenêtre sélectionnée comme source",
-    "shotTeleprompter": "Le studio du prompteur avec un texte et les réglages de lecture",
-    "shotText": "Du texte reconnu dans une capture, prêt à être copié",
+    "shotEditor": "Annoter une capture, puis la vérifier pour les données privées avant de la partager",
+    "shotRecorder": "Enregistrer une fenêtre de navigateur avec l’enregistreur d’écran",
+    "shotTeleprompter": "Dessiner une flèche et une légende sur une diapositive",
+    "shotText": "Texte extrait d’une capture et collé dans des notes",
     "addressCopied": "Adresse copiée",
     "copyAddressManually": "Sélectionnez et copiez l’adresse manuellement."
   },
@@ -637,10 +637,10 @@ const translations = {
     "checksums": "Ver sumas de comprobación",
     "contribute": "Contribuir",
     "shotHome": "La pantalla de inicio de DesktopTools con herramientas fijadas y colecciones de herramientas",
-    "shotEditor": "El editor de capturas con un rectángulo, una flecha y una etiqueta de texto sobre una diapositiva",
-    "shotRecorder": "El grabador de pantalla con una ventana seleccionada como fuente",
-    "shotTeleprompter": "El estudio del teleprónter con un guion y los ajustes de lectura",
-    "shotText": "Texto reconocido en una captura, listo para copiar",
+    "shotEditor": "Anotar una captura y revisarla en busca de datos privados antes de compartirla",
+    "shotRecorder": "Grabar una ventana del navegador con la grabadora de pantalla",
+    "shotTeleprompter": "Dibujar una flecha y una etiqueta de texto sobre una diapositiva",
+    "shotText": "Texto extraído de una captura y pegado en unas notas",
     "addressCopied": "Dirección copiada",
     "copyAddressManually": "Selecciona y copia la dirección manualmente."
   }
@@ -760,10 +760,56 @@ if (chapters.length && typeof IntersectionObserver !== "undefined") {
       if (!entry.isIntersecting) continue;
       const name = entry.target.dataset.chapter;
       chapters.forEach(chapter => chapter.classList.toggle("is-active", chapter === entry.target));
-      stages.forEach(stage => stage.classList.toggle("is-active", stage.dataset.stage === name));
+      stages.forEach(stage => {
+        stage.classList.toggle("is-active", stage.dataset.stage === name);
+        syncDemoVideo(stage);
+      });
     }
   }, { rootMargin: "-45% 0px -45% 0px" });
   chapters.forEach(chapter => chapterObserver.observe(chapter));
+}
+
+// Demo clips: muted, play only while shown, and step through data-sources in turn.
+function demoVideoShown(video) {
+  if (video.closest(".stage-screen")) return video.classList.contains("is-active") && video.dataset.inView === "1";
+  return video.dataset.inView === "1";
+}
+function syncDemoVideo(video) {
+  if (!(video instanceof HTMLVideoElement)) return;
+  if (reduceMotion) { video.controls = true; return; }
+  if (demoVideoShown(video) && video.offsetParent !== null) {
+    if (video.preload === "none") video.preload = "auto";
+    const playing = video.play();
+    if (playing && playing.catch) playing.catch(() => {});
+  } else {
+    video.pause();
+  }
+}
+const demoVideos = document.querySelectorAll("video.demo-video");
+demoVideos.forEach(video => {
+  const sources = (video.dataset.sources || "").split(",").filter(Boolean);
+  let index = 0;
+  video.addEventListener("ended", () => {
+    if (sources.length > 1) {
+      index = (index + 1) % sources.length;
+      video.src = `./videos/${sources[index]}.mp4`;
+      video.poster = `./videos/${sources[index]}.webp`;
+    } else {
+      video.currentTime = 0;
+    }
+    syncDemoVideo(video);
+  });
+});
+if (reduceMotion) {
+  demoVideos.forEach(video => { video.controls = true; });
+} else if (typeof IntersectionObserver !== "undefined") {
+  const videoObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      entry.target.dataset.inView = entry.isIntersecting ? "1" : "0";
+      syncDemoVideo(entry.target);
+    }
+  }, { threshold: 0.25 });
+  demoVideos.forEach(video => videoObserver.observe(video));
 }
 
 if (typeof IntersectionObserver !== "undefined" && !reduceMotion) {

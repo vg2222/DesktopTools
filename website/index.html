@@ -93,10 +93,10 @@
         <div class="shell story-body">
           <div class="story-stage" aria-hidden="true">
             <div class="stage-screen">
-              <img class="is-active" src="./images/screens/editor.webp" width="1400" height="752" alt="" data-stage="capture" />
-              <img src="./images/screens/recorder.webp" width="1400" height="1000" alt="" data-stage="record" loading="lazy" />
-              <img src="./images/screens/teleprompter.webp" width="1400" height="929" alt="" data-stage="present" loading="lazy" />
-              <img src="./images/screens/text.webp" width="1400" height="974" alt="" data-stage="text" loading="lazy" />
+              <video class="demo-video is-active" src="./videos/01-screenshot.mp4" poster="./videos/01-screenshot.webp" data-sources="01-screenshot,03-check-screenshot" width="1920" height="1080" muted playsinline preload="metadata" data-stage="capture"></video>
+              <video class="demo-video" src="./videos/04-recording.mp4" poster="./videos/04-recording.webp" data-sources="04-recording" width="1920" height="1080" muted playsinline preload="none" data-stage="record"></video>
+              <video class="demo-video" src="./videos/05-present.mp4" poster="./videos/05-present.webp" data-sources="05-present" width="1920" height="1080" muted playsinline preload="none" data-stage="present"></video>
+              <video class="demo-video" src="./videos/02-extract-text.mp4" poster="./videos/02-extract-text.webp" data-sources="02-extract-text" width="1920" height="1080" muted playsinline preload="none" data-stage="text"></video>
             </div>
           </div>
           <div class="story-chapters">
@@ -105,28 +105,28 @@
               <h3 data-i18n="captureTitle">A screenshot that explains itself</h3>
               <p data-i18n="captureBody">Select a region, add arrows, shapes, text or a blur, then copy or save. Your original image stays untouched.</p>
               <ul><li data-i18n="captureList1">Pixel loupe and exact sizes while you select</li><li data-i18n="captureList2">Copy and save a PNG in one step</li><li data-i18n="captureList3">Check a screenshot for private details before you share it</li></ul>
-              <img class="chapter-media" src="./images/screens/editor.webp" width="1400" height="752" alt="The screenshot editor with a rectangle, an arrow and a text label on a slide" data-i18n-alt="shotEditor" loading="lazy" />
+              <video class="chapter-media demo-video" src="./videos/01-screenshot.mp4" poster="./videos/01-screenshot.webp" data-sources="01-screenshot,03-check-screenshot" width="1920" height="1080" muted playsinline preload="none" aria-label="The screenshot editor marking up a region, then checking a screenshot for private details" data-i18n-aria="shotEditor"></video>
             </article>
             <article class="chapter" data-chapter="record">
               <span class="chapter-icon"><span class="icon icon-record" aria-hidden="true"></span></span>
               <h3 data-i18n="recordTitle">Record a walkthrough</h3>
               <p data-i18n="recordBody">Record a window, a monitor or a region with your microphone and system audio. Pick the source and quality before you start.</p>
               <ul><li data-i18n="recordList1">Smooth playback, even of a screen that barely changes</li><li data-i18n="recordList2">Trim, edit and transcribe the video afterwards</li><li data-i18n="recordList3">Recorder controls stay out of supported captures</li></ul>
-              <img class="chapter-media" src="./images/screens/recorder.webp" width="1400" height="1000" alt="The screen recorder with a window selected as the source" data-i18n-alt="shotRecorder" loading="lazy" />
+              <video class="chapter-media demo-video" src="./videos/04-recording.mp4" poster="./videos/04-recording.webp" data-sources="04-recording" width="1920" height="1080" muted playsinline preload="none" aria-label="Recording a browser window with the screen recorder" data-i18n-aria="shotRecorder"></video>
             </article>
             <article class="chapter" data-chapter="present">
               <span class="chapter-icon"><span class="icon icon-pen" aria-hidden="true"></span></span>
               <h3 data-i18n="presentTitle">Present with confidence</h3>
               <p data-i18n="presentBody">Draw over any app, point with a laser, dim everything around a spotlight and keep your script in a teleprompter hidden from supported captures.</p>
               <ul><li data-i18n="presentList1">Drawing and spotlight on any monitor</li><li data-i18n="presentList2">Teleprompter hidden from screen sharing where Windows allows it</li><li data-i18n="presentList3">Floating notes for a quick checklist</li></ul>
-              <img class="chapter-media" src="./images/screens/teleprompter.webp" width="1400" height="929" alt="The teleprompter studio with a script and reading settings" data-i18n-alt="shotTeleprompter" loading="lazy" />
+              <video class="chapter-media demo-video" src="./videos/05-present.mp4" poster="./videos/05-present.webp" data-sources="05-present" width="1920" height="1080" muted playsinline preload="none" aria-label="Drawing an arrow and a text label over a slide" data-i18n-aria="shotTeleprompter"></video>
             </article>
             <article class="chapter" data-chapter="text">
               <span class="chapter-icon"><span class="icon icon-search" aria-hidden="true"></span></span>
               <h3 data-i18n="textTitle">Grab the text from anything</h3>
               <p data-i18n="textBody">Pull text out of a screenshot and translate it offline. English and Russian are built in; about twenty more languages are optional downloads.</p>
               <ul><li data-i18n="textList1">Windows text recognition, or an optional OCR pack</li><li data-i18n="textList2">Translation that runs on your PC</li><li data-i18n="textList3">No uploads, no account</li></ul>
-              <img class="chapter-media" src="./images/screens/text.webp" width="1400" height="974" alt="Text recognised from a screenshot, ready to copy" data-i18n-alt="shotText" loading="lazy" />
+              <video class="chapter-media demo-video" src="./videos/02-extract-text.mp4" poster="./videos/02-extract-text.webp" data-sources="02-extract-text" width="1920" height="1080" muted playsinline preload="none" aria-label="Text pulled out of a screenshot and pasted into notes" data-i18n-aria="shotText"></video>
             </article>
           </div>
         </div>

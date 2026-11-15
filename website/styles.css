@@ -106,9 +106,9 @@ button, select { font: inherit; }
 .story-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; margin-top: 40px; }
 .story-chapters { grid-column: 1; grid-row: 1; }
 .story-stage { grid-column: 2; grid-row: 1; position: sticky; top: 104px; height: calc(100vh - 140px); max-height: 760px; display: grid; place-items: center; }
-.stage-screen { position: relative; width: 100%; aspect-ratio: 16 / 11; border-radius: 26px; padding: 18px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); box-shadow: 0 50px 120px -40px rgba(194, 55, 143, .55), 0 0 0 1px rgba(255, 255, 255, .06) inset; overflow: hidden; }
-.stage-screen img { position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px); object-fit: contain; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .5)); opacity: 0; transform: scale(.94) translateY(16px); transition: opacity .7s var(--ease), transform .9s var(--ease); }
-.stage-screen img.is-active { opacity: 1; transform: none; }
+.stage-screen { position: relative; width: 100%; aspect-ratio: 16 / 9.6; border-radius: 26px; padding: 18px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); box-shadow: 0 50px 120px -40px rgba(194, 55, 143, .55), 0 0 0 1px rgba(255, 255, 255, .06) inset; overflow: hidden; }
+.stage-screen video { position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px); object-fit: contain; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .5)); opacity: 0; transform: scale(.94) translateY(16px); pointer-events: none; transition: opacity .7s var(--ease), transform .9s var(--ease); }
+.stage-screen video.is-active { opacity: 1; transform: none; pointer-events: auto; }
 .chapter { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; opacity: .28; transition: opacity .5s var(--ease); }
 .chapter.is-active { opacity: 1; }
 .chapter:first-child { min-height: 60vh; justify-content: flex-start; padding-top: 18vh; }
@@ -210,7 +210,7 @@ button, select { font: inherit; }
   .story-body { grid-template-columns: 1fr; gap: 0; }
   .story-stage { display: none; }
   .chapter, .chapter:first-child { min-height: 0; padding: 56px 0 0; opacity: 1; justify-content: flex-start; }
-  .chapter-media { display: block; margin-top: 28px; border-radius: 18px; padding: 12px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); }
+  .chapter-media { display: block; width: 100%; height: auto; margin-top: 28px; border-radius: 18px; padding: 12px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); }
   .tools-layout, .faq { grid-template-columns: 1fr; gap: 32px; }
   .tools-head { position: static; }
   .promises { grid-template-columns: repeat(2, minmax(0, 1fr)); }
