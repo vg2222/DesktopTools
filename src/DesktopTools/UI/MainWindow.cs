@@ -81,7 +81,7 @@ internal sealed partial class MainWindow : Window
 
         var navItems = new StackPanel(); var navScroll = new ScrollViewer { Content = navItems, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }; SmoothScroll.Enable(navScroll); sidebar.Children.Add(navScroll);
 
-        foreach (var item in new[] { "Home", "News", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "Diagnostics", "Help", "About" })
+        foreach (var item in new[] { "Home", "News", "Capture tools", "Presentation tools", "Media tools", "Text tools", "Desktop utilities", "Profiles", "Shortcuts", "Settings", "About" })
 
         {
 
@@ -94,7 +94,7 @@ internal sealed partial class MainWindow : Window
             navMarks[item] = new NavMark(fill, bar);
             var b = Ui.Button(L.T(item), () => Navigate(item)); b.Content = content; b.Background = Brushes.Transparent; b.HorizontalContentAlignment = HorizontalAlignment.Stretch; b.MinHeight = 41; b.Padding = new Thickness(14, 7, 14, 7); b.Margin = new Thickness(0, 0, 0, 4); b.BorderThickness = new Thickness(0);
 
-            navigation[item] = b; (item is "Shortcuts" or "Settings" or "Diagnostics" or "Help" or "About" ? footer : navItems).Children.Add(b);
+            navigation[item] = b; (item is "Shortcuts" or "Settings" or "About" ? footer : navItems).Children.Add(b);
 
         }
 
@@ -156,6 +156,7 @@ internal sealed partial class MainWindow : Window
     {
 
         if (destination == "Present") destination = "Presentation tools";
+        if (destination == "Diagnostics") { settingsTab = "Diagnostics"; destination = "Settings"; }
 
         double previousOffset = scroller.VerticalOffset;
 
@@ -681,10 +682,10 @@ internal sealed partial class MainWindow : Window
         FeatureSettingsSearch();
 
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 18) };
-        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates", AiModelsTab })
+        foreach (var name in new[] { "Appearance", "Behavior", "Privacy", "Notifications", "Updates", AiModelsTab, "Diagnostics" })
         {
             var tab = Ui.Button(L.T(name), () => { if (settingsTab == name) return; settingsTab = name; Navigate("Settings"); SmoothScroll.ScrollToOffset(scroller, 0); Motion.Transition(page); });
-            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", AiModelsTab => "Star", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
+            var tabContent = new StackPanel { Orientation = Orientation.Horizontal }; var tabIcon = Ui.Icon(name switch { "Appearance" => "Color", "Privacy" => "Shield", "Notifications" => "Notifications", "Updates" => "Refresh", AiModelsTab => "Star", "Diagnostics" => "Check", _ => "Behavior" }, 18); tabIcon.Margin = new Thickness(0,0,9,0); tabContent.Children.Add(tabIcon); tabContent.Children.Add(Ui.Text(L.T(name),13,true)); tab.Content = tabContent; tab.Padding = new Thickness(16,10,16,10);
             tab.Margin = new Thickness(0, 0, 7, 7);
             if (name == settingsTab) { tab.SetResourceReference(BackgroundProperty, "Selected"); tab.SetResourceReference(BorderBrushProperty, "Accent"); tab.BorderThickness = new Thickness(1); }
             tabs.Children.Add(tab);
@@ -706,6 +707,10 @@ internal sealed partial class MainWindow : Window
                 Ui.Row(L.T("Use custom background"), null, Ui.Toggle(s.UseCustomBackground, v => Change(x => x.UseCustomBackground = v))));
             Group(L.T("Effects"), Ui.Row(L.T("Transparency"),L.T("Use opaque surfaces when disabled."), Ui.Toggle(s.Transparency, v => Change(x => x.Transparency = v))),
                 Ui.Row(L.T("Animations"),L.T("Also respects the Windows animation preference."), Ui.Toggle(s.Animations, v => Change(x => x.Animations = v))));
+        }
+        else if (settingsTab == "Diagnostics")
+        {
+            Diagnostics();
         }
         else if (settingsTab == AiModelsTab)
         {

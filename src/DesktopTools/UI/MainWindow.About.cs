@@ -53,6 +53,8 @@ internal sealed partial class MainWindow
         rows.Children.Add(Ui.Row(L.T("License"), null, license));
         var components = Ui.Button(L.T("Component licenses"), () => ShowLicense("Component licenses", "DesktopTools.ThirdPartyNotices")); components.Tag = "about-components";
         rows.Children.Add(Ui.Row(L.T("Components"), null, components));
+        var help = Ui.Button(L.T("Help"), () => Navigate("Help")); help.Content = Ui.IconLabel("Help", L.T("Help")); help.Tag = "about-help";
+        rows.Children.Add(Ui.Row(L.T("Help and learning"), null, help));
         rows.Children.Add(Ui.Row(L.T("Source code"), null, Ui.Button("GitHub", () => controller.OpenUpdateLink(new Uri(DesktopTools.Updates.GitHubReleaseClient.RepositoryUrl)))));
         body.Children.Add(Ui.Card(rows));
         var support = CreateSupportButton("Support DesktopTools");
