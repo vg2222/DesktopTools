@@ -9,10 +9,10 @@
   --text: #f4f3fb;
   --muted: #a3a0b8;
   --faint: #6f6c84;
-  --accent: #6a45e0;
-  --accent-hover: #7c5af2;
-  --accent-soft: #b9a6ff;
-  --glow: rgba(106, 69, 224, .45);
+  --accent: #c2378f;
+  --accent-hover: #d54ba2;
+  --accent-soft: #f2a8d6;
+  --glow: rgba(194, 55, 143, .45);
   --love: #f472b6;
   --radius: 28px;
   --shell: 1180px;
@@ -71,7 +71,7 @@ button, select { font: inherit; }
 
 /* Hero */
 .hero { position: relative; padding: 104px 0 0; text-align: center; isolation: isolate; }
-.hero::before { content: ""; position: absolute; inset: -120px 0 auto; height: 760px; z-index: -1; background: radial-gradient(50% 50% at 50% 30%, rgba(106, 69, 224, .32), transparent 70%); pointer-events: none; }
+.hero::before { content: ""; position: absolute; inset: -120px 0 auto; height: 760px; z-index: -1; background: radial-gradient(50% 50% at 50% 30%, rgba(194, 55, 143, .32), transparent 70%); pointer-events: none; }
 .hero h1 { margin: 0 auto; max-width: 900px; font-size: clamp(42px, 7vw, 80px); }
 .hero h1 .accent { background: linear-gradient(100deg, #c9b8ff, #8f6bff 60%, #b06bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hero-lead { margin: 22px auto 0; max-width: 640px; color: var(--muted); font-size: clamp(17px, 2vw, 19px); }
@@ -88,7 +88,7 @@ button, select { font: inherit; }
 @keyframes rise { from { opacity: 0; transform: translateY(22px); filter: blur(6px); } }
 
 /* The product frame starts tilted back and settles flat as you scroll (Apple-style). --p runs 0 → 1. */
-.product-frame { --p: 1; position: relative; margin: 64px auto 0; max-width: 1120px; padding: 10px; border-radius: 26px; background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03)); box-shadow: 0 40px 120px -30px rgba(106, 69, 224, .55), 0 0 0 1px rgba(255, 255, 255, .05);
+.product-frame { --p: 1; position: relative; margin: 64px auto 0; max-width: 1120px; padding: 10px; border-radius: 26px; background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03)); box-shadow: 0 40px 120px -30px rgba(194, 55, 143, .55), 0 0 0 1px rgba(255, 255, 255, .05);
   transform: perspective(1600px) rotateX(calc((1 - var(--p)) * 22deg)) scale(calc(.9 + var(--p) * .1)) translateY(calc((1 - var(--p)) * -20px)); transform-origin: 50% 0; will-change: transform; animation: frame-in 1.2s var(--ease) .25s both; }
 @keyframes frame-in { from { opacity: 0; translate: 0 60px; } }
 .product-frame img, .product-frame video { width: 100%; border-radius: 18px; background: #101016; }
@@ -106,18 +106,18 @@ button, select { font: inherit; }
 .story-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; margin-top: 40px; }
 .story-chapters { grid-column: 1; grid-row: 1; }
 .story-stage { grid-column: 2; grid-row: 1; position: sticky; top: 104px; height: calc(100vh - 140px); max-height: 760px; display: grid; place-items: center; }
-.stage-screen { position: relative; width: 100%; aspect-ratio: 16 / 11; border-radius: 26px; padding: 18px; background: linear-gradient(150deg, #2a1d63, #120e24 62%); box-shadow: 0 50px 120px -40px rgba(106, 69, 224, .55), 0 0 0 1px rgba(255, 255, 255, .06) inset; overflow: hidden; }
+.stage-screen { position: relative; width: 100%; aspect-ratio: 16 / 11; border-radius: 26px; padding: 18px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); box-shadow: 0 50px 120px -40px rgba(194, 55, 143, .55), 0 0 0 1px rgba(255, 255, 255, .06) inset; overflow: hidden; }
 .stage-screen img { position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px); object-fit: contain; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .5)); opacity: 0; transform: scale(.94) translateY(16px); transition: opacity .7s var(--ease), transform .9s var(--ease); }
 .stage-screen img.is-active { opacity: 1; transform: none; }
 .chapter { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; opacity: .28; transition: opacity .5s var(--ease); }
 .chapter.is-active { opacity: 1; }
 .chapter:first-child { min-height: 60vh; justify-content: flex-start; padding-top: 18vh; }
-.chapter-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: rgba(106, 69, 224, .18); color: var(--accent-soft); margin-bottom: 22px; }
+.chapter-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: rgba(194, 55, 143, .18); color: var(--accent-soft); margin-bottom: 22px; }
 .chapter h3 { font-size: clamp(28px, 3.2vw, 40px); }
 .chapter p { margin-top: 16px; color: var(--muted); font-size: 17.5px; }
 .chapter ul { margin: 22px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .chapter li { position: relative; padding-left: 28px; color: #d5d2e4; font-size: 15.5px; }
-.chapter li::before { content: ""; position: absolute; left: 0; top: 4px; width: 17px; height: 17px; border-radius: 50%; background: rgba(106, 69, 224, .22) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8'%3E%3Cpath d='M1 4l3 3 5-6' fill='none' stroke='%23c4b5ff' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat center; }
+.chapter li::before { content: ""; position: absolute; left: 0; top: 4px; width: 17px; height: 17px; border-radius: 50%; background: rgba(194, 55, 143, .22) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8'%3E%3Cpath d='M1 4l3 3 5-6' fill='none' stroke='%23f5b8de' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat center; }
 .chapter-media { display: none; }
 
 .icon { display: inline-block; width: 24px; height: 24px; background: currentColor; -webkit-mask: var(--icon) no-repeat center / contain; mask: var(--icon) no-repeat center / contain; }
@@ -175,8 +175,8 @@ button, select { font: inherit; }
 /* Final call to action: the icon grows into place as it scrolls in. --p runs 0 → 1. */
 .cta { --p: 1; position: relative; isolation: isolate; margin-top: 160px; padding: 96px 32px; text-align: center; }
 /* The glow is larger than the section and fades out fully before its own edge, so nothing clips it. */
-.cta::before { content: ""; position: absolute; left: 50%; top: 42%; width: min(1100px, 140vw); aspect-ratio: 1.5; translate: -50% -50%; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(106, 69, 224, calc(.15 + var(--p) * .3)), rgba(106, 69, 224, calc(.05 + var(--p) * .1)) 55%, transparent); }
-.cta img { width: 112px; height: 112px; margin: 0 auto 32px; transform: scale(calc(.6 + var(--p) * .4)) rotate(calc((1 - var(--p)) * -12deg)); opacity: calc(.3 + var(--p) * .7); filter: drop-shadow(0 24px 50px rgba(106, 69, 224, .55)); }
+.cta::before { content: ""; position: absolute; left: 50%; top: 42%; width: min(1100px, 140vw); aspect-ratio: 1.5; translate: -50% -50%; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(194, 55, 143, calc(.15 + var(--p) * .3)), rgba(194, 55, 143, calc(.05 + var(--p) * .1)) 55%, transparent); }
+.cta img { width: 112px; height: 112px; margin: 0 auto 32px; transform: scale(calc(.6 + var(--p) * .4)) rotate(calc((1 - var(--p)) * -12deg)); opacity: calc(.3 + var(--p) * .7); filter: drop-shadow(0 24px 50px rgba(194, 55, 143, .55)); }
 .cta h2 { font-size: clamp(40px, 6vw, 76px); }
 .cta p { margin: 18px auto 0; max-width: 560px; color: var(--muted); font-size: 17px; }
 .cta .hero-actions { margin-top: 32px; }
@@ -210,7 +210,7 @@ button, select { font: inherit; }
   .story-body { grid-template-columns: 1fr; gap: 0; }
   .story-stage { display: none; }
   .chapter, .chapter:first-child { min-height: 0; padding: 56px 0 0; opacity: 1; justify-content: flex-start; }
-  .chapter-media { display: block; margin-top: 28px; border-radius: 18px; padding: 12px; background: linear-gradient(150deg, #2a1d63, #120e24 62%); }
+  .chapter-media { display: block; margin-top: 28px; border-radius: 18px; padding: 12px; background: linear-gradient(150deg, #5a1a45, #1f0c19 62%); }
   .tools-layout, .faq { grid-template-columns: 1fr; gap: 32px; }
   .tools-head { position: static; }
   .promises { grid-template-columns: repeat(2, minmax(0, 1fr)); }

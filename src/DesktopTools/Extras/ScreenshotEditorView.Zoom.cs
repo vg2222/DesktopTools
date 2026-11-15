@@ -37,10 +37,9 @@ public sealed partial class ScreenshotEditorView
         _zoomBadge.Name = "ZoomBadge"; _zoomBadge.MinHeight = 28; _zoomBadge.Padding = new Thickness(10, 3, 10, 3); _zoomBadge.FontSize = 12;
         _zoomBadge.HorizontalAlignment = HorizontalAlignment.Right; _zoomBadge.VerticalAlignment = VerticalAlignment.Top; _zoomBadge.Margin = new Thickness(0, 10, 10, 0);
         _zoomBadge.Visibility = Visibility.Collapsed;
-        Ui.Tip(_zoomBadge, L.T("Fit the picture (Ctrl+0)"));
+        // The shortcuts live on the badge, never on the picture, so no tooltip covers the image while drawing.
+        Ui.Tip(_zoomBadge, L.T("Fit the picture (Ctrl+0)") + "\n" + L.T("Scroll to zoom. Shift+scroll moves sideways, Ctrl+scroll moves up and down, Alt+scroll changes the thickness. Drag with the middle button to move around."));
         _viewport.Children.Add(_zoomBadge);
-        Ui.Tip(_viewport, L.T("Scroll to zoom. Shift+scroll moves sideways, Ctrl+scroll moves up and down, Alt+scroll changes the thickness. Drag with the middle button to move around."));
-        ToolTipService.SetInitialShowDelay(_viewport, 1200);
         _viewport.PreviewMouseWheel += OnViewportWheel;
         _viewport.PreviewMouseDown += OnViewportMouseDown;
         _viewport.PreviewMouseMove += OnViewportMouseMove;

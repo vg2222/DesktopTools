@@ -55,12 +55,12 @@ Choose a monitor, window or region and set the sound and quality before recordin
 
 ## Optional local AI tools
 
-- **Read text:** keep Windows OCR or download the OCR pack for Latin, East Slavic Cyrillic or Chinese/Japanese text. Scan screen text, Extract text and the screenshot library follow your choice.
+- **Read text:** keep Windows OCR or download the OCR pack for Latin, East Slavic Cyrillic or Chinese/Japanese text. Scan screen text and Extract text follow your choice.
 - **Transcribe recordings:** the video editor's Transcript tab makes searchable, editable timed lines with Fast or Accurate speech models. Save SRT, VTT or text; an MP4 export can have a separate caption file matched to its edits.
 - **Improve images:** an optional background quality pack adds finer masks, with Restore/Erase touch-up. The optional face finder suggests faces to cover in Check screenshot; you decide what to hide.
 - **Names and hidden details:** turn on Smart screenshot names based on the app and window title, or tick Remove hidden details when exporting an image copy. Both leave the original unchanged and need no model download.
 
-AI runs on the processor only. Translation now handles up to 20,000 characters with progress and improved sentence decoding. See [models, measurements and limits](docs/ai-models.md) and [1.3.0 release notes](docs/releases/1.3.0.md).
+AI runs on the processor, or on the graphics card for text detection and speech recognition when you choose it and Windows has DirectML 1.15 or later. Translation now handles up to 20,000 characters with progress and improved sentence decoding. See [models, measurements and limits](docs/ai-models.md) and [1.3.0 release notes](docs/releases/1.3.0.md).
 
 ## 🔒 Local-first by design
 

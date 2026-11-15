@@ -10,7 +10,18 @@ public static class L
 {
     public static readonly string[] Languages = ["en", "ru", "de", "fr", "es", "uk", "zh", "pt", "ja", "pl", "tr", "it"];
     public static readonly string[] LanguageNames = ["English", "Русский", "Deutsch", "Français", "Español", "Українська", "中文（简体）", "Português", "日本語", "Polski", "Türkçe", "Italiano"];
-    private static readonly Dictionary<string, Dictionary<string, string>> catalogs = Load();
+    // Catalogs and message patterns are built only for languages that are actually used, not all eleven at startup.
+    private static readonly Dictionary<string, Dictionary<string, string>> catalogs = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, List<(string Source, Regex Pattern)>> messagePatterns = new(StringComparer.Ordinal);
+    private static Dictionary<string, string>? CatalogFor(string language)
+    {
+        if (language == "en" || !Languages.Contains(language)) return null;
+        lock (catalogs)
+        {
+            if (!catalogs.TryGetValue(language, out var catalog)) catalogs.Add(language, catalog = Load(language));
+            return catalog;
+        }
+    }
     public static string Language { get; private set; } = "en";
     public static CultureInfo Culture => CultureInfo.GetCultureInfo(Language);
     public static string Normalize(string? language) => Languages.Contains(language) ? language! : "en";
@@ -25,7 +36,7 @@ public static class L
     public static string T(string? english)
     {
         if (english == null) return "";
-        if (catalogs.TryGetValue(Language, out var catalog))
+        if (CatalogFor(Language) is { } catalog)
         {
             if (catalog.TryGetValue(english, out var translated)) return translated;
             Missing?.Invoke(english);
@@ -42,7 +53,7 @@ public static class L
     public static string Source(string? text)
     {
         if (string.IsNullOrEmpty(text)) return "";
-        if (Language == "en" || !catalogs.TryGetValue(Language, out var catalog)) return text;
+        if (CatalogFor(Language) is not { } catalog) return text;
         Dictionary<string, string>? reverse;
         lock (sources)
         {
@@ -58,7 +69,7 @@ public static class L
     // Notification severity is derived from source text, not the selected language.
     internal static string EnglishHint(string message)
     {
-        if (Language == "en" || !catalogs.TryGetValue(Language, out var catalog)) return message;
+        if (CatalogFor(Language) is not { } catalog) return message;
         int minimumPrefix = Language is "zh" or "ja" ? 4 : 8;   // CJK sentences are much shorter than the same text in other languages
         foreach (var (source, translated) in catalog.OrderByDescending(x => x.Value.Length))
         {
@@ -67,42 +78,42 @@ public static class L
             if (prefix.Length >= minimumPrefix && message.StartsWith(prefix, StringComparison.Ordinal)) return source;
         }
         // Some warnings begin with the user's shortcut or filename, not a translated prefix.
-        foreach (var (source, pattern) in messagePatterns[Language])
-            if (pattern.IsMatch(message)) return source;
+        foreach (var (source, pattern) in PatternsFor(Language, catalog))
+        {
+            try { if (pattern.IsMatch(message)) return source; }
+            catch (RegexMatchTimeoutException) { }
+        }
         return message;
     }
-    private static readonly Dictionary<string, List<(string Source, Regex Pattern)>> messagePatterns = BuildPatterns();
-    private static Dictionary<string, List<(string, Regex)>> BuildPatterns()
+    private static List<(string Source, Regex Pattern)> PatternsFor(string language, Dictionary<string, string> catalog)
     {
-        var result = new Dictionary<string, List<(string, Regex)>>();
-        foreach (var (language, catalog) in catalogs)
+        lock (messagePatterns)
         {
+            if (messagePatterns.TryGetValue(language, out var cached)) return cached;
             var patterns = new List<(string, Regex)>();
             foreach (var (source, translated) in catalog.Where(x => x.Value.StartsWith('{')))
             {
                 var parts = Regex.Split(translated, @"(\{\d+(?:,-?\d+)?(?::[^{}]+)?\})");
-                string pattern = "^" + string.Concat(parts.Select((part, index) => index % 2 == 1 ? ".*" : Regex.Escape(part))) + "$";
-                patterns.Add((source, new Regex(pattern, RegexOptions.Singleline | RegexOptions.NonBacktracking)));
+                string pattern = "^" + string.Concat(parts.Select((part, index) => index % 2 == 1 ? ".*?" : Regex.Escape(part))) + "$";
+                // Interpreted regexes are small; NonBacktracking built large automata for every catalog entry.
+                patterns.Add((source, new Regex(pattern, RegexOptions.Singleline | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(50))));
             }
-            result.Add(language, patterns.OrderByDescending(x => x.Item2.ToString().Length).ToList());
+            var result = patterns.OrderByDescending(x => x.Item2.ToString().Length).ToList();
+            messagePatterns.Add(language, result);
+            return result;
         }
-        return result;
     }
-    public static IReadOnlyDictionary<string, string> Catalog(string language) => catalogs.TryGetValue(language, out var result) ? result : new Dictionary<string, string>();
-    private static Dictionary<string, Dictionary<string, string>> Load()
+    public static IReadOnlyDictionary<string, string> Catalog(string language) => CatalogFor(language) ?? new Dictionary<string, string>();
+    private static Dictionary<string, string> Load(string language)
     {
-        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         var assembly = typeof(L).Assembly;
-        foreach (string language in Languages.Where(x => x != "en"))
+        var catalog = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var resource in assembly.GetManifestResourceNames().Where(x => x.EndsWith("." + language + ".json", StringComparison.Ordinal)).OrderBy(x => x, StringComparer.Ordinal))
         {
-            var catalog = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var resource in assembly.GetManifestResourceNames().Where(x => x.EndsWith("." + language + ".json", StringComparison.Ordinal)).OrderBy(x => x, StringComparer.Ordinal))
-            {
-                using var stream = assembly.GetManifestResourceStream(resource)!;
-                foreach (var (key, value) in JsonSerializer.Deserialize<Dictionary<string, string>>(stream)!) catalog.TryAdd(key, value);
-            }
-            result.Add(language, catalog);
+            using var stream = assembly.GetManifestResourceStream(resource)!;
+            foreach (var (key, value) in JsonSerializer.Deserialize<Dictionary<string, string>>(stream)!) catalog.TryAdd(key, value);
         }
-        return result;
+        catalog.TrimExcess();
+        return catalog;
     }
 }

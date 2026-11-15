@@ -25,7 +25,7 @@ internal sealed partial class AppController
             OpenAutoRedactReview(image, reviewed); return;
         }
         var window = pendingCaptureWindow; pendingCaptureWindow = null;
-        LastCapture = image; RememberCapture(image); captureNameContext = (image, window);
+        LastCapture = image; CaptureHistory.Add(image); captureNameContext = (image, window);
         if (Settings.CaptureOutput == "Save") SaveLast();
         else if (Settings.CaptureOutput == CaptureAutoSave.Mode) await CopyAndSaveAsync(image, window: window);
         else { await CopyAsync(image); ShowCaptureNotice(); }
@@ -91,7 +91,7 @@ internal sealed partial class AppController
             _ => false
         };
         if (!success || disposed || cancellationToken.IsCancellationRequested) return false;
-        LastCapture = image; RememberCapture(image); captureNameContext = (image, window); ShowCaptureNotice(); return true;
+        LastCapture = image; CaptureHistory.Add(image); captureNameContext = (image, window); ShowCaptureNotice(); return true;
     }
     private void CloseScreenshotReviews() { foreach (var review in screenshotReviews.ToArray()) review.Close(); screenshotReviews.Clear(); }
 }

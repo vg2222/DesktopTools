@@ -183,7 +183,7 @@ internal sealed class StepGuideWindow : Window
             return;
         }
         foreach (var entry in entries)
-            recentTiles.Children.Add(SourceTile(entry.Image, entry.CreatedAt.ToLocalTime().ToString("t", L.Culture), () => PrepareImage(entry.Image)));
+            recentTiles.Children.Add(SourceTile(entry.Thumbnail, entry.CreatedAt.ToLocalTime().ToString("t", L.Culture), () => PrepareImage(entry.Image)));
     }
 
     private static Button SourceTile(BitmapSource image, string caption, Action add)

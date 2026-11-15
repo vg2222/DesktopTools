@@ -148,7 +148,7 @@ internal static class MemorySoakChecks
         {
             controller.UpdateSettings(s =>
             {
-                s.Animations = false; s.ScreenshotLibraryEnabled = false; s.AutoRedact.Enabled = false; s.CaptureDelaySeconds = 0;
+                s.Animations = false; s.AutoRedact.Enabled = false; s.CaptureDelaySeconds = 0;
                 s.CaptureOutput = name == "capture-save" ? CaptureAutoSave.Mode : "Clipboard";
                 if (tempFolder != null) s.SaveDirectory = tempFolder;
                 s.CaptureEnabled = s.ScreenTextEnabled = s.TranslationEnabled = s.TeleprompterEnabled = s.QrCodesEnabled = true;
@@ -314,7 +314,7 @@ internal static class MemorySoakChecks
         {
             ("Teleprompter", controller.OpenTeleprompter), ("QR", controller.OpenQrCodes), ("Recorder", controller.OpenScreenRecorder),
             ("Video", controller.OpenVideoEditor), ("Text", controller.OpenTextToolsWindow), ("Images", controller.OpenImageTools),
-            ("StepGuide", controller.OpenStepGuide), ("ScreenshotLibrary", controller.OpenScreenshotLibrary),
+            ("StepGuide", controller.OpenStepGuide),
             ("ScreenText", () => Invoke(controller, "OpenUtility", "ScreenText", (Func<Window>)(() => new ScreenTextWindow(image, controller.Report, null)))),
         };
         var windows = Utilities(controller);

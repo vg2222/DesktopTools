@@ -223,11 +223,14 @@ internal static class Ui
     {
         var c = new CheckBox { IsChecked = value }; Motion.ToggleFeedback(c); c.Checked += (_, _) => changed(true); c.Unchecked += (_, _) => changed(false); return c;
     }
-    public static ComboBox Choice(IEnumerable<string> choices, string selected, Action<string> changed, bool translate = true)
+    /// <summary>The mark in front of a choice that runs an optional AI model, so people can see where the models are used.</summary>
+    public const string AiMark = "★ ";
+    /// <param name="aiChoices">Values that use an optional AI model; they are shown with <see cref="AiMark"/>.</param>
+    public static ComboBox Choice(IEnumerable<string> choices, string selected, Action<string> changed, bool translate = true, IEnumerable<string>? aiChoices = null)
     {
         var c = new ComboBox { ItemsSource = choices.ToArray(), SelectedItem = selected, MinWidth = 150 };
         var label = new FrameworkElementFactory(typeof(TextBlock));
-        label.SetBinding(TextBlock.TextProperty, new Binding { Converter = new ChoiceLabelConverter() });
+        label.SetBinding(TextBlock.TextProperty, new Binding { Converter = new ChoiceLabelConverter(aiChoices?.ToHashSet(StringComparer.Ordinal)) });
         if (translate) c.ItemTemplate = new DataTemplate { VisualTree = label };
         c.SelectionChanged += (_, _) => { if (c.SelectedItem is string v) changed(v); }; return c;
     }
@@ -259,9 +262,10 @@ internal static class Ui
     {
         element.ToolTip = new ToolTip { Content = label };
     }
-    private sealed class ChoiceLabelConverter : IValueConverter
+    private sealed class ChoiceLabelConverter(HashSet<string>? ai = null) : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => L.T(value as string);
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+            (value is string text && ai?.Contains(text) == true ? AiMark : "") + L.T(value as string);
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
     }
 }

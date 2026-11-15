@@ -31,7 +31,7 @@ DesktopTools offers optional model packs downloaded from each model's publisher,
 
 ## OCR pack
 
-These optional models give Text tools, the text view (Scan screen text, Extract text) and the screenshot library a second text reader beside Windows OCR.
+These optional models give Text tools, the text view (Scan screen text, Extract text) a second text reader beside Windows OCR.
 
 | Pack id | Model (PaddlePaddle's own ONNX on Hugging Face) | Size | Needed for |
 |---|---|---|---|
@@ -40,12 +40,12 @@ These optional models give Text tools, the text view (Scan screen text, Extract 
 | `ocr-cyrillic` | PP-OCRv5 East Slavic recognizer | 7.9 MB | Russian, Ukrainian, Belarusian |
 | `ocr-chinese-japanese` | PP-OCRv5 Chinese/Japanese recognizer | 16.7 MB including character list | Chinese and Japanese, with Latin letters and digits |
 
-- **Choosing it:** Text tools → *Text from screenshot* → **Text reader**: *Windows OCR* (default) or *DesktopTools OCR pack*. With the pack, the language list shows the three alphabets; the one matching the Windows display language is preselected (Russian, Ukrainian and Belarusian → Cyrillic; Chinese and Japanese → Chinese and Japanese; everything else → Latin). Other Cyrillic languages (Bulgarian, Serbian, Macedonian) use letters the East Slavic recognizer does not have, so they are not mapped to it.
+- **Choosing it:** Text tools → *Text from screenshot* → **Text reader**: *Windows OCR* or *DesktopTools OCR pack*. By default the pack is used as soon as the alphabet for your Windows display language is downloaded, for Scan screen text, Extract text and Check screenshot; choosing *Windows OCR* keeps Windows OCR. With the pack, the language list shows the three alphabets; the one matching the Windows display language is preselected (Russian, Ukrainian and Belarusian → Cyrillic; Chinese and Japanese → Chinese and Japanese; everything else → Latin). Other Cyrillic languages (Bulgarian, Serbian, Macedonian) use letters the East Slavic recognizer does not have, so they are not mapped to it.
 - **Downloading:** **Download** beside the choice asks for consent to each missing pack (the text finder and the chosen alphabet), with the same licence window as Settings → AI models, and only then downloads them. Declining any of them downloads nothing.
 - **Fallback:** while a needed pack is not downloaded or is damaged, text is read with Windows OCR and the result says so. A damaged pack is marked **Damaged** on the AI models page. If neither the pack nor any Windows OCR language is available, nothing is read and the message says why.
 - **How it reads:** the picture is cut into overlapping 1,024-pixel strips for the detector, lines are found (DB post-processing, threshold 0.3, box score 0.6, unclip 1.5), each line is scaled to 48 pixels high and read in batches of eight lines of similar width, then words are put back into reading order. Pictures with a side over 8,192 pixels are refused with a request to crop them to that size; pictures over 48 million pixels, or with more than 10,000 lines, with *Too much text in this picture. Crop it and try again.*
 - **Memory:** the model sessions stay loaded for 60 seconds after the last reading, so repeated scans do not reload them, and are then released. Quit releases them at once; **Remove** releases them, or, if a reading is running, as soon as it finishes.
-- Settings saved: `OcrEngine` (`Windows` or `Pack`) and `OcrPackScript` (`latin`, `cyrillic`, `chinese-japanese`, or empty for the default). An unknown engine value means Windows OCR; an unknown alphabet means the one that matches the Windows display language. Profiles include both.
+- Settings saved: `TextReader` (`Auto`, `Windows` or `Pack`; previews of 1.3.0 stored `OcrEngine`, which is ignored) and `OcrPackScript` (`latin`, `cyrillic`, `chinese-japanese`, or empty for the default). An unknown engine value means Auto; an unknown alphabet means the one that matches the Windows display language. Profiles include both.
 
 ### Accuracy
 
@@ -207,6 +207,7 @@ Requirement: a ready ONNX file on the publisher's own page at a pinned revision,
 - Existing models with the DirectML package on CPU: U2NetP outputs bit-identical to 1.31.1; translation encoder values differ slightly (int8 kernels), but greedy translations of 8 sentences were token-identical.
 - Decision: **ship Processor only in this update.** A try/catch fallback is not enough when one failure is silent wrong output and another an uncatchable crash; the switch would downgrade ONNX Runtime for the whole app; and the DirectML licence must be checked against SignPath's requirement that all components use an OSI-approved licence. Revisit with Windows ML or a newer GPU backend, an allow-list of verified models and out-of-process inference; the upscaler gain (14×) is the strongest reason.
 - AMD and Intel graphics, PCs with no dedicated card, other Windows builds: **Not tested**.
+- Update (owner request, 1.3.0): **Settings → AI models → Run on** offers *Graphics card* when Windows has `DirectML.dll` 1.15 or later. The app moved to `Microsoft.ML.OnnxRuntime.DirectML` 1.24.4 for every model, does not ship DirectML, and preloads the Windows copy. Only models verified above go to the graphics card, by SHA-256: the OCR text finder and both speech encoders. Translation, the speech decoder, the OCR recognizers, faces and the quality background model stay on the processor. A session that cannot be created or run on the graphics card is recreated on the processor, and the processor is used until restart. Measured after the change on the same PC: OCR pack, full 2560×1440 synthetic screenshot, 3.8 s processor vs 2.5 s graphics card, identical text. AMD/Intel graphics, laptops with switchable graphics and older Windows builds: **Not tested**.
 
 ## Owner review before release
 

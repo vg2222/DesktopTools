@@ -110,11 +110,11 @@ internal static class OcrPackPipelineTests
 
         // Settings.
         var settings = new AppSettings();
-        Check(settings.OcrEngine == "Windows" && settings.OcrPackScript == "", "Default engine");
+        Check(settings.OcrEngine == "Auto" && settings.OcrPackScript == "", "Default engine");
         settings.OcrEngine = "GPU"; settings.OcrPackScript = "klingon"; SettingsStore.Validate(settings);
-        Check(settings.OcrEngine == "Windows" && settings.OcrPackScript == "", "Unknown engine values kept");
+        Check(settings.OcrEngine == "Auto" && settings.OcrPackScript == "", "Unknown engine values kept");
         settings.OcrEngine = null!; settings.OcrPackScript = null!; SettingsStore.Validate(settings);
-        Check(settings.OcrEngine == "Windows" && settings.OcrPackScript == "", "Null engine values kept");
+        Check(settings.OcrEngine == "Auto" && settings.OcrPackScript == "", "Null engine values kept");
         settings.OcrEngine = "Pack"; settings.OcrPackScript = "cyrillic"; SettingsStore.Validate(settings);
         Check(settings.OcrEngine == "Pack" && settings.OcrPackScript == "cyrillic", "Valid engine values lost");
 

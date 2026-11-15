@@ -80,7 +80,7 @@ internal sealed class TextToolsWindow : Window
         directionRow = translationSettings; settings.Children.Add(directionRow);
         // Windows OCR stays the default; the optional OCR pack is a second engine (spec section 8). The language list follows the engine.
         ocrEngine = Ui.Choice([WindowsEngine, PackEngine], controller.Settings.OcrEngine == "Pack" ? PackEngine : WindowsEngine,
-            value => { if (!synchronizingSettings) controller.UpdateSettings(s => s.OcrEngine = value == PackEngine ? "Pack" : "Windows"); });
+            value => { if (!synchronizingSettings) controller.UpdateSettings(s => s.OcrEngine = value == PackEngine ? "Pack" : "Windows"); }, aiChoices: [PackEngine]);
         ocrEngine.Tag = "ocr-engine"; ocrEngine.MinWidth = 180;
         System.Windows.Automation.AutomationProperties.SetName(ocrEngine, L.T("Text reader"));
         var languages = LocalOcr.Choices();

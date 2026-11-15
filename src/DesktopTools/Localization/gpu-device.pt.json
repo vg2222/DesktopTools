@@ -1,0 +1,7 @@
+{
+  "Graphics card": "Placa gráfica",
+  "The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it.": "A placa gráfica não conseguiu executar um modelo de IA, então o DesktopTools usa o processador até ser reiniciado.",
+  "Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.": "Onde os modelos de IA são executados. A placa gráfica precisa do DirectML 1.15 ou posterior, incluído nas atualizações recentes do Windows 11.",
+  "The graphics card could not run a model, so the processor is used until DesktopTools restarts.": "A placa gráfica não conseguiu executar um modelo, então o processador é usado até o DesktopTools ser reiniciado.",
+  "The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.": "O processador funciona em qualquer lugar. A placa gráfica deixa a detecção de texto e o reconhecimento de fala muito mais rápidos, mas usa mais memória, incluindo memória de vídeo. Os outros modelos continuam no processador."
+}

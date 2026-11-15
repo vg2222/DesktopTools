@@ -80,7 +80,7 @@ Same PC, monitor and build settings as the baseline, 200 rounds:
 
 GDI objects rise during the first 20 rounds (fonts, brushes and the first windows) and then stay level.
 
-**Not tested:** other monitors and scales, multi-monitor captures larger than the history budget, the screenshot library with many entries, the selection overlay, Automation and Sample (no smoke-controller path), an hour idle in the tray.
+**Not tested:** other monitors and scales, multi-monitor captures larger than the history budget, the selection overlay, Automation and Sample (no smoke-controller path), an hour idle in the tray.
 
 ## What to include in a pull request
 

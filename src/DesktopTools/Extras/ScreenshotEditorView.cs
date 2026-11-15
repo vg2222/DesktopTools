@@ -66,6 +66,8 @@ public sealed partial class ScreenshotEditorView : UserControl
         editorLayout ??= "A"; // tools above the image, actions below: the order people read an editor in
         _image = image; _document = new(image); _onExport = onExport; _report = report;
         SetResourceReference(ForegroundProperty, "Text"); _hosted = hosted;
+        // Editor buttons say what they do as soon as the pointer is on them, without the usual Windows wait.
+        ToolTipService.SetInitialShowDelay(this, 0); ToolTipService.SetBetweenShowDelay(this, 0);
         var layout = new Grid();
         layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         layout.RowDefinitions.Add(new RowDefinition());

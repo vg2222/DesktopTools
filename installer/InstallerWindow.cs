@@ -25,11 +25,11 @@ internal sealed partial class InstallerWindow : Window
     private static readonly Brush StrokeBrush = Brush("#17FFFFFF");
     private static readonly Brush TextBrush = Brush("#F4F3FB");
     private static readonly Brush MutedBrush = Brush("#A3A0B8");
-    private static readonly Brush AccentBrush = Brush("#6A45E0");
-    private static readonly Brush AccentHoverBrush = Brush("#7C5AF2");
-    private static readonly Brush AccentSoftBrush = Brush("#B9A6FF");
+    private static readonly Brush AccentBrush = Brush("#C2378F");
+    private static readonly Brush AccentHoverBrush = Brush("#D54BA2");
+    private static readonly Brush AccentSoftBrush = Brush("#F2A8D6");
     private static readonly Brush FaintBrush = Brush("#6F6C84");
-    private static readonly Brush AccentGradientBrush = new LinearGradientBrush(Color("#8566F6"), Color("#5B36D6"), new Point(0, 0), new Point(1, 1));
+    private static readonly Brush AccentGradientBrush = new LinearGradientBrush(Color("#DB4FA6"), Color("#A42478"), new Point(0, 0), new Point(1, 1));
     private readonly bool uninstall;
     private readonly bool automaticUpdate;
     private readonly Program.SetupMode setupMode;
@@ -505,7 +505,7 @@ internal sealed partial class InstallerWindow : Window
         }
         if (accent)
         {
-            var glow = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#6A45E0"), BlurRadius = 24, ShadowDepth = 0, Opacity = .45 };
+            var glow = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 24, ShadowDepth = 0, Opacity = .45 };
             if (!SystemParameters.HighContrast) button.Effect = glow;
             void Glow(double target)
             {
@@ -578,7 +578,7 @@ internal sealed class BackgroundUpdateWindow : Window
         status = new TextBlock { Text = "Preparing installation…", Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A3A0B8")), FontSize = 11, Margin = new Thickness(0, 5, 0, 10) };
         stack.Children.Add(status);
         track = new Border { Height = 5, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#26232F")), CornerRadius = new CornerRadius(3), ClipToBounds = true };
-        fill = new Border { Width = 0, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6A45E0")), CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left };
+        fill = new Border { Width = 0, Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#C2378F")), CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left };
         track.Child = fill;
         stack.Children.Add(track);
         surface.Child = stack;

@@ -28,14 +28,21 @@ public static class LocalOcr
         .Select(l => new OcrLanguage(l.LanguageTag, l.DisplayName)).OrderBy(l => l.Name, StringComparer.CurrentCulture).ToArray();
 
     /// <summary>
-    /// The engine settings that Scan screen text, Extract text and the screenshot library read with (spec section 8), kept in step with
+    /// The engine settings that Scan screen text, Extract text and Check screenshot read with (spec section 8), kept in step with
     /// <see cref="AppSettings"/> by the controller: engine "Windows" or "Pack", the pack script group key, and the Windows OCR language.
     /// </summary>
-    internal static (string Engine, string PackScript, string WindowsTag) Preference { get; set; } = ("Windows", "", "en-US");
+    internal static (string Engine, string PackScript, string WindowsTag) Preference { get; set; } = ("Auto", "", "en-US");
 
     internal static void ApplySettings(AppSettings settings) => Preference = (settings.OcrEngine, settings.OcrPackScript, settings.ScreenTextLanguage);
 
-    internal static bool PackEngineChosen => Preference.Engine == "Pack";
+    /// <summary>
+    /// True when reading uses the OCR pack: chosen explicitly, or "Auto" (the default) and the pack for the preferred alphabet is downloaded.
+    /// "Windows" is only ever an explicit choice.
+    /// </summary>
+    internal static bool PackEngineChosen => Preference.Engine == "Pack" || (Preference.Engine == "Auto" && OcrPackEngine.IsInstalled(PreferredScript));
+
+    /// <summary>The pack alphabet to read with: the saved one, or the one that fits the Windows OCR language.</summary>
+    internal static OcrPackScript PreferredScript => OcrPackPipeline.TryParseKey(Preference.PackScript, out var saved) ? saved : OcrPackPipeline.ScriptForLanguage(Preference.WindowsTag);
 
     /// <summary>Saves a new Text reader choice (engine, pack script key) through the controller; null where no settings are available (tests).</summary>
     internal static Action<string, string>? ChooseEngine { get; set; }
@@ -50,7 +57,7 @@ public static class LocalOcr
     {
         if (!PackEngineChosen) return Languages;
         return Enum.GetValues<OcrPackScript>().Select(script => new OcrLanguage(OcrPackPipeline.Tag(script),
-            OcrPackEngine.IsInstalled(script) ? ScriptName(script) : L.F($"{ScriptName(script)} (not downloaded)"))).ToArray();
+            DesktopTools.UI.Ui.AiMark + (OcrPackEngine.IsInstalled(script) ? ScriptName(script) : L.F($"{ScriptName(script)} (not downloaded)")))).ToArray();
     }
 
     /// <summary>The choice to preselect: a saved tag when it is listed; for the pack, the saved script group or the one that fits the Windows language.</summary>
@@ -59,11 +66,11 @@ public static class LocalOcr
         if (!choices.Any(choice => OcrPackPipeline.TryParseTag(choice.Tag, out _))) return SelectLanguage(choices, savedTag);
         var exact = choices.FirstOrDefault(choice => choice.Tag == savedTag);
         if (exact != null) return exact;
-        var script = OcrPackPipeline.TryParseKey(Preference.PackScript, out var saved) ? saved : OcrPackPipeline.ScriptForLanguage(Preference.WindowsTag);
+        var script = PreferredScript;
         return choices.FirstOrDefault(choice => choice.Tag == OcrPackPipeline.Tag(script)) ?? choices.FirstOrDefault();
     }
 
-    /// <summary>The reading tag background readers (the screenshot library) use, or null when nothing can read.</summary>
+    /// <summary>The reading tag a reader without a language picker uses, or null when nothing can read.</summary>
     public static string? DefaultTag() => PackEngineChosen ? SelectChoice(Choices(), null)?.Tag : SelectLanguage(Languages, Preference.WindowsTag)?.Tag;
 
     /// <summary>The Windows OCR language used in place of a pack script group: one of the same alphabet, the saved one first.</summary>

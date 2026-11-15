@@ -118,7 +118,7 @@ const max = Math.max(...accent), min = Math.min(...accent), range = max - min;
 assert.ok(range > 0, 'Accent must be chromatic');
 const degrees = max === red ? ((green - blue) / range) % 6 : max === green ? (blue - red) / range + 2 : (red - green) / range + 4;
 const hue = (degrees * 60 + 360) % 360;
-assert.ok(hue >= 250 && hue <= 300, 'Accent should be purple, got hue ' + hue);
+assert.ok(hue >= 300 && hue <= 340, 'Accent should be magenta, got hue ' + hue);
 assert.ok(1.05 / (luminance + 0.05) >= 4.5, 'White button text needs at least 4.5:1 contrast');
 
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/pages.yml'), 'utf8');

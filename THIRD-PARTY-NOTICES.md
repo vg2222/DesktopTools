@@ -40,9 +40,9 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Background removal: ONNX Runtime 1.31.1 and U²-Net
+## Background removal and AI models: ONNX Runtime 1.24.4 (DirectML build) and U²-Net
 
-[Microsoft ONNX Runtime](https://github.com/microsoft/onnxruntime) is distributed under MIT. Complete upstream license and third-party notices are bundled as `Assets/Models/ONNXRUNTIME-LICENSE.txt` and `Assets/Models/ONNXRUNTIME-NOTICES.txt`.
+[Microsoft ONNX Runtime](https://github.com/microsoft/onnxruntime) is distributed under MIT. DesktopTools ships the `Microsoft.ML.OnnxRuntime.DirectML` 1.24.4 build; it does not ship DirectML itself and uses the copy that comes with Windows. Complete upstream license and third-party notices are bundled as `Assets/Models/ONNXRUNTIME-LICENSE.txt` and `Assets/Models/ONNXRUNTIME-NOTICES.txt`.
 
 The compact U2NetP model implements [U²-Net](https://github.com/xuebinqin/U-2-Net), under Apache-2.0; see the bundled `Assets/Models/U2NET-LICENSE.txt`. The unmodified weights come from the [rembg release asset](https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx). Model provenance, checksums and processing differences are documented in [background-removal.md](docs/background-removal.md). No rembg Python code or runtime is bundled.
 

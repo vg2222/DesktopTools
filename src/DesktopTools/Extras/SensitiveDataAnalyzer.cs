@@ -51,6 +51,19 @@ public static class SensitiveDataAnalyzer
                 layouts.Add(extra);
                 findings = SensitiveDataDetector.Merge(findings.Concat(SensitiveDataDetector.Detect(extra, categories)));
             }
+            // With the OCR pack in use (chosen, or downloaded under the default Auto reader), its reading is added: it reads small UI text more reliably.
+            if (recognize == null && LocalOcr.PackEngineChosen)
+            {
+                try
+                {
+                    OcrLayout pack;
+                    using (PipelineMetrics.Measure("privacy.ocr-pack")) pack = await OcrPackEngine.RecognizeWordsAsync(image, LocalOcr.PreferredScript, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    layouts.Add(pack);
+                    findings = SensitiveDataDetector.Merge(findings.Concat(SensitiveDataDetector.Detect(pack, categories)));
+                }
+                catch (OcrPackUnavailableException) { }
+            }
             if (layouts.Count > 1 && categories.Any(c => c is "credential" or "username" or "account" or "serial"))
             {
                 var words = new List<OcrWordBox>(); int offset = 0;

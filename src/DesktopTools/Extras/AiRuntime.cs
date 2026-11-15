@@ -8,7 +8,8 @@ namespace DesktopTools.Extras;
 /// <summary>
 /// Owns the ONNX Runtime session for optional models. One model is loaded at a time and calls are serialized. A session is kept for a
 /// short idle period so repeated work does not reload it, then released by a low-frequency timer; Quit releases it at once.
-/// This update runs on the processor only (spec section 10).
+/// Models run on the processor, or on the graphics card through Windows' DirectML when chosen and available; a session that cannot be
+/// created on the graphics card is created on the processor instead.
 /// </summary>
 internal static class AiRuntime
 {
@@ -22,8 +23,24 @@ internal static class AiRuntime
 
     internal static TimeSpan IdleRelease { get; set; } = TimeSpan.FromSeconds(60);
     internal static Func<DateTime> Clock { get; set; } = () => DateTime.UtcNow;
-    /// <summary>The device sessions are created on. The AiDevice setting has one value, "Processor", in this update.</summary>
-    internal static string Device => "Processor";
+    private static string preferredDevice = AiGpu.Processor;
+    /// <summary>The device chosen in settings ("Processor" or "GraphicsCard"). Changing it releases loaded sessions so the next run uses it.</summary>
+    internal static string PreferredDevice
+    {
+        get => preferredDevice;
+        set
+        {
+            string device = value == AiGpu.GraphicsCard ? AiGpu.GraphicsCard : AiGpu.Processor;
+            if (device == preferredDevice) return;
+            preferredDevice = device; GraphicsCardFailed = false; ReleaseAll();
+        }
+    }
+    /// <summary>The device the loaded sessions run on, or the one the next load will use.</summary>
+    internal static string Device { get; private set; } = AiGpu.Processor;
+    /// <summary>True after a session could not be created on the graphics card and the processor was used instead.</summary>
+    internal static bool GraphicsCardFailed { get; private set; }
+    /// <summary>Called once when the graphics card could not be used and models fell back to the processor.</summary>
+    internal static Action<string>? GraphicsCardFallback { get; set; }
     /// <summary>The first loaded model file, or null.</summary>
     internal static string? LoadedModelPath => loadedPaths.Length > 0 ? loadedPaths[0] : null;
     /// <summary>Every model file of the loaded set (one file for most features; the OCR pack loads its detector and a recognizer together).</summary>
@@ -67,29 +84,30 @@ internal static class AiRuntime
                         if (prepare == null || !prepare.ContainsKey(i))
                             try { Verify(paths[i], models[i].Sha256, token); }
                             catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, paths[i]); throw; }
-                    var created = new List<InferenceSession>();
-                    try
+                    bool gpu = preferredDevice == AiGpu.GraphicsCard && !GraphicsCardFailed && models.Any(model => GpuVerified(model.Sha256)) && AiGpu.EnsureLoaded();
+                    InferenceSession[] loaded;
+                    try { loaded = CreateSessions(paths, models, prepare, lowMemory, gpu, token); }
+                    catch (Exception e) when (gpu && e is not OperationCanceledException && e is not InvalidDataException && e is not FileNotFoundException)
                     {
-                        for (int i = 0; i < paths.Length; i++)
-                        {
-                            string path = paths[i];
-                            using var options = Options(lowMemory);
-                            try
-                            {
-                                if (prepare != null && prepare.TryGetValue(i, out var step))
-                                    created.Add(new InferenceSession(step(ReadVerified(path, models[i].Sha256, token)), options));
-                                else created.Add(new InferenceSession(path, options));
-                            }
-                            catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, path); throw; }
-                            token.ThrowIfCancellationRequested();
-                        }
+                        // The graphics card could not take this model (driver, memory or an unsupported operator): use the processor from now on.
+                        GraphicsCardFailed = true; gpu = false;
+                        GraphicsCardFallback?.Invoke(e.Message);
+                        loaded = CreateSessions(paths, models, prepare, lowMemory, gpu: false, token);
                     }
-                    catch { foreach (var item in created) item.Dispose(); throw; }
-                    sessions = created.ToArray(); loadedPaths = paths;
+                    sessions = loaded; loadedPaths = paths; Device = gpu ? AiGpu.GraphicsCard : AiGpu.Processor;
                     StartTimer();
                 }
                 lastUse = Clock();
                 try { return use(sessions); }
+                catch (OnnxRuntimeException e) when (Device == AiGpu.GraphicsCard)
+                {
+                    // A model that loaded on the graphics card but failed while running is run again on the processor.
+                    GraphicsCardFailed = true; GraphicsCardFallback?.Invoke(e.Message);
+                    ReleaseLocked();
+                    sessions = CreateSessions(paths, models, prepare, lowMemory, gpu: false, token); loadedPaths = paths; Device = AiGpu.Processor;
+                    StartTimer();
+                    return use(sessions);
+                }
                 finally { lastUse = Clock(); }
             }, token);
         }
@@ -98,6 +116,43 @@ internal static class AiRuntime
             if (releaseRequested) ReleaseLocked();
             gate.Release();
         }
+    }
+
+    /// <summary>
+    /// Model files measured to give the same results on the graphics card and to run faster there (docs/ai-models.md, task 6): the OCR text finder
+    /// and the speech encoders. Other models stay on the processor even when the graphics card is chosen: the translation model crashed the
+    /// process on DirectML, the speech decoder produced wrong text without an error, and the OCR recognizer was slower.
+    /// </summary>
+    private static readonly HashSet<string> GpuVerifiedModels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "a431985659dc921974177a95adcfbb90fd9e51989a5e04d70d0b75f597b6e61d", // ocr-text-detector inference.onnx
+        "f0bd7927234639c6e1f293cef18a210cee4e4aea93e200ebbe48e1d7acf6fdb1", // speech-fast encoder_model.onnx
+        "31a05a14d514440e43746fdaaa8d4e8102c9543e53c5ae1111910af142041406", // speech-accurate encoder_model.onnx
+    };
+    internal static bool GpuVerified(string sha256) => GpuVerifiedModels.Contains(sha256);
+
+    private static InferenceSession[] CreateSessions(string[] paths, IReadOnlyList<(string Path, string Sha256)> models,
+        IReadOnlyDictionary<int, Func<byte[], byte[]>>? prepare, bool lowMemory, bool gpu, CancellationToken token)
+    {
+        var created = new List<InferenceSession>();
+        try
+        {
+            for (int i = 0; i < paths.Length; i++)
+            {
+                string path = paths[i];
+                using var options = Options(lowMemory, gpu && GpuVerified(models[i].Sha256));
+                try
+                {
+                    if (prepare != null && prepare.TryGetValue(i, out var step))
+                        created.Add(new InferenceSession(step(ReadVerified(path, models[i].Sha256, token)), options));
+                    else created.Add(new InferenceSession(path, options));
+                }
+                catch (Exception e) when (e is not OperationCanceledException) { NoteFailedPath(e, path); throw; }
+                token.ThrowIfCancellationRequested();
+            }
+            return created.ToArray();
+        }
+        catch { foreach (var item in created) item.Dispose(); throw; }
     }
 
     private const string DamagedPathKey = "DesktopTools.ModelPath";
@@ -131,7 +186,7 @@ internal static class AiRuntime
     {
         releaseRequested = false;
         var old = sessions; sessions = null; loadedPaths = [];
-        if (old != null) foreach (var item in old) item.Dispose();
+        if (old != null) { foreach (var item in old) item.Dispose(); DesktopTools.Native.MemoryTrimmer.Request(); }
         lock (timerLock) { idleTimer?.Dispose(); idleTimer = null; }
     }
 
@@ -169,11 +224,18 @@ internal static class AiRuntime
         return bytes;
     }
 
-    private static SessionOptions Options(bool lowMemory)
+    private static SessionOptions Options(bool lowMemory, bool gpu = false)
     {
         var options = new SessionOptions { IntraOpNumThreads = Math.Clamp(Environment.ProcessorCount / 2, 1, 4), InterOpNumThreads = 1, ExecutionMode = ExecutionMode.ORT_SEQUENTIAL };
         if (lowMemory) { options.EnableCpuMemArena = false; options.EnableMemoryPattern = false; }
         options.AddSessionConfigEntry("session.intra_op.allow_spinning", "0");
+        if (gpu)
+        {
+            // DirectML needs sequential execution without memory patterns; operators it lacks still run on the processor.
+            options.EnableMemoryPattern = false;
+            try { options.AppendExecutionProvider_DML(0); }
+            catch (Exception) { options.Dispose(); throw; }
+        }
         return options;
     }
 }

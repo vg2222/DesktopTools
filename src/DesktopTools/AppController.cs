@@ -207,13 +207,21 @@ internal sealed partial class AppController : IDisposable
     public string Status { get; private set; } = "";
     public bool Dark => Settings.Theme == "Dark" || (Settings.Theme == "System" && !SystemUsesLight());
     public ProfileStore Profiles { get; } = new();
+    private static bool trimHandlerRegistered;
+    private static void RegisterTrimOnClose()
+    {
+        if (trimHandlerRegistered) return; trimHandlerRegistered = true;
+        EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.UnloadedEvent, new RoutedEventHandler((sender, e) => { if (ReferenceEquals(sender, e.OriginalSource)) MemoryTrimmer.Request(); }));
+    }
     public AppController(bool smoke)
     {
         this.smoke = smoke; AppCapturePrivacy.Initialize();
         Transcripts = new TranscriptStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-transcripts") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "transcripts"));
         RecordingMarkers = new RecordingMarkerStore(smoke ? Path.Combine(Environment.CurrentDirectory, "smoke-recording-markers") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopTools", "recording-markers"));
         store = new SettingsStore(smoke ? Path.Combine(Environment.CurrentDirectory, "artifacts", "smoke-settings") : null);
-        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings);
+        Settings = store.Load(); L.Use(Settings.Language); Tool = Settings.DefaultTool; LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings); AiRuntime.PreferredDevice = Settings.AiDevice;
+        AiRuntime.GraphicsCardFallback = _ => Application.Current?.Dispatcher.BeginInvoke(() =>
+            Report(L.T("The graphics card could not run an AI model, so DesktopTools uses the processor until you restart it."), NotificationKind.Warning));
         LocalOcr.ChooseEngine = (engine, script) => UpdateSettings(s => { s.OcrEngine = engine; s.OcrPackScript = script; });
         Hud = new PresentationHudService(Report, () => Settings.HideControlsFromCapture)
         { IsAvailable = id => FeatureAvailability.IsAvailable(Settings, id) };
@@ -221,6 +229,9 @@ internal sealed partial class AppController : IDisposable
         ApplyHudSettings();
         escape.Pressed += CancelActiveTool;
         ApplyTheme();
+        // Every closed window (editor, text tools, notices) is a good moment to give its memory back.
+        RegisterTrimOnClose();
+        MemoryTrimmer.Request();
         hotkeys.Pressed += HandleHotkey;
         if (!smoke)
         {
@@ -365,7 +376,7 @@ internal sealed partial class AppController : IDisposable
                 string mode = presentationMode; StopPresentation(); TogglePresentation(mode);
             }
             if (!Settings.FreezeEnabled && frozenFrame != null) { frozenFrame = null; overlay?.SetFrozen(null); }
-            LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings);
+            LocalOcr.ApplySettings(Settings); ModelPacks.ApplySettings(Settings); AiRuntime.PreferredDevice = Settings.AiDevice;
             SettingsChanged?.Invoke();
             if (Palette != null) Palette.Refresh(); return true;
         }
@@ -442,7 +453,7 @@ internal sealed partial class AppController : IDisposable
     }
     private MainWindow EnsureMainWindow()
     {
-        if (main == null) { main = new MainWindow(this); main.Closed += (_, _) => main = null; }
+        if (main == null) { main = new MainWindow(this); main.Closed += (_, _) => main = null; main.IsVisibleChanged += (_, e) => { if (e.NewValue is false) MemoryTrimmer.Request(); }; }
         return main;
     }
     public void RecordDrawingShortcut(string action) => RecordShortcut(Settings.DrawingShortcuts[action], (s, value) => s.DrawingShortcuts[action] = value, true);
@@ -859,12 +870,12 @@ internal sealed partial class AppController : IDisposable
     public void ApplyTheme()
     {
         bool dark = Dark; Motion.AppEnabled = Settings.Animations;
-        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#6A45E0" };
+        string accentHex = Settings.ThemePreset switch { "Ocean" => "#007EAA", "Forest" => "#218557", "Violet" => "#8854D0", "Custom" => Settings.PrimaryColor, _ => "#C2378F" };
         if (Settings.ThemePreset != "Custom") Settings.PrimaryColor = accentHex;
         Color accent = (Color)ColorConverter.ConvertFromString(accentHex); accent.A = 255;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         Application.Current.Resources["AccentText"] = new SolidColorBrush(.2126 * accent.R + .7152 * accent.G + .0722 * accent.B > 160 ? Colors.Black : Colors.White);
-        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#E6E1FB", "#FF332D4D"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
+        foreach (var (key, light, night) in new[] { ("Surface", "#F3F5FA", "#060606"), ("Shell", "#B3F3F5FA", "#D0121316"), ("Card", "#EEFFFFFF", "#FF202226"), ("Text", "#19202D", "#F3F5FA"), ("Muted", "#626D7E", "#A5ACB9"), ("Stroke", "#1C293A55", "#FF35383F"), ("Divider", "#D2D9E5", "#FF454A54"), ("Hover", "#E8EDF6", "#FF2C3038"), ("Selected", "#F8E1EF", "#FF4A2540"), ("Field", "#FAFBFE", "#FF292C32") }) Application.Current.Resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(dark ? night : light));
         if (Settings.UseCustomBackground)
         {
             Color background = (Color)ColorConverter.ConvertFromString(Settings.BackgroundColor); background.A = 255;
@@ -915,7 +926,7 @@ internal sealed partial class AppController : IDisposable
         using var immediateExit = DesktopTools.Presentation.WindowDismissal.Suppress();
         if (disposed) return; disposed = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged; SystemEvents.UserPreferenceChanged -= PreferenceChanged;
         automation?.Dispose();
-        AiRuntime.ReleaseAll();
+        AiRuntime.ReleaseAll(); MemoryTrimmer.Shutdown();
         StopUpdateChecks();
         trayMenu?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false); setupWindow?.Close(); quickWheel?.Close(); captureCancellation?.Cancel(); windowPins.Dispose(); foreach (var utility in utilityWindows.Values.ToArray()) utility.Close(); fileShelf?.Shutdown(); floatingNotes?.Dispose(); audioControls?.Close(); Hud.Dispose(); selector?.Close(); StopPresentation(); RemoveOverlay(); CaptureHistory.Clear(); captureNotice?.Close(); statusNotice?.Close(); tray?.Dispose(); trayIcon?.Dispose(); hotkeys.Dispose(); escape.Dispose();
     }

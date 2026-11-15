@@ -34,7 +34,6 @@ public static class FeatureAvailability
     public static bool IsAvailable(AppSettings settings, string id) => id switch
     {
         "automation" => true,
-        "library" => true,
         "pin" => settings.CaptureEnabled,
         "guide" => settings.CaptureEnabled,
         "freeze" => settings.FreezeEnabled && settings.DrawingEnabled,

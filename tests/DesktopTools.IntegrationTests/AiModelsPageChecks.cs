@@ -60,9 +60,9 @@ internal static class AiModelsPageChecks
                 Check(Tagged<Button>(main, "ai-model-licence-page-missing").IsVisible, "No View licence button");
                 Check(Tagged<Button>(main, "translation-remove-" + direction).IsVisible, "Downloaded translation pack has no Remove button");
 
-                // Run on: exactly one value, Processor.
+                // Run on: Processor first and selected; Graphics card only where Windows has DirectML 1.15 or later.
                 var runOn = Tagged<ComboBox>(main, "ai-run-on");
-                Check(runOn.Items.Count == 1 && runOn.SelectedIndex == 0 && ItemText(runOn.Items[0]) == "Processor", "Run on must offer only Processor");
+                Check(runOn.Items.Count == (AiGpu.IsSupported ? 2 : 1) && runOn.SelectedIndex == 0 && ItemText(runOn.Items[0]) == "Processor", "Run on must start with Processor and offer the graphics card only when supported");
                 Check(controller.Settings.AiDevice == "Processor", "AiDevice changed");
 
                 // The shortened warning sits under the list.

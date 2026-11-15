@@ -168,7 +168,7 @@ internal static class OcrPackChecks
                 // Choices: the pack lists its three groups, marked when not downloaded; Windows lists Windows languages.
                 var choices = LocalOcr.Choices();
                 Check(choices.Select(c => c.Tag).SequenceEqual(["pack:latin", "pack:cyrillic", "pack:chinese-japanese"]), "Pack choices: " + string.Join(", ", choices.Select(c => c.Tag)));
-                Check(choices.Select(c => c.Name).SequenceEqual(Enum.GetValues<OcrPackScript>().Select(x => L.F($"{LocalOcr.ScriptName(x)} (not downloaded)"))), "Missing groups are not marked: " + string.Join(", ", choices.Select(c => c.Name)));
+                Check(choices.Select(c => c.Name).SequenceEqual(Enum.GetValues<OcrPackScript>().Select(x => DesktopTools.UI.Ui.AiMark + L.F($"{LocalOcr.ScriptName(x)} (not downloaded)"))), "Missing groups are not marked: " + string.Join(", ", choices.Select(c => c.Name)));
                 Check(LocalOcr.SelectChoice(choices, null)?.Tag == "pack:latin", "Saved script group not preselected");
                 LocalOcr.Preference = ("Pack", "", "ru-RU");
                 Check(LocalOcr.SelectChoice(choices, null)?.Tag == "pack:cyrillic", "Script group does not follow the Windows language");

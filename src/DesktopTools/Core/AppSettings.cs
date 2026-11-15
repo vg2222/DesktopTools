@@ -42,7 +42,10 @@ public sealed class AppSettings
     public string AiModelsFolder { get; set; } = "";
     public string ScreenTextLanguage { get; set; } = "en-US";
     /// <summary>Which engine reads screen text: "Windows" (Windows OCR, the default) or "Pack" (the optional OCR pack, spec section 8).</summary>
-    public string OcrEngine { get; set; } = "Windows";
+    /// <summary>"Auto" reads with the OCR pack once it is downloaded, else Windows OCR; "Windows" and "Pack" are explicit choices.
+    /// Stored as TextReader: the earlier OcrEngine key only existed in 1.3.0 previews, where "Windows" was the untouched default.</summary>
+    [System.Text.Json.Serialization.JsonPropertyName("TextReader")]
+    public string OcrEngine { get; set; } = "Auto";
     /// <summary>The OCR pack script group last chosen: "latin", "cyrillic" or "chinese-japanese"; empty follows the screen text language.</summary>
     public string OcrPackScript { get; set; } = "";
     /// <summary>Which transcript model to use: "Fast" (Whisper base, the default) or "Accurate" (Whisper small).</summary>
@@ -54,8 +57,6 @@ public sealed class AppSettings
     /// <summary>Set once the user has read the note about recording and transcribing other people.</summary>
     public bool TranscriptNoticeAccepted { get; set; }
     /// <summary>Off by default. When on, finished screenshots are kept on this PC with the text found in them, so they can be searched.</summary>
-    public bool ScreenshotLibraryEnabled { get; set; }
-    public int ScreenshotLibraryLimit { get; set; } = 300;
     public bool QuickWheelEnabled { get; set; } = true;
     public string QuickWheelShortcut { get; set; } = "Ctrl+Alt+Q";
     public string[] QuickWheelItems { get; set; } = QuickWheelActions.Defaults;
@@ -82,7 +83,7 @@ public sealed class AppSettings
     public bool DrawingEnabled { get; set; } = true;
     public bool CaptureEnabled { get; set; } = true;
     public string ThemePreset { get; set; } = "Classic";
-    public string PrimaryColor { get; set; } = "#6A45E0";
+    public string PrimaryColor { get; set; } = "#C2378F";
     public string BackgroundColor { get; set; } = "#F3F5FA";
     public bool UseCustomBackground { get; set; }
     public bool Animations { get; set; } = true;

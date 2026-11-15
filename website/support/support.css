@@ -2,8 +2,8 @@
 
 /* Hero: same glow and entrance as the home page, with a heart in place of the screenshot. */
 .support-hero { position: relative; isolation: isolate; padding: 112px 0 40px; text-align: center; }
-.support-hero::before { content: ""; position: absolute; left: 50%; top: 30%; width: min(1000px, 140vw); aspect-ratio: 1.6; translate: -50% -50%; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(244, 114, 182, .16), rgba(106, 69, 224, .2) 45%, transparent); }
-.support-emblem { display: grid; place-items: center; width: 84px; height: 84px; margin: 0 auto 36px; border-radius: 26px; background: linear-gradient(160deg, rgba(244, 114, 182, .22), rgba(106, 69, 224, .22)); border: 1px solid rgba(244, 114, 182, .38); box-shadow: 0 24px 70px -18px rgba(244, 114, 182, .55); animation: rise .9s var(--ease) both, beat 2.8s ease-in-out 1.2s infinite; }
+.support-hero::before { content: ""; position: absolute; left: 50%; top: 30%; width: min(1000px, 140vw); aspect-ratio: 1.6; translate: -50% -50%; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(244, 114, 182, .16), rgba(194, 55, 143, .2) 45%, transparent); }
+.support-emblem { display: grid; place-items: center; width: 84px; height: 84px; margin: 0 auto 36px; border-radius: 26px; background: linear-gradient(160deg, rgba(244, 114, 182, .22), rgba(194, 55, 143, .22)); border: 1px solid rgba(244, 114, 182, .38); box-shadow: 0 24px 70px -18px rgba(244, 114, 182, .55); animation: rise .9s var(--ease) both, beat 2.8s ease-in-out 1.2s infinite; }
 .support-emblem .support-heart { width: 36px; height: 36px; }
 @keyframes beat { 0%, 100% { scale: 1; } 8% { scale: 1.07; } 16% { scale: 1; } 24% { scale: 1.04; } 32% { scale: 1; } }
 .support-hero h1 { margin: 0 auto; max-width: 860px; font-size: clamp(42px, 7vw, 80px); animation: rise .9s var(--ease) .06s both; }
@@ -18,7 +18,7 @@
 
 /* Wallet card */
 #wallet-list { display: grid; gap: 24px; }
-.donation-card { min-width: 0; padding: 32px; border-radius: var(--radius); background: radial-gradient(90% 120% at 100% 0%, rgba(106, 69, 224, .2), transparent 60%), var(--panel); border: 1px solid var(--line-strong); box-shadow: 0 40px 100px -50px rgba(106, 69, 224, .6); }
+.donation-card { min-width: 0; padding: 32px; border-radius: var(--radius); background: radial-gradient(90% 120% at 100% 0%, rgba(194, 55, 143, .2), transparent 60%), var(--panel); border: 1px solid var(--line-strong); box-shadow: 0 40px 100px -50px rgba(194, 55, 143, .6); }
 .donation-heading { display: flex; align-items: center; gap: 14px; }
 .donation-heading > img { width: 44px; height: 44px; }
 .donation-heading h3 { font-size: 26px; }

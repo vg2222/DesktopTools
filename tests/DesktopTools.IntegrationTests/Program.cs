@@ -72,7 +72,6 @@ internal static class Program
                 else if (args.Contains("--text-copy-only")) await Test("Text view copy buttons", TextCopyChecks.RunAsync);
                 else if (args.Contains("--clipboard-only")) await Test("Clipboard text copy under contention", ClipboardServiceChecks.RunAsync);
                 else if (args.Contains("--text-selection-only")) await Test("Text selection view, word layout and editor embedding", TextSelectionChecks.RunAsync);
-                else if (args.Contains("--library-only")) await Test("Screenshot library: OCR index, search and clearing", ScreenshotLibraryChecks.RunAsync);
                 else if (args.Contains("--editor-shots")) await Test("Screenshot editor states", EditorShots.RunAsync);
                 else if (args.Contains("--record-bitrate-only")) await Test("Recording bitrate targets", RecordingProbe.CheckBitratesAsync);
                 else if (args.Contains("--record-probe")) await Test("Full-display recording probe", RecordingProbe.RunAsync);
@@ -136,6 +135,8 @@ internal static class Program
                 else if (args.Contains("--ai-models-page-only")) await Test("AI models settings page: list, consent before download, progress, remove, translation packs", AiModelsPageChecks.RunAsync);
                 else if (args.Contains("--model-consent-ui-only")) await Test("Model licence and consent window in every language and theme", ModelConsentUiChecks.RunAsync);
                 else if (args.Contains("--ai-runtime-only")) await Test("Shared model session runtime: checksum, reuse, idle release and serialization", AiRuntimeChecks.RunAsync);
+                else if (args.Contains("--gpu-probe")) await Test("OCR pack on processor and graphics card", MemoryProbe.GpuProbeAsync);
+                else if (args.Contains("--memory-probe")) await Test("Memory across screenshots, editor, Extract text and Check screenshot", MemoryProbe.RunAsync);
                 else if (args.Contains("--model-packs-only")) await Test("Model pack download, verification, damage and removal", ModelPackChecks.RunAsync);
                 else if (args.Contains("--ocr-pack-preview")) await Test("OCR pack manual preview in Text tools", OcrPackChecks.PreviewAsync);
                 else if (args.Contains("--tool-improvements-preview")) await Test("Background quality, face finder and translation packs: manual preview", ToolImprovementsPreview.PreviewAsync);

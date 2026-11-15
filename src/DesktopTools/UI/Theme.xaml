@@ -5,7 +5,7 @@
  <SolidColorBrush x:Key="Card" Color="#EEFFFFFF"/><SolidColorBrush x:Key="Field" Color="#FAFBFE"/>
  <SolidColorBrush x:Key="Text" Color="#19202D"/><SolidColorBrush x:Key="Muted" Color="#626D7E"/>
  <SolidColorBrush x:Key="Stroke" Color="#1C293A55"/><SolidColorBrush x:Key="Divider" Color="#D2D9E5"/><SolidColorBrush x:Key="Hover" Color="#E8EDF6"/>
- <SolidColorBrush x:Key="Selected" Color="#E6E1FB"/><SolidColorBrush x:Key="Accent" Color="#6A45E0"/>
+ <SolidColorBrush x:Key="Selected" Color="#F8E1EF"/><SolidColorBrush x:Key="Accent" Color="#C2378F"/>
  <SolidColorBrush x:Key="AccentText" Color="White"/>
  <SolidColorBrush x:Key="Danger" Color="#DC2626"/><SolidColorBrush x:Key="Warning" Color="#D97706"/>
  <SolidColorBrush x:Key="GlassSurface" Color="#F3F5FA"/>

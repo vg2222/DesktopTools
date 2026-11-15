@@ -56,7 +56,7 @@ internal sealed partial class InstallerWindow
             railSurface.Children.Add(new Border { Background = RailBrush });
             railSurface.Children.Add(new Border
             {
-                Background = new RadialGradientBrush(Color("#596A45E0"), Color("#006A45E0")) { Center = new Point(.3, .18), GradientOrigin = new Point(.3, .18), RadiusX = .85, RadiusY = .42 },
+                Background = new RadialGradientBrush(Color("#59C2378F"), Color("#00C2378F")) { Center = new Point(.3, .18), GradientOrigin = new Point(.3, .18), RadiusX = .85, RadiusY = .42 },
                 IsHitTestVisible = false
             });
         }
@@ -72,13 +72,13 @@ internal sealed partial class InstallerWindow
         var identity = new StackPanel();
         var logo = new Image { Source = new BitmapImage(new Uri("pack://application:,,,/DesktopTools.Installer;component/Assets/Icons/AppIcon.png")), Width = 76, Height = 76, HorizontalAlignment = HorizontalAlignment.Left };
         RenderOptions.SetBitmapScalingMode(logo, BitmapScalingMode.HighQuality);
-        if (!contrast) logo.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#6A45E0"), BlurRadius = 34, ShadowDepth = 0, Opacity = .55 };
+        if (!contrast) logo.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Color("#C2378F"), BlurRadius = 34, ShadowDepth = 0, Opacity = .55 };
         identity.Children.Add(logo);
         identity.Children.Add(Text("DesktopTools", 22, FontWeights.SemiBold, TextBrush, new Thickness(0, 20, 0, 0)));
         var setupPill = new Border
         {
             Child = Text(L.T("Setup ") + displayedSetupVersion, 11, FontWeights.SemiBold, Brush("#CFC4FF")),
-            Background = Brush("#2B6A45E0"), BorderBrush = Brush("#476A45E0"), BorderThickness = new Thickness(1),
+            Background = Brush("#2BC2378F"), BorderBrush = Brush("#47C2378F"), BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10), Padding = new Thickness(9, 3, 9, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left
         };
         identity.Children.Add(setupPill);
@@ -288,7 +288,7 @@ internal sealed partial class InstallerWindow
         {
             var marker = stepMarkers[index];
             bool done = index < current, active = index == current;
-            marker.Background = done ? AccentGradientBrush : active ? Brush("#2B6A45E0") : Brushes.Transparent;
+            marker.Background = done ? AccentGradientBrush : active ? Brush("#2BC2378F") : Brushes.Transparent;
             marker.BorderBrush = done ? Brushes.Transparent : active ? AccentSoftBrush : Brush("#3A3650");
             marker.Child = done ? Center(FluentIcon("checkmark", Brushes.White, 12))
                 : active ? new System.Windows.Shapes.Ellipse { Width = 7, Height = 7, Fill = AccentSoftBrush, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } : null;
@@ -307,7 +307,7 @@ internal sealed partial class InstallerWindow
     private static Border IconTile(string icon, double size) => new()
     {
         Child = FluentIcon(icon, Brush("#E2DAFF"), size * .5), Width = size, Height = size, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center,
-        Background = new LinearGradientBrush(Color("#4D7C5AF2"), Color("#265B36D6"), 45), BorderBrush = Brush("#386A45E0"), BorderThickness = new Thickness(1),
+        Background = new LinearGradientBrush(Color("#4DD54BA2"), Color("#26A42478"), 45), BorderBrush = Brush("#38C2378F"), BorderThickness = new Thickness(1),
         CornerRadius = new CornerRadius(size * .3), Padding = new Thickness(size * .25)
     };
 
@@ -490,11 +490,11 @@ internal sealed partial class InstallerWindow
         runtimeTitle.Text = L.T(ready ? "Screen recording runtime is installed" : "One extra step for screen recording");
         runtimeDescription.Text = L.T(ready ? "Microsoft Visual C++ x64 is ready on this PC." : "Install Microsoft Visual C++ x64 for screen recording, offline translation and background removal. Setup can continue; these actions stay unavailable until it is installed.");
         runtimeCard.Background = ready ? Brush("#0DFFFFFF") : CardBrush;
-        runtimeCard.BorderBrush = ready ? Brush("#14FFFFFF") : Brush("#4D6A45E0");
+        runtimeCard.BorderBrush = ready ? Brush("#14FFFFFF") : Brush("#4DC2378F");
         if (runtimeIcon is not null)
         {
             runtimeInfoIcon!.Opacity = ready ? 0 : 1; runtimeReadyIcon!.Opacity = ready ? 1 : 0;
-            runtimeIcon.Background = Brush(ready ? "#1F22C55E" : "#336A45E0");
+            runtimeIcon.Background = Brush(ready ? "#1F22C55E" : "#33C2378F");
         }
         runtimeDownload!.Visibility = runtimeRecheck!.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
         if (ready && finished) statusHint.Text = L.T("DesktopTools is ready to use. Restart the app if it was already open.");
@@ -585,20 +585,20 @@ internal sealed partial class InstallerWindow
                   <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
                   <Grid Width="18" Height="18" VerticalAlignment="Center">
                     <Border x:Name="Box" CornerRadius="{{radius}}" Background="#1D1A2B" BorderBrush="#4A4463" BorderThickness="1.5"/>
-                    <Border x:Name="Focus" CornerRadius="{{radius}}" Margin="-4" BorderBrush="#B9A6FF" BorderThickness="1.5" Opacity="0"/>
+                    <Border x:Name="Focus" CornerRadius="{{radius}}" Margin="-4" BorderBrush="#F2A8D6" BorderThickness="1.5" Opacity="0"/>
                     {{mark}}
                   </Grid>
                   <ContentPresenter Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
                 </Grid>
                 <ControlTemplate.Triggers>
-                  <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#8566F6"/></Trigger>
+                  <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#DB4FA6"/></Trigger>
                   <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Focus" Property="Opacity" Value="1"/></Trigger>
                   <Trigger Property="IsChecked" Value="True">
                     <Setter TargetName="Box" Property="Background">
-                      <Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#8566F6" Offset="0"/><GradientStop Color="#5B36D6" Offset="1"/></LinearGradientBrush></Setter.Value>
+                      <Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#DB4FA6" Offset="0"/><GradientStop Color="#A42478" Offset="1"/></LinearGradientBrush></Setter.Value>
                     </Setter>
                     <Setter TargetName="Box" Property="BorderBrush" Value="#9C82FF"/>
-                    <Setter TargetName="Box" Property="Effect"><Setter.Value><DropShadowEffect Color="#8566F6" BlurRadius="12" ShadowDepth="0" Opacity="0.55"/></Setter.Value></Setter>
+                    <Setter TargetName="Box" Property="Effect"><Setter.Value><DropShadowEffect Color="#DB4FA6" BlurRadius="12" ShadowDepth="0" Opacity="0.55"/></Setter.Value></Setter>
                     <Setter TargetName="Mark" Property="Opacity" Value="1"/>
                   </Trigger>
                   <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>

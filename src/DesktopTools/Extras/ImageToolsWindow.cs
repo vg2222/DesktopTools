@@ -223,7 +223,7 @@ internal sealed class ImageToolsWindow : Window, IUnsavedWork
             string chosen = value == QualityModel ? "Quality" : "Standard";
             if (setBackgroundModel != null) setBackgroundModel(chosen); else unsavedBackgroundModel = chosen;
             RefreshBackgroundModelStatus();
-        });
+        }, aiChoices: [QualityModel]);
         System.Windows.Automation.AutomationProperties.SetName(backgroundModel, L.T("Background model"));
         // Label above the choice: long model names (Russian, German) would otherwise squeeze the label out of a side-by-side row.
         var modelLabel = Ui.Text(L.T("Model"), 12); modelLabel.Margin = new Thickness(0, 0, 0, 6); DockPanel.SetDock(modelLabel, Dock.Top); modelRow.Children.Add(modelLabel);

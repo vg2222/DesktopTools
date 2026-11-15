@@ -53,10 +53,18 @@ internal sealed partial class MainWindow
         heading.Children.Add(Ui.Text(L.T(AiModelsTab), 20, true)); intro.Children.Add(heading);
         var description = Ui.Text(L.T("Optional models run only on this PC. Each one downloads from its publisher after you accept its licence."), 12, muted: true);
         description.Margin = new Thickness(0, 8, 0, 14); intro.Children.Add(description);
-        // This version runs models on the processor only, so the choice has one value.
-        var runOn = Ui.Choice(["Processor"], "Processor", _ => Change(x => x.AiDevice = "Processor"));
+        // Graphics card uses Windows' own DirectML; it is offered only when Windows has a new enough copy.
+        bool gpuSupported = AiGpu.IsSupported;
+        string[] devices = gpuSupported ? ["Processor", "Graphics card"] : ["Processor"];
+        string chosen = gpuSupported && controller.Settings.AiDevice == AiGpu.GraphicsCard ? "Graphics card" : "Processor";
+        var runOn = Ui.Choice(devices, chosen, value => Change(x => x.AiDevice = value == "Graphics card" ? AiGpu.GraphicsCard : AiGpu.Processor), aiChoices: ["Graphics card"]);
         runOn.Tag = "ai-run-on";
-        intro.Children.Add(Ui.Row(L.T("Run on"), L.T("Where AI models run. This version uses the processor."), runOn));
+        string runOnHelp = !gpuSupported
+            ? L.T("Where AI models run. The graphics card needs DirectML 1.15 or later, which comes with current Windows 11 updates.")
+            : AiRuntime.GraphicsCardFailed
+                ? L.T("The graphics card could not run a model, so the processor is used until DesktopTools restarts.")
+                : L.T("The processor works everywhere. The graphics card makes text detection and speech recognition much faster but uses more memory, including video memory. Other models stay on the processor.");
+        intro.Children.Add(Ui.Row(L.T("Run on"), runOnHelp, runOn));
         intro.Children.Add(ModelsFolderRow());
         if (aiModelsStatus != null)
         {
