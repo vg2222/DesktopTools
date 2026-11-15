@@ -103,8 +103,8 @@ button, select { font: inherit; }
 .story-head { max-width: 760px; text-align: left; }
 .story-head h2 { font-size: clamp(36px, 5.4vw, 64px); }
 .story-head p { margin-top: 18px; max-width: 560px; color: var(--muted); font-size: 19px; }
-.story-body { display: grid; grid-template-columns: minmax(300px, 4fr) minmax(0, 9fr); gap: 56px; margin-top: 40px; }
-.story-head.shell, .story-body.shell { width: min(100% - 48px, 2240px); max-width: none; }
+.story-body { display: grid; grid-template-columns: minmax(320px, 5fr) minmax(0, 9fr); gap: 72px; margin-top: 40px; }
+.story-head.shell, .story-body.shell { width: min(100% - 48px, 1640px); max-width: none; }
 .story-chapters { grid-column: 1; grid-row: 1; }
 .story-stage { grid-column: 2; grid-row: 1; position: sticky; top: 96px; height: calc(100vh - 128px); display: grid; place-items: center; }
 .stage-screen { position: relative; width: min(100%, (100vh - 128px) * 16 / 9); aspect-ratio: 16 / 9; box-shadow: 0 50px 120px -50px rgba(194, 55, 143, .45); }
